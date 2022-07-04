@@ -1,4 +1,4 @@
-FROM gcr.io/deeplearning-platform-release/pytorch-gpu.1-11
+FROM gcr.io/deeplearning-platform-release/pytorch-gpu.1-12
 
 COPY ./requirements.txt /requirements.txt
 RUN pip install -r /requirements.txt
