@@ -9,7 +9,7 @@ environment:
 
 ```shell script
 cd docs/
-source activate app  # If using conda env
+source activate tint  # If using conda env
 pip install -r requirements.txt
 ```
 

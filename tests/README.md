@@ -7,7 +7,7 @@ This package uses pytest to run units tests.
 To execute the test suite, install the `tests/requirements.txt`:
 
 ```shell script
-source activate app  # If using conda env
+source activate tint  # If using conda env
 pip install -r tests/requirements.txt
 ```
 
