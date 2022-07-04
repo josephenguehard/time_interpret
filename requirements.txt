@@ -1,0 +1,8 @@
+torch==1.12.0
+black
+flake8
+numpy
+optuna
+pandas
+pytorch-lightning
+scikit-learn

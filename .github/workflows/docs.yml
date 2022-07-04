@@ -1,0 +1,29 @@
+name: Documentation
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Install dependencies
+        run: |
+          # Install package
+          pip install .
+          # Install docs packages
+          pip install -r docs/requirements.txt
+      - name: Test documentation
+        run: |
+          # Perform the tests
+          cd docs && make clean && make html SPHINXOPTS="-W"

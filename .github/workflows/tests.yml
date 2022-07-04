@@ -1,0 +1,29 @@
+name: Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Install dependencies
+        run: |
+          # Install package
+          pip install .
+      - name: Pytest
+        run: |
+          # Install tests packages
+          pip install -r tests/requirements.txt
+          # Perform the tests
+          pytest --cov-report term-missing --cov-report=xml --cov=app tests/ --cov-config=tests/.coveragerc

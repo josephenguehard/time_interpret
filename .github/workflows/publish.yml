@@ -1,0 +1,27 @@
+name: Publish wheel to Artifactory
+on:
+  release:
+    types: [published]
+
+jobs:
+  # NOTE: Build and publish can be separated into two separate steps, perhaps?
+  publish-wheel:
+    runs-on: ubuntu-latest
+    env:
+      ARTIFACTORY_PYPI_URL: "https://artifactory.ops.babylontech.co.uk/artifactory/api/pypi/babylon-pypi"
+      ARTIFACTORY_PYPI_USER: ${{ secrets.ARTIFACTORY_API_USER_RW }}
+      ARTIFACTORY_PYPI_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY_RW }}
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+
+      - name: Install requirements
+        run: |
+          pip install build twine
+      - name: Build
+        run: |
+          python -m build
+      - name: Publish wheel
+        run: |
+          twine upload --verbose --disable-progress-bar --skip-existing -u "${ARTIFACTORY_PYPI_USER}" -p "${ARTIFACTORY_PYPI_API_KEY}" --repository-url "${ARTIFACTORY_PYPI_URL}" dist/*
+      - run: echo "🍏 This job\'s status is ${{ job.status }}."
