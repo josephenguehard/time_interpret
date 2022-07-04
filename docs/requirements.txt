@@ -1,0 +1,5 @@
+sphinx
+sphinx-rtd-theme
+sphinx-copybutton
+sphinx-toggleprompt
+sphinx_paramlinks

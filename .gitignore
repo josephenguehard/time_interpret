@@ -1,0 +1,7 @@
+.idea
+**/__pycache__
+*.egg-info
+.htmlcov
+.coverage
+coverage.xml
+examples/.ipynb_checkpoints
