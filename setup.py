@@ -21,6 +21,7 @@ setup(
     python_requires=">=3.8, <3.11",
     install_requires=[
         "torch==1.12.0",
+        "captum",
         "numpy",
         "pandas",
         "pytorch-lightning",
