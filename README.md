@@ -1,4 +1,4 @@
-# Time Interpret
+# Time Interpret (tint)
 
 This package contains several baseline datasets and models for neural networks 
 interpretation in time. Please see the documentation and examples for more 
@@ -6,7 +6,7 @@ details.
 
 ## Install
 
-Time Interpret In can be installed with pip:
+Time Interpret can be installed with pip:
 
 ```shell script
 pip install time_interpret
