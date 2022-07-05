@@ -71,8 +71,8 @@ class TransformerEncoder(nn.Module):
         mask = (th.triu(th.ones(self._size, self._size)) == 1).transpose(0, 1)
         mask = (
             mask.float()
-                .masked_fill(mask == 0, float("-inf"))
-                .masked_fill(mask == 1, float(0.0))
+            .masked_fill(mask == 0, float("-inf"))
+            .masked_fill(mask == 1, float(0.0))
         )
         return mask
 
@@ -80,7 +80,8 @@ class TransformerEncoder(nn.Module):
         # Apply self attention
         x = x.transpose(0, 1)
         hidden, attn_weights = self.transformer_encoder(
-            src=x, mask=self.src_mask,
+            src=x,
+            mask=self.src_mask,
         )
 
         # Transpose and normalize outputs
