@@ -44,6 +44,7 @@ class DiscretetizedIntegratedGradients(GradientAttribution):
         https://github.com/INK-USC/DIG
         https://arxiv.org/abs/2108.13654
     """
+
     def __init__(
         self, forward_func: Callable, multiply_by_inputs: bool = True
     ) -> None:
