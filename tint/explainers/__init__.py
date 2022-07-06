@@ -1,14 +1,22 @@
-from .grad import grad
-from .smooth_grad import smooth_grad
+from captum.attr import (
+    DeepLift,
+    InputXGradient,
+    GradientShap,
+    IntegratedGradients,
+    Lime,
+    Saliency,
+    KernelShap,
+)
 
-from .grad_inputs import grad_times_inputs
-from .integrated_grad import integrated_gradients
-from .timed_ig import timed_integrated_gradients
+from .smooth_grad import SmoothGrad
 
 __all__ = [
-    "grad",
-    "grad_times_inputs",
-    "integrated_gradients",
-    "smooth_grad",
-    "timed_integrated_gradients",
+    "DeepLift",
+    "GradientShap",
+    "InputXGradient",
+    "IntegratedGradients",
+    "KernelShap",
+    "Lime",
+    "Saliency",
+    "SmoothGrad",
 ]
