@@ -24,6 +24,7 @@ class BayesLime(Lime):
     References:
         https://arxiv.org/pdf/2008.05030
     """
+
     def __init__(self, forward_func: Callable) -> None:
         super().__init__(
             forward_func=forward_func,
@@ -44,6 +45,7 @@ class BayesShap(KernelShap):
     References:
         https://arxiv.org/pdf/2008.05030
     """
+
     def __init__(self, forward_func: Callable) -> None:
         super().__init__(forward_func=forward_func)
 

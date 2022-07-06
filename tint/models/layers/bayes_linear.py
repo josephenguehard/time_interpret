@@ -86,13 +86,19 @@ class BayesLinear(nn.Linear):
             th.Tensor: The loss.
         """
         kl = _kl_loss(
-            self.weight, self.weight_log_sigma, 0., self.prior_log_sigma,
+            self.weight,
+            self.weight_log_sigma,
+            0.0,
+            self.prior_log_sigma,
         )
         n = len(self.weight.view(-1))
 
         if hasattr(self, "bias"):
             kl += _kl_loss(
-                self.bias, self.bias_log_sigma, 0., self.prior_log_sigma,
+                self.bias,
+                self.bias_log_sigma,
+                0.0,
+                self.prior_log_sigma,
             )
             n += len(self.bias.view(-1))
 
@@ -115,7 +121,11 @@ def _kl_loss(mu_0, log_sigma_0, mu_1, log_sigma_1):
         log_sigma_1 (Float): log(standard deviation of normal distribution).
 
     """
-    kl = log_sigma_1 - log_sigma_0 + \
-         (th.exp(log_sigma_0) ** 2 + (mu_0 - mu_1) ** 2) / (
-                     2 * math.exp(log_sigma_1) ** 2) - 0.5
+    kl = (
+        log_sigma_1
+        - log_sigma_0
+        + (th.exp(log_sigma_0) ** 2 + (mu_0 - mu_1) ** 2)
+        / (2 * math.exp(log_sigma_1) ** 2)
+        - 0.5
+    )
     return kl.sum()
