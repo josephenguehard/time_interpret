@@ -2,7 +2,7 @@ import pytorch_lightning as pl
 import torch as th
 import torch.nn as nn
 
-from typing import Union
+from typing import Callable, Union
 
 
 LOSSES = {
@@ -29,7 +29,7 @@ class Net(pl.LightningModule):
 
     Args:
         layers (list): The base layers.
-        loss (str): Which loss to use. Default to ``'mse'``
+        loss (str, callable): Which loss to use. Default to ``'mse'``
         optim (str): Which optimizer to use. Default to ``'adam'``
         lr (float): Learning rate. Default to 1e-3
         lr_scheduler (dict, str): Learning rate scheduler. Either a dict
@@ -49,7 +49,7 @@ class Net(pl.LightningModule):
     def __init__(
         self,
         layers: list,
-        loss: str = "mse",
+        loss: Union[str, Callable] = "mse",
         optim: str = "adam",
         lr: float = 0.001,
         lr_scheduler: Union[dict, str] = None,
@@ -62,7 +62,10 @@ class Net(pl.LightningModule):
         for layer in layers:
             self.net.add_module(layer.__class__.__name__.lower(), layer)
 
-        self._loss = LOSSES[loss]
+        if isinstance(loss, str):
+            loss = LOSSES[loss]
+
+        self._loss = loss
         self._optim = optim
         self.lr = lr
         self._lr_scheduler = lr_scheduler
