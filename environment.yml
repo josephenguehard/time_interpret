@@ -16,6 +16,7 @@ dependencies:
   - pip
   - scikit-learn
   - pytorch-lightning
+  - transformers
   - pip:
       - black
       - flake8
