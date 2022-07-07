@@ -55,7 +55,7 @@ We have now a trained model on Mnist. We can then use any captum or tint
 interpretability method:
 
 ```python
-from tint.explainers import BayesShap
+from tint.attr import BayesShap
 
 explainer = BayesShap(net)
 data, target = mnist[0]
