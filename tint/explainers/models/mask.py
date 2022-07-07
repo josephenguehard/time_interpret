@@ -67,9 +67,6 @@ class Mask(nn.Module):
     def fade_moving_average(self, x):
         moving_average = th.mean(x, 0).reshape(1, -1)
         moving_average_tiled = moving_average.repeat(len(x), 1)
-        import pdb
-
-        pdb.set_trace()
         return self.mask * x + (1 - self.mask) * moving_average_tiled
 
     def forward(self, x: th.Tensor) -> th.Tensor:
