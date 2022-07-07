@@ -8,9 +8,12 @@ from .bayes_linear import (
     SkLearnARDRegression,
     SkLearnBayesianRidge,
 )
+from .mask import Mask, MaskNet
 
 __all__ = [
     "BayesLinearModel",
+    "Mask",
+    "MaskNet",
     "SGDBayesLinearModel",
     "SGDBayesLasso",
     "SGDBayesRidge",
