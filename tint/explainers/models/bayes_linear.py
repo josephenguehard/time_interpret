@@ -206,7 +206,7 @@ class SGDBayesLinearModel(BayesLinearModel):
 
 
 class SGDBayesLasso(SGDBayesLinearModel):
-    def __init__(self, kl: float = 0.1, **kwargs) -> None:
+    def __init__(self, kl_weight: float = 0.1, **kwargs) -> None:
         r"""
         Factory class to train a `LinearModel` with SGD
         (`sgd_train_linear_model`) whilst setting appropriate parameters to
@@ -218,19 +218,20 @@ class SGDBayesLasso(SGDBayesLinearModel):
         """
         super().__init__(**kwargs)
 
-        self.kl = kl
+        self.kl_weight = kl_weight
 
     def fit(self, train_data: DataLoader, **kwargs):
         return super().fit(
             train_data=train_data,
-            loss_fn=lambda *args: l2_loss(*args) + self.kl * self.kl_loss(),
+            loss_fn=lambda *args: l2_loss(*args)
+            + self.kl_weight * self.kl_loss(),
             reg_term=1,
             **kwargs,
         )
 
 
 class SGDBayesRidge(SGDBayesLinearModel):
-    def __init__(self, kl: float = 0.1, **kwargs) -> None:
+    def __init__(self, kl_weight: float = 0.1, **kwargs) -> None:
         r"""
         Factory class to train a `LinearModel` with SGD
         (`sgd_train_linear_model`) whilst setting appropriate parameters to
@@ -239,19 +240,20 @@ class SGDBayesRidge(SGDBayesLinearModel):
         """
         super().__init__(**kwargs)
 
-        self.kl = kl
+        self.kl_weight = kl_weight
 
     def fit(self, train_data: DataLoader, **kwargs):
         return super().fit(
             train_data=train_data,
-            loss_fn=lambda *args: l2_loss(*args) + self.kl * self.kl_loss(),
+            loss_fn=lambda *args: l2_loss(*args)
+            + self.kl_weight * self.kl_loss(),
             reg_term=2,
             **kwargs,
         )
 
 
 class SGDBayesLinearRegression(SGDBayesLinearModel):
-    def __init__(self, kl: float = 0.1, **kwargs) -> None:
+    def __init__(self, kl_weight: float = 0.1, **kwargs) -> None:
         r"""
         Factory class to train a `LinearModel` with SGD
         (`sgd_train_linear_model`). For linear regression this assigns the loss
@@ -259,12 +261,13 @@ class SGDBayesLinearRegression(SGDBayesLinearModel):
         """
         super().__init__(**kwargs)
 
-        self.kl = kl
+        self.kl_weight = kl_weight
 
     def fit(self, train_data: DataLoader, **kwargs):
         return super().fit(
             train_data=train_data,
-            loss_fn=lambda *args: l2_loss(*args) + self.kl * self.kl_loss(),
+            loss_fn=lambda *args: l2_loss(*args)
+            + self.kl_weight * self.kl_loss(),
             reg_term=None,
             **kwargs,
         )
