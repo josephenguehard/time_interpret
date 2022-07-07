@@ -91,6 +91,12 @@ class BayesLinearModel(LinearModel):
         self.prior_log_sigma = math.log(prior_sigma)
         self._freeze = False
 
+        if weight_values is not None:
+            in_features = weight_values.shape[-1]
+            out_features = (
+                1 if len(weight_values.shape) == 1 else weight_values.shape[0]
+            )
+
         self.weight_log_sigma = nn.Parameter(
             th.Tensor(out_features, in_features)
         )
@@ -316,7 +322,7 @@ class SkLearnBayesLinearModel(BayesLinearModel):
         )
 
 
-class SkLearnARDRegression(BayesLinearModel):
+class SkLearnARDRegression(SkLearnBayesLinearModel):
     def __init__(self, **kwargs) -> None:
         r"""
         Factory class. Trains a model with `sklearn.linear_model.ARDRegression`.
@@ -330,7 +336,7 @@ class SkLearnARDRegression(BayesLinearModel):
         return super().fit(train_data=train_data, **kwargs)
 
 
-class SkLearnBayesianRidge(BayesLinearModel):
+class SkLearnBayesianRidge(SkLearnBayesLinearModel):
     def __init__(self, **kwargs) -> None:
         r"""
         Factory class. Trains a model with `sklearn.linear_model.BayesianRidge`.

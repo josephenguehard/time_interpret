@@ -1,4 +1,5 @@
 torch==1.12.0
+torchvision
 black
 captum
 flake8

@@ -126,13 +126,13 @@ class CNN(nn.Module):
             model[f"{name}_{i}"] = layers[i](
                 units[i],
                 units[i + 1],
-                kernel_size=kernel_size,
-                stride=stride,
-                padding=padding,
-                dilation=dilation,
-                groups=groups,
-                bias=bias,
-                padding_mode=padding_mode,
+                kernel_size=kernel_size[i],
+                stride=stride[i],
+                padding=padding[i],
+                dilation=dilation[i],
+                groups=groups[i],
+                bias=bias[i],
+                padding_mode=padding_mode[i],
             )
 
             if not final_layer and dropout[i] > 0:

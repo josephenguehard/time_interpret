@@ -50,19 +50,25 @@ class Mask(nn.Module):
         self.reg_multiplier = np.exp(np.log(size_reg_factor_dilation))
 
         self.register_parameter("mask", None)
+        self.reg_ref = None
+
+    def init(self, shape: tuple, n_epochs: int):
+        # Create mask param
+        self.mask = nn.Parameter(th.Tensor(*shape))
 
         # Init the regularisation parameter
         reg_ref = th.zeros_like(self.mask).reshape(-1)
-        reg_ref[int(keep_ratio * len(reg_ref)) :] = 1.0
+        reg_ref[int(self.keep_ratio * len(reg_ref)) :] = 1.0
         self.reg_ref = reg_ref
 
-    def init(self, in_features: int, out_features: int, n_epochs: int):
-        self.mask = nn.Parameter(th.Tensor(out_features, in_features))
+        # Update multiplier with n_epochs
         self.reg_multiplier /= n_epochs
 
     def fade_moving_average(self, x):
         moving_average = th.mean(x, 0).reshape(1, -1)
         moving_average_tiled = moving_average.repeat(len(x), 1)
+        import pdb
+        pdb.set_trace()
         return self.mask * x + (1 - self.mask) * moving_average_tiled
 
     def forward(self, x: th.Tensor) -> th.Tensor:

@@ -4,17 +4,35 @@ import torch as th
 
 from pathlib import Path
 from torch.utils.data import DataLoader, Dataset as TorchDataset, random_split
+from typing import Callable
 
 
 class Dataset(TorchDataset):
-    def __init__(self, data):
+    def __init__(
+        self,
+        data,
+        target,
+        transform: Callable = None,
+        target_transform: Callable = None,
+    ):
         self.data = data
+        self.target = target
+        self.transform = transform
+        self.target_transform = target_transform
 
-    def __getitem__(self, item):
-        return {k: v[item] for k, v in self.data.items()}
+    def __getitem__(self, index):
+        data, target = self.data[index], self.target[index]
+
+        if self.transform is not None:
+            data = self.transform(data)
+
+        if self.target_transform is not None:
+            target = self.target_transform(target)
+
+        return data, target
 
     def __len__(self):
-        return len(next(iter(self.data.values())))
+        return len(self.data)
 
 
 class DataModule(pl.LightningDataModule):
@@ -51,7 +69,7 @@ class DataModule(pl.LightningDataModule):
 
         Path(self.data_dir).mkdir(parents=True, exist_ok=True)
 
-    def preprocess(self, split: str = "train") -> dict:
+    def preprocess(self, split: str = "train") -> (th.Tensor, th.Tensor):
         raise NotImplementedError
 
     def download(self, split: str = "train"):
@@ -65,7 +83,7 @@ class DataModule(pl.LightningDataModule):
 
     def setup(self, stage: str = None):
         if stage == "fit" or stage is None:
-            full = Dataset(self.preprocess("train"))
+            full = Dataset(*self.preprocess("train"))
 
             len_val = int(len(full) * self.prop_val)
             self.train, self.val = random_split(
@@ -75,10 +93,10 @@ class DataModule(pl.LightningDataModule):
             )
 
         if stage == "test" or stage is None:
-            self.test = Dataset(self.preprocess("test"))
+            self.test = Dataset(*self.preprocess("test"))
 
         if stage == "predict" or stage is None:
-            self.predict = Dataset(self.preprocess("test"))
+            self.predict = Dataset(*self.preprocess("test"))
 
     def train_dataloader(self):
         return DataLoader(

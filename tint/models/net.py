@@ -8,6 +8,7 @@ from typing import Callable, Union
 LOSSES = {
     "l1": nn.L1Loss,
     "mse": nn.MSELoss,
+    "nll": nn.NLLLoss,
     "cross_entropy": nn.CrossEntropyLoss,
     "bce_with_logits": nn.BCEWithLogitsLoss,
 }
@@ -63,7 +64,7 @@ class Net(pl.LightningModule):
             self.net.add_module(layer.__class__.__name__.lower(), layer)
 
         if isinstance(loss, str):
-            loss = LOSSES[loss]
+            loss = LOSSES[loss]()
 
         self._loss = loss
         self._optim = optim
@@ -76,9 +77,9 @@ class Net(pl.LightningModule):
         return self.net(x)
 
     def step(self, batch):
-        x, y = batch["x"], batch["y"]
-        y_hat = self(x)
-        loss = self._loss(y, y_hat)
+        x, y = batch
+        y_hat = self(x.float())
+        loss = self._loss(y_hat, y)
         return loss
 
     def training_step(self, batch, batch_idx):
@@ -95,8 +96,8 @@ class Net(pl.LightningModule):
         self.log("test_loss", loss)
 
     def predict_step(self, batch, batch_idx, dataloader_idx=0):
-        x, y = batch["x"], batch["y"]
-        return self(x)
+        x, y = batch
+        return self(x.float())
 
     def configure_optimizers(self):
         if self._optim == "adam":

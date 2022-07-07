@@ -82,7 +82,7 @@ class Hawkes(DataModule):
         with open(file, "wb") as fp:
             pkl.dump(obj=points, file=fp)
 
-    def preprocess(self, split: str = "train") -> dict:
+    def preprocess(self, split: str = "train") -> (th.Tensor, th.Tensor):
         file = os.path.join(self.data_dir, f"{split}.npz")
 
         # Load data
@@ -101,7 +101,7 @@ class Hawkes(DataModule):
             batch_first=True,
         ).unsqueeze(-1)
 
-        return {"x": features, "y": labels}
+        return features, labels
 
     @staticmethod
     def generate_points(

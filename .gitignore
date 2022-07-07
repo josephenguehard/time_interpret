@@ -4,5 +4,4 @@
 .htmlcov
 .coverage
 coverage.xml
-examples/Test.ipynb
 examples/.ipynb_checkpoints

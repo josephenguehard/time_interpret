@@ -76,16 +76,15 @@ class DynaMask(PerturbationAttribution):
 
         return _format_output(is_inputs_tuple, outputs)
 
+    @staticmethod
     def _attributes(
-        self,
         inputs: th.Tensor,
         trainer: Trainer,
         mask_net: MaskNet = None,
         batch_size: int = 32,
     ):
         # Get input and output shape
-        in_features = inputs.shape[-1]
-        out_features = self.forward_func(inputs).shape[-1]
+        shape = inputs.shape
 
         # Init MaskNet if not provided
         if mask_net is None:
@@ -95,13 +94,14 @@ class DynaMask(PerturbationAttribution):
 
         # Init model
         mask_net.net[0].init(
-            in_features=in_features,
-            out_features=out_features,
+            shape=shape,
             n_epochs=trainer.max_epochs,
         )
 
         # Prepare data
-        dataloader = DataLoader(TensorDataset(inputs), batch_size=batch_size)
+        dataloader = DataLoader(
+            TensorDataset(inputs, inputs), batch_size=batch_size
+        )
 
         # Fit model
         trainer.fit(mask_net, train_dataloaders=dataloader)
