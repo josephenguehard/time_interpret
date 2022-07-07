@@ -3,7 +3,12 @@ import torch as th
 
 from captum.attr._utils.attribution import PerturbationAttribution
 from captum.log import log_usage
-from captum._utils.common import _format_input, _format_output, _is_tuple, _reduce_list
+from captum._utils.common import (
+    _format_input,
+    _format_output,
+    _is_tuple,
+    _reduce_list,
+)
 from captum._utils.typing import TensorOrTupleOfTensorsGeneric
 
 from pytorch_lightning import Trainer
@@ -34,7 +39,6 @@ class DynaMask(PerturbationAttribution):
         inputs: TensorOrTupleOfTensorsGeneric,
         trainer: Trainer = None,
         mask_net: MaskNet = None,
-
     ) -> TensorOrTupleOfTensorsGeneric:
         """
         attribute method.
@@ -63,7 +67,9 @@ class DynaMask(PerturbationAttribution):
         for x in inputs:
             outputs_list.append(
                 self._attributes(
-                    inputs=x, trainer=trainer, mask_net=mask_net,
+                    inputs=x,
+                    trainer=trainer,
+                    mask_net=mask_net,
                 ).reshape(-1, 1)
             )
         outputs = _reduce_list(outputs_list)

@@ -33,7 +33,7 @@ class Mask(nn.Module):
         initial_mask_coef: float = 0.5,
         keep_ratio: float = 0.5,
         size_reg_factor_init: float = 0.5,
-        size_reg_factor_dilation: float = 100.
+        size_reg_factor_dilation: float = 100.0,
     ):
         super().__init__()
 
@@ -53,13 +53,11 @@ class Mask(nn.Module):
 
         # Init the regularisation parameter
         reg_ref = th.zeros_like(self.mask).reshape(-1)
-        reg_ref[int(keep_ratio * len(reg_ref)):] = 1.
+        reg_ref[int(keep_ratio * len(reg_ref)) :] = 1.0
         self.reg_ref = reg_ref
 
     def init(self, in_features: int, out_features: int, n_epochs: int):
-        self.mask = nn.Parameter(
-            th.Tensor(out_features, in_features)
-        )
+        self.mask = nn.Parameter(th.Tensor(out_features, in_features))
         self.reg_multiplier /= n_epochs
 
     def fade_moving_average(self, x):
@@ -110,17 +108,17 @@ class MaskNet(Net):
 
     def __init__(
         self,
-            perturbation: str = "fade_moving_average",
-            initial_mask_coef: float = 0.5,
-            keep_ratio: float = 0.5,
-            size_reg_factor_init: float = 0.5,
-            size_reg_factor_dilation: float = 100.,
-            loss: Union[str, Callable] = "mse",
-            optim: str = "adam",
-            lr: float = 0.001,
-            lr_scheduler: Union[dict, str] = None,
-            lr_scheduler_args: dict = None,
-            l2: float = 0.0,
+        perturbation: str = "fade_moving_average",
+        initial_mask_coef: float = 0.5,
+        keep_ratio: float = 0.5,
+        size_reg_factor_init: float = 0.5,
+        size_reg_factor_dilation: float = 100.0,
+        loss: Union[str, Callable] = "mse",
+        optim: str = "adam",
+        lr: float = 0.001,
+        lr_scheduler: Union[dict, str] = None,
+        lr_scheduler_args: dict = None,
+        l2: float = 0.0,
     ):
         mask = Mask(
             perturbation=perturbation,
