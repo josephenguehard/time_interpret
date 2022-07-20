@@ -23,6 +23,14 @@ class Hawkes(DataModule):
     Hawkes dataset.
 
     Args:
+        mu (list): Intensity baselines. If ``None``, use default values.
+            Default to ``None``
+        alpha (list): Events parameters. If ``None``, use default values.
+            Default to ``None``
+        decay (list): Intensity decays. If ``None``, use default values.
+            Default to ``None``
+        window (int): The window of the simulated process. If ``None``, use
+            default value. Default to ``None``
         data_dir (str): Where to download files.
         batch_size (int): Batch size. Default to 32
         prop_val (float): Proportion of validation. Default to .2
@@ -32,6 +40,10 @@ class Hawkes(DataModule):
 
     def __init__(
         self,
+        mu: list = None,
+        alpha: list = None,
+        decay: list = None,
+        window: int = None,
         data_dir: str = os.path.join(
             os.path.split(file_dir)[0],
             "data",
@@ -50,21 +62,26 @@ class Hawkes(DataModule):
             seed=seed,
         )
 
-        self.mu = [0.05, 0.05]
-        self.alpha = [[0.1, 0.2], [0.2, 0.1]]
-        self.decay = [[1.0, 1.0], [1.0, 1.0]]
-        self.window = 1000
+        self.mu = mu or [0.05, 0.05]
+        self.alpha = alpha or [[0.1, 0.2], [0.2, 0.1]]
+        self.decay = decay or [[1.0, 1.0], [1.0, 1.0]]
+        self.window = window or 1000
 
-    def download(self, split: str = "train"):
+    def download(
+        self,
+        train_size: int = 1000,
+        test_size: int = 100,
+        split: str = "train",
+    ):
         assert (
             SimuHawkes is not None
         ), "You must install tick to generate hawkes data."
         file = os.path.join(self.data_dir, f"{split}.npz")
 
         if split == "train":
-            idx = range(1000)
+            idx = range(train_size)
         elif split == "test":
-            idx = range(1000, 1100)
+            idx = range(train_size, train_size + test_size)
         else:
             raise NotImplementedError
 
