@@ -105,40 +105,67 @@ class Arma(DataModule):
             features = pkl.load(file=fp)
 
         # There is no labels here, we just return a tenor of zeros
-        return th.Tensor(features), th.zeros(len(features))
+        return th.Tensor(features[self.idx]), th.zeros(len(features[self.idx]))
 
-    def white_box(self, features: th.Tensor, dim: int = 1):
+    def true_saliency(self, split: str = "train", dim: int = 1) -> th.Tensor:
+        file = os.path.join(self.data_dir, f"{split}.npz")
+
+        # Load data
+        with open(file, "rb") as fp:
+            features = pkl.load(file=fp)
+
+        outputs = th.zeros_like(features)
+
+        if dim == 1:
+            # Create a fixed permutation for each experiment
+            perm = th.randperm(self.features)
+
+            outputs[
+                int(self.times / 4) : int(3 * self.times / 4),
+                perm[: self.subset],
+            ] = 1
+
+        elif dim == 2:
+            t_rand = th.randint(
+                low=0, high=self.times - self.subset, size=(1,)
+            )
+            outputs[
+                t_rand : t_rand + self.subset,
+                int(self.subset / 4) : int(3 * self.subset / 4),
+            ] = 1
+
+        else:
+            raise NotImplementedError("dim must be 1 or 2")
+
+        return outputs[self.idx]
+
+    def white_box(
+        self, split: str = "train", dim: int = 1
+    ) -> (th.Tensor, th.Tensor):
         """
         Create a white box regressor to be interpreted.
 
         Args:
-            features (th.Tensor): Input data.
+            split (str): Which split to use: train or test.
+                Default to ``'train'``
             dim: On which feature to create a subset of the data.
+                Default to 1
 
         Returns:
             th.Tensor: Output data.
         """
-        # Create a fixed permutation for each experiment
-        perm = th.randperm(
-            self.features,
-            generator=th.Generator().manual_seed(self.idx),
-        )
+        file = os.path.join(self.data_dir, f"{split}.npz")
 
-        # Populate outputs based on the permutation
-        outputs = th.zeros_like(features)
+        # Load data
+        with open(file, "rb") as fp:
+            features = pkl.load(file=fp)
 
-        if dim == 1:
-            outputs[
-                int(self.times / 4) : int(3 * self.times / 4),
-                perm[: self.subset],
-            ] = features[
-                int(self.times / 4) : int(3 * self.times / 4),
-                perm[: self.subset],
-            ]
-        elif dim == 2:
-            pass
+        true_saliency = self.true_saliency(split=split, dim=dim)
+
+        outputs = th.zeros(features.shape)
+
+        # Populate the features
+        outputs[true_saliency.bool()] = features[true_saliency.bool()]
 
         outputs = (outputs**2).sum(dim=-1)
-
-    def true_saliency(self):
-        pass
+        return outputs, true_saliency
