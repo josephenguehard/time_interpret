@@ -25,6 +25,7 @@ except ImportError:
 
 
 tqdm = get_progress_bars()
+tqdm.pandas(leave=False)
 file_dir = os.path.dirname(__file__)
 
 
@@ -112,7 +113,7 @@ class BioBank(DataModule):
         # Set tqdm if necessary
         if verbose:
             assert tqdm is not None, "tqdm must be installed."
-        pbar = tqdm(range(4), leave=True) if verbose else None
+        pbar = tqdm(range(3), leave=True) if verbose else None
         pbar.set_description("Load Metadata") if verbose else None
 
         # Init pandarallel
