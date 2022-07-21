@@ -4,6 +4,7 @@ import torch.nn as nn
 
 try:
     import fasttext
+
     fasttext.FastText.eprint = lambda x: None
 except ImportError:
     fasttext = None
@@ -79,7 +80,9 @@ class Fasttext:
             th.Tensor: Fasttext embeddings.
         """
         # Assert model pre-trained
-        assert self.embedding is not None, "You need to pre-train the fasttext model first."
+        assert (
+            self.embedding is not None
+        ), "You need to pre-train the fasttext model first."
 
         # Reshape data
         data_shape = x.shape
@@ -94,9 +97,7 @@ class Fasttext:
         )
 
         # Reshape and register
-        outputs = outputs.reshape(
-            data_shape[:-1] + (self.emb_dim,)
-        )
+        outputs = outputs.reshape(data_shape[:-1] + (self.emb_dim,))
 
         return outputs
 

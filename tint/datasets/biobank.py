@@ -314,7 +314,7 @@ class BioBank(DataModule):
                 codes_to_idx=codes_to_idx,
                 verbose=verbose,
             )
-            events[mask.bool()] = 0.
+            events[mask.bool()] = 0.0
 
         else:
             labels, mask = self.build_labels(
@@ -375,8 +375,8 @@ class BioBank(DataModule):
                 th.stack(
                     [
                         self.fasttext.transform(th.Tensor(x).long())
-                            .sum(0)
-                            .type(th.float32)
+                        .sum(0)
+                        .type(th.float32)
                         for x in r
                     ]
                 )
@@ -466,9 +466,9 @@ class BioBank(DataModule):
         return codes, metadata, None
 
     def build_labels(
-            self,
-            events: list,
-            times: list,
+        self,
+        events: list,
+        times: list,
     ) -> (list, list):
         """
         Build labels.

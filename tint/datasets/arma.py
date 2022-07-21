@@ -127,7 +127,9 @@ class Arma(DataModule):
         elif dim == 2:
             for i in range(len(features)):
                 t_rand = th.randint(
-                    low=0, high=self.times - self.subset, size=(1,),
+                    low=0,
+                    high=self.times - self.subset,
+                    size=(1,),
                 )
                 outputs[
                     i,
