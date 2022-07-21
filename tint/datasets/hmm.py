@@ -20,7 +20,6 @@ class HMM(DataModule):
     Args:
         n_signal (int): Number of different signals. Default to 3
         n_state (int): Number of different possible states. Default to 1
-        p0 (float): Starting probability. Default to 0.5
         corr_features (list): Features that re correlated with the important
             feature in each state. If ``None``, use default values.
             Default to ``None``
@@ -28,6 +27,8 @@ class HMM(DataModule):
             If ``None``, use default values. Default to ``None``
         scale (list): Scaling factor for distribution mean in each state.
             If ``None``, use default values. Default to ``None``
+        p0 (float): Starting probability. If ``None``, use default values.
+            Default to ``None``
         data_dir (str): Where to download files.
         batch_size (int): Batch size. Default to 32
         prop_val (float): Proportion of validation. Default to .2
@@ -42,10 +43,10 @@ class HMM(DataModule):
         self,
         n_signal: int = 3,
         n_state: int = 1,
-        p0: float = 0.5,
         corr_features: list = None,
         imp_features: list = None,
         scale: list = None,
+        p0: list = None,
         data_dir: str = os.path.join(
             os.path.split(file_dir)[0],
             "data",
@@ -66,11 +67,11 @@ class HMM(DataModule):
 
         self.n_signal = n_signal
         self.n_state = n_state
-        self.p0 = p0
 
         self.corr_feature = corr_features or [0, 0]
         self.imp_feature = imp_features or [1, 2]
         self.scale = scale or [[0.1, 1.6, 0.5], [-0.1, -0.4, -1.5]]
+        self.p0 = p0 or [0.5]
 
     def init_dist(self):
         # Covariance matrix is constant across states but distribution
@@ -204,11 +205,11 @@ class HMM(DataModule):
         with open(
             os.path.join(self.data_dir, file + "features.npz"), "rb"
         ) as fp:
-            features = pkl.load(file=fp)
+            features = np.stack(pkl.load(file=fp))
         with open(
             os.path.join(self.data_dir, file + "labels.npz"), "rb"
         ) as fp:
-            labels = pkl.load(file=fp)
+            labels = np.stack(pkl.load(file=fp))
 
         return th.from_numpy(features), th.from_numpy(labels)
 
@@ -218,20 +219,20 @@ class HMM(DataModule):
         with open(
             os.path.join(self.data_dir, file + "features.npz"), "rb"
         ) as fp:
-            features = pkl.load(file=fp)
+            features = np.stack(pkl.load(file=fp))
 
         # Load the true states that define the truly salient features
         # and define A as in Section 3.2:
         with open(
             os.path.join(self.data_dir, file + "states.npz"), "rb"
         ) as fp:
-            true_states = pkl.load(file=fp)
+            true_states = np.stack(pkl.load(file=fp))
             true_states += 1
 
             true_saliency = th.zeros(features.shape)
             for exp_id, time_slice in enumerate(true_states):
                 for t_id, feature_id in enumerate(time_slice):
-                    true_saliency[exp_id, t_id, feature_id] = 1
+                    true_saliency[exp_id, feature_id, t_id] = 1
             true_saliency = true_saliency.int()
 
         return true_saliency

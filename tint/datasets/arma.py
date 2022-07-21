@@ -109,27 +109,31 @@ class Arma(DataModule):
 
         # Load data
         with open(file, "rb") as fp:
-            features = pkl.load(file=fp)
+            features = th.from_numpy(pkl.load(file=fp)).float()
 
         outputs = th.zeros_like(features)
 
         if dim == 1:
             # Create a fixed permutation for each experiment
             perm = th.randperm(self.features)
-
-            outputs[
-                int(self.times / 4) : int(3 * self.times / 4),
-                perm[: self.subset],
-            ] = 1
+            for i in range(len(features)):
+                perm = th.randperm(self.features)
+                outputs[
+                    i,
+                    int(self.times / 4) : int(3 * self.times / 4),
+                    perm[: self.subset],
+                ] = 1
 
         elif dim == 2:
-            t_rand = th.randint(
-                low=0, high=self.times - self.subset, size=(1,)
-            )
-            outputs[
-                t_rand : t_rand + self.subset,
-                int(self.subset / 4) : int(3 * self.subset / 4),
-            ] = 1
+            for i in range(len(features)):
+                t_rand = th.randint(
+                    low=0, high=self.times - self.subset, size=(1,),
+                )
+                outputs[
+                    i,
+                    t_rand : t_rand + self.subset,
+                    int(self.features / 4) : int(3 * self.features / 4),
+                ] = 1
 
         else:
             raise NotImplementedError("dim must be 1 or 2")
@@ -149,13 +153,13 @@ class Arma(DataModule):
                 Default to 1
 
         Returns:
-            th.Tensor: Output data.
+            (th.Tensor, th.Tensor): Output data and true saliency.
         """
         file = os.path.join(self.data_dir, f"{split}.npz")
 
         # Load data
         with open(file, "rb") as fp:
-            features = pkl.load(file=fp)
+            features = th.from_numpy(pkl.load(file=fp)).float()
 
         true_saliency = self.true_saliency(split=split, dim=dim)
 
