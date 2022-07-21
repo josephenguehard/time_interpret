@@ -19,7 +19,6 @@ class Arma(DataModule):
     Arma dataset.
 
     Args:
-        idx (int): Which experiment to run.
         times (int): Length of each time series. Default to 50
         features (int): Number of features in each time series. Default to 50
         ar (list): Coefficient for auto-regressive lag polynomial, including
@@ -39,7 +38,6 @@ class Arma(DataModule):
 
     def __init__(
         self,
-        idx: int,
         times: int = 50,
         features: int = 50,
         subset: int = 5,
@@ -63,7 +61,6 @@ class Arma(DataModule):
             seed=seed,
         )
 
-        self.idx = idx
         self.times = times
         self.features = features
         self.subset = subset
@@ -105,7 +102,7 @@ class Arma(DataModule):
             features = pkl.load(file=fp)
 
         # There is no labels here, we just return a tenor of zeros
-        return th.Tensor(features[self.idx]), th.zeros(len(features[self.idx]))
+        return th.Tensor(features), th.zeros(len(features))
 
     def true_saliency(self, split: str = "train", dim: int = 1) -> th.Tensor:
         file = os.path.join(self.data_dir, f"{split}.npz")
@@ -137,7 +134,7 @@ class Arma(DataModule):
         else:
             raise NotImplementedError("dim must be 1 or 2")
 
-        return outputs[self.idx]
+        return outputs
 
     def white_box(
         self, split: str = "train", dim: int = 1

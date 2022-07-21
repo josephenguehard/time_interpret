@@ -18,7 +18,6 @@ class HMM(DataModule):
     2-state Hidden Markov Model as described in the DynaMask paper.
 
     Args:
-        idx (int): Which experiment to run.
         n_signal (int): Number of different signals. Default to 3
         n_state (int): Number of different possible states. Default to 1
         p0 (float): Starting probability. Default to 0.5
@@ -41,7 +40,6 @@ class HMM(DataModule):
 
     def __init__(
         self,
-        idx: int,
         n_signal: int = 3,
         n_state: int = 1,
         p0: float = 0.5,
@@ -66,7 +64,6 @@ class HMM(DataModule):
             seed=seed,
         )
 
-        self.idx = idx
         self.n_signal = n_signal
         self.n_state = n_state
         self.p0 = p0
@@ -213,9 +210,7 @@ class HMM(DataModule):
         ) as fp:
             labels = pkl.load(file=fp)
 
-        return th.from_numpy(features[self.idx]), th.from_numpy(
-            labels[self.idx]
-        )
+        return th.from_numpy(features), th.from_numpy(labels)
 
     def true_saliency(self, split: str = "train") -> th.Tensor:
         file = os.path.join(self.data_dir, f"{split}_")
@@ -239,4 +234,4 @@ class HMM(DataModule):
                     true_saliency[exp_id, t_id, feature_id] = 1
             true_saliency = true_saliency.int()
 
-        return true_saliency[self.idx]
+        return true_saliency
