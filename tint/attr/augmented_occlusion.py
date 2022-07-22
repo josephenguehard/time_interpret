@@ -49,6 +49,8 @@ class AugmentedOcclusion(Occlusion):
             inputs=inputs,
             sliding_window_shapes=sliding_window_shapes,
             strides=strides,
+            # Baselines are used here to keep track of the input index
+            # The true baselines will be sampled from self.data
             baselines=tuple(range(len(inputs))),
             target=target,
             additional_forward_args=additional_forward_args,
