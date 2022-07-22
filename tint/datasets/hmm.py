@@ -107,6 +107,16 @@ class HMM(DataModule):
         next = np.random.binomial(1, params)
         return next
 
+    def prepare_data(self):
+        if not os.path.exists(
+            os.path.join(self.data_dir, "train_features.npz")
+        ):
+            self.download(split="train")
+        if not os.path.exists(
+            os.path.join(self.data_dir, "test_features.npz")
+        ):
+            self.download(split="test")
+
     def download(
         self,
         train_size: int = 1000,

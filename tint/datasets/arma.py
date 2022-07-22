@@ -101,8 +101,8 @@ class Arma(DataModule):
         with open(file, "rb") as fp:
             features = pkl.load(file=fp)
 
-        # There is no labels here, we just return a tenor of zeros
-        return th.Tensor(features), th.zeros(len(features))
+        # There is no labels here
+        return th.Tensor(features), None
 
     def true_saliency(self, split: str = "train", dim: int = 1) -> th.Tensor:
         file = os.path.join(self.data_dir, f"{split}.npz")
