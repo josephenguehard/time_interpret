@@ -5,7 +5,6 @@ import os
 import pandas as pd
 import torch as th
 
-from torch.nn.functional import one_hot as one_hot_
 from torch.nn.utils.rnn import pad_sequence
 from typing import List, Union
 
@@ -40,8 +39,6 @@ class BioBank(DataModule):
             Default to a year: 24*365.25 hours
         maximum_time (int): Maximum time to record. Default to 1,000,000 hours
             which is around 114 years
-        one_hot (bool): Whether to one hot encode the read codes or not.
-            Default to ``True``
         fasttext (Fasttext): A Fasttext model to encode categorical features.
             Default to ``None``
         time_to_task (float): Special arg for diabetes task. Stops the
@@ -64,7 +61,6 @@ class BioBank(DataModule):
         discretised: bool = False,
         granularity: int = 1,
         maximum_time: int = 115,
-        one_hot: bool = False,
         fasttext: Fasttext = None,
         time_to_task: float = 0.5,
         std_time_to_task: float = 0.2,
@@ -89,7 +85,6 @@ class BioBank(DataModule):
         self.discretised = discretised
         self.granularity = granularity
         self.maximum_time = maximum_time
-        self.one_hot = one_hot
         self.fasttext = fasttext
         self.time_to_task = time_to_task
         self.std_time_to_task = std_time_to_task
@@ -308,11 +303,9 @@ class BioBank(DataModule):
                 events=events,
                 times=times,
             )
-            events, metadata, times = self.build_discretised_features(
+            events, times = self.build_discretised_features(
                 events=events,
                 times=times,
-                metadata=metadata,
-                codes_to_idx=codes_to_idx,
                 verbose=verbose,
             )
             events[mask.bool()] = 0.0
@@ -322,11 +315,9 @@ class BioBank(DataModule):
                 events=events,
                 times=times,
             )
-            events, metadata, times = self.build_features(
+            events, times = self.build_features(
                 events=events,
                 times=times,
-                metadata=metadata,
-                codes_to_idx=codes_to_idx,
                 verbose=verbose,
             )
             events = [x[y.bool()] for x, y in zip(events, mask)]
@@ -336,8 +327,6 @@ class BioBank(DataModule):
         self,
         events: List[th.Tensor],
         times: List[th.Tensor],
-        metadata: List[th.Tensor],
-        codes_to_idx: dict,
         verbose: Union[bool, int] = False,
     ):
         """
@@ -346,8 +335,6 @@ class BioBank(DataModule):
         Args:
             events (list): The read codes.
             times (list): Times of each event.
-            metadata (list): List of metadata.
-            codes_to_idx (dict): Dictionary linking codes to indexes.
             verbose (bool, int): Verbosity level. Default to ``False``
 
         Returns:
@@ -356,22 +343,7 @@ class BioBank(DataModule):
         if verbose:
             events = tqdm(events, total=len(events), leave=False)
 
-        if self.one_hot and self.fasttext is None:
-            events = [
-                th.stack(
-                    [
-                        one_hot_(
-                            th.Tensor(x).long(),
-                            num_classes=len(codes_to_idx),
-                        )
-                        .sum(0)
-                        .type(th.float32)
-                        for x in r
-                    ]
-                )
-                for r in events
-            ]  # [D,L,M]
-        elif self.fasttext is not None:
+        if self.fasttext is not None:
             events = [
                 th.stack(
                     [
@@ -383,6 +355,7 @@ class BioBank(DataModule):
                 )
                 for r in events
             ]  # [D,L,M]
+
         else:
             max_sim_events = max([max([len(x) for x in y]) for y in events])
             events_ = [
@@ -393,14 +366,12 @@ class BioBank(DataModule):
             for x, y in zip(events, events_):
                 x[:, : y.shape[1]] = y
 
-        return events, times, metadata
+        return events, times
 
     def build_discretised_features(
         self,
         events: List[th.Tensor],
         times: List[th.Tensor],
-        metadata: List[th.Tensor],
-        codes_to_idx: dict,
         verbose: Union[bool, int] = False,
     ):
         """
@@ -409,8 +380,6 @@ class BioBank(DataModule):
         Args:
             events (list): The read codes.
             times (list): Times of each event.
-            metadata (list): List of metadata.
-            codes_to_idx (dict): Dictionary linking codes to indexes.
             verbose (bool, int): Verbosity level. Default to ``False``
 
         Returns:
@@ -419,28 +388,7 @@ class BioBank(DataModule):
         if verbose:
             events = tqdm(events, total=len(events), leave=False)
 
-        if self.one_hot and self.fasttext is None:
-            codes = th.zeros(
-                (
-                    len(events),
-                    int(self.maximum_time / self.granularity) + 1,
-                    len(codes_to_idx),
-                )
-            ).type(th.float32)
-            for i, r in enumerate(events):
-                f = th.stack(
-                    [
-                        one_hot_(
-                            th.Tensor(x).long(),
-                            num_classes=len(codes_to_idx),
-                        )
-                        .sum(0)
-                        .type(th.float32)
-                        for x in r
-                    ]
-                )
-                codes[i].index_add_(0, times[i], f)
-        elif self.fasttext is not None:
+        if self.fasttext is not None:
             codes = th.zeros(
                 (
                     len(events),
@@ -458,13 +406,14 @@ class BioBank(DataModule):
                     ]
                 )
                 codes[i].index_add_(0, times[i], f)
+
         else:
             raise NotImplementedError(
                 "When using discretised data, "
                 "categorical features must be encoded."
             )
 
-        return codes, metadata, None
+        return codes, None
 
     def build_labels(
         self,
