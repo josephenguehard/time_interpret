@@ -2,7 +2,12 @@ import torch
 
 from captum.attr._utils.attribution import Attribution, GradientAttribution
 from captum.log import log_usage
-from captum._utils.common import _format_input, _is_tuple, _format_tensor_into_tuples, _format_output
+from captum._utils.common import (
+    _format_input,
+    _is_tuple,
+    _format_tensor_into_tuples,
+    _format_output,
+)
 from captum._utils.typing import TensorOrTupleOfTensorsGeneric
 
 from torch import Tensor
@@ -49,7 +54,12 @@ class TimeForwardTunnel(Attribution):
         self.task = task
         self.threshold = threshold
 
-        assert task in ["binary", "multilabel", "multiclass", "regression"], "task is not recognised."
+        assert task in [
+            "binary",
+            "multilabel",
+            "multiclass",
+            "regression",
+        ], "task is not recognised."
         assert 0 <= threshold <= 1, "threshold must be between 0 and 1"
 
     @property
@@ -163,7 +173,10 @@ class TimeForwardTunnel(Attribution):
             delta = torch.cat(delta_partial_list, dim=0)
 
         return self._apply_checks_and_return_attributions(
-            attributions, is_attrib_tuple, return_convergence_delta, delta,
+            attributions,
+            is_attrib_tuple,
+            return_convergence_delta,
+            delta,
         )
 
     def get_target(self, partial_inputs: Tuple[Tensor]):
@@ -197,13 +210,11 @@ class TimeForwardTunnel(Attribution):
         partial_targets: Tuple[Tensor, ...],
         is_inputs_tuple: bool,
         return_convergence_delta: bool,
-        kwargs_partition: Any
+        kwargs_partition: Any,
     ) -> Tuple[Tuple[Tensor, ...], bool, Union[None, Tensor]]:
         attributions = self.attribution_method.attribute.__wrapped__(
             self.attribution_method,  # self
-            partial_inputs
-            if is_inputs_tuple
-            else partial_inputs[0],
+            partial_inputs if is_inputs_tuple else partial_inputs[0],
             target=partial_targets,
             **kwargs_partition,
         )
@@ -228,7 +239,8 @@ class TimeForwardTunnel(Attribution):
         return_convergence_delta: bool,
         delta: Union[None, Tensor],
     ) -> Union[
-        TensorOrTupleOfTensorsGeneric, Tuple[TensorOrTupleOfTensorsGeneric, Tensor]
+        TensorOrTupleOfTensorsGeneric,
+        Tuple[TensorOrTupleOfTensorsGeneric, Tensor],
     ]:
         attributions = _format_output(is_attrib_tuple, attributions)
 
