@@ -348,7 +348,6 @@ class BioBank(DataModule):
                 th.stack(
                     [
                         self.fasttext.transform(th.Tensor(x).long())
-                        .sum(0)
                         .type(th.float32)
                         for x in r
                     ]
@@ -400,7 +399,6 @@ class BioBank(DataModule):
                 f = th.stack(
                     [
                         self.fasttext.transform(th.Tensor(x).long())
-                        .sum(0)
                         .type(th.float32)
                         for x in r
                     ]
