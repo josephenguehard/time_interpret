@@ -308,7 +308,7 @@ class BioBank(DataModule):
                 times=times,
                 verbose=verbose,
             )
-            events[mask.bool()] = 0.0
+            events[mask.bool().squeeze(-1)] = 0.0
 
         else:
             labels, mask = self.build_labels(
