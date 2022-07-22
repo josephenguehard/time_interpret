@@ -347,8 +347,9 @@ class BioBank(DataModule):
             events = [
                 th.stack(
                     [
-                        self.fasttext.transform(th.Tensor(x).long())
-                        .type(th.float32)
+                        self.fasttext.transform(th.Tensor(x).long()).type(
+                            th.float32
+                        )
                         for x in r
                     ]
                 )
@@ -398,8 +399,9 @@ class BioBank(DataModule):
             for i, r in enumerate(events):
                 f = th.stack(
                     [
-                        self.fasttext.transform(th.Tensor(x).long())
-                        .type(th.float32)
+                        self.fasttext.transform(th.Tensor(x).long()).type(
+                            th.float32
+                        )
                         for x in r
                     ]
                 )
