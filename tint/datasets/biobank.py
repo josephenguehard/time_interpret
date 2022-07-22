@@ -405,7 +405,7 @@ class BioBank(DataModule):
                         for x in r
                     ]
                 )
-                codes[i].index_add_(0, times[i], f)
+                codes[i].index_add_(0, times[i].long(), f)
 
         else:
             raise NotImplementedError(
