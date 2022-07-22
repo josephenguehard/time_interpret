@@ -10,11 +10,13 @@ from captum.attr import (
     KernelShap,
 )
 
+from .augmented_occlusion import AugmentedOcclusion
 from .bayes import BayesLime, BayesShap
 from .dynamic_masks import DynaMask
 from .smooth_grad import SmoothGrad
 
 __all__ = [
+    "AugmentedOcclusion",
     "BayesLime",
     "BayesShap",
     "DeepLift",
