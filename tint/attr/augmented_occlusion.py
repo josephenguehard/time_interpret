@@ -4,7 +4,6 @@ from captum.attr import Occlusion
 from captum.log import log_usage
 from captum._utils.common import _format_input, _validate_input
 from captum._utils.typing import (
-    BaselineType,
     TargetType,
     TensorOrTupleOfTensorsGeneric,
 )
@@ -68,22 +67,22 @@ class AugmentedOcclusion(Occlusion):
         **kwargs: Any,
     ) -> Tuple[Tensor, Tensor]:
         r"""
-        Ablates given expanded_input tensor with given feature mask, feature range,
-        and baselines, and any additional arguments.
+        Ablates given expanded_input tensor with given feature mask, feature
+        range, and baselines, and any additional arguments.
         expanded_input shape is (num_features, num_examples, ...)
         with remaining dimensions corresponding to remaining original tensor
         dimensions and num_features = end_feature - start_feature.
 
         input_mask is None for occlusion, and the mask is constructed
-        using sliding_window_tensors, strides, and shift counts, which are provided in
-        kwargs. baseline is expected to
+        using sliding_window_tensors, strides, and shift counts, which are
+        provided in kwargs. baseline is expected to
         be broadcastable to match expanded_input.
 
         This method returns the ablated input tensor, which has the same
         dimensionality as expanded_input as well as the corresponding mask with
         either the same dimensionality as expanded_input or second dimension
-        being 1. This mask contains 1s in locations which have been ablated (and
-        thus counted towards ablations for that feature) and 0s otherwise.
+        being 1. This mask contains 1s in locations which have been ablated
+        (and thus counted towards ablations for that feature) and 0s otherwise.
         """
         input_mask = torch.stack(
             [
