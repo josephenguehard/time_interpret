@@ -266,7 +266,7 @@ class BioBank(DataModule):
         self,
         split: str = "train",
         verbose: Union[bool, int] = False,
-    ) -> (th.Tensor, th.Tensor):
+    ) -> dict:
         # Init pandarallel
         cpu_count = mp.cpu_count()
         assert pandarallel is not None, "pandarallel is not installed."
@@ -322,6 +322,44 @@ class BioBank(DataModule):
             )
             events = [x[y.bool()] for x, y in zip(events, mask)]
             times = [x[y.bool()] for x, y in zip(times, mask)]
+
+        return {
+            "events": events,
+            "times": times,
+            "metadata": metadata,
+            "labels": labels,
+            "mask": mask,
+        }
+
+    def prepare_data(self):
+        if not os.path.exists(os.path.join(self.data_dir, "biobank_data.csv")):
+            self.download()
+
+    def collate_fn(self, batch: list) -> (th.Tensor, th.Tensor):
+        # Get keys
+        keys = set(batch[0].keys())
+        if self.discretised:
+            keys -= {"times"}
+
+        # Group data into a dict of tensors
+        batch = {k: [b[k] for b in batch] for k in keys}
+        for key in keys:
+            batch[key] = pad_sequence(
+                batch[key],
+                batch_first=True,
+                padding_value=0,
+            )
+
+        # Transform metadata
+        time_shape = batch["events"].shape[1]
+        batch["metadata"] = batch["metadata"].repeat(1, time_shape, 1)
+
+        # Group features
+        x = th.cat([batch["events", batch["metadata"]]], dim=-1)
+        if not self.discretised:
+            x = th.cat([x, batch["times"]], dim=-1)
+
+        return x, batch["labels"]
 
     def build_features(
         self,

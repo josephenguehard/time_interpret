@@ -4,35 +4,17 @@ import torch as th
 
 from pathlib import Path
 from torch.utils.data import DataLoader, Dataset as TorchDataset, random_split
-from typing import Callable
 
 
 class Dataset(TorchDataset):
-    def __init__(
-        self,
-        data,
-        target,
-        transform: Callable = None,
-        target_transform: Callable = None,
-    ):
+    def __init__(self, data):
         self.data = data
-        self.target = target
-        self.transform = transform
-        self.target_transform = target_transform
 
-    def __getitem__(self, index):
-        data, target = self.data[index], self.target[index]
-
-        if self.transform is not None:
-            data = self.transform(data)
-
-        if self.target_transform is not None:
-            target = self.target_transform(target)
-
-        return data, target
+    def __getitem__(self, item):
+        return {k: v[item] for k, v in self.data.items()}
 
     def __len__(self):
-        return len(self.data)
+        return len(next(iter(self.data.values())))
 
 
 class DataModule(pl.LightningDataModule):
@@ -43,6 +25,8 @@ class DataModule(pl.LightningDataModule):
         data_dir (str): Where to download files.
         batch_size (int): Batch size. Default to 32
         prop_val (float): Proportion of validation. Default to .2
+        collate_fn (Callable): Merges a list of samples to form a
+            mini-batch of Tensor(s). Default to ``None``
         num_workers (int): Number of workers for the loaders. Default to 0
         seed (int): For the random split. Default to 42
     """
@@ -69,10 +53,17 @@ class DataModule(pl.LightningDataModule):
 
         Path(self.data_dir).mkdir(parents=True, exist_ok=True)
 
-    def preprocess(self, split: str = "train") -> (th.Tensor, th.Tensor):
-        raise NotImplementedError
+    @staticmethod
+    def collate_fn(batch: list) -> (th.Tensor, th.Tensor):
+        return (
+            th.stack([b["x"] for b in batch]),
+            th.stack([b["y"] for b in batch]),
+        )
 
     def download(self, split: str = "train"):
+        raise NotImplementedError
+
+    def preprocess(self, split: str = "train") -> dict:
         raise NotImplementedError
 
     def prepare_data(self):
@@ -83,7 +74,7 @@ class DataModule(pl.LightningDataModule):
 
     def setup(self, stage: str = None):
         if stage == "fit" or stage is None:
-            full = Dataset(*self.preprocess("train"))
+            full = Dataset(self.preprocess("train"))
 
             len_val = int(len(full) * self.prop_val)
             self.train, self.val = random_split(
@@ -93,15 +84,16 @@ class DataModule(pl.LightningDataModule):
             )
 
         if stage == "test" or stage is None:
-            self.test = Dataset(*self.preprocess("test"))
+            self.test = Dataset(self.preprocess("test"))
 
         if stage == "predict" or stage is None:
-            self.predict = Dataset(*self.preprocess("test"))
+            self.predict = Dataset(self.preprocess("test"))
 
     def train_dataloader(self):
         return DataLoader(
             self.train,
             batch_size=self.batch_size,
+            collate_fn=self.collate_fn,
             num_workers=self.num_workers,
             pin_memory=True,
         )
@@ -110,6 +102,7 @@ class DataModule(pl.LightningDataModule):
         return DataLoader(
             self.val,
             batch_size=self.batch_size,
+            collate_fn=self.collate_fn,
             num_workers=self.num_workers,
             pin_memory=True,
         )
@@ -118,6 +111,7 @@ class DataModule(pl.LightningDataModule):
         return DataLoader(
             self.test,
             batch_size=self.batch_size,
+            collate_fn=self.collate_fn,
             num_workers=self.num_workers,
             pin_memory=True,
         )
@@ -126,6 +120,7 @@ class DataModule(pl.LightningDataModule):
         return DataLoader(
             self.predict,
             batch_size=self.batch_size,
+            collate_fn=self.collate_fn,
             num_workers=self.num_workers,
             pin_memory=True,
         )

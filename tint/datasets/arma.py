@@ -67,6 +67,10 @@ class Arma(DataModule):
         self.ar = ar or np.array([2, 0.5, 0.2, 0.1])
         self.ma = ma or np.array([2])
 
+    @staticmethod
+    def collate_fn(batch: list) -> (th.Tensor, th.Tensor):
+        return th.stack([b["x"] for b in batch]), None
+
     def download(
         self,
         train_size: int = 1000,
@@ -94,7 +98,7 @@ class Arma(DataModule):
         with open(file, "wb") as fp:
             pkl.dump(obj=data_arma, file=fp)
 
-    def preprocess(self, split: str = "train") -> (th.Tensor, th.Tensor):
+    def preprocess(self, split: str = "train") -> dict:
         file = os.path.join(self.data_dir, f"{split}.npz")
 
         # Load data
@@ -102,7 +106,7 @@ class Arma(DataModule):
             features = pkl.load(file=fp)
 
         # There is no labels here
-        return th.Tensor(features), None
+        return {"x": th.Tensor(features)}
 
     def true_saliency(self, split: str = "train", dim: int = 1) -> th.Tensor:
         file = os.path.join(self.data_dir, f"{split}.npz")

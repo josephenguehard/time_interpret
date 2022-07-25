@@ -104,18 +104,8 @@ class HMM(DataModule):
             params = 0.05
 
         params = params - float(t / 500) if params > 0.8 else params
-        next = np.random.binomial(1, params)
-        return next
-
-    def prepare_data(self):
-        if not os.path.exists(
-            os.path.join(self.data_dir, "train_features.npz")
-        ):
-            self.download(split="train")
-        if not os.path.exists(
-            os.path.join(self.data_dir, "test_features.npz")
-        ):
-            self.download(split="test")
+        next_state = np.random.binomial(1, params)
+        return next_state
 
     def download(
         self,
@@ -209,7 +199,7 @@ class HMM(DataModule):
         ) as fp:
             pkl.dump(obj=label_logits, file=fp)
 
-    def preprocess(self, split: str = "train") -> (th.Tensor, th.Tensor):
+    def preprocess(self, split: str = "train") -> dict:
         file = os.path.join(self.data_dir, f"{split}_")
 
         with open(
@@ -221,7 +211,17 @@ class HMM(DataModule):
         ) as fp:
             labels = np.stack(pkl.load(file=fp))
 
-        return th.from_numpy(features), th.from_numpy(labels)
+        return {"x": th.from_numpy(features), "y": th.from_numpy(labels)}
+
+    def prepare_data(self):
+        if not os.path.exists(
+            os.path.join(self.data_dir, "train_features.npz")
+        ):
+            self.download(split="train")
+        if not os.path.exists(
+            os.path.join(self.data_dir, "test_features.npz")
+        ):
+            self.download(split="test")
 
     def true_saliency(self, split: str = "train") -> th.Tensor:
         file = os.path.join(self.data_dir, f"{split}_")
