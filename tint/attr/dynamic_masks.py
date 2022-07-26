@@ -51,7 +51,7 @@ class DynaMask(PerturbationAttribution):
                 will be provided. Default to ``None``
 
         Returns:
-            th.Tensor: Attributions.
+            (th.Tensor, tuple): Attributions.
         """
         # Keeps track whether original input is a tuple or not before
         # converting it into a tuple.

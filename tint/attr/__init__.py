@@ -13,7 +13,9 @@ from captum.attr import (
 from .augmented_occlusion import AugmentedOcclusion
 from .bayes import BayesLime, BayesShap
 from .dynamic_masks import DynaMask
+from .retain import Retain
 from .smooth_grad import SmoothGrad
+from .time_forward_tunnel import TimeForwardTunnel
 
 __all__ = [
     "AugmentedOcclusion",
@@ -28,6 +30,8 @@ __all__ = [
     "KernelShap",
     "Lime",
     "Occlusion",
+    "Retain",
     "Saliency",
     "SmoothGrad",
+    "TimeForwardTunnel",
 ]
