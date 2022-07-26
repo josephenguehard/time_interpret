@@ -106,4 +106,7 @@ class DynaMask(PerturbationAttribution):
         # Fit model
         trainer.fit(mask_net, train_dataloaders=dataloader)
 
+        # Set model to eval mode
+        mask_net.eval()
+
         return mask_net.net[0].representation()

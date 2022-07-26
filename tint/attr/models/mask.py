@@ -124,7 +124,7 @@ class Mask(nn.Module):
 
     def forward(self, x: th.Tensor) -> th.Tensor:
         x = getattr(self, self.perturbation)(x, **self.kwargs)
-        return super().forward(x)
+        return x
 
     def loss(self, loss: th.Tensor) -> th.Tensor:
         mask_sorted = self.mask.reshape(-1).sort()[0]
@@ -135,7 +135,7 @@ class Mask(nn.Module):
         self.mask.data = self.mask.data.clamp(0, 1)
 
     def representation(self):
-        return self.mask.detach()
+        return self.mask.detach().cpu()
 
 
 class MaskNet(Net):
