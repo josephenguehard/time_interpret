@@ -107,7 +107,7 @@ class JointFeatureGenerator(nn.Module):
     ):
         if current.shape[-1] == len(sig_inds):
             return current, current
-        if len(current.shape) is 1:
+        if len(current.shape) == 1:
             current = current.unsqueeze(0)
 
         # Compute mean and covariance of X_t given the past
