@@ -8,11 +8,17 @@ from .bayes_linear import (
     SkLearnARDRegression,
     SkLearnBayesianRidge,
 )
+from .joint_features_generator import (
+    JointFeatureGenerator,
+    JointFeatureGeneratorNet,
+)
 from .mask import Mask, MaskNet
 from .retain import Retain, RetainNet
 
 __all__ = [
     "BayesLinearModel",
+    "JointFeatureGenerator",
+    "JointFeatureGeneratorNet",
     "Mask",
     "MaskNet",
     "Retain",
