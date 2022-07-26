@@ -15,23 +15,19 @@ from pytorch_lightning import Trainer
 from torch.utils.data import DataLoader, TensorDataset
 from typing import Callable
 
-from .models import RetainNet
+from .models import Retain as RetainModel, RetainNet
 
 
 class Retain(PerturbationAttribution):
     """
     Retain explainer method.
 
-    Args:
-        forward_func (callable): The forward function of the model or any
-            modification of it.
-
     References:
         https://arxiv.org/pdf/1608.05745
     """
 
-    def __init__(self, forward_func: Callable) -> None:
-        super().__init__(forward_func=forward_func)
+    def __init__(self) -> None:
+        super().__init__(forward_func=None)
 
     @log_usage()
     def attribute(
@@ -80,8 +76,8 @@ class Retain(PerturbationAttribution):
 
         return _format_output(is_inputs_tuple, outputs)
 
-    @staticmethod
     def _attributes(
+        self,
         inputs: th.Tensor,
         target: th.Tensor,
         trainer: Trainer,
@@ -102,4 +98,55 @@ class Retain(PerturbationAttribution):
         # Fit model
         trainer.fit(retain_net, train_dataloaders=dataloader)
 
-        return retain_net.net[0].representation(inputs=inputs, target=target)
+        # Set model to eval mode
+        retain_net.eval()
+
+        return self.representation(
+            model=retain_net[0],
+            inputs=inputs,
+            target=target,
+        )
+
+    @staticmethod
+    def representation(
+        model: RetainModel,
+        inputs: th.Tensor,
+        target: th.Tensor = None,
+    ):
+        """
+        Get representations based on a model, inputs and potentially targets.
+
+        Args:
+            model (RetainModel): A Retain model.
+            inputs (th.Tensor): Input data.
+            target (th.Tensor): Targets. Default to ``None``
+
+        Returns:
+            th.Tensor: attributions.
+        """
+        score = th.zeros(inputs.shape)
+
+        logit, alpha, beta = model(
+            inputs, (th.ones((len(inputs),)) * inputs.shape[1]).long()
+        )
+        w_emb = model.embedding[1].weight
+
+        for i in range(inputs.shape[2]):
+            for t in range(inputs.shape[1]):
+                imp = model.output(
+                    beta[:, t, :] * w_emb[:, i].expand_as(beta[:, t, :])
+                )
+                if target is None:
+                    score[:, i, t] = (
+                        alpha[:, t, 0] * imp.mean(-1) * inputs[:, t, i]
+                    )
+                else:
+                    score[:, i, t] = (
+                        alpha[:, t, 0]
+                        * imp[
+                            th.range(0, len(imp) - 1).long(),
+                            target.long(),
+                        ]
+                        * inputs[:, t, i]
+                    )
+        return score.detach().cpu()

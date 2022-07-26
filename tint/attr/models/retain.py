@@ -135,34 +135,6 @@ class Retain(nn.Module):
 
         return logit, alpha, beta
 
-    def representation(self, inputs: th.Tensor, targets: th.Tensor = None):
-        score = th.zeros(inputs.shape)
-
-        logit, alpha, beta = self(
-            inputs, (th.ones((len(inputs),)) * inputs.shape[1]).long()
-        )
-        w_emb = self.embedding[1].weight
-
-        for i in range(inputs.shape[2]):
-            for t in range(inputs.shape[1]):
-                imp = self.output(
-                    beta[:, t, :] * w_emb[:, i].expand_as(beta[:, t, :])
-                )
-                if targets is None:
-                    score[:, i, t] = (
-                        alpha[:, t, 0] * imp.mean(-1) * inputs[:, t, i]
-                    )
-                else:
-                    score[:, i, t] = (
-                        alpha[:, t, 0]
-                        * imp[
-                            th.range(0, len(imp) - 1).long(),
-                            targets.long(),
-                        ]
-                        * inputs[:, t, i]
-                    )
-        return score.detach().cpu()
-
 
 class RetainNet(Net):
     """
