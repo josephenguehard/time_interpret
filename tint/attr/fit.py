@@ -57,6 +57,7 @@ class Fit(PerturbationAttribution):
         trainer: Trainer = None,
         generator: JointFeatureGeneratorNet = None,
         additional_forward_args: Any = None,
+        batch_size: int = 32,
     ) -> TensorOrTupleOfTensorsGeneric:
         """
         attribute method.
@@ -72,6 +73,7 @@ class Fit(PerturbationAttribution):
                         requires additional arguments other than the inputs for
                         which attributions should not be computed, this argument
                         can be provided. Default to ``None``
+            batch_size (int): Batch size for generator training. Default to 32
 
         Returns:
             (th.Tensor, tuple): Attributions.
@@ -85,31 +87,13 @@ class Fit(PerturbationAttribution):
         if trainer is None:
             trainer = Trainer(max_epochs=100)
 
-        # Get representations
-        outputs_list = list()
-        for x in inputs:
-            outputs_list.append(
-                self._attributes(
-                    inputs=x,
-                    trainer=trainer,
-                    generator=generator,
-                    additional_forward_args=additional_forward_args,
-                ).reshape(-1, 1)
-            )
-        outputs = _reduce_list(outputs_list)
+        # Assert only one input, as the Retain only accepts one
+        assert (
+                len(inputs) == 1
+        ), "Multiple inputs are not accepted for this method"
 
-        return _format_output(is_inputs_tuple, outputs)
-
-    def _attributes(
-        self,
-        inputs: th.Tensor,
-        trainer: Trainer,
-        generator: JointFeatureGeneratorNet = None,
-        batch_size: int = 32,
-        additional_forward_args: Any = None,
-    ):
         # Get input and output shape
-        shape = inputs.shape
+        shape = inputs[0].shape
 
         # Init MaskNet if not provided
         if generator is None:
@@ -121,7 +105,9 @@ class Fit(PerturbationAttribution):
         generator.net.init(feature_size=shape[-1])
 
         # Prepare data
-        dataloader = DataLoader(TensorDataset(inputs), batch_size=batch_size)
+        dataloader = DataLoader(
+            TensorDataset(inputs[0]), batch_size=batch_size,
+        )
 
         # Fit model
         trainer.fit(generator, train_dataloaders=dataloader)
@@ -129,11 +115,15 @@ class Fit(PerturbationAttribution):
         # Set model to eval mode
         generator.eval()
 
-        return self.representation(
-            generator=generator.net,
-            inputs=inputs,
-            additional_forward_args=additional_forward_args,
+        attributions = (
+            self.representation(
+                generator=generator.net,
+                inputs=inputs[0],
+                additional_forward_args=additional_forward_args,
+            ),
         )
+
+        return _format_output(is_inputs_tuple, attributions)
 
     def representation(
         self,
@@ -193,7 +183,7 @@ class Fit(PerturbationAttribution):
             )
 
             for i in range(n_features):
-                x_hat = inputs[:, 0 : t + 1, :].clone()
+                x_hat = inputs[:, : t + 1, :].clone()
                 div_all = []
 
                 for _ in range(n_samples):
