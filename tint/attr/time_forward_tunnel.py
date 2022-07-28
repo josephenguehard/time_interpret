@@ -138,7 +138,7 @@ class TimeForwardTunnel(Attribution):
         )
 
         # Pop target, this param is ignore
-        target = kwargs.pop("target")
+        target = kwargs.pop("target", None)
         if target is not None:
             warnings.warn(
                 f"target is ignored when using {self.__class__.__name__}"
@@ -147,7 +147,7 @@ class TimeForwardTunnel(Attribution):
         attributions_partial_list = list()
         delta_partial_list = list()
         is_attrib_tuple = True
-        for time in range(inputs[0].shape[1]):
+        for time in range(1, inputs[0].shape[1] + 1):
             partial_inputs = tuple(x[:, :time, ...] for x in inputs)
             partial_targets = self.get_target(partial_inputs=partial_inputs)
 
@@ -168,7 +168,7 @@ class TimeForwardTunnel(Attribution):
         attributions = tuple()
         for i in range(len(attributions_partial_list[0])):
             attributions += (
-                torch.cat([x[i] for x in attributions_partial_list]),
+                torch.stack([x[i][:, -1, ...] for x in attributions_partial_list], dim=1),
             )
 
         delta = None
@@ -182,7 +182,7 @@ class TimeForwardTunnel(Attribution):
             delta,
         )
 
-    def get_target(self, partial_inputs: Tuple[Tensor]):
+    def get_target(self, partial_inputs: Tuple[Tensor]) -> Tensor:
         """
         Get the target given partial inputs and a task.
 
@@ -190,27 +190,23 @@ class TimeForwardTunnel(Attribution):
             partial_inputs (tuple): The partial input up to a certain time.
 
         Returns:
-            partial_targets (tuple): The partial targets.
+            partial_targets (Tensor): The partial targets.
         """
-        partial_targets = tuple(
-            self.attribution_method.forward_func(x) for x in partial_inputs
+        partial_targets = (
+            self.attribution_method.forward_func(*partial_inputs)
         )
 
         if self.task in ["binary", "multiclass"]:
-            partial_targets = tuple(
-                torch.argmax(x, -1) for x in partial_targets
-            )
+            partial_targets = torch.argmax(partial_targets, -1)
         elif self.task == "multilabel":
-            partial_targets = tuple(
-                (x > self.threshold).float() for x in partial_targets
-            )
+            partial_targets = (partial_targets > self.threshold).float()
 
         return partial_targets
 
     def compute_partial_attribution(
         self,
         partial_inputs: Tuple[Tensor, ...],
-        partial_targets: Tuple[Tensor, ...],
+        partial_targets: Tensor,
         is_inputs_tuple: bool,
         return_convergence_delta: bool,
         kwargs_partition: Any,
