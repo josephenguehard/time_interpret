@@ -158,9 +158,9 @@ class AugmentedOcclusion(Occlusion):
         # Change input to tuple and check that its length is the same as data.
         # Also check that each dimension between inputs and self.data matches
         # except on the first one.
-        inputs = _format_input(inputs)
+        formatted_inputs = _format_input(inputs)
         _validate_input(
-            inputs=inputs,
+            inputs=formatted_inputs,
             baselines=self.data,
             draw_baseline_from_distrib=True,
         )
@@ -229,7 +229,7 @@ class AugmentedOcclusion(Occlusion):
         baseline = torch.index_select(
             self.data[baseline],
             0,
-            torch.randint(high=len(self.data), size=(size,)),
+            torch.randint(high=len(self.data[baseline]), size=(size,)),
         )
         baseline = baseline.reshape((-1,) + expanded_input.shape[1:])
 
