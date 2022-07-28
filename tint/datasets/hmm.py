@@ -211,7 +211,10 @@ class HMM(DataModule):
         ) as fp:
             labels = np.stack(pkl.load(file=fp))
 
-        return {"x": th.from_numpy(features), "y": th.from_numpy(labels)}
+        return {
+            "x": th.from_numpy(features).float(),
+            "y": th.from_numpy(labels).float(),
+        }
 
     def prepare_data(self):
         if not os.path.exists(
