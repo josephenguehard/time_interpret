@@ -8,7 +8,6 @@ from captum._utils.common import (
     _format_input,
     _format_output,
     _is_tuple,
-    _reduce_list,
     _run_forward,
 )
 from captum._utils.typing import TensorOrTupleOfTensorsGeneric
@@ -89,7 +88,7 @@ class Fit(PerturbationAttribution):
 
         # Assert only one input, as the Retain only accepts one
         assert (
-                len(inputs) == 1
+            len(inputs) == 1
         ), "Multiple inputs are not accepted for this method"
 
         # Get input and output shape
@@ -106,7 +105,8 @@ class Fit(PerturbationAttribution):
 
         # Prepare data
         dataloader = DataLoader(
-            TensorDataset(inputs[0]), batch_size=batch_size,
+            TensorDataset(inputs[0]),
+            batch_size=batch_size,
         )
 
         # Fit model
@@ -216,7 +216,6 @@ class Fit(PerturbationAttribution):
                             t1 = kl_multilabel(p_y_t, p_tm1)
                             t2 = kl_multilabel(p_y_t, y_hat_t)
                             div, _ = th.max(t1 - t2, dim=1)
-                            # div = div[:,0] #flatten
                         div_all.append(div.cpu().detach())
 
                     elif distance_metric == "mean_divergence":
@@ -239,7 +238,7 @@ class Fit(PerturbationAttribution):
                     else:
                         raise NotImplementedError
 
-                e_div = th.Tensor(div_all).mean(0)
+                e_div = th.stack(div_all).mean(0)
                 if distance_metric == "kl":
                     score[:, t, i] = 2.0 / (1 + th.exp(-5 * e_div)) - 1
                 elif distance_metric == "mean_divergence":

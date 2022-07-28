@@ -73,6 +73,7 @@ class JointFeatureGenerator(nn.Module):
         self.feature_size = feature_size
 
     def likelihood_distribution(self, past: th.Tensor):
+        past = past.transpose(0, 1)
         all_encoding, encoding = self.rnn(past)
         h = encoding.view(encoding.size(1), -1)
 
@@ -117,8 +118,8 @@ class JointFeatureGenerator(nn.Module):
         # Compute mean and covariance of X_t given the past
         mean, covariance = self.likelihood_distribution(past)  # P(X_t|X_0:t-1)
 
-        # Get explored and ignore features indices
-        sig_inds_comp = list(set(range(past.shape[-2])) - set(sig_inds))
+        # Get explored and ignored features indices
+        sig_inds_comp = list(set(range(past.shape[-1])) - set(sig_inds))
         ind_len = len(sig_inds)
         ind_len_not = len(sig_inds_comp)
 
@@ -210,5 +211,5 @@ class JointFeatureGeneratorNet(Net):
             loc=mean,
             covariance_matrix=covariance,
         )
-        loss = -dist.log_prob(batch[0]).mean()
+        loss = -dist.log_prob(batch[0][:, -1, ...]).mean()
         return loss
