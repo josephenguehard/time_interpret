@@ -109,9 +109,9 @@ class HMM(DataModule):
 
     def download(
         self,
-        train_size: int = 1000,
-        test_size: int = 100,
-        signal_length: int = 100,
+        train_size: int = 800,
+        test_size: int = 200,
+        signal_length: int = 200,
         split: str = "train",
     ):
         file = os.path.join(self.data_dir, f"{split}_")
@@ -168,9 +168,9 @@ class HMM(DataModule):
                 y_logits.append(y_logit)
                 states.append(state_n)
 
-            signal = np.array(signal).T
+            signal = np.array(signal)
             y = np.array(y)
-            importance = np.array(importance).T
+            importance = np.array(importance)
 
             features.append(signal)
             labels.append(y)
