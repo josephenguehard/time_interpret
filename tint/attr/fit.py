@@ -118,12 +118,10 @@ class Fit(PerturbationAttribution):
             generator = copy.deepcopy(generator)
 
         # Init model
-        generator.net[0].init(feature_size=shape[-1])
+        generator.net.init(feature_size=shape[-1])
 
         # Prepare data
-        dataloader = DataLoader(
-            TensorDataset(inputs, inputs), batch_size=batch_size
-        )
+        dataloader = DataLoader(TensorDataset(inputs), batch_size=batch_size)
 
         # Fit model
         trainer.fit(generator, train_dataloaders=dataloader)
@@ -132,7 +130,7 @@ class Fit(PerturbationAttribution):
         generator.eval()
 
         return self.representation(
-            generator=generator,
+            generator=generator.net,
             inputs=inputs,
             additional_forward_args=additional_forward_args,
         )
@@ -202,7 +200,7 @@ class Fit(PerturbationAttribution):
                     x_hat_t, _ = generator.forward_conditional(
                         inputs[:, :t, :], inputs[:, t, :], [i]
                     )
-                    x_hat[:, :, t] = x_hat_t
+                    x_hat[:, t, :] = x_hat_t
                     y_hat_t = activation(
                         _run_forward(
                             forward_func=self.forward_func,
@@ -253,10 +251,10 @@ class Fit(PerturbationAttribution):
 
                 e_div = th.Tensor(div_all).mean(0)
                 if distance_metric == "kl":
-                    score[:, i, t] = 2.0 / (1 + th.exp(-5 * e_div)) - 1
+                    score[:, t, i] = 2.0 / (1 + th.exp(-5 * e_div)) - 1
                 elif distance_metric == "mean_divergence":
-                    score[:, i, t] = 1 - e_div
+                    score[:, t, i] = 1 - e_div
                 else:
-                    score[:, i, t] = e_div
+                    score[:, t, i] = e_div
 
             return score

@@ -91,9 +91,9 @@ class JointFeatureGenerator(nn.Module):
         covariance = th.bmm(a, th.transpose(a, 1, 2)) + cov_noise
         return mean, covariance
 
-    def forward_joint(self, past: th.Tensor):
+    def forward(self, past: th.Tensor):
         mean, covariance = self.likelihood_distribution(past)
-        likelihood = th.distributions.multivariate_normal.MultivariateNormal(
+        likelihood = th.distributions.MultivariateNormal(
             loc=mean,
             covariance_matrix=covariance,
         )
@@ -161,7 +161,6 @@ class JointFeatureGeneratorNet(Net):
         dist_hidden_size (int): Size of the distribution hidden units.
             Default to 10
         latent_size: Size of the latent distribution. Default to 100
-        loss (str, callable): Which loss to use. Default to ``'mse'``
         optim (str): Which optimizer to use. Default to ``'adam'``
         lr (float): Learning rate. Default to 1e-3
         lr_scheduler (dict, str): Learning rate scheduler. Either a dict
@@ -179,7 +178,6 @@ class JointFeatureGeneratorNet(Net):
         rnn_hidden_size: int = 100,
         dist_hidden_size: int = 10,
         latent_size: int = 100,
-        loss: Union[str, Callable] = "mse",
         optim: str = "adam",
         lr: float = 0.001,
         lr_scheduler: Union[dict, str] = None,
@@ -193,11 +191,20 @@ class JointFeatureGeneratorNet(Net):
         )
 
         super().__init__(
-            layers=[generator],
-            loss=loss,
+            layers=generator,
+            loss=None,
             optim=optim,
             lr=lr,
             lr_scheduler=lr_scheduler,
             lr_scheduler_args=lr_scheduler_args,
             l2=l2,
         )
+
+    def step(self, batch):
+        mean, covariance = self.net.likelihood_distribution(batch)
+        dist = th.distributions.MultivariateNormal(
+            loc=mean,
+            covariance_matrix=covariance,
+        )
+        loss = -dist.log_prob(batch).mean()
+        return loss

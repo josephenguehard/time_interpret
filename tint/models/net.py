@@ -2,7 +2,7 @@ import pytorch_lightning as pl
 import torch as th
 import torch.nn as nn
 
-from typing import Callable, Union
+from typing import Callable, List, Union
 
 
 LOSSES = {
@@ -29,7 +29,8 @@ class Net(pl.LightningModule):
     This provides a flexible class for various neural networks.
 
     Args:
-        layers (list): The base layers.
+        layers (list, nn.Module): The base layers. Can be either a Pytorch
+            module or a list of Pytorch modules.
         loss (str, callable): Which loss to use. Default to ``'mse'``
         optim (str): Which optimizer to use. Default to ``'adam'``
         lr (float): Learning rate. Default to 1e-3
@@ -49,7 +50,7 @@ class Net(pl.LightningModule):
 
     def __init__(
         self,
-        layers: list,
+        layers: Union[List[nn.Module], nn.Module],
         loss: Union[str, Callable] = "mse",
         optim: str = "adam",
         lr: float = 0.001,
@@ -59,9 +60,12 @@ class Net(pl.LightningModule):
     ):
         super().__init__()
 
-        self.net = nn.Sequential()
-        for layer in layers:
-            self.net.add_module(layer.__class__.__name__.lower(), layer)
+        if isinstance(layers, nn.Module):
+            self.net = layers
+        else:
+            self.net = nn.Sequential()
+            for layer in layers:
+                self.net.add_module(layer.__class__.__name__.lower(), layer)
 
         if isinstance(loss, str):
             loss = LOSSES[loss]()

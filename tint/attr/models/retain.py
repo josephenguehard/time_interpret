@@ -189,7 +189,7 @@ class RetainNet(Net):
         )
 
         super().__init__(
-            layers=[retain],
+            layers=retain,
             loss=loss,
             optim=optim,
             lr=lr,
@@ -197,3 +197,9 @@ class RetainNet(Net):
             lr_scheduler_args=lr_scheduler_args,
             l2=l2,
         )
+
+    def step(self, batch):
+        x, y = batch
+        y_hat, _, _ = self(x.float())
+        loss = self._loss(y_hat, y)
+        return loss

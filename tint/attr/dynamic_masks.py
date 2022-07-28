@@ -109,4 +109,4 @@ class DynaMask(PerturbationAttribution):
         # Set model to eval mode
         mask_net.eval()
 
-        return mask_net.net[0].representation()
+        return mask_net.net.representation()

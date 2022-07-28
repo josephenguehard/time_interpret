@@ -15,6 +15,7 @@ class Mask(nn.Module):
     Mask network for DynaMask method.
 
     Args:
+        forward_func (Callable): The function to get prediction from.
         perturbation (str): Which perturbation to apply.
             Default to ``'fade_moving_average'``
         deletion_mode (bool): ``True`` if the mask should identify the most
@@ -34,6 +35,7 @@ class Mask(nn.Module):
 
     def __init__(
         self,
+        forward_func: Callable,
         perturbation: str = "fade_moving_average",
         deletion_mode: bool = False,
         initial_mask_coef: float = 0.5,
@@ -50,6 +52,7 @@ class Mask(nn.Module):
             "fade_moving_average_window",
         ], "perturbation not recognised."
 
+        self.foward_func = forward_func
         self.perturbation = perturbation
         self.deletion_mode = deletion_mode
         self.initial_mask_coef = initial_mask_coef
@@ -124,7 +127,7 @@ class Mask(nn.Module):
 
     def forward(self, x: th.Tensor) -> th.Tensor:
         x = getattr(self, self.perturbation)(x, **self.kwargs)
-        return x
+        return self.foward_func(x)
 
     def loss(self, loss: th.Tensor) -> th.Tensor:
         mask_sorted = self.mask.reshape(-1).sort()[0]
@@ -188,7 +191,7 @@ class MaskNet(Net):
         )
 
         super().__init__(
-            layers=[mask],
+            layers=mask,
             loss=loss,
             optim=optim,
             lr=lr,
@@ -197,18 +200,26 @@ class MaskNet(Net):
             l2=l2,
         )
 
+    def step(self, batch):
+        # x is the data to be perturbed
+        # y is the same data without perturbation
+        x, y = batch
+        y_hat = self(x.float())
+        loss = self._loss(y_hat, self.net.forward_func(y))
+        return loss
+
     def training_step_end(self, step_output):
         # Reverse loss when deletion mode True
-        if self.net[0].deletion_mode:
+        if self.net.deletion_mode:
             step_output = -step_output
 
         # Add regularisation from Mask network
-        step_output = self.net[0].loss(step_output)
+        step_output = self.net.loss(step_output)
 
         # Clamp mask
-        self.net[0].clamp()
+        self.net.clamp()
 
         return step_output
 
     def training_epoch_end(self, outputs) -> None:
-        self.net[0].reg_factor *= self.net[0].reg_multiplier
+        self.net.reg_factor *= self.net.reg_multiplier

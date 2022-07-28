@@ -13,7 +13,6 @@ from captum._utils.typing import TensorOrTupleOfTensorsGeneric, TargetType
 
 from pytorch_lightning import Trainer
 from torch.utils.data import DataLoader, TensorDataset
-from typing import Callable
 
 from .models import Retain as RetainModel, RetainNet
 
@@ -102,7 +101,7 @@ class Retain(PerturbationAttribution):
         retain_net.eval()
 
         return self.representation(
-            model=retain_net[0],
+            model=retain_net.net,
             inputs=inputs,
             target=target,
         )
