@@ -168,7 +168,10 @@ class TimeForwardTunnel(Attribution):
         attributions = tuple()
         for i in range(len(attributions_partial_list[0])):
             attributions += (
-                torch.stack([x[i][:, -1, ...] for x in attributions_partial_list], dim=1),
+                torch.stack(
+                    [x[i][:, -1, ...] for x in attributions_partial_list],
+                    dim=1,
+                ),
             )
 
         delta = None
@@ -192,9 +195,7 @@ class TimeForwardTunnel(Attribution):
         Returns:
             partial_targets (Tensor): The partial targets.
         """
-        partial_targets = (
-            self.attribution_method.forward_func(*partial_inputs)
-        )
+        partial_targets = self.attribution_method.forward_func(*partial_inputs)
 
         if self.task in ["binary", "multiclass"]:
             partial_targets = torch.argmax(partial_targets, -1)
