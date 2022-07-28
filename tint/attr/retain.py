@@ -64,7 +64,7 @@ class Retain(PerturbationAttribution):
         # Assert only one input, as the Retain only accepts one
         assert (
             len(inputs) == 1
-        ), "Multiple inputs are not accepted for this methdos"
+        ), "Multiple inputs are not accepted for this method"
 
         # Make target a tensor
         target = self._format_target(inputs, target)
