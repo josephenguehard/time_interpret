@@ -2,7 +2,8 @@ import torch as th
 import torch.nn as nn
 import torch.nn.functional as F
 
-from functools import cached_property
+
+TIME_DIM = 1
 
 
 class TransformerEncoder(nn.Module):
@@ -23,6 +24,8 @@ class TransformerEncoder(nn.Module):
             and feedforward operations, respectively. Default to ``False``
         enable_nested_tensor (bool): If ``True``, input will automatically
             convert to nested tensor. Default to ``False``
+        many_to_one (bool): Whether to reduce the temporal dimension.
+            Default to ``False``
     """
 
     def __init__(
@@ -36,6 +39,7 @@ class TransformerEncoder(nn.Module):
         layer_norm_eps: float = 1e-5,
         norm_first: bool = False,
         enable_nested_tensor: bool = False,
+        many_to_one: bool = False,
     ):
         super().__init__()
 
@@ -56,9 +60,10 @@ class TransformerEncoder(nn.Module):
             enable_nested_tensor=enable_nested_tensor,
         )
 
+        self.many_to_one = many_to_one
         self._size = 1
 
-    @cached_property
+    @property
     def src_mask(self):
         """
         Generate a square mask for the sequence. The masked positions are
@@ -77,15 +82,20 @@ class TransformerEncoder(nn.Module):
         return mask
 
     def forward(self, x: th.Tensor) -> th.Tensor:
+        # Update size given inputs
+        self._size = x.shape[1]
+
         # Apply self attention
-        x = x.transpose(0, 1)
-        hidden, attn_weights = self.transformer_encoder(
+        out = self.transformer_encoder(
             src=x,
             mask=self.src_mask,
         )
 
-        # Transpose and normalize outputs
-        hidden = hidden.transpose(0, 1)
-        hidden = F.normalize(hidden, dim=-1, p=2)
+        # Normalize outputs
+        out = F.normalize(out, dim=-1, p=2)
 
-        return hidden
+        # If many_to_one, reduce temporal dimension
+        if self.many_to_one:
+            out = out.sum(TIME_DIM)
+
+        return out

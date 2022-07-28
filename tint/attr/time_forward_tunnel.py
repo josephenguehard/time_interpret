@@ -1,4 +1,5 @@
 import torch
+import warnings
 
 from captum.attr._utils.attribution import Attribution, GradientAttribution
 from captum.log import log_usage
@@ -139,7 +140,9 @@ class TimeForwardTunnel(Attribution):
         # Pop target, this param is ignore
         target = kwargs.pop("target")
         if target is not None:
-            print(f"target is ignored when using {self.__class__.__name__}")
+            warnings.warn(
+                f"target is ignored when using {self.__class__.__name__}"
+            )
 
         attributions_partial_list = list()
         delta_partial_list = list()

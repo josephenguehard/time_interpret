@@ -12,6 +12,9 @@ RNNS = {
 }
 
 
+TIME_DIM = 1
+
+
 class RNN(nn.Module):
     """
     A base recurrent model class.
@@ -26,6 +29,8 @@ class RNN(nn.Module):
         dropout (float): Dropout rates. Default to 0.0
         bidirectional (bool): If ``True``, becomes a bidirectional RNN.
             Default to ``False``
+        many_to_one (bool): Whether to reduce the temporal dimension.
+            Default to ``False``
     """
 
     def __init__(
@@ -37,6 +42,7 @@ class RNN(nn.Module):
         bias: bool = True,
         dropout: float = 0.0,
         bidirectional: bool = False,
+        many_to_one: bool = False,
     ):
         super().__init__()
 
@@ -49,6 +55,7 @@ class RNN(nn.Module):
             bidirectional=bidirectional,
             batch_first=True,
         )
+        self.many_to_one = many_to_one
 
     def forward(self, x: th.Tensor) -> th.Tensor:
         # Flatten parameters due to saving issue with pickle
@@ -56,4 +63,10 @@ class RNN(nn.Module):
 
         # Forward, normalize and add results to inputs
         out, _ = self.rnn(x)
-        return F.normalize(out, dim=-1, p=2)
+        out = F.normalize(out, dim=-1, p=2)
+
+        # If many_to_one, reduce temporal dimension
+        if self.many_to_one:
+            out = out.sum(TIME_DIM)
+
+        return out
