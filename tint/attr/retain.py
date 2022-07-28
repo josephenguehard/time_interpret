@@ -7,7 +7,6 @@ from captum._utils.common import (
     _format_input,
     _format_output,
     _is_tuple,
-    _reduce_list,
 )
 from captum._utils.typing import TensorOrTupleOfTensorsGeneric, TargetType
 
@@ -32,9 +31,10 @@ class Retain(PerturbationAttribution):
     def attribute(
         self,
         inputs: TensorOrTupleOfTensorsGeneric,
-        target: TargetType = None,
+        target: TargetType,
         trainer: Trainer = None,
         retain_net: RetainNet = None,
+        batch_size: int = 32,
     ) -> TensorOrTupleOfTensorsGeneric:
         """
         attribute method.
@@ -45,8 +45,9 @@ class Retain(PerturbationAttribution):
                 ``None``
             trainer (Trainer): Pytorch Lightning trainer. If ``None``, a
                 default trainer will be provided. Default to ``None``
-            retain_net (RetainNet): A Retain model. If ``None``, a default model
-                will be provided. Default to ``None``
+            retain_net (RetainNet): A Retain model. If ``None``, a default
+            model will be provided. Default to ``None``
+            batch_size (int): Batch size for Retain training. Default to 32
 
         Returns:
             (th.Tensor, tuple): Attributions.
@@ -60,38 +61,23 @@ class Retain(PerturbationAttribution):
         if trainer is None:
             trainer = Trainer(max_epochs=100)
 
-        # Get representations
-        outputs_list = list()
-        for x in inputs:
-            outputs_list.append(
-                self._attributes(
-                    inputs=x,
-                    target=target,
-                    trainer=trainer,
-                    retain_net=retain_net,
-                ).reshape(-1, 1)
-            )
-        outputs = _reduce_list(outputs_list)
+        # Assert only one input, as the Retain only accepts one
+        assert (
+            len(inputs) == 1
+        ), "Multiple inputs are not accepted for this methdos"
 
-        return _format_output(is_inputs_tuple, outputs)
+        # Make target a tensor
+        target = self._format_target(inputs, target)
 
-    def _attributes(
-        self,
-        inputs: th.Tensor,
-        target: th.Tensor,
-        trainer: Trainer,
-        retain_net: RetainNet = None,
-        batch_size: int = 32,
-    ):
         # Init MaskNet if not provided
         if retain_net is None:
-            retain_net = RetainNet()
+            retain_net = RetainNet(loss="cross_entropy")
         else:
             retain_net = copy.deepcopy(retain_net)
 
         # Prepare data
         dataloader = DataLoader(
-            TensorDataset(inputs, inputs), batch_size=batch_size
+            TensorDataset(inputs[0], target), batch_size=batch_size
         )
 
         # Fit model
@@ -100,11 +86,16 @@ class Retain(PerturbationAttribution):
         # Set model to eval mode
         retain_net.eval()
 
-        return self.representation(
-            model=retain_net.net,
-            inputs=inputs,
-            target=target,
+        # Get attributions
+        attributions = (
+            self.representation(
+                model=retain_net.net,
+                inputs=inputs[0],
+                target=target,
+            ),
         )
+
+        return _format_output(is_inputs_tuple, attributions)
 
     @staticmethod
     def representation(
@@ -136,16 +127,40 @@ class Retain(PerturbationAttribution):
                     beta[:, t, :] * w_emb[:, i].expand_as(beta[:, t, :])
                 )
                 if target is None:
-                    score[:, i, t] = (
+                    score[:, t, i] = (
                         alpha[:, t, 0] * imp.mean(-1) * inputs[:, t, i]
                     )
                 else:
-                    score[:, i, t] = (
+                    score[:, t, i] = (
                         alpha[:, t, 0]
                         * imp[
-                            th.range(0, len(imp) - 1).long(),
-                            target.long(),
+                            th.arange(0, len(imp)).long(),
+                            target[:, -1, ...].long(),
                         ]
                         * inputs[:, t, i]
                     )
         return score.detach().cpu()
+
+    @staticmethod
+    def _format_target(inputs: tuple, target: TargetType):
+        """
+        Convert target into a Tensor.
+
+        Args:
+            inputs (tuple): Input data.
+            target (TargetType): The target.
+
+        Returns:
+            th.Tensor: Converted target.
+        """
+        assert target is not None, "target must be provided"
+
+        if isinstance(target, int):
+            target = th.Tensor([target] * len(inputs[0]))
+
+        if isinstance(target, list):
+            target = th.Tensor(target)
+
+        assert isinstance(target, th.Tensor), "Unsupported target."
+
+        return target

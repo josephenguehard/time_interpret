@@ -58,7 +58,7 @@ class Retain(nn.Module):
         )
 
         self.alpha_fc = nn.Linear(in_features=dim_alpha, out_features=1)
-        nn.init.xavier_normal(self.alpha_fc.weight)
+        nn.init.xavier_normal_(self.alpha_fc.weight)
         self.alpha_fc.bias.data.zero_()
 
         self.rnn_beta = nn.GRU(
@@ -69,7 +69,7 @@ class Retain(nn.Module):
         )
 
         self.beta_fc = nn.Linear(in_features=dim_beta, out_features=dim_emb)
-        nn.init.xavier_normal(
+        nn.init.xavier_normal_(
             self.beta_fc.weight,
             gain=nn.init.calculate_gain("tanh"),
         )
@@ -79,7 +79,7 @@ class Retain(nn.Module):
             nn.Dropout(p=dropout_context),
             nn.Linear(in_features=dim_emb, out_features=dim_output),
         )
-        nn.init.xavier_normal(self.output[1].weight)
+        nn.init.xavier_normal_(self.output[1].weight)
         self.output[1].bias.data.zero_()
 
     def forward(self, x, lengths):
@@ -200,6 +200,12 @@ class RetainNet(Net):
 
     def step(self, batch):
         x, y = batch
-        y_hat, _, _ = self(x.float())
+
+        lengths = th.randint(low=4, high=x.shape[1], size=(len(x),))
+        lengths, _ = th.sort(lengths, descending=True)
+        lengths[0] = x.shape[1]
+
+        y_hat, _, _ = self.net(x=x.float(), lengths=lengths)
+        y = y[th.arange(len(x)), lengths - 1, ...]
         loss = self._loss(y_hat, y)
         return loss
