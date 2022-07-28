@@ -1,7 +1,7 @@
 import torch as th
 import torch.nn as nn
 
-from typing import Callable, Union
+from typing import Union
 
 from tint.models import Net
 
@@ -37,13 +37,15 @@ class JointFeatureGenerator(nn.Module):
         self.register_module("cov_generator", None)
         self.register_module("mean_generator", None)
 
+        self.feature_size = None
+
     def init(self, feature_size):
         # Generates the parameters of the distribution
         self.rnn = nn.GRU(feature_size, self.rnn_hidden_size)
         for layer_p in self.rnn._all_weights:
             for p in layer_p:
                 if "weight" in p:
-                    nn.init.normal(self.rnn.__getattr__(p), 0.0, 0.02)
+                    nn.init.normal_(self.rnn.__getattr__(p), 0.0, 0.02)
 
         self.dist_predictor = nn.Sequential(
             nn.Linear(self.rnn_hidden_size, self.dist_hidden_size),
@@ -57,7 +59,7 @@ class JointFeatureGenerator(nn.Module):
             nn.Linear(self.latent_size, self.dist_hidden_size),
             nn.Tanh(),
             nn.BatchNorm1d(num_features=self.dist_hidden_size),
-            nn.Linear(self.dist_hidden_size, self.feature_size**2),
+            nn.Linear(self.dist_hidden_size, feature_size**2),
             nn.ReLU(),
         )
 
@@ -67,6 +69,8 @@ class JointFeatureGenerator(nn.Module):
             nn.BatchNorm1d(num_features=self.dist_hidden_size),
             nn.Linear(self.dist_hidden_size, feature_size),
         )
+
+        self.feature_size = feature_size
 
     def likelihood_distribution(self, past: th.Tensor):
         all_encoding, encoding = self.rnn(past)
@@ -201,10 +205,10 @@ class JointFeatureGeneratorNet(Net):
         )
 
     def step(self, batch):
-        mean, covariance = self.net.likelihood_distribution(batch)
+        mean, covariance = self.net.likelihood_distribution(batch[0])
         dist = th.distributions.MultivariateNormal(
             loc=mean,
             covariance_matrix=covariance,
         )
-        loss = -dist.log_prob(batch).mean()
+        loss = -dist.log_prob(batch[0]).mean()
         return loss
