@@ -13,6 +13,7 @@ from captum.attr import (
 from .augmented_occlusion import AugmentedOcclusion
 from .bayes import BayesLime, BayesShap
 from .dynamic_masks import DynaMask
+from .fit import Fit
 from .retain import Retain
 from .smooth_grad import SmoothGrad
 from .time_forward_tunnel import TimeForwardTunnel
@@ -24,6 +25,7 @@ __all__ = [
     "DeepLift",
     "DynaMask",
     "FeaturePermutation",
+    "Fit",
     "GradientShap",
     "InputXGradient",
     "IntegratedGradients",
