@@ -172,8 +172,11 @@ class TimeForwardTunnel(Attribution):
             for i in range(len(attributions_partial_sublist[0])):
                 attributions_partial += (
                     torch.stack(
-                        [x[i] for x in attributions_partial_sublist], dim=-1,
-                    ).max(-1).values,
+                        [x[i] for x in attributions_partial_sublist],
+                        dim=-1,
+                    )
+                    .max(-1)
+                    .values,
                 )
 
             delta_partial = None
