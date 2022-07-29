@@ -71,8 +71,8 @@ class Mask(nn.Module):
         self.mask = nn.Parameter(th.ones(*shape) * 0.5)
 
         # Init the regularisation parameter
-        reg_ref = th.zeros_like(self.mask).reshape(-1)
-        reg_ref[int(self.keep_ratio * len(reg_ref)) :] = 1.0
+        reg_ref = th.zeros_like(self.mask).reshape(len(self.mask), -1)
+        reg_ref[:, int(self.keep_ratio * reg_ref.shape[TIME_DIM]) :] = 1.0
         self.reg_ref = reg_ref
 
         # Update multiplier with n_epochs
@@ -131,7 +131,7 @@ class Mask(nn.Module):
         return self.forward_func(x)
 
     def loss(self, loss: th.Tensor) -> th.Tensor:
-        mask_sorted = self.mask.reshape(-1).sort()[0]
+        mask_sorted = self.mask.reshape(len(self.mask), -1).sort().values
         size_reg = ((self.reg_ref - mask_sorted) ** 2).mean()
         return (1.0 - 2 * self.deletion_mode) * loss + size_reg
 
