@@ -169,18 +169,17 @@ class TimeForwardTunnel(Attribution):
                 delta_partial_list_sublist.append(delta_partial)
 
             attributions_partial = tuple()
-            for i in range(len(attributions_partial_list[0])):
+            for i in range(len(attributions_partial_sublist[0])):
                 attributions_partial += (
                     torch.stack(
-                        [x[i][:, -1, ...] for x in attributions_partial_list],
-                        dim=0,
-                    ).max(-1),
+                        [x[i] for x in attributions_partial_sublist], dim=-1,
+                    ).max(-1).values,
                 )
 
             delta_partial = None
             if self.is_delta_supported and return_convergence_delta:
-                delta_partial = torch.cat(
-                    delta_partial_list_sublist, dim=0
+                delta_partial = torch.stack(
+                    delta_partial_list_sublist, dim=-1
                 ).mean(-1)
 
             attributions_partial_list.append(attributions_partial)
@@ -223,7 +222,7 @@ class TimeForwardTunnel(Attribution):
         if self.task in ["binary", "multiclass"]:
             partial_targets = (torch.argmax(partial_targets, -1),)
         elif self.task == "multilabel":
-            partial_targets = (partial_targets > self.threshold).float()
+            partial_targets = (partial_targets > self.threshold).long()
             partial_targets = tuple(
                 partial_targets[..., i]
                 for i in range(partial_targets.shape[-1])
