@@ -41,7 +41,7 @@ class JointFeatureGenerator(nn.Module):
 
     def init(self, feature_size):
         # Generates the parameters of the distribution
-        self.rnn = nn.GRU(feature_size, self.rnn_hidden_size)
+        self.rnn = nn.GRU(feature_size, self.rnn_hidden_size, batch_first=True)
         for layer_p in self.rnn._all_weights:
             for p in layer_p:
                 if "weight" in p:
@@ -73,7 +73,6 @@ class JointFeatureGenerator(nn.Module):
         self.feature_size = feature_size
 
     def likelihood_distribution(self, past: th.Tensor):
-        past = past.transpose(0, 1)
         all_encoding, encoding = self.rnn(past)
         h = encoding.view(encoding.size(1), -1)
 
