@@ -151,17 +151,38 @@ class TimeForwardTunnel(Attribution):
             partial_inputs = tuple(x[:, :time, ...] for x in inputs)
             partial_targets = self.get_target(partial_inputs=partial_inputs)
 
-            (
-                attributions_partial,
-                is_attrib_tuple,
-                delta_partial,
-            ) = self.compute_partial_attribution(
-                partial_inputs=partial_inputs,
-                partial_targets=partial_targets,
-                is_inputs_tuple=is_inputs_tuple,
-                return_convergence_delta=return_convergence_delta,
-                kwargs_partition=kwargs,
-            )
+            attributions_partial_sublist = list()
+            delta_partial_list_sublist = list()
+            for partial_target in partial_targets:
+                (
+                    attributions_partial,
+                    is_attrib_tuple,
+                    delta_partial,
+                ) = self.compute_partial_attribution(
+                    partial_inputs=partial_inputs,
+                    partial_target=partial_target,
+                    is_inputs_tuple=is_inputs_tuple,
+                    return_convergence_delta=return_convergence_delta,
+                    kwargs_partition=kwargs,
+                )
+                attributions_partial_sublist.append(attributions_partial)
+                delta_partial_list_sublist.append(delta_partial)
+
+            attributions_partial = tuple()
+            for i in range(len(attributions_partial_list[0])):
+                attributions_partial += (
+                    torch.stack(
+                        [x[i][:, -1, ...] for x in attributions_partial_list],
+                        dim=0,
+                    ).max(-1),
+                )
+
+            delta_partial = None
+            if self.is_delta_supported and return_convergence_delta:
+                delta_partial = torch.cat(
+                    delta_partial_list_sublist, dim=0
+                ).mean(-1)
+
             attributions_partial_list.append(attributions_partial)
             delta_partial_list.append(delta_partial)
 
@@ -185,7 +206,9 @@ class TimeForwardTunnel(Attribution):
             delta,
         )
 
-    def get_target(self, partial_inputs: Tuple[Tensor]) -> Tensor:
+    def get_target(
+        self, partial_inputs: Tuple[Tensor, ...]
+    ) -> Tuple[Tensor, ...]:
         """
         Get the target given partial inputs and a task.
 
@@ -198,16 +221,20 @@ class TimeForwardTunnel(Attribution):
         partial_targets = self.attribution_method.forward_func(*partial_inputs)
 
         if self.task in ["binary", "multiclass"]:
-            partial_targets = torch.argmax(partial_targets, -1)
+            partial_targets = (torch.argmax(partial_targets, -1),)
         elif self.task == "multilabel":
             partial_targets = (partial_targets > self.threshold).float()
+            partial_targets = tuple(
+                partial_targets[..., i]
+                for i in range(partial_targets.shape[-1])
+            )
 
         return partial_targets
 
     def compute_partial_attribution(
         self,
         partial_inputs: Tuple[Tensor, ...],
-        partial_targets: Tensor,
+        partial_target: Tensor,
         is_inputs_tuple: bool,
         return_convergence_delta: bool,
         kwargs_partition: Any,
@@ -215,7 +242,7 @@ class TimeForwardTunnel(Attribution):
         attributions = self.attribution_method.attribute.__wrapped__(
             self.attribution_method,  # self
             partial_inputs if is_inputs_tuple else partial_inputs[0],
-            target=partial_targets,
+            target=partial_target,
             **kwargs_partition,
         )
         delta = None
