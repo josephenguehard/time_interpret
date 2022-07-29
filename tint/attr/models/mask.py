@@ -133,7 +133,7 @@ class Mask(nn.Module):
     def loss(self, loss: th.Tensor) -> th.Tensor:
         mask_sorted = self.mask.reshape(-1).sort()[0]
         size_reg = ((self.reg_ref - mask_sorted) ** 2).mean()
-        return (1. - 2 * self.deletion_mode) * loss + size_reg
+        return (1.0 - 2 * self.deletion_mode) * loss + size_reg
 
     def clamp(self):
         self.mask.data = self.mask.data.clamp(0, 1)
