@@ -232,10 +232,6 @@ class MaskNet(Net):
         return loss
 
     def training_step_end(self, step_output):
-        # Reverse loss when deletion mode True
-        if self.net.deletion_mode:
-            step_output = -step_output
-
         # Add regularisation from Mask network
         step_output = self.net.loss(step_output)
 
@@ -245,4 +241,5 @@ class MaskNet(Net):
         return step_output
 
     def training_epoch_end(self, outputs) -> None:
+        # Increase the regulator coefficient
         self.net.size_reg_factor *= self.net.reg_multiplier
