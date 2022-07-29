@@ -7,7 +7,6 @@ from captum._utils.common import (
     _format_input,
     _format_output,
     _is_tuple,
-    _reduce_list,
 )
 from captum._utils.typing import TensorOrTupleOfTensorsGeneric
 
@@ -39,6 +38,7 @@ class DynaMask(PerturbationAttribution):
         inputs: TensorOrTupleOfTensorsGeneric,
         trainer: Trainer = None,
         mask_net: MaskNet = None,
+        batch_size: int = 32,
     ) -> TensorOrTupleOfTensorsGeneric:
         """
         attribute method.
@@ -49,6 +49,7 @@ class DynaMask(PerturbationAttribution):
                 default trainer will be provided. Default to ``None``
             mask_net (MaskNet): A Mask model. If ``None``, a default model
                 will be provided. Default to ``None``
+            batch_size (int): Batch size for Mask training. Default to 32
 
         Returns:
             (th.Tensor, tuple): Attributions.
@@ -62,45 +63,29 @@ class DynaMask(PerturbationAttribution):
         if trainer is None:
             trainer = Trainer(max_epochs=100)
 
-        # Get representations
-        outputs_list = list()
-        for x in inputs:
-            outputs_list.append(
-                self._attributes(
-                    inputs=x,
-                    trainer=trainer,
-                    mask_net=mask_net,
-                ).reshape(-1, 1)
-            )
-        outputs = _reduce_list(outputs_list)
+        # Assert only one input, as the Retain only accepts one
+        assert (
+            len(inputs) == 1
+        ), "Multiple inputs are not accepted for this method"
 
-        return _format_output(is_inputs_tuple, outputs)
-
-    @staticmethod
-    def _attributes(
-        inputs: th.Tensor,
-        trainer: Trainer,
-        mask_net: MaskNet = None,
-        batch_size: int = 32,
-    ):
         # Get input and output shape
-        shape = inputs.shape
+        shape = (min(batch_size, len(inputs[0])),) + inputs[0].shape[1:]
 
         # Init MaskNet if not provided
         if mask_net is None:
-            mask_net = MaskNet()
+            mask_net = MaskNet(forward_func=self.forward_func)
         else:
             mask_net = copy.deepcopy(mask_net)
 
         # Init model
-        mask_net.net[0].init(
+        mask_net.net.init(
             shape=shape,
             n_epochs=trainer.max_epochs,
         )
 
         # Prepare data
         dataloader = DataLoader(
-            TensorDataset(inputs, inputs), batch_size=batch_size
+            TensorDataset(inputs[0], inputs[0]), batch_size=batch_size
         )
 
         # Fit model
@@ -109,4 +94,8 @@ class DynaMask(PerturbationAttribution):
         # Set model to eval mode
         mask_net.eval()
 
-        return mask_net.net.representation()
+        # Get attributions as mask representation
+        attributions = (mask_net.net.representation(),)
+
+        # Format attributions and return
+        return _format_output(is_inputs_tuple, attributions)
