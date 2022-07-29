@@ -29,6 +29,8 @@ class Mask(nn.Module):
             part of the total loss. Default to 0.5
         size_reg_factor_dilation (float): Ratio between the final and the
             initial size regulation factor. Default to 100
+        time_reg_factor (float): Regulation factor for the variation in time.
+            Default to 0.0
 
     References:
         https://arxiv.org/pdf/2106.05303
@@ -43,6 +45,7 @@ class Mask(nn.Module):
         keep_ratio: float = 0.5,
         size_reg_factor_init: float = 0.5,
         size_reg_factor_dilation: float = 100.0,
+        time_reg_factor: float = 0.0,
         **kwargs,
     ):
         super().__init__()
@@ -59,8 +62,9 @@ class Mask(nn.Module):
         self.deletion_mode = deletion_mode
         self.initial_mask_coef = initial_mask_coef
         self.keep_ratio = keep_ratio
-        self.reg_factor = size_reg_factor_init
+        self.size_reg_factor = size_reg_factor_init
         self.reg_multiplier = np.exp(np.log(size_reg_factor_dilation))
+        self.time_reg_factor = time_reg_factor
         self.kwargs = kwargs
 
         self.register_parameter("mask", None)
@@ -131,9 +135,24 @@ class Mask(nn.Module):
         return self.forward_func(x)
 
     def loss(self, loss: th.Tensor) -> th.Tensor:
+        # Get size regularisation
         mask_sorted = self.mask.reshape(len(self.mask), -1).sort().values
         size_reg = ((self.reg_ref - mask_sorted) ** 2).mean()
-        return (1.0 - 2 * self.deletion_mode) * loss + size_reg
+
+        # Get time regularisation
+        time_reg = (
+            th.abs(
+                self.mask[:, 1 : self.mask.shape[TIME_DIM] - 1, ...]
+                - self.mask[:, : self.mask.shape[TIME_DIM] - 2, ...]
+            )
+        ).mean()
+
+        # Return loss plus regularisation
+        return (
+            (1.0 - 2 * self.deletion_mode) * loss
+            + self.size_reg_factor * size_reg
+            + self.time_reg_factor * time_reg
+        )
 
     def clamp(self):
         self.mask.data = self.mask.data.clamp(0, 1)
@@ -226,4 +245,4 @@ class MaskNet(Net):
         return step_output
 
     def training_epoch_end(self, outputs) -> None:
-        self.net.reg_factor *= self.net.reg_multiplier
+        self.net.size_reg_factor *= self.net.reg_multiplier
