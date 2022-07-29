@@ -227,6 +227,15 @@ class TemporalIntegratedGradients(IntegratedGradients):
         baselines: Tuple[Union[Tensor, int, float], ...],
         alphas: List[float],
     ) -> Tuple[Tensor]:
+
+        # If baseline is a Tensor, cut it
+        baselines = list(baselines)
+        for i in range(len(baselines)):
+            if isinstance(baselines[i], Tensor):
+                baselines[i] = baselines[:, -1, ...]
+        baselines = tuple(baselines)
+
+        # Only rescale the last time of the inputs
         scaled_features_tpl = tuple(
             torch.cat(
                 [
