@@ -17,6 +17,7 @@ from .fit import Fit
 from .retain import Retain
 from .smooth_grad import SmoothGrad
 from .time_forward_tunnel import TimeForwardTunnel
+from .timed_ig import TemporalIntegratedGradients
 
 __all__ = [
     "AugmentedOcclusion",
@@ -35,5 +36,6 @@ __all__ = [
     "Retain",
     "Saliency",
     "SmoothGrad",
+    "TemporalIntegratedGradients",
     "TimeForwardTunnel",
 ]
