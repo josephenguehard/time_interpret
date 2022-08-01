@@ -14,6 +14,7 @@ from .augmented_occlusion import AugmentedOcclusion
 from .bayes import BayesLime, BayesShap
 from .dynamic_masks import DynaMask
 from .fit import Fit
+from .lof import LOFKernelShap, LOFLime
 from .retain import Retain
 from .smooth_grad import SmoothGrad
 from .time_forward_tunnel import TimeForwardTunnel
@@ -32,6 +33,8 @@ __all__ = [
     "IntegratedGradients",
     "KernelShap",
     "Lime",
+    "LOFKernelShap",
+    "LOFLime",
     "Occlusion",
     "Retain",
     "Saliency",
