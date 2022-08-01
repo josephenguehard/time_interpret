@@ -68,7 +68,10 @@ class LOFLime(Lime, LOF):
             perturb_func=perturb_func,
         )
         LOF.__init__(
-            self, embeddings=embeddings, n_neighbors=n_neighbors, **kwargs,
+            self,
+            embeddings=embeddings,
+            n_neighbors=n_neighbors,
+            **kwargs,
         )
 
         # Replace original similarity_func with the custom one
@@ -86,7 +89,10 @@ class LOFKernelShap(KernelShap, LOF):
     ):
         KernelShap.__init__(self, forward_func=forward_func)
         LOF.__init__(
-            self, embeddings=embeddings, n_neighbors=n_neighbors, **kwargs,
+            self,
+            embeddings=embeddings,
+            n_neighbors=n_neighbors,
+            **kwargs,
         )
 
         # Replace original similarity_func with the custom one
