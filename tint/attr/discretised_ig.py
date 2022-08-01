@@ -1,7 +1,5 @@
-from typing import Any, Callable, Tuple, Union
-
+import numpy as np
 import torch
-from torch import Tensor
 
 from captum.log import log_usage
 from captum._utils.common import (
@@ -17,6 +15,15 @@ from captum._utils.typing import (
 )
 from captum.attr._utils.attribution import GradientAttribution
 from captum.attr._utils.common import _reshape_and_sum, _format_input
+
+from sklearn.neighbors import kneighbors_graph
+from torch import Tensor
+from typing import Any, Callable, Tuple, Union
+
+try:
+    from transformers import PreTrainedModel
+except ImportError:
+    PreTrainedModel = None
 
 
 class DiscretetizedIntegratedGradients(GradientAttribution):
@@ -46,10 +53,22 @@ class DiscretetizedIntegratedGradients(GradientAttribution):
     """
 
     def __init__(
-        self, forward_func: Callable, multiply_by_inputs: bool = True
+        self,
+        forward_func: Callable,
+        embeddings: np.ndarray,
+        n_neighbors: int = 500,
+        multiply_by_inputs: bool = True,
+        n_jobs: int = 1,
     ) -> None:
         GradientAttribution.__init__(self, forward_func)
         self._multiply_by_inputs = multiply_by_inputs
+
+        self.adj = kneighbors_graph(
+            X=embeddings,
+            n_neighbors=n_neighbors,
+            mode="distance",
+            n_jobs=n_jobs,
+        )
 
     @log_usage()
     def attribute(

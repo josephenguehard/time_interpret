@@ -13,6 +13,7 @@ from .joint_features_generator import (
     JointFeatureGeneratorNet,
 )
 from .mask import Mask, MaskNet
+from .path_generator import scale_inputs
 from .retain import Retain, RetainNet
 
 __all__ = [
@@ -30,4 +31,5 @@ __all__ = [
     "SkLearnBayesLinearModel",
     "SkLearnARDRegression",
     "SkLearnBayesianRidge",
+    "scale_inputs",
 ]

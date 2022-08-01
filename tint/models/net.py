@@ -82,7 +82,9 @@ class Net(pl.LightningModule):
 
     def step(self, batch):
         x, y = batch
-        y_hat = self(x.float())
+        y_hat = self(x)
+        if isinstance(y_hat, tuple):  # For Bert model
+            y_hat = y_hat[0]
         loss = self._loss(y_hat, y)
         return loss
 
