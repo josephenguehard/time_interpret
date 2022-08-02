@@ -27,9 +27,11 @@ class BayesMask(nn.Module):
         self.reset_parameters()
 
     def reset_parameters(self) -> None:
-        self.mean.fill_(0.5)
-        self.cov.data = th.eye(self.input_size[-1]).expand(
-            self.input_size + (self.input_size[-1],)
+        self.mean.data.fill_(0.5)
+        self.cov.data = (
+            th.eye(self.input_size[-1])
+            .expand(self.input_size + (self.input_size[-1],))
+            .clone()
         )
 
     def forward(self, x: th.Tensor) -> th.Tensor:
@@ -44,12 +46,12 @@ class BayesMask(nn.Module):
         # Get uninformative mean and cov
         mean = th.zeros(*self.input_size)
         cov = th.eye(self.input_size[-1])
-        cov = cov.expand(self.input_size + (self.input_size[-1],))
+        cov = cov.expand(self.input_size + (self.input_size[-1],)).clone()
 
         # Compute kl divergence between normals
         normal = MultivariateNormal(loc=self.mean, covariance_matrix=self.cov)
-        normal_ = MultivariateNormal(loc=mean, covariance_matrix=cov)
-        kl = kl_divergence(normal, normal_)
+        target = MultivariateNormal(loc=mean, covariance_matrix=cov)
+        kl = kl_divergence(target, normal)
 
         # Return loss + regularisation
         return loss + kl.sum()
@@ -57,6 +59,12 @@ class BayesMask(nn.Module):
     def clamp(self):
         self.mean.data.clamp(0, 1)
         self.cov.data.clamp(0)
+
+    def representation(self):
+        return self.mean.detach().cpu()
+
+    def covariance(self):
+        return self.cov.detach().cpu()
 
 
 class BayesMaskNet(Net):
