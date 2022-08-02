@@ -134,7 +134,7 @@ class Mask(nn.Module):
         x = getattr(self, self.perturbation)(x, **self.kwargs)
         return self.forward_func(x)
 
-    def loss(self, loss: th.Tensor) -> th.Tensor:
+    def regularisation(self, loss: th.Tensor) -> th.Tensor:
         # Get size regularisation
         mask_sorted = self.mask.reshape(len(self.mask), -1).sort().values
         size_reg = ((self.reg_ref - mask_sorted) ** 2).mean()
@@ -233,7 +233,7 @@ class MaskNet(Net):
 
     def training_step_end(self, step_output):
         # Add regularisation from Mask network
-        step_output = self.net.loss(step_output)
+        step_output = self.net.regularisation(step_output)
 
         # Clamp mask
         self.net.clamp()
