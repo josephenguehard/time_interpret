@@ -62,6 +62,8 @@ class DynaMask(PerturbationAttribution):
         # Init trainer if not provided
         if trainer is None:
             trainer = Trainer(max_epochs=100)
+        else:
+            trainer = copy.deepcopy(trainer)
 
         # Assert only one input, as the Retain only accepts one
         assert (

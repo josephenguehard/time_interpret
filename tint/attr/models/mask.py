@@ -76,7 +76,9 @@ class Mask(nn.Module):
 
         # Init the regularisation parameter
         reg_ref = th.zeros_like(self.mask).reshape(len(self.mask), -1)
-        reg_ref[:, int(self.keep_ratio * reg_ref.shape[TIME_DIM]) :] = 1.0
+        reg_ref[
+            :, int((1.0 - self.keep_ratio) * reg_ref.shape[TIME_DIM]) :
+        ] = 1.0
         self.reg_ref = reg_ref
 
         # Update multiplier with n_epochs
@@ -104,7 +106,7 @@ class Mask(nn.Module):
                 -1.0 * (t1_tensor - t2_tensor) ** 2, 2.0 * (sigma_tensor**2)
             )
         )
-        filter_coefs = th.divide(filter_coefs, th.sum(filter_coefs, 0))
+        filter_coefs = th.divide(filter_coefs, th.sum(filter_coefs, 0) + EPS)
 
         # The perturbation is obtained by replacing each input by the
         # linear combination weighted by Gaussian coefs
@@ -131,7 +133,13 @@ class Mask(nn.Module):
         return x_ref + mask * (x - x_ref)
 
     def forward(self, x: th.Tensor) -> th.Tensor:
+        # Clamp mask
+        self.clamp()
+
+        # Get perturbed input
         x = getattr(self, self.perturbation)(x, **self.kwargs)
+
+        # Return f(perturbed x)
         return self.forward_func(x)
 
     def regularisation(self, loss: th.Tensor) -> th.Tensor:
@@ -222,6 +230,7 @@ class MaskNet(Net):
             lr_scheduler_args=lr_scheduler_args,
             l2=l2,
         )
+        self.i = 0
 
     def step(self, batch):
         # x is the data to be perturbed
@@ -234,9 +243,6 @@ class MaskNet(Net):
     def training_step_end(self, step_output):
         # Add regularisation from Mask network
         step_output = self.net.regularisation(step_output)
-
-        # Clamp mask
-        self.net.clamp()
 
         return step_output
 
