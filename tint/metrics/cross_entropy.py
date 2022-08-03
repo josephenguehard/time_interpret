@@ -1,3 +1,5 @@
+import torch
+
 from captum.log import log_usage
 from captum._utils.common import _select_targets
 from captum._utils.typing import (
@@ -12,16 +14,14 @@ from typing import Any, Callable
 from .base import _base_metric
 
 
-def _sufficiency(
+def _cross_entropy(
     prob_original: Tensor, prob_pert: Tensor, target: Tensor
 ) -> Tensor:
-    return _select_targets(prob_original, target) - _select_targets(
-        prob_pert, target
-    )
+    return torch.log(_select_targets(prob_pert, target))
 
 
 @log_usage()
-def sufficiency(
+def cross_entropy(
     forward_func: Callable,
     inputs: TensorOrTupleOfTensorsGeneric,
     attributions: TensorOrTupleOfTensorsGeneric,
@@ -30,11 +30,8 @@ def sufficiency(
     target: TargetType = None,
     topk: float = 0.2,
 ) -> Tensor:
-    # Inverse topk to select the non topk
-    topk = 1.0 - topk
-
     return _base_metric(
-        metric=_sufficiency,
+        metric=_cross_entropy,
         forward_func=forward_func,
         inputs=inputs,
         attributions=attributions,
@@ -42,5 +39,5 @@ def sufficiency(
         additional_forward_args=additional_forward_args,
         target=target,
         topk=topk,
-        largest=False,
+        largest=True,
     )

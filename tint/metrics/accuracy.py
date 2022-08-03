@@ -12,16 +12,17 @@ from typing import Any, Callable
 from .base import _base_metric
 
 
-def _sufficiency(
-    prob_original: Tensor, prob_pert: Tensor, target: Tensor
+def _accuracy(
+    prob_original: Tensor,
+    prob_pert: Tensor,
+    target: Tensor,
+    threshold: float = 0.5,
 ) -> Tensor:
-    return _select_targets(prob_original, target) - _select_targets(
-        prob_pert, target
-    )
+    return (_select_targets(prob_pert, target) >= threshold).float()
 
 
 @log_usage()
-def sufficiency(
+def accuracy(
     forward_func: Callable,
     inputs: TensorOrTupleOfTensorsGeneric,
     attributions: TensorOrTupleOfTensorsGeneric,
@@ -29,12 +30,10 @@ def sufficiency(
     additional_forward_args: Any = None,
     target: TargetType = None,
     topk: float = 0.2,
+    threshold: float = 0.5,
 ) -> Tensor:
-    # Inverse topk to select the non topk
-    topk = 1.0 - topk
-
     return _base_metric(
-        metric=_sufficiency,
+        metric=_accuracy,
         forward_func=forward_func,
         inputs=inputs,
         attributions=attributions,
@@ -42,5 +41,6 @@ def sufficiency(
         additional_forward_args=additional_forward_args,
         target=target,
         topk=topk,
-        largest=False,
+        largest=True,
+        threshold=threshold,
     )
