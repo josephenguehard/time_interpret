@@ -3,6 +3,8 @@ import os
 import pickle as pkl
 import torch as th
 
+from typing import Callable
+
 from .dataset import DataModule
 
 try:
@@ -119,9 +121,11 @@ class Arma(DataModule):
 
         if dim == 1:
             # Create a fixed permutation for each experiment
-            perm = th.randperm(self.features)
             for i in range(len(features)):
-                perm = th.randperm(self.features)
+                perm = th.randperm(
+                    self.features,
+                    generator=th.Generator().manual_seed(self.seed),
+                )
                 outputs[
                     i,
                     int(self.times / 4) : int(3 * self.times / 4),
@@ -134,6 +138,7 @@ class Arma(DataModule):
                     low=0,
                     high=self.times - self.subset,
                     size=(1,),
+                    generator=th.Generator().manual_seed(self.seed),
                 )
                 outputs[
                     i,
@@ -146,33 +151,30 @@ class Arma(DataModule):
 
         return outputs
 
-    def white_box(
-        self, split: str = "train", dim: int = 1
-    ) -> (th.Tensor, th.Tensor):
+    @staticmethod
+    def get_white_box(true_saliency: th.Tensor) -> Callable:
         """
         Create a white box regressor to be interpreted.
 
         Args:
-            split (str): Which split to use: train or test.
-                Default to ``'train'``
-            dim: On which feature to create a subset of the data.
-                Default to 1
+            true_saliency (th.Tensor): The true saliency.
 
         Returns:
-            (th.Tensor, th.Tensor): Output data and true saliency.
+            th.Tensor: Output data.
         """
-        file = os.path.join(self.data_dir, f"{split}.npz")
 
-        # Load data
-        with open(file, "rb") as fp:
-            features = th.from_numpy(pkl.load(file=fp)).float()
+        def white_box(inputs: th.Tensor, n_steps: int = 1):
+            outputs = th.zeros(inputs.shape)
 
-        true_saliency = self.true_saliency(split=split, dim=dim)
+            # Reshape true_saliency
+            _true_saliency = th.cat(
+                [true_saliency for _ in range(n_steps)], dim=0
+            )
 
-        outputs = th.zeros(features.shape)
+            # Populate the features
+            outputs[_true_saliency.bool()] = inputs[_true_saliency.bool()]
 
-        # Populate the features
-        outputs[true_saliency.bool()] = features[true_saliency.bool()]
+            outputs = (outputs**2).sum(dim=-1)
+            return outputs
 
-        outputs = (outputs**2).sum(dim=-1)
-        return outputs, true_saliency
+        return white_box
