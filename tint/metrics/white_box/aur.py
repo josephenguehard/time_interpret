@@ -14,14 +14,11 @@ def _aur(
     true_attributions: Tuple[np.ndarray],
     attributions_subset: Tuple[np.ndarray],
 ) -> Tuple[float]:
-    precision_tpl, recall_tpl, thresholds_tpl = tuple(
+    pre_rec_tpl = tuple(
         precision_recall_curve(true_attr, attr)
         for true_attr, attr in zip(true_attributions, attributions)
     )
-    return tuple(
-        auc(thresholds, recall[:-1])
-        for thresholds, recall in zip(thresholds_tpl, recall_tpl)
-    )
+    return tuple(auc(pre_rec[2], pre_rec[1][:-1]) for pre_rec in pre_rec_tpl)
 
 
 @log_usage()

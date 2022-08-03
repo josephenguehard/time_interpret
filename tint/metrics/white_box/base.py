@@ -1,7 +1,12 @@
 import torch
 
 from captum.log import log_usage
-from captum._utils.common import _format_tensor_into_tuples
+from captum._utils.common import (
+    _is_tuple,
+    _format_input,
+    _format_output,
+    _validate_input,
+)
 from captum._utils.typing import TensorOrTupleOfTensorsGeneric
 
 from typing import Callable, Tuple
@@ -16,8 +21,12 @@ def _base_white_box_metric(
     true_attributions: TensorOrTupleOfTensorsGeneric,
 ) -> Tuple[float]:
     # Convert attributions into tuple
-    attributions = _format_tensor_into_tuples(attributions)
-    true_attributions = _format_tensor_into_tuples(true_attributions)
+    is_inputs_tuple = _is_tuple(attributions)
+    attributions = _format_input(attributions)
+    true_attributions = _format_input(true_attributions)
+
+    # Validate input
+    _validate_input(attributions, true_attributions)
 
     # Take the absolute value of attributions
     attributions = tuple(torch.abs(attr) for attr in attributions)
@@ -28,6 +37,14 @@ def _base_white_box_metric(
     )
     max_tpl = tuple(
         attr.reshape(len(attr), -1).max(dim=-1).values for attr in attributions
+    )
+    min_tpl = tuple(
+        min_.view((len(attr),) + (1,) * (len(attr.shape) - 1))
+        for min_, attr in zip(min_tpl, attributions)
+    )
+    max_tpl = tuple(
+        max_.view((len(attr),) + (1,) * (len(attr.shape) - 1))
+        for max_, attr in zip(max_tpl, attributions)
     )
     attributions = tuple(
         (attr - min_) / (max_ + EPS)
@@ -50,4 +67,7 @@ def _base_white_box_metric(
     attributions_subset = tuple(attr.numpy() for attr in attributions_subset)
 
     # Compute metric
-    return metric(attributions, true_attributions, attributions_subset)
+    output = metric(attributions, true_attributions, attributions_subset)
+
+    # Return output
+    return _format_output(is_inputs_tuple, output)  # type: ignore
