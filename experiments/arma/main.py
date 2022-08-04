@@ -17,8 +17,8 @@ from tint.datasets import Arma
 from tint.metrics.white_box import aup, aur, information, entropy
 
 
-def main(rare_dim: int, explainers: List[str], accelerator: str = "cpu"):
-    arma = Arma()
+def main(rare_dim: int, explainers: List[str], accelerator: str = "cpu", seed: int = 42):
+    arma = Arma(seed=seed)
     arma.download()
 
     x = arma.preprocess()["x"][:10]
@@ -93,6 +93,8 @@ def main(rare_dim: int, explainers: List[str], accelerator: str = "cpu"):
 
     with open("results.csv", "a") as fp:
         for k, v in attr.items():
+            fp.write("rare-feature" if rare_dim == 1 else "rare-time")
+            fp.write("," + str(seed) + ",")
             fp.write(k + ",")
             fp.write(f"{aup(v, true_saliency):.4},")
             fp.write(f"{aur(v, true_saliency):.4},")
@@ -129,6 +131,12 @@ def parse_args():
         default="cpu",
         help="Which accelerator to use.",
     )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=42,
+        help="Random seed for data generation",
+    )
     return parser.parse_args()
 
 
@@ -138,4 +146,5 @@ if __name__ == "__main__":
         rare_dim=args.rare_dim,
         explainers=args.explainers,
         accelerator=args.accelerator,
+        seed=args.seed,
     )
