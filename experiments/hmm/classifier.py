@@ -1,6 +1,11 @@
 import torch as th
 import torch.nn as nn
 
+from torchmetrics import Accuracy, Precision, Recall, AUROC
+from typing import Callable, Union
+
+from tint.models import Net
+
 
 class StateClassifier(nn.Module):
     def __init__(
@@ -11,14 +16,12 @@ class StateClassifier(nn.Module):
         rnn: str = "GRU",
         regres: bool = True,
         bidirectional: bool = False,
-        return_all: bool = False,
     ):
         super(StateClassifier, self).__init__()
         self.hidden_size = hidden_size
         self.n_state = n_state
         self.rnn_type = rnn
         self.regres = regres
-        self.return_all = return_all
         # Input to torch LSTM should be of size (seq_len, batch, input_size)
         if self.rnn_type == "GRU":
             self.rnn = nn.GRU(
@@ -26,14 +29,14 @@ class StateClassifier(nn.Module):
                 self.hidden_size,
                 bidirectional=bidirectional,
                 batch_first=True,
-            ).to(self.device)
+            )
         else:
             self.rnn = nn.LSTM(
                 feature_size,
                 self.hidden_size,
                 bidirectional=bidirectional,
                 batch_first=True,
-            ).to(self.device)
+            )
 
         self.regressor = nn.Sequential(
             nn.BatchNorm1d(num_features=self.hidden_size),
@@ -49,16 +52,76 @@ class StateClassifier(nn.Module):
             all_encodings, (encoding, state) = self.rnn(x)
 
         if self.regres:
-            if not self.return_all:
-                return self.regressor(encoding.view(encoding.shape[1], -1))
-            else:
-                reshaped_encodings = all_encodings.view(
-                    all_encodings.shape[1] * all_encodings.shape[0], -1
-                )
-                return th.t(
-                    self.regressor(reshaped_encodings).view(
-                        all_encodings.shape[0], -1
-                    )
-                )
-        else:
-            return encoding.view(encoding.shape[1], -1)
+            return self.regressor(encoding.view(encoding.shape[1], -1))
+        return encoding.view(encoding.shape[1], -1)
+
+
+class StateClassifierNet(Net):
+    def __init__(
+        self,
+        feature_size: int,
+        n_state: int,
+        hidden_size: int,
+        rnn: str = "GRU",
+        regres: bool = True,
+        bidirectional: bool = False,
+        loss: Union[str, Callable] = "mse",
+        optim: str = "adam",
+        lr: float = 0.001,
+        lr_scheduler: Union[dict, str] = None,
+        lr_scheduler_args: dict = None,
+        l2: float = 0.0,
+    ):
+        classifier = StateClassifier(
+            feature_size=feature_size,
+            n_state=n_state,
+            hidden_size=hidden_size,
+            rnn=rnn,
+            regres=regres,
+            bidirectional=bidirectional,
+        )
+
+        super().__init__(
+            layers=classifier,
+            loss=loss,
+            optim=optim,
+            lr=lr,
+            lr_scheduler=lr_scheduler,
+            lr_scheduler_args=lr_scheduler_args,
+            l2=l2,
+        )
+
+        for split in ["train", "val", "test"]:
+            setattr(self, split + "_acc", Accuracy())
+            setattr(self, split + "_pre", Precision())
+            setattr(self, split + "_rec", Recall())
+            setattr(self, split + "_auroc", AUROC())
+
+    def step(self, batch, t, split):  # noqa
+        x, y = batch
+        x = x[:, : t + 1]
+        y = y[:, t]
+        y_hat = self(x)
+        loss = self._loss(y_hat, y.long())
+
+        for metric in ["acc", "pre", "rec", "auroc"]:
+            getattr(self, split + "_" + metric)(y_hat[:, 1], y.long())
+            self.log(split + "_" + metric, getattr(self, split + "_" + metric))
+
+        return loss
+
+    def training_step(self, batch, batch_idx):
+        t = th.randint(batch[1].shape[-1], (1,)).item()
+        loss = self.step(batch=batch, t=t, split="train")
+        self.log("train_loss", loss)
+        return loss
+
+    def validation_step(self, batch, batch_idx):
+        t = th.randint(batch[1].shape[-1], (1,)).item()
+        loss = self.step(batch=batch, t=t, split="val")
+        self.log("val_loss", loss)
+
+    def test_step(self, batch, batch_idx):
+        t = batch[1].shape[-1] - 1
+        loss = self.step(batch=batch, t=t, split="test")
+        self.log("test_loss", loss)
