@@ -2,6 +2,9 @@ import numpy as np
 import torch as th
 import torch.nn as nn
 
+from captum._utils.common import _run_forward
+from captum._utils.typing import TargetType
+
 from typing import Callable, Union
 
 from tint.models import Net
@@ -132,15 +135,20 @@ class Mask(nn.Module):
         mask = 1.0 - self.mask if self.deletion_mode else self.mask
         return x_ref + mask * (x - x_ref)
 
-    def forward(self, x: th.Tensor) -> th.Tensor:
+    def forward(self, x: th.Tensor, target: TargetType, *args) -> th.Tensor:
         # Clamp mask
         self.clamp()
 
         # Get perturbed input
-        x = getattr(self, self.perturbation)(x, **self.kwargs)
+        x_pert = getattr(self, self.perturbation)(x, **self.kwargs)
 
         # Return f(perturbed x)
-        return self.forward_func(x)
+        return _run_forward(
+            forward_func=self.forward_func,
+            inputs=x_pert,
+            target=target,
+            additional_forward_args=args,
+        )
 
     def regularisation(self, loss: th.Tensor) -> th.Tensor:
         # Get size regularisation
@@ -230,14 +238,24 @@ class MaskNet(Net):
             lr_scheduler_args=lr_scheduler_args,
             l2=l2,
         )
-        self.i = 0
+
+    def forward(self, *args, **kwargs) -> th.Tensor:
+        return self.net(*args, **kwargs)
 
     def step(self, batch):
         # x is the data to be perturbed
         # y is the same data without perturbation
-        x, y = batch
-        y_hat = self(x.float())
-        loss = self._loss(y_hat, self.net.forward_func(y))
+        x, y, target, *args = batch
+        y_hat = self(x.float(), target, *args)
+        loss = self._loss(
+            y_hat,
+            _run_forward(
+                forward_func=self.net.forward_func,
+                inputs=y,
+                target=target,
+                additional_forward_args=tuple(args),
+            )
+        )
         return loss
 
     def training_step_end(self, step_output):

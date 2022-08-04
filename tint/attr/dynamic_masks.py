@@ -8,12 +8,14 @@ from captum._utils.common import (
     _format_output,
     _is_tuple,
 )
-from captum._utils.typing import TensorOrTupleOfTensorsGeneric
+from captum._utils.typing import TensorOrTupleOfTensorsGeneric, TargetType
 
 from pytorch_lightning import Trainer
-from torch.utils.data import DataLoader, TensorDataset
-from typing import Callable
+from torch import Tensor
+from torch.utils.data import DataLoader
+from typing import Any, Callable
 
+from tint.utils import TensorDataset, default_collate
 from .models import MaskNet
 
 
@@ -36,6 +38,8 @@ class DynaMask(PerturbationAttribution):
     def attribute(
         self,
         inputs: TensorOrTupleOfTensorsGeneric,
+        target: TargetType = None,
+        additional_forward_args: Any = None,
         trainer: Trainer = None,
         mask_net: MaskNet = None,
         batch_size: int = 32,
@@ -45,6 +49,9 @@ class DynaMask(PerturbationAttribution):
 
         Args:
             inputs (tuple, th.Tensor): Input data.
+            target (TargetType): Target data. Default to ``None``
+            additional_forward_args (Any): Any additional argument passed
+                to the model. Default to ``None``
             trainer (Trainer): Pytorch Lightning trainer. If ``None``, a
                 default trainer will be provided. Default to ``None``
             mask_net (MaskNet): A Mask model. If ``None``, a default model
@@ -87,7 +94,13 @@ class DynaMask(PerturbationAttribution):
 
         # Prepare data
         dataloader = DataLoader(
-            TensorDataset(inputs[0], inputs[0]), batch_size=batch_size
+            TensorDataset(
+                *(inputs[0], inputs[0], target, *additional_forward_args)
+                if additional_forward_args is not None
+                else (inputs[0], inputs[0], target, None)
+            ),
+            batch_size=batch_size,
+            collate_fn=default_collate,
         )
 
         # Fit model
