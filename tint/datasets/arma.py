@@ -155,7 +155,6 @@ class Arma(DataModule):
     def get_white_box(
         inputs: th.Tensor,
         true_saliency: th.Tensor,
-        n_steps: int = 1,
     ) -> th.Tensor:
         """
         Create a white box regressor to be interpreted.
@@ -163,19 +162,14 @@ class Arma(DataModule):
         Args:
             inputs (th.Tensor): The input data.
             true_saliency (th.Tensor): The true saliency.
-            n_steps (int): Number of steps if required for methods such as
-                IntegratedGradients. Default to 1
 
         Returns:
             th.Tensor: Output data.
         """
         outputs = th.zeros(inputs.shape)
 
-        # Reshape true_saliency
-        _true_saliency = th.cat([true_saliency for _ in range(n_steps)], dim=0)
-
         # Populate the features
-        outputs[_true_saliency.bool()] = inputs[_true_saliency.bool()]
+        outputs[true_saliency.bool()] = inputs[true_saliency.bool()]
 
         outputs = (outputs**2).sum(dim=-1)
         return outputs
