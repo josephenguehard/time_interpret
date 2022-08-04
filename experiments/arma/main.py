@@ -17,7 +17,12 @@ from tint.datasets import Arma
 from tint.metrics.white_box import aup, aur, information, entropy
 
 
-def main(rare_dim: int, explainers: List[str], accelerator: str = "cpu", seed: int = 42):
+def main(
+    rare_dim: int,
+    explainers: List[str],
+    accelerator: str = "cpu",
+    seed: int = 42,
+):
     arma = Arma(seed=seed)
     arma.download()
 
@@ -99,7 +104,7 @@ def main(rare_dim: int, explainers: List[str], accelerator: str = "cpu", seed: i
             fp.write(f"{aup(v, true_saliency):.4},")
             fp.write(f"{aur(v, true_saliency):.4},")
             fp.write(f"{information(v, true_saliency):.4},")
-            fp.write(f"{entropy(v, true_saliency):.4},")
+            fp.write(f"{entropy(v, true_saliency):.4}")
             fp.write("\n")
 
 
