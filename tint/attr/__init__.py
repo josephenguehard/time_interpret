@@ -8,6 +8,7 @@ from captum.attr import (
     Occlusion,
     Saliency,
     KernelShap,
+    ShapleyValueSampling,
 )
 
 from .augmented_occlusion import AugmentedOcclusion
@@ -40,6 +41,7 @@ __all__ = [
     "Occlusion",
     "Retain",
     "Saliency",
+    "ShapleyValueSampling",
     "SmoothGrad",
     "TemporalIntegratedGradients",
     "TimeForwardTunnel",
