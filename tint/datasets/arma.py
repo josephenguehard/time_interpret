@@ -155,7 +155,7 @@ class Arma(DataModule):
     def get_white_box(
         inputs: th.Tensor,
         true_saliency: th.Tensor,
-        n_steps: Union[int, th.Tensor] = 1,
+        n_steps: int = 1,
     ) -> th.Tensor:
         """
         Create a white box regressor to be interpreted.
@@ -163,17 +163,13 @@ class Arma(DataModule):
         Args:
             inputs (th.Tensor): The input data.
             true_saliency (th.Tensor): The true saliency.
-            n_steps (int, th.Tensor): Number of steps if required for methods such as
+            n_steps (int): Number of steps if required for methods such as
                 IntegratedGradients. Default to 1
 
         Returns:
             th.Tensor: Output data.
         """
         outputs = th.zeros(inputs.shape)
-
-        # If n_steps is a tensor, get first value
-        if isinstance(n_steps, th.Tensor):
-            n_steps = n_steps[0].item()
 
         # Reshape true_saliency
         _true_saliency = th.cat([true_saliency for _ in range(n_steps)], dim=0)

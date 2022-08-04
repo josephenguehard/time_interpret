@@ -85,12 +85,8 @@ def default_collate(batch):
             return default_collate([torch.as_tensor(b) for b in batch])
         elif elem.shape == ():  # scalars
             return torch.as_tensor(batch)
-    elif isinstance(elem, float):
-        return torch.tensor(batch, dtype=torch.float64)
-    elif isinstance(elem, int):
-        return torch.tensor(batch)
-    elif isinstance(elem, string_classes):
-        return batch
+    elif isinstance(elem, (float, int, string_classes)):
+        return elem
     elif elem is None:
         return None
     elif isinstance(elem, collections.abc.Mapping):
@@ -115,14 +111,14 @@ def default_collate(batch):
             raise RuntimeError(
                 "each element in list of batch should be of equal size"
             )
-        transposed = tuple(
+        transposed = list(
             zip(*batch)
         )  # It may be accessed twice, so we use a list.
 
         if isinstance(elem, tuple):
-            return tuple(
+            return [
                 default_collate(samples) for samples in transposed
-            )  # Backwards compatibility.
+            ]  # Backwards compatibility.
         else:
             try:
                 return elem_type(
