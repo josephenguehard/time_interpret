@@ -14,50 +14,11 @@ default_collate_err_msg_format = (
 
 def default_collate(batch):
     r"""
-    Function that takes in a batch of data and puts the elements within the batch
-    into a tensor with an additional outer dimension - batch size. The exact output type can be
-    a :class:`torch.Tensor`, a `Sequence` of :class:`torch.Tensor`, a
-    Collection of :class:`torch.Tensor`, or left unchanged, depending on the input type.
-    This is used as the default function for collation when
-    `batch_size` or `batch_sampler` is defined in :class:`~torch.utils.data.DataLoader`.
-
-    Here is the general input type (based on the type of the element within the batch) to output type mapping:
-
-        * :class:`torch.Tensor` -> :class:`torch.Tensor` (with an added outer dimension batch size)
-        * NumPy Arrays -> :class:`torch.Tensor`
-        * `float` -> :class:`torch.Tensor`
-        * `int` -> :class:`torch.Tensor`
-        * `str` -> `str` (unchanged)
-        * `bytes` -> `bytes` (unchanged)
-        * `Mapping[K, V_i]` -> `Mapping[K, default_collate([V_1, V_2, ...])]`
-        * `NamedTuple[V1_i, V2_i, ...]` -> `NamedTuple[default_collate([V1_1, V1_2, ...]),
-          default_collate([V2_1, V2_2, ...]), ...]`
-        * `Sequence[V1_i, V2_i, ...]` -> `Sequence[default_collate([V1_1, V1_2, ...]),
-          default_collate([V2_1, V2_2, ...]), ...]`
+    This method modifies the original collate function by only indexing tensors.
+    Every other type of input (int, float, None) will be returned as it is.
 
     Args:
         batch: a single batch to be collated
-
-    Examples:
-        >>> # Example with a batch of `int`s:
-        >>> default_collate([0, 1, 2, 3])
-        tensor([0, 1, 2, 3])
-        >>> # Example with a batch of `str`s:
-        >>> default_collate(['a', 'b', 'c'])
-        ['a', 'b', 'c']
-        >>> # Example with `Map` inside the batch:
-        >>> default_collate([{'A': 0, 'B': 1}, {'A': 100, 'B': 100}])
-        {'A': tensor([  0, 100]), 'B': tensor([  1, 100])}
-        >>> # Example with `NamedTuple` inside the batch:
-        >>> Point = namedtuple('Point', ['x', 'y'])
-        >>> default_collate([Point(0, 0), Point(1, 1)])
-        Point(x=tensor([0, 1]), y=tensor([0, 1]))
-        >>> # Example with `Tuple` inside the batch:
-        >>> default_collate([(0, 1), (2, 3)])
-        [tensor([0, 2]), tensor([1, 3])]
-        >>> # Example with `List` inside the batch:
-        >>> default_collate([[0, 1], [2, 3]])
-        [tensor([0, 2]), tensor([1, 3])]
     """
     elem = batch[0]
     elem_type = type(elem)
@@ -85,6 +46,8 @@ def default_collate(batch):
             return default_collate([torch.as_tensor(b) for b in batch])
         elif elem.shape == ():  # scalars
             return torch.as_tensor(batch)
+    # If elem is a float, int, string or None,
+    # the elem is returned without transformation
     elif isinstance(elem, (float, int, string_classes)):
         return elem
     elif elem is None:

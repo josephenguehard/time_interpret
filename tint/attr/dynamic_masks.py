@@ -8,10 +8,9 @@ from captum._utils.common import (
     _format_output,
     _is_tuple,
 )
-from captum._utils.typing import TensorOrTupleOfTensorsGeneric, TargetType
+from captum._utils.typing import TensorOrTupleOfTensorsGeneric
 
 from pytorch_lightning import Trainer
-from torch import Tensor
 from torch.utils.data import DataLoader
 from typing import Any, Callable
 
@@ -38,7 +37,6 @@ class DynaMask(PerturbationAttribution):
     def attribute(
         self,
         inputs: TensorOrTupleOfTensorsGeneric,
-        target: TargetType = None,
         additional_forward_args: Any = None,
         trainer: Trainer = None,
         mask_net: MaskNet = None,
@@ -49,7 +47,6 @@ class DynaMask(PerturbationAttribution):
 
         Args:
             inputs (tuple, th.Tensor): Input data.
-            target (TargetType): Target data. Default to ``None``
             additional_forward_args (Any): Any additional argument passed
                 to the model. Default to ``None``
             trainer (Trainer): Pytorch Lightning trainer. If ``None``, a
@@ -95,9 +92,9 @@ class DynaMask(PerturbationAttribution):
         # Prepare data
         dataloader = DataLoader(
             TensorDataset(
-                *(inputs[0], inputs[0], target, *additional_forward_args)
+                *(inputs[0], inputs[0], *additional_forward_args)
                 if additional_forward_args is not None
-                else (inputs[0], inputs[0], target, None)
+                else (inputs[0], inputs[0], None)
             ),
             batch_size=batch_size,
             collate_fn=default_collate,
@@ -110,7 +107,14 @@ class DynaMask(PerturbationAttribution):
         mask_net.eval()
 
         # Get attributions as mask representation
-        attributions = (mask_net.net.representation(),)
+        attributions = (
+            mask_net.representation(
+                inputs[0],
+                *additional_forward_args
+                if additional_forward_args is not None
+                else (inputs[0], None)
+            ),
+        )
 
         # Format attributions and return
         return _format_output(is_inputs_tuple, attributions)

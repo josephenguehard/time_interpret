@@ -4,12 +4,15 @@ from typing import Tuple
 
 
 class TensorDataset(Dataset[Tuple[Tensor, ...]]):
-    r"""Dataset wrapping tensors.
+    r"""
+    Dataset wrapping tensors.
 
-    Each sample will be retrieved by indexing tensors along the first dimension.
+    This modifies the original TensorDataset by allowing non tensor data.
+    Each non tensor is returned as it is, while tensors are indexed.
 
     Args:
-        *tensors (Tensor): tensors that have the same size of the first dimension.
+        *inputs (Any): Any kind of input. Each tensor must have the
+            same first dimension.
     """
     tensors: Tuple[Tensor, ...]
 
