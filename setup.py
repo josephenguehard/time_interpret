@@ -26,6 +26,7 @@ setup(
         "pandas",
         "pytorch-lightning",
         "scikit-learn",
+        "torchmetrics",
         "torchvision",
     ],
     dependency_links=[],
