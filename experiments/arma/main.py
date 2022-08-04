@@ -32,14 +32,20 @@ def main(rare_dim: int, explainers: List[str], accelerator: str = "cpu"):
             explainer = Occlusion(forward_func=arma.get_white_box)
             baseline = th.mean(inputs, dim=0, keepdim=True)
             attr["occlusion"][i] = explainer.attribute(
-                inputs, sliding_window_shapes=(1,), baselines=baseline, additional_forward_args=(saliency,),
+                inputs,
+                sliding_window_shapes=(1,),
+                baselines=baseline,
+                additional_forward_args=(saliency,),
             )
 
     if "permutation" in explainers:
         attr["permutation"] = th.zeros_like(x)
         for i, (inputs, saliency) in enumerate(zip(x, true_saliency)):
             explainer = FeaturePermutation(forward_func=arma.get_white_box)
-            attr["permutation"][i] = explainer.attribute(inputs, additional_forward_args=(saliency,),)
+            attr["permutation"][i] = explainer.attribute(
+                inputs,
+                additional_forward_args=(saliency,),
+            )
 
     if "integrated_gradients" in explainers:
         attr["integrated_gradients"] = th.zeros_like(x)
@@ -47,7 +53,9 @@ def main(rare_dim: int, explainers: List[str], accelerator: str = "cpu"):
             explainer = IntegratedGradients(forward_func=arma.get_white_box)
             baseline = inputs * 0
             attr["integrated_gradients"][i] = explainer.attribute(
-                inputs, baselines=baseline, additional_forward_args=(saliency,),
+                inputs,
+                baselines=baseline,
+                additional_forward_args=(saliency,),
             )
 
     if "shapley_values_sampling" in explainers:
@@ -56,7 +64,9 @@ def main(rare_dim: int, explainers: List[str], accelerator: str = "cpu"):
             explainer = ShapleyValueSampling(forward_func=arma.get_white_box)
             baseline = th.mean(inputs, dim=0, keepdim=True)
             attr["shapley_values_sampling"][i] = explainer.attribute(
-                inputs, baselines=baseline, additional_forward_args=(saliency,),
+                inputs,
+                baselines=baseline,
+                additional_forward_args=(saliency,),
             )
 
     if "dyna_mask" in explainers:
@@ -102,7 +112,13 @@ def parse_args():
     parser.add_argument(
         "--explainers",
         type=str,
-        default=["occlusion", "permutation", "integrated_gradients", "shapley_values_sampling", "dyna_mask"],
+        default=[
+            "occlusion",
+            "permutation",
+            "integrated_gradients",
+            "shapley_values_sampling",
+            "dyna_mask",
+        ],
         nargs="+",
         metavar="N",
         help="List of explainer to use.",
@@ -118,4 +134,8 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    main(rare_dim=args.rare_dim, explainers=args.explainers, accelerator=args.accelerator)
+    main(
+        rare_dim=args.rare_dim,
+        explainers=args.explainers,
+        accelerator=args.accelerator,
+    )
