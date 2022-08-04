@@ -212,7 +212,7 @@ class MaskNet(Net):
             Default to ``'fade_moving_average'``
         initial_mask_coef (float): Which value to use to initialise the mask.
             Default to 0.5
-        keep_ratio (float): Fraction of elements in x that should be kept by
+        keep_ratio (float, list): Fraction of elements in x that should be kept by
             the mask. Default to 0.5
         size_reg_factor_init (float): Initial coefficient for the regulator
             part of the total loss. Default to 0.5
@@ -233,7 +233,7 @@ class MaskNet(Net):
         forward_func: Callable,
         perturbation: str = "fade_moving_average",
         initial_mask_coef: float = 0.5,
-        keep_ratio: float = 0.5,
+        keep_ratio: Union[float, List[float]] = 0.5,
         size_reg_factor_init: float = 0.5,
         size_reg_factor_dilation: float = 100.0,
         loss: Union[str, Callable] = "mse",
