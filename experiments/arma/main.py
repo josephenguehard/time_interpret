@@ -1,6 +1,7 @@
 import numpy as np
 import torch as th
 
+from argparse import ArgumentParser
 from pytorch_lightning import Trainer
 from typing import List
 
@@ -27,35 +28,35 @@ def main(rare_dim: int, explainers: List[str], accelerator: str = "cpu"):
 
     if "occlusion" in explainers:
         attr["occlusion"] = th.zeros_like(x)
-        for i, inputs, saliency in enumerate(zip(x, true_saliency)):
+        for i, (inputs, saliency) in enumerate(zip(x, true_saliency)):
             explainer = Occlusion(forward_func=arma.get_white_box)
             baseline = th.mean(inputs, dim=0, keepdim=True)
             attr["occlusion"][i] = explainer.attribute(
-                inputs, sliding_window_shapes=(1,), baselines=baseline
+                inputs, sliding_window_shapes=(1,), baselines=baseline, additional_forward_args=(saliency,),
             )
 
     if "permutation" in explainers:
         attr["permutation"] = th.zeros_like(x)
-        for i, inputs, saliency in enumerate(zip(x, true_saliency)):
+        for i, (inputs, saliency) in enumerate(zip(x, true_saliency)):
             explainer = FeaturePermutation(forward_func=arma.get_white_box)
-            attr["permutation"][i] = explainer.attribute(inputs)
+            attr["permutation"][i] = explainer.attribute(inputs, additional_forward_args=(saliency,),)
 
     if "integrated_gradients" in explainers:
         attr["integrated_gradients"] = th.zeros_like(x)
-        for i, inputs, saliency in enumerate(zip(x, true_saliency)):
+        for i, (inputs, saliency) in enumerate(zip(x, true_saliency)):
             explainer = IntegratedGradients(forward_func=arma.get_white_box)
             baseline = inputs * 0
             attr["integrated_gradients"][i] = explainer.attribute(
-                inputs, baselines=baseline
+                inputs, baselines=baseline, additional_forward_args=(saliency,),
             )
 
     if "shapley_values_sampling" in explainers:
         attr["shapley_values_sampling"] = th.zeros_like(x)
-        for i, inputs, saliency in enumerate(zip(x, true_saliency)):
+        for i, (inputs, saliency) in enumerate(zip(x, true_saliency)):
             explainer = ShapleyValueSampling(forward_func=arma.get_white_box)
             baseline = th.mean(inputs, dim=0, keepdim=True)
             attr["shapley_values_sampling"][i] = explainer.attribute(
-                inputs, baselines=baseline
+                inputs, baselines=baseline, additional_forward_args=(saliency,),
             )
 
     if "dyna_mask" in explainers:
@@ -88,3 +89,33 @@ def main(rare_dim: int, explainers: List[str], accelerator: str = "cpu"):
             fp.write(f"{information(v, true_saliency):.4},")
             fp.write(f"{entropy(v, true_saliency):.4},")
             fp.write("\n")
+
+
+def parse_args():
+    parser = ArgumentParser()
+    parser.add_argument(
+        "--rare-dim",
+        type=int,
+        default=1,
+        help="Whether to run the rare features or rare time experiment.",
+    )
+    parser.add_argument(
+        "--explainers",
+        type=str,
+        default=["occlusion", "permutation", "integrated_gradients", "shapley_values_sampling", "dyna_mask"],
+        nargs="+",
+        metavar="N",
+        help="List of explainer to use.",
+    )
+    parser.add_argument(
+        "--accelerator",
+        type=str,
+        default="cpu",
+        help="Which accelerator to use.",
+    )
+    return parser.parse_args()
+
+
+if __name__ == "__main__":
+    args = parse_args()
+    main(rare_dim=args.rare_dim, explainers=args.explainers, accelerator=args.accelerator)
