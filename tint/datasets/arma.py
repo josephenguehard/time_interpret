@@ -3,8 +3,6 @@ import os
 import pickle as pkl
 import torch as th
 
-from typing import Union
-
 from .dataset import DataModule
 
 try:
