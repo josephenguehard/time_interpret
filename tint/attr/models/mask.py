@@ -254,7 +254,7 @@ class MaskNet(Net):
                 inputs=y,
                 target=target,
                 additional_forward_args=tuple(args),
-            )
+            ),
         )
         return loss
 

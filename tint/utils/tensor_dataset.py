@@ -15,12 +15,16 @@ class TensorDataset(Dataset[Tuple[Tensor, ...]]):
 
     def __init__(self, *inputs) -> None:
         tensors = tuple(x for x in inputs if isinstance(x, Tensor))
-        assert all(tensors[0].size(0) == tensor.size(0) for tensor in tensors), "Size mismatch between tensors"
+        assert all(
+            tensors[0].size(0) == tensor.size(0) for tensor in tensors
+        ), "Size mismatch between tensors"
         self.tensors = tensors
         self.inputs = inputs
 
     def __getitem__(self, index):
-        return tuple(x[index] if isinstance(x, Tensor) else x for x in self.inputs)
+        return tuple(
+            x[index] if isinstance(x, Tensor) else x for x in self.inputs
+        )
 
     def __len__(self):
         return self.tensors[0].size(0)

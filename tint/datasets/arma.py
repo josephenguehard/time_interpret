@@ -153,7 +153,9 @@ class Arma(DataModule):
 
     @staticmethod
     def get_white_box(
-        inputs: th.Tensor, true_saliency: th.Tensor, n_steps: Union[int, th.Tensor] = 1
+        inputs: th.Tensor,
+        true_saliency: th.Tensor,
+        n_steps: Union[int, th.Tensor] = 1,
     ) -> th.Tensor:
         """
         Create a white box regressor to be interpreted.
