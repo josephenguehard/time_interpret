@@ -267,7 +267,7 @@ class MaskNet(Net):
     def forward(self, *args, **kwargs) -> th.Tensor:
         return self.net(*args, **kwargs)
 
-    def step(self, batch):
+    def step(self, batch, stage):
         # x is the data to be perturbed
         # y is the same data without perturbation
         x, y, *additional_forward_args = batch

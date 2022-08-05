@@ -80,7 +80,7 @@ class Net(pl.LightningModule):
     def forward(self, x: th.Tensor) -> th.Tensor:
         return self.net(x)
 
-    def step(self, batch):
+    def step(self, batch, stage):
         x, y = batch
         y_hat = self(x)
         if isinstance(y_hat, tuple):  # For Bert model
@@ -89,16 +89,16 @@ class Net(pl.LightningModule):
         return loss
 
     def training_step(self, batch, batch_idx):
-        loss = self.step(batch=batch)
+        loss = self.step(batch=batch, stage="train")
         self.log("train_loss", loss)
         return loss
 
     def validation_step(self, batch, batch_idx):
-        loss = self.step(batch=batch)
+        loss = self.step(batch=batch, stage="val")
         self.log("val_loss", loss)
 
     def test_step(self, batch, batch_idx):
-        loss = self.step(batch=batch)
+        loss = self.step(batch=batch, stage="test")
         self.log("test_loss", loss)
 
     def predict_step(self, batch, batch_idx, dataloader_idx=0):

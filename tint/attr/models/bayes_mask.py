@@ -90,7 +90,7 @@ class BayesMaskNet(Net):
             l2=l2,
         )
 
-    def step(self, batch):
+    def step(self, batch, stage):
         # x is the data to be perturbed
         # y is the same data without perturbation
         x, y = batch

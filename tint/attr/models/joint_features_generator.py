@@ -204,7 +204,7 @@ class JointFeatureGeneratorNet(Net):
             l2=l2,
         )
 
-    def step(self, batch):
+    def step(self, batch, stage):
         mean, covariance = self.net.likelihood_distribution(batch[0])
         dist = th.distributions.MultivariateNormal(
             loc=mean,

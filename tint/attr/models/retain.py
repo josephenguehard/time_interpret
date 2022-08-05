@@ -3,6 +3,7 @@ import torch.nn as nn
 
 from torch.autograd import Variable
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
+from torchmetrics import AUROC
 from typing import Callable, Union
 
 from tint.models import Net
@@ -198,7 +199,10 @@ class RetainNet(Net):
             l2=l2,
         )
 
-    def step(self, batch):
+        for stage in ["train", "val", "test"]:
+            setattr(self, stage + "_auroc", AUROC())
+
+    def step(self, batch, stage):
         x, y = batch
 
         lengths = th.randint(low=4, high=x.shape[1], size=(len(x),))
@@ -208,4 +212,8 @@ class RetainNet(Net):
         y_hat, _, _ = self.net(x=x.float(), lengths=lengths)
         y = y[th.arange(len(x)), lengths - 1, ...]
         loss = self._loss(y_hat, y)
+
+        getattr(self, stage + "_auroc")(y_hat[:, 1], y.long())
+        self.log(stage + "_auroc", getattr(self, stage + "_auroc"))
+
         return loss

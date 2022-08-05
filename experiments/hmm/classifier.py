@@ -91,13 +91,13 @@ class StateClassifierNet(Net):
             l2=l2,
         )
 
-        for split in ["train", "val", "test"]:
-            setattr(self, split + "_acc", Accuracy())
-            setattr(self, split + "_pre", Precision())
-            setattr(self, split + "_rec", Recall())
-            setattr(self, split + "_auroc", AUROC())
+        for stage in ["train", "val", "test"]:
+            setattr(self, stage + "_acc", Accuracy())
+            setattr(self, stage + "_pre", Precision())
+            setattr(self, stage + "_rec", Recall())
+            setattr(self, stage + "_auroc", AUROC())
 
-    def step(self, batch, t, split):  # noqa
+    def step(self, batch, stage, t):  # noqa
         x, y = batch
         x = x[:, : t + 1]
         y = y[:, t]
@@ -105,23 +105,23 @@ class StateClassifierNet(Net):
         loss = self._loss(y_hat, y.long())
 
         for metric in ["acc", "pre", "rec", "auroc"]:
-            getattr(self, split + "_" + metric)(y_hat[:, 1], y.long())
-            self.log(split + "_" + metric, getattr(self, split + "_" + metric))
+            getattr(self, stage + "_" + metric)(y_hat[:, 1], y.long())
+            self.log(stage + "_" + metric, getattr(self, stage + "_" + metric))
 
         return loss
 
     def training_step(self, batch, batch_idx):
         t = th.randint(batch[1].shape[-1], (1,)).item()
-        loss = self.step(batch=batch, t=t, split="train")
+        loss = self.step(batch=batch, stage="train", t=t)
         self.log("train_loss", loss)
         return loss
 
     def validation_step(self, batch, batch_idx):
         t = th.randint(batch[1].shape[-1], (1,)).item()
-        loss = self.step(batch=batch, t=t, split="val")
+        loss = self.step(batch=batch, stage="val", t=t)
         self.log("val_loss", loss)
 
     def test_step(self, batch, batch_idx):
         t = batch[1].shape[-1] - 1
-        loss = self.step(batch=batch, t=t, split="test")
+        loss = self.step(batch=batch, stage="test", t=t)
         self.log("test_loss", loss)
