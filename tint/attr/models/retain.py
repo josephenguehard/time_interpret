@@ -123,7 +123,7 @@ class Retain(nn.Module):
 
         # Beta -> batch_size X max_len X dim_emb
         # beta for padded visits will be zero-vectors
-        beta = th.nn.functional.tanh(self.beta_fc(beta_unpacked) * mask)
+        beta = th.tanh(self.beta_fc(beta_unpacked) * mask)
 
         # context -> batch_size X (1) X dim_emb (squeezed)
         # Context up to i-th visit context_i = sum(alpha_j * beta_j * emb_j)
