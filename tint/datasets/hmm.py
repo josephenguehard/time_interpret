@@ -213,7 +213,7 @@ class HMM(DataModule):
 
         return {
             "x": th.from_numpy(features).float(),
-            "y": th.from_numpy(labels).float(),
+            "y": th.from_numpy(labels).long(),
         }
 
     def prepare_data(self):
@@ -246,6 +246,6 @@ class HMM(DataModule):
             for exp_id, time_slice in enumerate(true_states):
                 for feature_id, t_id in enumerate(time_slice):
                     true_saliency[exp_id, feature_id, t_id] = 1
-            true_saliency = true_saliency.int()
+            true_saliency = true_saliency.long()
 
         return true_saliency
