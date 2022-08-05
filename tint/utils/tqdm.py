@@ -29,4 +29,5 @@ def get_progress_bars():
     Returns:
         A tqdm pbar.
     """
+    assert tqdm is not None, "tqdm is not installed"
     return tqdm_notebook if is_notebook_lab() else tqdm
