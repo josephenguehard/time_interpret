@@ -1,3 +1,5 @@
+import copy
+
 import torch
 import warnings
 
@@ -5,6 +7,7 @@ from captum.attr._utils.attribution import Attribution, GradientAttribution
 from captum.log import log_usage
 from captum._utils.common import (
     _format_input,
+    _format_baseline,
     _is_tuple,
     _format_tensor_into_tuples,
     _format_output,
@@ -13,6 +16,8 @@ from captum._utils.typing import TensorOrTupleOfTensorsGeneric
 
 from torch import Tensor
 from typing import Any, Tuple, Union, cast
+
+from tint.utils import get_progress_bars
 
 
 class TimeForwardTunnel(Attribution):
@@ -74,6 +79,7 @@ class TimeForwardTunnel(Attribution):
     def attribute(
         self,
         inputs: Union[Tensor, Tuple[Tensor, ...]],
+        show_progress: bool = False,
         **kwargs: Any,
     ) -> Union[
         Union[
@@ -98,6 +104,11 @@ class TimeForwardTunnel(Attribution):
                     dimension 1 corresponds to the time dimension, and if
                     multiple input tensors are provided, the examples must
                     be aligned appropriately.
+            show_progress (bool, optional): Displays the progress of computation.
+                        It will try to use tqdm if available for advanced features
+                        (e.g. time estimation). Otherwise, it will fallback to
+                        a simple output of progress.
+                        Default: False
             **kwargs: (Any, optional): Contains a list of arguments that are
                        passed  to `attribution_method` attribution algorithm.
                        Any additional arguments that should be used for the
@@ -147,9 +158,28 @@ class TimeForwardTunnel(Attribution):
         attributions_partial_list = list()
         delta_partial_list = list()
         is_attrib_tuple = True
-        for time in range(1, inputs[0].shape[1] + 1):
+
+        times = range(1, inputs[0].shape[1] + 1)
+        if show_progress:
+            times = get_progress_bars()(
+                times, desc=f"{self.attribution_method.get_name()} attribution"
+            )
+
+        for time in times:
             partial_inputs = tuple(x[:, :time, ...] for x in inputs)
             partial_targets = self.get_target(partial_inputs=partial_inputs)
+
+            # Get partial baselines if provided
+            _kwargs = None
+            if "baselines" in kwargs:
+                _kwargs = copy.deepcopy(kwargs)
+                baselines = _format_baseline(
+                    _kwargs["baselines"], partial_inputs
+                )
+                if isinstance(baselines[0], Tensor):
+                    _kwargs["baselines"] = tuple(
+                        x[:, :time, ...] for x in baselines
+                    )
 
             attributions_partial_sublist = list()
             delta_partial_list_sublist = list()
@@ -163,7 +193,7 @@ class TimeForwardTunnel(Attribution):
                     partial_target=partial_target,
                     is_inputs_tuple=is_inputs_tuple,
                     return_convergence_delta=return_convergence_delta,
-                    kwargs_partition=kwargs,
+                    kwargs_partition=_kwargs or kwargs,
                 )
                 attributions_partial_sublist.append(attributions_partial)
                 delta_partial_list_sublist.append(delta_partial)
