@@ -1,6 +1,7 @@
 try:
     from transformers.models.bert import (
         BertConfig,
+        BertTokenizer,
         BertForSequenceClassification,
     )
 except ImportError:
@@ -8,7 +9,7 @@ except ImportError:
     BertForSequenceClassification = None
 
 
-def Bert(pretrained_model_name_or_path: str = None, config=None):
+def Bert(pretrained_model_name_or_path: str = None, config=None, **kwargs):
     """
     Get Bert model for sentence classification, either as a pre-trained model
     or from scratch. Any transformers model could theoretically be used, this
@@ -19,6 +20,7 @@ def Bert(pretrained_model_name_or_path: str = None, config=None):
             If ``None``, return an untrained Bert model. Default to ``None``
         config: Config of the Bert. Required when not loading a pre-trained
             model, otherwise unused. Default to ``None``
+        kwargs: Additional arguments for the tokenizer if not pretrained.
 
     Returns:
         BertForSequenceClassification: Bert model for sentence classification.
@@ -30,9 +32,15 @@ def Bert(pretrained_model_name_or_path: str = None, config=None):
 
     if pretrained_model_name_or_path is None:
         assert config is not None, "Bert config must be provided."
-        return BertForSequenceClassification(config=config)
+        return (
+            BertTokenizer(config.vocab_size),
+            BertForSequenceClassification(config=config),
+        )
 
-    return BertForSequenceClassification.from_pretrained(
-        pretrained_model_name_or_path,
-        return_dict=False,
+    return (
+        BertTokenizer.from_pretrained(pretrained_model_name_or_path),
+        BertForSequenceClassification.from_pretrained(
+            pretrained_model_name_or_path,
+            return_dict=False,
+        ),
     )
