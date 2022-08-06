@@ -41,7 +41,7 @@ def main(
                 sliding_window_shapes=(1,),
                 baselines=baseline,
                 additional_forward_args=(saliency,),
-            )
+            ).abs()
 
     if "permutation" in explainers:
         attr["permutation"] = th.zeros_like(x)
@@ -50,7 +50,7 @@ def main(
             attr["permutation"][i] = explainer.attribute(
                 inputs,
                 additional_forward_args=(saliency,),
-            )
+            ).abs()
 
     if "integrated_gradients" in explainers:
         attr["integrated_gradients"] = th.zeros_like(x)
@@ -61,7 +61,7 @@ def main(
                 inputs,
                 baselines=baseline,
                 additional_forward_args=(saliency,),
-            )
+            ).abs()
 
     if "shapley_values_sampling" in explainers:
         attr["shapley_values_sampling"] = th.zeros_like(x)
@@ -72,7 +72,7 @@ def main(
                 inputs,
                 baselines=baseline,
                 additional_forward_args=(saliency,),
-            )
+            ).abs()
 
     if "dyna_mask" in explainers:
         trainer = Trainer(max_epochs=1000, accelerator=accelerator, devices=1)
