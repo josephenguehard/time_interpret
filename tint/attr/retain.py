@@ -13,7 +13,7 @@ from captum._utils.typing import TensorOrTupleOfTensorsGeneric, TargetType
 
 from pytorch_lightning import LightningDataModule, Trainer
 from torch.utils.data import DataLoader, TensorDataset
-from typing import Callable, Union
+from typing import Callable
 
 from .models import Retain as RetainModel, RetainNet
 
@@ -29,56 +29,60 @@ class Retain(PerturbationAttribution):
     def __init__(
         self,
         forward_func: Callable = None,
-        retain: Union[RetainNet, RetainModel] = None,
+        retain: RetainNet = None,
         datamodule: LightningDataModule = None,
         features: th.Tensor = None,
         labels: th.Tensor = None,
         trainer: Trainer = None,
         batch_size: int = 32,
     ) -> None:
-        # If forward_func is not provided, try get retain model
+        # If forward_func is not provided,
+        # train retain model
         if forward_func is None:
-            # If retain model is not provided,
-            # create it and train it
-            if retain is None:
 
-                # Create dataloader if not provided
-                dataloader = None
-                if datamodule is None:
-                    assert (
-                        features is not None
-                    ), "You must provide either a datamodule or features"
-                    assert (
-                        labels is not None
-                    ), "You must provide either a datamodule or labels"
+            # Create dataloader if not provided
+            dataloader = None
+            if datamodule is None:
+                assert (
+                    features is not None
+                ), "You must provide either a datamodule or features"
+                assert (
+                    labels is not None
+                ), "You must provide either a datamodule or labels"
 
-                    dataloader = DataLoader(
-                        TensorDataset(features, labels),
-                        batch_size=batch_size,
-                    )
-
-                # Init trainer if not provided
-                if trainer is None:
-                    trainer = Trainer(max_epochs=100)
-                else:
-                    trainer = copy.deepcopy(trainer)
-
-                # Create and fit model
-                retain = RetainNet(loss="cross_entropy")
-                trainer.fit(
-                    retain, train_dataloaders=dataloader, datamodule=datamodule
+                dataloader = DataLoader(
+                    TensorDataset(features, labels),
+                    batch_size=batch_size,
                 )
 
-                # Set to eval mode
-                retain.eval()
+            # Init trainer if not provided
+            if trainer is None:
+                trainer = Trainer(max_epochs=100)
+            else:
+                trainer = copy.deepcopy(trainer)
+
+            # Create retain if not provided
+            if retain is None:
+                retain = RetainNet(loss="cross_entropy")
+            else:
+                retain = copy.deepcopy(retain)
+
+            # Train retain
+            trainer.fit(
+                retain, train_dataloaders=dataloader, datamodule=datamodule
+            )
+
+            # Set to eval mode
+            retain.eval()
 
             # Extract forward_func from model
-            if isinstance(retain, RetainModel):
-                forward_func = retain
-            else:
-                forward_func = retain.net
+            forward_func = retain.net
 
         super().__init__(forward_func=forward_func)
+
+        assert isinstance(
+            forward_func, RetainModel
+        ), "Only a Retain model can be used here."
 
     @log_usage()
     def attribute(
