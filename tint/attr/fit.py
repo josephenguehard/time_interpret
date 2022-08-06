@@ -196,7 +196,10 @@ class Fit(PerturbationAttribution):
 
         t_range = range(1, t_len)
         if show_progress:
-            t_range = get_progress_bars()(t_range)
+            t_range = get_progress_bars()(
+                t_range,
+                desc=f"{self.get_name()} attribution",
+            )
 
         for t in t_range:
             p_y_t = activation(
