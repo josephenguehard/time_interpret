@@ -32,7 +32,7 @@ usage: experiments/arma/main.py [-h] [--rare-dim] [--explainers] [--accelerator]
 optional arguments:
   -h, --help            Show this help message and exit.
   --rare-dim            Which type of experiment to run. 1 is for rare-feature, 2 is for rare-time. Default to 1
-  --eplainers           List of the explainers to use. Default to ["occlusion", "permutation", "integrated_gradients", "shapley_values_sampling", "dyna_mask"]
+  --explainers          List of the explainers to use. Default to ["occlusion", "permutation", "integrated_gradients", "shapley_values_sampling", "dyna_mask"]
   --accelerator         Which accelerator to use. Default to 'cpu'
   --seed                Which seed to use to generate the data. Default to 42
 ```
