@@ -3,6 +3,7 @@ torchmetrics
 torchvision
 black
 captum
+datasets
 flake8
 numpy
 optuna
