@@ -279,12 +279,25 @@ class MaskNet(Net):
         # x is the data to be perturbed
         # y is the same data without perturbation
         x, y, *additional_forward_args = batch
-        y_hat = self(x.float(), *additional_forward_args)
 
+        # If additional_forward_args is only one None,
+        # set it to None
+        if additional_forward_args == [None]:
+            additional_forward_args = None
+
+        # Get perturbed output
+        if additional_forward_args is None:
+            y_hat = self(x.float())
+        else:
+            y_hat = self(x.float(), *additional_forward_args)
+
+        # Get unperturbed output
         y_target = _run_forward(
             forward_func=self.net.forward_func,
             inputs=y,
-            additional_forward_args=tuple(additional_forward_args),
+            additional_forward_args=tuple(additional_forward_args)
+            if additional_forward_args is not None
+            else None,
         )
         y_target = th.cat([y_target] * len(self.net.keep_ratio), dim=0)
 
