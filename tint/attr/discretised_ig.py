@@ -55,20 +55,10 @@ class DiscretetizedIntegratedGradients(GradientAttribution):
     def __init__(
         self,
         forward_func: Callable,
-        embeddings: np.ndarray,
-        n_neighbors: int = 500,
         multiply_by_inputs: bool = True,
-        n_jobs: int = 1,
     ) -> None:
         GradientAttribution.__init__(self, forward_func)
         self._multiply_by_inputs = multiply_by_inputs
-
-        self.adj = kneighbors_graph(
-            X=embeddings,
-            n_neighbors=n_neighbors,
-            mode="distance",
-            n_jobs=n_jobs,
-        )
 
     @log_usage()
     def attribute(

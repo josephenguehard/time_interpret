@@ -14,6 +14,7 @@ from captum.attr import (
 from .augmented_occlusion import AugmentedOcclusion
 from .bayes import BayesLime, BayesShap
 from .bayes_mask import BayesMask
+from .discretised_ig import DiscretetizedIntegratedGradients
 from .dynamic_masks import DynaMask
 from .fit import Fit
 from .lof import LOFKernelShap, LOFLime
@@ -30,6 +31,7 @@ __all__ = [
     "BayesMask",
     "BayesShap",
     "DeepLift",
+    "DiscretetizedIntegratedGradients",
     "DynaMask",
     "FeaturePermutation",
     "Fit",
