@@ -210,6 +210,8 @@ class MaskNet(Net):
         forward_func (Callable): The function to get prediction from.
         perturbation (str): Which perturbation to apply.
             Default to ``'fade_moving_average'``
+        deletion_mode (bool): ``True`` if the mask should identify the most
+            impactful deletions. Default to ``False``
         initial_mask_coef (float): Which value to use to initialise the mask.
             Default to 0.5
         keep_ratio (float, list): Fraction of elements in x that should be kept by
@@ -218,6 +220,8 @@ class MaskNet(Net):
             part of the total loss. Default to 0.5
         size_reg_factor_dilation (float): Ratio between the final and the
             initial size regulation factor. Default to 100
+        time_reg_factor (float): Regulation factor for the variation in time.
+            Default to 0.0
         loss (str, callable): Which loss to use. Default to ``'mse'``
         optim (str): Which optimizer to use. Default to ``'adam'``
         lr (float): Learning rate. Default to 1e-3
@@ -232,10 +236,12 @@ class MaskNet(Net):
         self,
         forward_func: Callable,
         perturbation: str = "fade_moving_average",
+        deletion_mode: bool = False,
         initial_mask_coef: float = 0.5,
         keep_ratio: Union[float, List[float]] = 0.5,
         size_reg_factor_init: float = 0.5,
         size_reg_factor_dilation: float = 100.0,
+        time_reg_factor: float = 0.0,
         loss: Union[str, Callable] = "mse",
         optim: str = "adam",
         lr: float = 0.001,
@@ -247,10 +253,12 @@ class MaskNet(Net):
         mask = Mask(
             forward_func=forward_func,
             perturbation=perturbation,
+            deletion_mode=deletion_mode,
             initial_mask_coef=initial_mask_coef,
             keep_ratio=keep_ratio,
             size_reg_factor_init=size_reg_factor_init,
             size_reg_factor_dilation=size_reg_factor_dilation,
+            time_reg_factor=time_reg_factor,
             **kwargs,
         )
 
