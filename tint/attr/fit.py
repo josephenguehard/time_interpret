@@ -12,11 +12,13 @@ from captum._utils.common import (
 )
 from captum._utils.typing import TensorOrTupleOfTensorsGeneric
 
-from pytorch_lightning import Trainer
+from pytorch_lightning import LightningDataModule, Trainer
 from torch.utils.data import DataLoader, TensorDataset
 from typing import Any, Callable
 
-from .models import JointFeatureGenerator, JointFeatureGeneratorNet
+from tint.utils import get_progress_bars
+
+from .models import JointFeatureGeneratorNet
 
 
 def kl_multilabel(p1, p2, reduction="none"):
@@ -46,33 +48,84 @@ class Fit(PerturbationAttribution):
         https://proceedings.neurips.cc/paper/2015/hash/b618c3210e934362ac261db280128c22-Abstract.html
     """
 
-    def __init__(self, forward_func: Callable) -> None:
+    def __init__(
+        self,
+        forward_func: Callable,
+        generator: JointFeatureGeneratorNet = None,
+        datamodule: LightningDataModule = None,
+        features: th.Tensor = None,
+        trainer: Trainer = None,
+        batch_size: int = 32,
+    ) -> None:
         super().__init__(forward_func=forward_func)
+
+        # Create dataloader if not provided
+        dataloader = None
+        if datamodule is None:
+            assert (
+                features is not None
+            ), "You must provide either a datamodule or features"
+
+            dataloader = DataLoader(
+                TensorDataset(features),
+                batch_size=batch_size,
+            )
+
+        # Init trainer if not provided
+        if trainer is None:
+            trainer = Trainer(max_epochs=300)
+        else:
+            trainer = copy.deepcopy(trainer)
+
+        # Create generator if not provided
+        if generator is None:
+            generator = JointFeatureGeneratorNet()
+        else:
+            generator = copy.deepcopy(generator)
+
+        # Init generator with feature size
+        if features is None:
+            shape = next(iter(datamodule.train_dataloader()))[0].shape
+        else:
+            shape = features.shape
+        generator.net.init(feature_size=shape[-1])
+
+        # Train generator
+        trainer.fit(
+            generator, train_dataloaders=dataloader, datamodule=datamodule
+        )
+
+        # Set to eval mode
+        generator.eval()
+
+        # Extract generator model from pytorch lightning model
+        self.generator = generator.net
 
     @log_usage()
     def attribute(
         self,
         inputs: TensorOrTupleOfTensorsGeneric,
-        trainer: Trainer = None,
-        generator: JointFeatureGeneratorNet = None,
         additional_forward_args: Any = None,
-        batch_size: int = 32,
+        n_samples: int = 10,
+        distance_metric: str = "kl",
+        multilabel: bool = False,
+        show_progress: bool = False,
     ) -> TensorOrTupleOfTensorsGeneric:
         """
         attribute method.
 
         Args:
             inputs (tuple, th.Tensor): Input data.
-            trainer (Trainer): Pytorch Lightning trainer. If ``None``, a
-                default trainer will be provided. Default to ``None``
-            generator (JointFeatureGeneratorNet): A generative model to predict
-                future observations. If ``None``, a default model will be
-                provided. Default to ``None``
             additional_forward_args (any, optional): If the forward function
                         requires additional arguments other than the inputs for
                         which attributions should not be computed, this argument
                         can be provided. Default to ``None``
-            batch_size (int): Batch size for generator training. Default to 32
+            n_samples (int): Number of Monte-Carlo samples. Default to 10
+            distance_metric (str): Distance metric. Default to ``'kl'``
+            multilabel (bool): Whether the task is single or multi-labeled.
+                Default to ``False``
+            show_progress (bool): Displays the progress of computation.
+                Default to False
 
         Returns:
             (th.Tensor, tuple): Attributions.
@@ -82,44 +135,19 @@ class Fit(PerturbationAttribution):
         is_inputs_tuple = _is_tuple(inputs)
         inputs = _format_input(inputs)
 
-        # Init trainer if not provided
-        if trainer is None:
-            trainer = Trainer(max_epochs=100)
-
         # Assert only one input, as the Retain only accepts one
         assert (
             len(inputs) == 1
         ), "Multiple inputs are not accepted for this method"
 
-        # Get input and output shape
-        shape = inputs[0].shape
-
-        # Init MaskNet if not provided
-        if generator is None:
-            generator = JointFeatureGeneratorNet()
-        else:
-            generator = copy.deepcopy(generator)
-
-        # Init model
-        generator.net.init(feature_size=shape[-1])
-
-        # Prepare data
-        dataloader = DataLoader(
-            TensorDataset(inputs[0]),
-            batch_size=batch_size,
-        )
-
-        # Fit model
-        trainer.fit(generator, train_dataloaders=dataloader)
-
-        # Set model to eval mode
-        generator.eval()
-
         attributions = (
             self.representation(
-                generator=generator.net,
                 inputs=inputs[0],
                 additional_forward_args=additional_forward_args,
+                n_samples=n_samples,
+                distance_metric=distance_metric,
+                multilabel=multilabel,
+                show_progress=show_progress,
             ),
         )
 
@@ -127,18 +155,17 @@ class Fit(PerturbationAttribution):
 
     def representation(
         self,
-        generator: JointFeatureGenerator,
         inputs: th.Tensor,
         additional_forward_args: Any = None,
         n_samples: int = 10,
         distance_metric: str = "kl",
         multilabel: bool = False,
+        show_progress: bool = False,
     ):
         """
         Get representations based on a generator and inputs.
 
         Args:
-            generator (JointFeatureGenerator): A generator.
             inputs (th.Tensor): Input data.
             additional_forward_args (Any): Optional additional args to be
                 passed into the model. Default to ``None``
@@ -146,6 +173,8 @@ class Fit(PerturbationAttribution):
             distance_metric (str): Distance metric. Default to ``'kl'``
             multilabel (bool): Whether the task is single or multi-labeled.
                 Default to ``False``
+            show_progress (bool): Displays the progress of computation.
+                Default to False
 
         Returns:
             th.Tensor: attributions.
@@ -165,15 +194,18 @@ class Fit(PerturbationAttribution):
         else:
             activation = lambda x: F.softmax(x, -1)
 
-        p_y_t = activation(
-            _run_forward(
-                forward_func=self.forward_func,
-                inputs=inputs,
-                additional_forward_args=additional_forward_args,
-            )
-        )
+        t_range = range(1, t_len)
+        if show_progress:
+            t_range = get_progress_bars()(t_range)
 
-        for t in range(1, t_len):
+        for t in t_range:
+            p_y_t = activation(
+                _run_forward(
+                    forward_func=self.forward_func,
+                    inputs=inputs[:, : t + 1, :],
+                    additional_forward_args=additional_forward_args,
+                )
+            )
             p_tm1 = activation(
                 _run_forward(
                     forward_func=self.forward_func,
@@ -187,7 +219,7 @@ class Fit(PerturbationAttribution):
                 div_all = []
 
                 for _ in range(n_samples):
-                    x_hat_t, _ = generator.forward_conditional(
+                    x_hat_t, _ = self.generator.forward_conditional(
                         inputs[:, :t, :], inputs[:, t, :], [i]
                     )
                     x_hat[:, t, :] = x_hat_t
@@ -246,4 +278,4 @@ class Fit(PerturbationAttribution):
                 else:
                     score[:, t, i] = e_div
 
-            return score
+        return score

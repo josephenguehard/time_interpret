@@ -204,11 +204,28 @@ class JointFeatureGeneratorNet(Net):
             l2=l2,
         )
 
-    def step(self, batch, stage):
-        mean, covariance = self.net.likelihood_distribution(batch[0])
+    def step(self, batch, stage, t):  # noqa
+        x = batch[0]
+        mean, covariance = self.net.likelihood_distribution(x[:, :t, ...])
         dist = th.distributions.MultivariateNormal(
             loc=mean,
             covariance_matrix=covariance,
         )
-        loss = -dist.log_prob(batch[0][:, -1, ...]).mean()
+        loss = -dist.log_prob(x[:, t, ...]).mean()
         return loss
+
+    def training_step(self, batch, batch_idx):
+        t = th.randint(low=4, high=batch[0].shape[1], size=(1,)).item()
+        loss = self.step(batch=batch, stage="train", t=t)
+        self.log("train_loss", loss)
+        return loss
+
+    def validation_step(self, batch, batch_idx):
+        t = th.randint(low=4, high=batch[0].shape[1], size=(1,)).item()
+        loss = self.step(batch=batch, stage="val", t=t)
+        self.log("val_loss", loss)
+
+    def test_step(self, batch, batch_idx):
+        t = batch[0].shape[1] - 1
+        loss = self.step(batch=batch, stage="test", t=t)
+        self.log("test_loss", loss)
