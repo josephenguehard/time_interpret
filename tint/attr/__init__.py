@@ -19,8 +19,10 @@ from .fit import Fit
 from .lof import LOFKernelShap, LOFLime
 from .retain import Retain
 from .smooth_grad import SmoothGrad
+from .temporal_augmented_occlusion import TemporalAugmentedOcclusion
+from .temporal_ig import TemporalIntegratedGradients
+from .temporal_occlusion import TemporalOcclusion
 from .time_forward_tunnel import TimeForwardTunnel
-from .timed_ig import TemporalIntegratedGradients
 
 __all__ = [
     "AugmentedOcclusion",
@@ -43,6 +45,8 @@ __all__ = [
     "Saliency",
     "ShapleyValueSampling",
     "SmoothGrad",
+    "TemporalAugmentedOcclusion",
     "TemporalIntegratedGradients",
+    "TemporalOcclusion",
     "TimeForwardTunnel",
 ]
