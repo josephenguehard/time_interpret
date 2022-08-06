@@ -255,7 +255,9 @@ class TimeForwardTunnel(Attribution):
         if self.task in ["binary", "multiclass"]:
             partial_targets = (torch.argmax(partial_targets, -1),)
         elif self.task == "multilabel":
-            partial_targets = (partial_targets > self.threshold).long()
+            partial_targets = (
+                torch.sigmoid(partial_targets) > self.threshold
+            ).long()
             partial_targets = tuple(
                 partial_targets[..., i]
                 for i in range(partial_targets.shape[-1])
