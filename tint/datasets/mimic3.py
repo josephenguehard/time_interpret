@@ -1,7 +1,16 @@
 import numpy as np
 import os
 import pandas as pd
+import pickle as pkl
 import random
+import torch as th
+import warnings
+
+from datetime import timedelta
+from getpass import getpass
+from sklearn.impute import SimpleImputer
+
+from tint.utils import get_progress_bars
 
 from .dataset import DataModule
 
@@ -11,25 +20,49 @@ except ImportError:
     psycopg2 = None
 
 
+warnings.filterwarnings("ignore")
+
 file_dir = os.path.dirname(__file__)
 
-
-def replace(group):
-    """
-    Replace missing values in measurements using mean imputation
-    takes in a pandas group, and replaces the null value with the mean of the
-    none null values of the same group .
-    """
-    mask = group.isnull()
-    group[mask] = group[~mask].mean()
-    return group
+vital_IDs = [
+    "HeartRate",
+    "SysBP",
+    "DiasBP",
+    "MeanBP",
+    "RespRate",
+    "SpO2",
+    "Glucose",
+    "Temp",
+]
+lab_IDs = [
+    "ANION GAP",
+    "ALBUMIN",
+    "BICARBONATE",
+    "BILIRUBIN",
+    "CREATININE",
+    "CHLORIDE",
+    "GLUCOSE",
+    "HEMATOCRIT",
+    "HEMOGLOBIN" "LACTATE",
+    "MAGNESIUM",
+    "PHOSPHATE",
+    "PLATELET",
+    "POTASSIUM",
+    "PTT",
+    "INR",
+    "PT",
+    "SODIUM",
+    "BUN",
+    "WBC",
+]
+eth_list = ["white", "black", "hispanic", "asian", "other"]
 
 
 class Mimic3(DataModule):
     r"""
     MIMIC-III dataset.
 
-    Download is setup according to this repository:
+    Download is set up according to this repository:
     https://github.com/sanatonek/time_series_explainability.
 
     .. warning::
@@ -72,12 +105,14 @@ class Mimic3(DataModule):
     def download(
         self,
         sqluser: str = "mimicuser",
-        sqlpass: str = "Iv7bahqu",
+        prop_train: float = 0.8,
         split: str = "train",
     ):
         assert psycopg2 is not None, "You need to install psycopg2."
 
         random.seed(22891)
+
+        sqlpass = getpass()
 
         # create a database connection and connect to local postgres
         # version of mimic
@@ -447,6 +482,7 @@ class Mimic3(DataModule):
         adult_vital.drop(columns=["adult_icu"], inplace=True)
         adult_lab.drop(columns=["adult_icu"], inplace=True)
 
+        # Save files
         adult_vital.to_csv(
             os.path.join(self.data_dir, "adult_icu_vital.gz"),
             compression="gzip",
@@ -458,5 +494,266 @@ class Mimic3(DataModule):
             index=False,
         )
 
+        # Drop NAs
+        adult_vital = adult_vital.dropna(subset=["vitalid"])
+        mort_lab = mort_lab.dropna(subset=["label"])
+
+        # Get unique ids
+        icu_ids = adult_vital.icustay_id.unique()
+
+        # Create arrays
+        x = np.zeros((len(icu_ids), 12, 48))
+        x_lab = np.zeros((len(icu_ids), len(lab_IDs), 48))
+        x_impute = np.zeros((len(icu_ids), 12, 48))
+        y = np.zeros((len(icu_ids),))
+        imp_mean = SimpleImputer(strategy="mean")
+
+        missing_ids = []
+        missing_map = np.zeros((len(icu_ids), 12))
+        missing_map_lab = np.zeros((len(icu_ids), len(lab_IDs)))
+
+        nan_map = np.zeros((len(icu_ids), len(lab_IDs) + 12))
+
+        # Create ethnicity encoding
+
+        # Populate data
+        pbar = get_progress_bars()(enumerate(icu_ids), total=len(icu_ids))
+        for i, icu_id in pbar:
+            patient_data = adult_vital.loc[adult_vital["icustay_id"] == icu_id]
+            patient_data["vitalcharttime"] = patient_data[
+                "vitalcharttime"
+            ].astype("datetime64[s]")
+            patient_lab_data = mort_lab.loc[mort_lab["icustay_id"] == icu_id]
+            patient_lab_data["labcharttime"] = patient_lab_data[
+                "labcharttime"
+            ].astype("datetime64[s]")
+
+            admit_time = patient_data["vitalcharttime"].min()
+            n_missing_vitals = 0
+
+            # Extract demographics and repeat them over time
+            x[i, -4, :] = int(patient_data["gender"].iloc[0])
+            x[i, -3, :] = int(patient_data["age"].iloc[0])
+            x[i, -2, :] = ethnicity_encoder(
+                patient_data["ethnicity"].iloc[0], patient_data
+            )
+            x[i, -1, :] = int(patient_data["first_icu_stay"].iloc[0])
+            y[i] = int(patient_data["mort_icu"].iloc[0])
+
+            # Extract vital measurement information
+            vitals = patient_data.vitalid.unique()
+            for vital in vitals:
+                try:
+                    vital_IDs.index(vital)
+                    signal = patient_data[patient_data["vitalid"] == vital]
+                    quantized_signal, _ = quantize_signal(
+                        signal,
+                        start=admit_time,
+                        step_size=1,
+                        n_steps=48,
+                        value_column="vitalvalue",
+                        charttime_column="vitalcharttime",
+                    )
+                    nan_arr, nan_count = check_nan(quantized_signal)
+                    x[i, vital_IDs.index(vital), :] = np.array(
+                        quantized_signal
+                    )
+                    nan_map[
+                        i, len(lab_IDs) + vital_IDs.index(vital)
+                    ] = nan_count
+                    if nan_count == 48:
+                        n_missing_vitals = +1
+                        missing_map[i, vital_IDs.index(vital)] = 1
+                    else:
+                        x_impute[i, :, :] = imp_mean.fit_transform(
+                            x[i, :, :].T
+                        ).T
+                except:  # noqa: E722
+                    pass
+
+            # Extract lab measurement informations
+            labs = patient_lab_data.label.unique()
+            for lab in labs:
+                try:
+                    lab_IDs.index(lab)
+                    lab_measures = patient_lab_data[
+                        patient_lab_data["label"] == lab
+                    ]
+                    quantized_lab, quantized_measures = quantize_signal(
+                        lab_measures,
+                        start=admit_time,
+                        step_size=1,
+                        n_steps=48,
+                        value_column="labvalue",
+                        charttime_column="labcharttime",
+                    )
+                    nan_arr, nan_count = check_nan(quantized_lab)
+                    x_lab[i, lab_IDs.index(lab), :] = np.array(quantized_lab)
+                    nan_map[i, lab_IDs.index(lab)] = nan_count
+                    if nan_count == 48:
+                        missing_map_lab[i, lab_IDs.index(lab)] = 1
+                except:  # noqa: E722
+                    pass
+
+            # Remove a patient that is missing a measurement for the entire 48 hours
+            if n_missing_vitals > 0:
+                missing_ids.append(i)
+
+        # Record statistics of the dataset, remove missing samples and save the signals
+        f = open(os.path.join(self.data_dir, "stats.txt"), "a")
+        f.write(
+            "\n ******************* Before removing missing *********************"
+        )
+        f.write(
+            "\n Number of patients: "
+            + str(len(y))
+            + "\n Number of patients who died within their stay: "
+            + str(np.count_nonzero(y))
+        )
+        f.write("\nMissingness report for Vital signals")
+        for i, vital in enumerate(vital_IDs):
+            f.write(
+                "\nMissingness for %s: %.2f"
+                % (vital, np.count_nonzero(missing_map[:, i]) / len(icu_ids))
+            )
+            f.write("\n")
+        f.write("\nMissingness report for Vital signals")
+        for i, lab in enumerate(lab_IDs):
+            f.write(
+                "\nMissingness for %s: %.2f"
+                % (lab, np.count_nonzero(missing_map_lab[:, i]) / len(icu_ids))
+            )
+            f.write("\n")
+
+        x_lab = np.delete(x_lab, missing_ids, axis=0)
+        x_impute = np.delete(x_impute, missing_ids, axis=0)
+        y = np.delete(y, missing_ids, axis=0)
+        nan_map = np.delete(nan_map, missing_ids, axis=0)
+
+        x_lab_impute = impute_lab(x_lab)
+        missing_map = np.delete(missing_map, missing_ids, axis=0)
+        missing_map_lab = np.delete(missing_map_lab, missing_ids, axis=0)
+        all_data = np.concatenate((x_lab_impute, x_impute), axis=1)
+        f.write(
+            "\n ******************* After removing missing *********************"
+        )
+        f.write(
+            "\n Final number of patients: "
+            + str(len(y))
+            + "\n Number of patients who died within their stay: "
+            + str(np.count_nonzero(y))
+        )
+        f.write("\nMissingness report for Vital signals")
+        for i, vital in enumerate(vital_IDs):
+            f.write(
+                "\nMissingness for %s: %.2f"
+                % (vital, np.count_nonzero(missing_map[:, i]) / len(icu_ids))
+            )
+            f.write("\n")
+        f.write("\nMissingness report for Vital signals")
+        for i, lab in enumerate(lab_IDs):
+            f.write(
+                "\nMissingness for %s: %.2f"
+                % (lab, np.count_nonzero(missing_map_lab[:, i]) / len(icu_ids))
+            )
+            f.write("\n")
+        f.close()
+
+        samples = [
+            (all_data[i, :, :], y[i], nan_map[i, :]) for i in range(len(y))
+        ]
+
+        # Split train and test
+        train_size = int(len(samples) * prop_train)
+        train_samples = samples[:train_size]
+        test_samples = samples[train_size:]
+
+        # Save preprocessed data
+        with open(
+            os.path.join(
+                self.data_dir, "train_patient_vital_preprocessed.pkl"
+            ),
+            "wb",
+        ) as f:
+            pkl.dump(train_samples, f)
+        with open(
+            os.path.join(self.data_dir, "test_patient_vital_preprocessed.pkl"),
+            "wb",
+        ) as f:
+            pkl.dump(test_samples, f)
+
     def preprocess(self, split: str = "train") -> dict:
-        pass
+        # Load data
+        file = os.path.join(self.data_dir, f"{split}_")
+        with open(file + "patient_vital_preprocessed.pkl", "rb") as fp:
+            data = pkl.load(fp)
+
+        features = th.Tensor([x for (x, y, z) in data])
+        labels = th.Tensor([y for (x, y, z) in data])
+
+        return {
+            "x": features.float(),
+            "y": labels.long(),
+        }
+
+
+def quantize_signal(
+    signal, start, step_size, n_steps, value_column, charttime_column
+):
+    quantized_signal = []
+    quantized_counts = np.zeros((n_steps,))
+    s = start
+    u = start + timedelta(hours=step_size)
+    for i in range(n_steps):
+        signal_window = signal[value_column][
+            (signal[charttime_column] > s) & (signal[charttime_column] < u)
+        ]
+        quantized_signal.append(signal_window.mean())
+        quantized_counts[i] = len(signal_window)
+        s = u
+        u = s + timedelta(hours=step_size)
+    return quantized_signal, quantized_counts
+
+
+def check_nan(a):
+    a = np.array(a)
+    nan_arr = np.isnan(a).astype(int)
+    nan_count = np.count_nonzero(nan_arr)
+    return nan_arr, nan_count
+
+
+def forward_impute(x, nan_arr):
+    x_impute = x.copy()
+    first_value = 0
+    while first_value < len(x) and nan_arr[first_value] == 1:
+        first_value += 1
+    last = x_impute[first_value]
+    for i, measurement in enumerate(x):
+        if nan_arr[i] == 1:
+            x_impute[i] = last
+        else:
+            last = measurement
+    return x_impute
+
+
+def impute_lab(lab_data):
+    imputer = SimpleImputer(strategy="mean")
+    lab_data_impute = lab_data.copy()
+    imputer.fit(lab_data.reshape((-1, lab_data.shape[1])))
+    for i, patient in enumerate(lab_data):
+        for j, signal in enumerate(patient):
+            nan_arr, nan_count = check_nan(signal)
+            if nan_count != len(signal):
+                lab_data_impute[i, j, :] = forward_impute(signal, nan_arr)
+    lab_data_impute = np.array(
+        [imputer.transform(sample.T).T for sample in lab_data_impute]
+    )
+    return lab_data_impute
+
+
+def ethnicity_encoder(eth, patient_data):
+    return (
+        0
+        if eth == "0"
+        else eth_list.index(patient_data["ethnicity"].iloc[0]) + 1
+    )
