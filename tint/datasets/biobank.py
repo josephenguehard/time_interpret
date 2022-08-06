@@ -299,11 +299,11 @@ class BioBank(DataModule):
         )
 
         if self.discretised:
-            labels, mask = self.build_discretised_labels(
+            labels, mask = self.build_discretized_labels(
                 events=events,
                 times=times,
             )
-            events, times = self.build_discretised_features(
+            events, times = self.build_discretized_features(
                 events=events,
                 times=times,
                 verbose=verbose,
@@ -406,14 +406,14 @@ class BioBank(DataModule):
 
         return events, times
 
-    def build_discretised_features(
+    def build_discretized_features(
         self,
         events: List[th.Tensor],
         times: List[th.Tensor],
         verbose: Union[bool, int] = False,
     ):
         """
-        Build discretised features.
+        Build discretized features.
 
         Args:
             events (list): The read codes.
@@ -482,13 +482,13 @@ class BioBank(DataModule):
         ]
         return [x for x in labels], mask_records
 
-    def build_discretised_labels(
+    def build_discretized_labels(
         self,
         events: list,
         times: list,
     ) -> (th.Tensor, th.Tensor):
         """
-        Build discretised labels.
+        Build discretized labels.
 
         Args:
             events (list): List of events.
