@@ -69,6 +69,8 @@ class Net(pl.LightningModule):
 
         if isinstance(loss, str):
             loss = LOSSES[loss]()
+        if isinstance(lr_scheduler, str):
+            lr_scheduler = LR_SCHEDULERS[lr_scheduler]
 
         self._loss = loss
         self._optim = optim
