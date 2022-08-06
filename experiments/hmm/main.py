@@ -11,6 +11,7 @@ from tint.attr import (
     Fit,
     GradientShap,
     IntegratedGradients,
+    Lime,
     Retain,
     TemporalAugmentedOcclusion,
     TemporalOcclusion,
@@ -48,12 +49,13 @@ def main(explainers: List[str], accelerator: str = "cpu", seed: int = 42):
     )
 
     # Train classifier
-    trainer = Trainer(max_epochs=50, accelerator=accelerator)
+    trainer = Trainer(max_epochs=5, accelerator=accelerator)
     trainer.fit(classifier, datamodule=hmm)
 
     attr = dict()
     x_train = hmm.preprocess(split="train")["x"]
     x_test = hmm.preprocess(split="test")["x"]
+    y_test = hmm.preprocess(split="test")["y"]
 
     if "deep_lift" in explainers:
         explainer = TimeForwardTunnel(DeepLift(classifier))
@@ -61,7 +63,7 @@ def main(explainers: List[str], accelerator: str = "cpu", seed: int = 42):
             x_test,
             baselines=x_test * 0,
             show_progress=True,
-        )
+        ).abs()
 
     if "dyna_mask" in explainers:
         trainer = Trainer(max_epochs=1000, accelerator=accelerator, devices=1)
@@ -106,7 +108,7 @@ def main(explainers: List[str], accelerator: str = "cpu", seed: int = 42):
             n_samples=50,
             stdevs=0.0001,
             show_progress=True,
-        )
+        ).abs()
 
     if "integrated_gradients" in explainers:
         explainer = TimeForwardTunnel(IntegratedGradients(classifier))
@@ -114,14 +116,21 @@ def main(explainers: List[str], accelerator: str = "cpu", seed: int = 42):
             x_test,
             baselines=x_test * 0,
             show_progress=True,
-        )
+        ).abs()
+
+    if "lime" in explainers:
+        explainer = TimeForwardTunnel(Lime(classifier))
+        attr["lime"] = explainer.attribute(
+            x_test,
+            show_progress=True,
+        ).abs()
 
     if "retain" in explainers:
         explainer = Retain(
             datamodule=hmm,
             trainer=Trainer(max_epochs=50, accelerator=accelerator),
         )
-        attr["retain"] = explainer.attribute(x_test)
+        attr["retain"] = explainer.attribute(x_test, target=y_test).abs()
 
     if "augmented_occlusion" in explainers:
         explainer = TimeForwardTunnel(
@@ -129,16 +138,18 @@ def main(explainers: List[str], accelerator: str = "cpu", seed: int = 42):
         )
         attr["augmented_occlusion"] = explainer.attribute(
             x_test,
+            sliding_window_shapes=(1,),
             show_progress=True,
-        )
+        ).abs()
 
     if "occlusion" in explainers:
         explainer = TimeForwardTunnel(TemporalOcclusion(classifier))
         attr["occlusion"] = explainer.attribute(
             x_test,
+            sliding_window_shapes=(1,),
             baselines=x_train.mean(0, keepdim=True),
             show_progress=True,
-        )
+        ).abs()
 
     true_saliency = hmm.true_saliency(split="test")
 
@@ -166,6 +177,7 @@ def parse_args():
             "fit",
             "gradient_shap",
             "integrated_gradients",
+            "lime",
             "retain",
             "augmented_occlusion",
             "occlusion",
