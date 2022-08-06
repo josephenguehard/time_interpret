@@ -28,9 +28,6 @@ def _base_white_box_metric(
     # Validate input
     _validate_input(attributions, true_attributions)
 
-    # Take the absolute value of attributions
-    attributions = tuple(torch.abs(attr) for attr in attributions)
-
     # Normalise attributions
     min_tpl = tuple(
         attr.reshape(len(attr), -1).min(dim=-1).values for attr in attributions
