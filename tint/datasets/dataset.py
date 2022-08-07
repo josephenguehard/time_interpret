@@ -4,7 +4,12 @@ import torch as th
 
 from pathlib import Path
 from sklearn.model_selection import KFold
-from torch.utils.data import DataLoader, Dataset as TorchDataset, random_split
+from torch.utils.data import (
+    DataLoader,
+    Dataset as TorchDataset,
+    random_split,
+    Subset,
+)
 
 
 class Dataset(TorchDataset):
@@ -106,7 +111,8 @@ class DataModule(pl.LightningDataModule):
                     val_indexes.tolist(),
                 )
 
-                self.train, self.val = full[train_indexes], full[val_indexes]
+                self.train = Subset(full, train_indexes)
+                self.val = Subset(full, val_indexes)
 
         if stage == "test" or stage is None:
             self.test = Dataset(self.preprocess("test"))
