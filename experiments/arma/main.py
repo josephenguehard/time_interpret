@@ -103,6 +103,7 @@ def main(
         for k, v in attr.items():
             fp.write("rare-feature" if rare_dim == 1 else "rare-time")
             fp.write("," + str(seed) + ",")
+            fp.write(str(fold) + ",")
             fp.write(k + ",")
             fp.write(f"{aup(v, true_saliency):.4},")
             fp.write(f"{aur(v, true_saliency):.4},")
