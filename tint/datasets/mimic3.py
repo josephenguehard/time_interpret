@@ -75,6 +75,11 @@ class Mimic3(DataModule):
     Args:
         data_dir (str): Where to download files.
         batch_size (int): Batch size. Default to 32
+        n_folds (int): Number of folds for cross validation. If ``None``,
+            the dataset is only split once between train and val using
+            ``prop_val``. Default to ``None``
+        fold (int): Index of the fold to use with cross-validation.
+            Ignored if n_folds is None. Default to ``None``
         prop_val (float): Proportion of validation. Default to .2
         num_workers (int): Number of workers for the loaders. Default to 0
         seed (int): For the random split. Default to 42
@@ -93,6 +98,8 @@ class Mimic3(DataModule):
         ),
         batch_size: int = 32,
         prop_val: float = 0.2,
+        n_folds: int = None,
+        fold: int = None,
         num_workers: int = 0,
         seed: int = 42,
     ):
@@ -100,6 +107,8 @@ class Mimic3(DataModule):
             data_dir=data_dir,
             batch_size=batch_size,
             prop_val=prop_val,
+            n_folds=n_folds,
+            fold=fold,
             num_workers=num_workers,
             seed=seed,
         )

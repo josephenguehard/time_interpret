@@ -3,6 +3,7 @@ import pytorch_lightning as pl
 import torch as th
 
 from pathlib import Path
+from sklearn.model_selection import KFold
 from torch.utils.data import DataLoader, Dataset as TorchDataset, random_split
 
 
@@ -25,8 +26,11 @@ class DataModule(pl.LightningDataModule):
         data_dir (str): Where to download files.
         batch_size (int): Batch size. Default to 32
         prop_val (float): Proportion of validation. Default to .2
-        collate_fn (Callable): Merges a list of samples to form a
-            mini-batch of Tensor(s). Default to ``None``
+        n_folds (int): Number of folds for cross validation. If ``None``,
+            the dataset is only split once between train and val using
+            ``prop_val``. Default to ``None``
+        fold (int): Index of the fold to use with cross-validation.
+            Ignored if n_folds is None. Default to ``None``
         num_workers (int): Number of workers for the loaders. Default to 0
         seed (int): For the random split. Default to 42
     """
@@ -36,6 +40,8 @@ class DataModule(pl.LightningDataModule):
         data_dir: str,
         batch_size: int = 32,
         prop_val: float = 0.2,
+        n_folds: int = None,
+        fold: int = None,
         num_workers: int = 0,
         seed: int = 42,
     ):
@@ -43,8 +49,13 @@ class DataModule(pl.LightningDataModule):
         self.data_dir = data_dir
         self.batch_size = batch_size
         self.prop_val = prop_val
+        self.n_folds = n_folds
+        self.fold = fold
         self.num_workers = num_workers
         self.seed = seed
+
+        if n_folds is not None:
+            assert 0 <= fold < n_folds, "fold must be between 0 and n_folds"
 
         self.train = None
         self.val = None
@@ -76,12 +87,26 @@ class DataModule(pl.LightningDataModule):
         if stage == "fit" or stage is None:
             full = Dataset(self.preprocess("train"))
 
-            len_val = int(len(full) * self.prop_val)
-            self.train, self.val = random_split(
-                full,
-                [len(full) - len_val, len_val],
-                th.Generator().manual_seed(self.seed),
-            )
+            if self.n_folds is None:
+                len_val = int(len(full) * self.prop_val)
+                self.train, self.val = random_split(
+                    full,
+                    [len(full) - len_val, len_val],
+                    th.Generator().manual_seed(self.seed),
+                )
+
+            else:
+                kf = KFold(
+                    n_splits=self.n_folds, shuffle=True, random_state=self.seed
+                )
+                all_splits = [k for k in kf.split(full)]
+                train_indexes, val_indexes = all_splits[self.fold]
+                train_indexes, val_indexes = (
+                    train_indexes.tolist(),
+                    val_indexes.tolist(),
+                )
+
+                self.train, self.val = full[train_indexes], full[val_indexes]
 
         if stage == "test" or stage is None:
             self.test = Dataset(self.preprocess("test"))
