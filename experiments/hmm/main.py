@@ -49,7 +49,7 @@ def main(explainers: List[str], accelerator: str = "cpu", seed: int = 42):
     )
 
     # Train classifier
-    trainer = Trainer(max_epochs=5, accelerator=accelerator)
+    trainer = Trainer(max_epochs=50, accelerator=accelerator)
     trainer.fit(classifier, datamodule=hmm)
 
     # Get data for explainers
