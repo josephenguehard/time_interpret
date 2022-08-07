@@ -127,7 +127,7 @@ class Mimic3(DataModule):
 
         random.seed(22891)
 
-        sqlpass = getpass()
+        sqlpass = getpass(prompt="sqlpass: ")
 
         # create a database connection and connect to local postgres
         # version of mimic
@@ -696,6 +696,15 @@ class Mimic3(DataModule):
             "wb",
         ) as f:
             pkl.dump(test_samples, f)
+
+    def prepare_data(self):
+        if not os.path.exists(
+            os.path.join(self.data_dir, "train_patient_vital_preprocessed.pkl")
+        ) or not os.path.join(
+            self.data_dir, "test_patient_vital_preprocessed.pkl"
+        ):
+            sqluser = input("sqluser: ")
+            self.download(sqluser=sqluser)
 
     def preprocess(self, split: str = "train") -> dict:
         # Load data
