@@ -57,6 +57,8 @@ lab_IDs = [
 ]
 eth_list = ["white", "black", "hispanic", "asian", "other"]
 
+EPS = 1e-5
+
 
 class Mimic3(DataModule):
     r"""
@@ -101,6 +103,10 @@ class Mimic3(DataModule):
             num_workers=num_workers,
             seed=seed,
         )
+
+        # Init mean and std
+        self._mean = None
+        self._std = None
 
     def download(
         self,
@@ -688,8 +694,24 @@ class Mimic3(DataModule):
         with open(file + "patient_vital_preprocessed.pkl", "rb") as fp:
             data = pkl.load(fp)
 
-        features = th.Tensor([x for (x, y, z) in data])
+        features = th.Tensor([x for (x, y, z) in data]).transpose(1, 2)
         labels = th.Tensor([y for (x, y, z) in data])
+
+        # Compute mean and std
+        if split == "train":
+            self._mean = features.reshape(-1, features.shape[-1]).mean(0)
+            self._std = features.reshape(-1, features.shape[-1]).mean(0)
+        else:
+            assert split == "test", "split must be train or test"
+
+        assert (
+            self._mean is not None
+        ), "You must call preprocess('train') first"
+
+        # Normalise
+        mean = self._mean.unsqueeze(0).unsqueeze(0)
+        std = self._std.unsqueeze(0).unsqueeze(0)
+        features = (features - mean) / (std + EPS)
 
         return {
             "x": features.float(),
