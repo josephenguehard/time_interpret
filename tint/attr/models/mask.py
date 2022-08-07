@@ -320,7 +320,7 @@ class MaskNet(Net):
         # Get the loss without reduction
         reduction = self._loss.reduction
         self._loss.reduction = "none"
-        loss = self.step((inputs, inputs, *additional_forward_args))
+        loss = self.step((inputs, inputs, *additional_forward_args), None)
         self._loss.reduction = reduction
 
         # Average the loss over each keep_ratio subset

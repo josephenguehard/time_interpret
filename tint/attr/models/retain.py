@@ -29,6 +29,8 @@ class Retain(nn.Module):
         dropout_context (float): Dropout rate of the context vector.
             Default to 0.5
         dim_output (int): Size of the output. Default to 2
+        temporal_labels (bool): Whether to use temporal labels or
+            static labels. Default to ``True``
 
     References:
         https://arxiv.org/pdf/1608.05745
@@ -43,6 +45,7 @@ class Retain(nn.Module):
         dim_beta: int = 128,
         dropout_context: float = 0.5,
         dim_output: int = 2,
+        temporal_labels: bool = True,
     ):
         super().__init__()
         self.embedding = nn.Sequential(
@@ -82,6 +85,8 @@ class Retain(nn.Module):
         )
         nn.init.xavier_normal_(self.output[1].weight)
         self.output[1].bias.data.zero_()
+
+        self.temporal_labels = temporal_labels
 
     def forward(self, x, lengths):
         batch_size, max_len = x.size()[:2]
@@ -190,6 +195,7 @@ class RetainNet(Net):
             dim_beta=dim_beta,
             dropout_context=dropout_context,
             dim_output=dim_output,
+            temporal_labels=temporal_labels,
         )
 
         super().__init__(
@@ -202,8 +208,6 @@ class RetainNet(Net):
             l2=l2,
         )
 
-        self.temporal_labels = temporal_labels
-
         for stage in ["train", "val", "test"]:
             setattr(self, stage + "_auroc", AUROC())
 
@@ -215,7 +219,7 @@ class RetainNet(Net):
         lengths[0] = x.shape[1]
 
         y_hat, _, _ = self.net(x=x.float(), lengths=lengths)
-        if self.temporal_labels:
+        if self.net.temporal_labels:
             y = y[th.arange(len(x)), lengths - 1, ...]
         loss = self._loss(y_hat, y)
 

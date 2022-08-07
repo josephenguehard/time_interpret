@@ -65,7 +65,8 @@ class Retain(PerturbationAttribution):
             if retain is None:
                 retain = RetainNet(loss="cross_entropy")
             else:
-                retain = copy.deepcopy(retain)
+                # LazyLinear cannot be deep copied
+                pass
 
             # Train retain
             trainer.fit(
@@ -146,6 +147,9 @@ class Retain(PerturbationAttribution):
         )
         w_emb = self.forward_func.embedding[1].weight
 
+        if target is not None and self.forward_func.temporal_labels:
+            target = target[:, -1, ...]
+
         for i in range(inputs.shape[2]):
             for t in range(inputs.shape[1]):
                 imp = self.forward_func.output(
@@ -160,7 +164,7 @@ class Retain(PerturbationAttribution):
                         alpha[:, t, 0]
                         * imp[
                             th.arange(0, len(imp)).long(),
-                            target[:, -1, ...].long(),
+                            target,
                         ]
                         * inputs[:, t, i]
                     )

@@ -109,8 +109,7 @@ class DynaMask(PerturbationAttribution):
         # Get attributions as mask representation
         attributions = (
             mask_net.representation(
-                inputs[0],
-                *additional_forward_args
+                *(inputs[0], *additional_forward_args)
                 if additional_forward_args is not None
                 else (inputs[0], None)
             ),
