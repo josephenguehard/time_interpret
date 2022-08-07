@@ -242,9 +242,6 @@ class TemporalAugmentedOcclusion(AugmentedOcclusion):
         # Only apply occlusion on the last time
         input_mask[:, :, :-1] = 0
 
-        # We repeat input_mask n_sampling times
-        input_mask = torch.cat([input_mask] * self.n_sampling, dim=0)
-
         # We ablate data if temporal on the time dimension (dimension 1)
         data = self.data[baseline]
         if self.is_temporal:

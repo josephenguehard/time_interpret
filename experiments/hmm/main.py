@@ -154,7 +154,9 @@ def main(
 
     if "augmented_occlusion" in explainers:
         explainer = TimeForwardTunnel(
-            TemporalAugmentedOcclusion(classifier, data=x_train)
+            TemporalAugmentedOcclusion(
+                classifier, data=x_train, n_sampling=10, is_temporal=True
+            )
         )
         attr["augmented_occlusion"] = explainer.attribute(
             x_test,

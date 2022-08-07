@@ -191,7 +191,9 @@ class AugmentedOcclusion(Occlusion):
             baselines=tuple(range(len(inputs))),
             target=target,
             additional_forward_args=additional_forward_args,
-            perturbations_per_eval=perturbations_per_eval,
+            # We multiply perturbations_per_eval by the number of
+            # sampling to expand tensors along the first dim
+            perturbations_per_eval=perturbations_per_eval * self.n_sampling,
             show_progress=False,
         )
 
@@ -235,9 +237,6 @@ class AugmentedOcclusion(Occlusion):
             ],
             dim=0,
         ).long()
-
-        # We repeat input_mask n_sampling times
-        input_mask = torch.cat([input_mask] * self.n_sampling, dim=0)
 
         # We ablate data if temporal on the time dimension (dimension 1)
         data = self.data[baseline]
