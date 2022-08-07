@@ -150,6 +150,8 @@ class RetainNet(Net):
         dropout_context (float): Dropout rate of the context vector.
             Default to 0.5
         dim_output (int): Size of the output. Default to 2
+        temporal_labels (bool): Whether to use temporal labels or
+            static labels. Default to ``True``
         loss (str, callable): Which loss to use. Default to ``'mse'``
         optim (str): Which optimizer to use. Default to ``'adam'``
         lr (float): Learning rate. Default to 1e-3
@@ -172,6 +174,7 @@ class RetainNet(Net):
         dim_beta: int = 128,
         dropout_context: float = 0.5,
         dim_output: int = 2,
+        temporal_labels: bool = True,
         loss: Union[str, Callable] = "mse",
         optim: str = "adam",
         lr: float = 0.001,
@@ -199,6 +202,8 @@ class RetainNet(Net):
             l2=l2,
         )
 
+        self.temporal_labels = temporal_labels
+
         for stage in ["train", "val", "test"]:
             setattr(self, stage + "_auroc", AUROC())
 
@@ -210,7 +215,8 @@ class RetainNet(Net):
         lengths[0] = x.shape[1]
 
         y_hat, _, _ = self.net(x=x.float(), lengths=lengths)
-        y = y[th.arange(len(x)), lengths - 1, ...]
+        if self.temporal_labels:
+            y = y[th.arange(len(x)), lengths - 1, ...]
         loss = self._loss(y_hat, y)
 
         getattr(self, stage + "_auroc")(y_hat[:, 1], y.long())
