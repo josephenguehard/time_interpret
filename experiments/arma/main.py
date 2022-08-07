@@ -6,11 +6,11 @@ from pytorch_lightning import Trainer
 from typing import List
 
 from tint.attr import (
+    DynaMask,
+    IntegratedGradients,
     Occlusion,
     FeaturePermutation,
-    IntegratedGradients,
     ShapleyValueSampling,
-    DynaMask,
 )
 from tint.attr.models import MaskNet
 from tint.datasets import Arma
@@ -34,49 +34,6 @@ def main(
     # Create dict of attributions
     attr = dict()
 
-    if "occlusion" in explainers:
-        attr["occlusion"] = th.zeros_like(x)
-        for i, (inputs, saliency) in enumerate(zip(x, true_saliency)):
-            explainer = Occlusion(forward_func=arma.get_white_box)
-            baseline = th.mean(inputs, dim=0, keepdim=True)
-            attr["occlusion"][i] = explainer.attribute(
-                inputs,
-                sliding_window_shapes=(1,),
-                baselines=baseline,
-                additional_forward_args=(saliency,),
-            ).abs()
-
-    if "permutation" in explainers:
-        attr["permutation"] = th.zeros_like(x)
-        for i, (inputs, saliency) in enumerate(zip(x, true_saliency)):
-            explainer = FeaturePermutation(forward_func=arma.get_white_box)
-            attr["permutation"][i] = explainer.attribute(
-                inputs,
-                additional_forward_args=(saliency,),
-            ).abs()
-
-    if "integrated_gradients" in explainers:
-        attr["integrated_gradients"] = th.zeros_like(x)
-        for i, (inputs, saliency) in enumerate(zip(x, true_saliency)):
-            explainer = IntegratedGradients(forward_func=arma.get_white_box)
-            baseline = inputs * 0
-            attr["integrated_gradients"][i] = explainer.attribute(
-                inputs,
-                baselines=baseline,
-                additional_forward_args=(saliency,),
-            ).abs()
-
-    if "shapley_values_sampling" in explainers:
-        attr["shapley_values_sampling"] = th.zeros_like(x)
-        for i, (inputs, saliency) in enumerate(zip(x, true_saliency)):
-            explainer = ShapleyValueSampling(forward_func=arma.get_white_box)
-            baseline = th.mean(inputs, dim=0, keepdim=True)
-            attr["shapley_values_sampling"][i] = explainer.attribute(
-                inputs,
-                baselines=baseline,
-                additional_forward_args=(saliency,),
-            ).abs()
-
     if "dyna_mask" in explainers:
         trainer = Trainer(max_epochs=1000, accelerator=accelerator, devices=1)
         mask = MaskNet(
@@ -98,6 +55,49 @@ def main(
         )
         print(f"Best keep ratio is {_attr[1]}")
         attr["dyna_mask"] = _attr[0]
+
+    if "integrated_gradients" in explainers:
+        attr["integrated_gradients"] = th.zeros_like(x)
+        for i, (inputs, saliency) in enumerate(zip(x, true_saliency)):
+            explainer = IntegratedGradients(forward_func=arma.get_white_box)
+            baseline = inputs * 0
+            attr["integrated_gradients"][i] = explainer.attribute(
+                inputs,
+                baselines=baseline,
+                additional_forward_args=(saliency,),
+            ).abs()
+
+    if "occlusion" in explainers:
+        attr["occlusion"] = th.zeros_like(x)
+        for i, (inputs, saliency) in enumerate(zip(x, true_saliency)):
+            explainer = Occlusion(forward_func=arma.get_white_box)
+            baseline = th.mean(inputs, dim=0, keepdim=True)
+            attr["occlusion"][i] = explainer.attribute(
+                inputs,
+                sliding_window_shapes=(1,),
+                baselines=baseline,
+                additional_forward_args=(saliency,),
+            ).abs()
+
+    if "permutation" in explainers:
+        attr["permutation"] = th.zeros_like(x)
+        for i, (inputs, saliency) in enumerate(zip(x, true_saliency)):
+            explainer = FeaturePermutation(forward_func=arma.get_white_box)
+            attr["permutation"][i] = explainer.attribute(
+                inputs,
+                additional_forward_args=(saliency,),
+            ).abs()
+
+    if "shapley_values_sampling" in explainers:
+        attr["shapley_values_sampling"] = th.zeros_like(x)
+        for i, (inputs, saliency) in enumerate(zip(x, true_saliency)):
+            explainer = ShapleyValueSampling(forward_func=arma.get_white_box)
+            baseline = th.mean(inputs, dim=0, keepdim=True)
+            attr["shapley_values_sampling"][i] = explainer.attribute(
+                inputs,
+                baselines=baseline,
+                additional_forward_args=(saliency,),
+            ).abs()
 
     with open("results.csv", "a") as fp:
         for k, v in attr.items():
@@ -124,11 +124,11 @@ def parse_args():
         "--explainers",
         type=str,
         default=[
+            "dyna_mask",
+            "integrated_gradients",
             "occlusion",
             "permutation",
-            "integrated_gradients",
             "shapley_values_sampling",
-            "dyna_mask",
         ],
         nargs="+",
         metavar="N",
