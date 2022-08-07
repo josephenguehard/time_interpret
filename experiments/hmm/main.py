@@ -32,10 +32,14 @@ from tint.metrics.white_box import (
 from classifier import StateClassifierNet
 
 
-def main(explainers: List[str], accelerator: str = "cpu", seed: int = 42):
+def main(
+    explainers: List[str],
+    accelerator: str = "cpu",
+    fold: int = 0,
+    seed: int = 42,
+):
     # Load data
-    hmm = HMM(seed=seed)
-    hmm.download()
+    hmm = HMM(n_folds=5, fold=fold, seed=seed)
 
     # Create classifier
     classifier = StateClassifierNet(
@@ -210,10 +214,16 @@ def parse_args():
         help="Which accelerator to use.",
     )
     parser.add_argument(
+        "--fold",
+        type=int,
+        default=0,
+        help="Fold of the cross-validation.",
+    )
+    parser.add_argument(
         "--seed",
         type=int,
         default=42,
-        help="Random seed for data generation",
+        help="Random seed for data generation.",
     )
     return parser.parse_args()
 
@@ -223,5 +233,6 @@ if __name__ == "__main__":
     main(
         explainers=args.explainers,
         accelerator=args.accelerator,
+        fold=args.fold,
         seed=args.seed,
     )

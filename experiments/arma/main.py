@@ -21,9 +21,10 @@ def main(
     rare_dim: int,
     explainers: List[str],
     accelerator: str = "cpu",
+    fold: int = 0,
     seed: int = 42,
 ):
-    arma = Arma(seed=seed)
+    arma = Arma(n_folds=5, fold=fold, seed=seed)
     arma.download()
 
     # Only use the first 10 data points
@@ -139,10 +140,16 @@ def parse_args():
         help="Which accelerator to use.",
     )
     parser.add_argument(
+        "--fold",
+        type=int,
+        default=0,
+        help="Fold of the cross-validation.",
+    )
+    parser.add_argument(
         "--seed",
         type=int,
         default=42,
-        help="Random seed for data generation",
+        help="Random seed for data generation.",
     )
     return parser.parse_args()
 
@@ -153,5 +160,6 @@ if __name__ == "__main__":
         rare_dim=args.rare_dim,
         explainers=args.explainers,
         accelerator=args.accelerator,
+        fold=args.fold,
         seed=args.seed,
     )
