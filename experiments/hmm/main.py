@@ -17,7 +17,7 @@ from tint.attr import (
     TemporalOcclusion,
     TimeForwardTunnel,
 )
-from tint.attr.models import JointFeatureGeneratorNet, MaskNet
+from tint.attr.models import JointFeatureGeneratorNet, MaskNet, RetainNet
 from tint.datasets import HMM
 from tint.metrics.white_box import (
     aup,
@@ -52,10 +52,16 @@ def main(explainers: List[str], accelerator: str = "cpu", seed: int = 42):
     trainer = Trainer(max_epochs=5, accelerator=accelerator)
     trainer.fit(classifier, datamodule=hmm)
 
-    attr = dict()
+    # Get data for explainers
     x_train = hmm.preprocess(split="train")["x"]
     x_test = hmm.preprocess(split="test")["x"]
     y_test = hmm.preprocess(split="test")["y"]
+
+    # Switch to eval
+    classifier.eval()
+
+    # Create dict of attributions
+    attr = dict()
 
     if "deep_lift" in explainers:
         explainer = TimeForwardTunnel(DeepLift(classifier))
@@ -126,8 +132,18 @@ def main(explainers: List[str], accelerator: str = "cpu", seed: int = 42):
         ).abs()
 
     if "retain" in explainers:
+        retain = RetainNet(
+            dim_emb=128,
+            dropout_emb=0.4,
+            dim_alpha=8,
+            dim_beta=8,
+            dropout_context=0.4,
+            dim_output=2,
+            loss="cross_entropy",
+        )
         explainer = Retain(
             datamodule=hmm,
+            retain=retain,
             trainer=Trainer(max_epochs=50, accelerator=accelerator),
         )
         attr["retain"] = explainer.attribute(x_test, target=y_test).abs()
@@ -151,6 +167,7 @@ def main(explainers: List[str], accelerator: str = "cpu", seed: int = 42):
             show_progress=True,
         ).abs()
 
+    # Get true saliency
     true_saliency = hmm.true_saliency(split="test")
 
     with open("results.csv", "a") as fp:
