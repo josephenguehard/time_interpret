@@ -193,7 +193,7 @@ def main(
                     base_token_emb=base_token_emb,
                     attr=_attr[-1],
                     topk=int(topk * 100),
-                )
+                )[0]
             )
             _comprehensiveness[explainer].append(
                 eval_comprehensiveness(
