@@ -26,9 +26,11 @@ def main(
     arma = Arma(seed=seed)
     arma.download()
 
+    # Only use the first 10 data points
     x = arma.preprocess()["x"][:10]
     true_saliency = arma.true_saliency(dim=rare_dim)[:10]
 
+    # Create dict of attributions
     attr = dict()
 
     if "occlusion" in explainers:
