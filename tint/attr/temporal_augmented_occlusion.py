@@ -4,7 +4,6 @@ from captum.log import log_usage
 from captum._utils.common import _format_input
 from captum._utils.typing import (
     TensorOrTupleOfTensorsGeneric,
-    BaselineType,
     TargetType,
 )
 
@@ -24,14 +23,27 @@ class TemporalAugmentedOcclusion(AugmentedOcclusion):
     Args:
         forward_func (callable): The forward function of the model or
             any modification of it
+        data (tuple, Tensor): The data from which the baselines are sampled.
+        n_sampling (int): Number of sampling to run for each occlusion.
+            Default to 1
+        is_temporal (bool): Whether the data is temporal or not.
+            If ``True``, the data will be ablated to the inputs
+            on the temporal dimension (dimension 1). Default to ``False``
     """
 
     def __init__(
         self,
         forward_func: Callable,
         data: TensorOrTupleOfTensorsGeneric,
+        n_sampling: int = 1,
+        is_temporal: bool = False,
     ):
-        super().__init__(forward_func=forward_func, data=data)
+        super().__init__(
+            forward_func=forward_func,
+            data=data,
+            n_sampling=n_sampling,
+            is_temporal=is_temporal,
+        )
 
     @log_usage()
     def attribute(  # type: ignore
@@ -230,6 +242,15 @@ class TemporalAugmentedOcclusion(AugmentedOcclusion):
         # Only apply occlusion on the last time
         input_mask[:, :, :-1] = 0
 
+        # We repeat input_mask n_sampling times
+        input_mask = torch.cat([input_mask] * self.n_sampling, dim=0)
+
+        # We ablate data if temporal on the time dimension (dimension 1)
+        data = self.data[baseline]
+        if self.is_temporal:
+            time_shape = expanded_input.shape[2]
+            data = data[:, :time_shape, ...]
+
         # We replace the original baseline with samples from a bootstrapped
         # distribution over self.data.
         # We query perturbations_per_eval x len(input) samples and reshape
@@ -237,9 +258,9 @@ class TemporalAugmentedOcclusion(AugmentedOcclusion):
         # The input baseline is used to get the index of the input.
         size = expanded_input.shape[0] * expanded_input.shape[1]
         baseline = torch.index_select(
-            self.data[baseline],
+            data,
             0,
-            torch.randint(high=len(self.data[baseline]), size=(size,)),
+            torch.randint(high=len(data), size=(size,)),
         )
         baseline = baseline.reshape((-1,) + expanded_input.shape[1:])
 
