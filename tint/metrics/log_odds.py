@@ -17,8 +17,8 @@ from .base import _base_metric
 def _log_odds(
     prob_original: Tensor, prob_pert: Tensor, target: Tensor
 ) -> Tensor:
-    return torch.log(_select_targets(prob_pert, target)) - torch.log(
-        _select_targets(prob_original, target)
+    return _select_targets(torch.log(prob_pert), target) - _select_targets(
+        torch.log(prob_original), target
     )
 
 

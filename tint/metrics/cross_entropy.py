@@ -17,7 +17,7 @@ from .base import _base_metric
 def _cross_entropy(
     prob_original: Tensor, prob_pert: Tensor, target: Tensor
 ) -> Tensor:
-    return torch.log(_select_targets(prob_pert, target))
+    return -_select_targets(torch.log(prob_pert), target)
 
 
 @log_usage()

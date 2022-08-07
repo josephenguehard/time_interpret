@@ -54,7 +54,7 @@ def _base_metric(
 
     # Get topk indices for each element in the batch
     # It is assumed that the batch is on the first dimension
-    topk_indices = (
+    topk_indices = tuple(
         torch.topk(
             attr.reshape(len(attr), -1),
             int(attr.reshape(len(attr), -1).shape[-1] * topk),
@@ -66,19 +66,27 @@ def _base_metric(
 
     # Replace topk values with baseline
     if baselines is None:
-        for inp, topk_idx in zip(inputs_pert, topk_indices):
-            inp.reshape(len(inp), -1).scatter_(-1, topk_idx, 0)
+        inputs_pert = tuple(
+            inp.reshape(len(inp), -1)
+            .scatter(-1, topk_idx, 0)
+            .reshape(inp.shape)
+            for inp, topk_idx in zip(inputs_pert, topk_indices)
+        )
     else:
-        for inp, baseline, topk_idx in zip(
-            inputs_pert, baselines, topk_indices
-        ):
-            if isinstance(baseline, (int, float)):
-                inp.reshape(len(inp), -1).scatter_(-1, topk_idx, baseline)
-            else:
-                baseline = baseline.reshape(len(baseline), -1).gather(
-                    -1, topk_idx
-                )
-                inp.reshape(len(inp), -1).scatter_(-1, topk_idx, baseline)
+        baselines = tuple(
+            baseline
+            if isinstance(baseline, (int, float))
+            else baseline.reshape(len(baseline), -1).gather(-1, topk_idx)
+            for baseline, topk_idx in zip(baselines, topk_indices)
+        )
+        inputs_pert = tuple(
+            inp.reshape(len(inp), -1)
+            .scatter(-1, topk_idx, baseline)
+            .reshape(inp.shape)
+            for inp, baseline, topk_idx in zip(
+                inputs_pert, baselines, topk_indices
+            )
+        )
 
     # Get original predictions
     logits_original = _run_forward(
