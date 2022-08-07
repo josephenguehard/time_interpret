@@ -31,9 +31,7 @@ def knn(
     )
 
     if save_path is not None:
-        knn_path = os.path.join(
-            save_path, f"{args.nn}_{args.dataset}_{args.nbrs}.pkl"
-        )
+        knn_path = os.path.join(save_path, f"bert_sst2.pkl")
         with open(knn_path, "wb") as fp:
             pkl.dump([word_idx_map, word_features, knns], fp)
         print(f"Written KNN data at {knn_path}")

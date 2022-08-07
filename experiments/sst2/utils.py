@@ -1,34 +1,38 @@
 import pickle as pkl
 import torch
+import torch.nn as nn
 
 
-def predict(model, inputs_embeds, attention_mask=None):
-    return model(inputs_embeds=inputs_embeds, attention_mask=attention_mask)[0]
+class ForwardModel(nn.Module):
+    def __init__(self, model):
+        super().__init__()
+        self.model = model
 
+    def forward(
+        self,
+        input_embed,
+        attention_mask=None,
+        position_embed=None,
+        type_embed=None,
+        return_all_logits=False,
+    ):
+        embeds = input_embed + position_embed
+        if type_embed is not None:
+            embeds += type_embed
 
-def nn_forward_func(
-    model,
-    input_embed,
-    attention_mask=None,
-    position_embed=None,
-    type_embed=None,
-    return_all_logits=False,
-):
-    embeds = input_embed + position_embed
-    if type_embed is not None:
-        embeds += type_embed
+        # Get predictions
+        embeds = self.model.bert.embeddings.dropout(
+            self.model.bert.embeddings.LayerNorm(embeds)
+        )
+        pred = self.model(inputs_embeds=embeds, attention_mask=attention_mask)[
+            0
+        ]
 
-    # Get predictions
-    embeds = model.bert.embeddings.dropout(
-        model.bert.embeddings.LayerNorm(embeds)
-    )
-    pred = predict(model, embeds, attention_mask=attention_mask)
-
-    # Return all logits or just maximum class
-    if return_all_logits:
-        return pred
-    else:
-        return pred.max(1).values
+        # Return all logits or just maximum class
+        if return_all_logits:
+            return pred
+        else:
+            return pred.max(1).values
 
 
 def load_mappings(path):

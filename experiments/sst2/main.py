@@ -11,17 +11,16 @@ from tint.attr import (
     IntegratedGradients,
 )
 from tint.attr.models import scale_inputs
-from tint.metrics import log_odds
 from tint.models import Bert
 from tint.utils import get_progress_bars
 
 from knn import knn
-from metrics import eval_comprehensiveness, eval_sufficiency
+from metrics import eval_comprehensiveness, eval_log_odds, eval_sufficiency
 from utils import (
-    load_mappings,
+    ForwardModel,
     get_base_token_emb,
     get_inputs,
-    nn_forward_func,
+    load_mappings,
 )
 
 try:
@@ -75,6 +74,9 @@ def main(
         tokenizer=tokenizer, model=model, device=device
     )
 
+    # Prepare forward model
+    nn_forward_func = ForwardModel(model=model)
+
     # Prepare attributions and metrics
     attr = dict()
     _log_odds = dict()
@@ -87,7 +89,7 @@ def main(
         _sufficiency[explainer] = list()
 
     # Compute attributions
-    for i, row in get_progress_bars()(enumerate(data)):
+    for i, row in get_progress_bars()(enumerate(data), total=len(data)):
         (
             input_ids,
             ref_input_ids,
@@ -139,7 +141,7 @@ def main(
             _attr = summarize_attributions(_attr)
             attr["discretized_integrated_gradients"].append(_attr)
 
-        if "gradient_shape" in explainers:
+        if "gradient_shap" in explainers:
             explainer = GradientShap(nn_forward_func)
             _attr = explainer.attribute(
                 input_embed,
@@ -151,7 +153,7 @@ def main(
                 ),
             )
             _attr = summarize_attributions(_attr)
-            attr["gradient_shape"].append(_attr)
+            attr["gradient_shap"].append(_attr)
 
         if "input_x_gradient" in explainers:
             explainer = InputXGradient(nn_forward_func)
@@ -182,18 +184,15 @@ def main(
         # Append metrics
         for explainer, _attr in attr.items():
             _log_odds[explainer].append(
-                log_odds(
-                    nn_forward_func,
-                    input_embed,
-                    attributions=_attr[-1],
-                    baselines=base_token_emb,
-                    additional_forward_args=(
-                        attention_mask,
-                        position_embed,
-                        type_embed,
-                    ),
-                    target=row[1],
-                    topk=topk,
+                eval_log_odds(
+                    forward_fn=nn_forward_func,
+                    input_embed=input_embed,
+                    position_embed=position_embed,
+                    type_embed=type_embed,
+                    attention_mask=attention_mask,
+                    base_token_emb=base_token_emb,
+                    attr=_attr[-1],
+                    topk=int(topk * 100),
                 )
             )
             _comprehensiveness[explainer].append(
@@ -223,21 +222,21 @@ def main(
         if i % log_n_steps == 0:
             for explainer in explainers:
                 print(
-                    f"{explainer}, log_odds: {torch.Tensor(_log_odds).mean():.4}"
+                    f"{explainer}, log_odds: {torch.Tensor(_log_odds[explainer]).mean():.4}"
                 )
                 print(
-                    f"{explainer}, comprehensiveness: {torch.Tensor(_comprehensiveness).mean():.4}"
+                    f"{explainer}, comprehensiveness: {torch.Tensor(_comprehensiveness[explainer]).mean():.4}"
                 )
                 print(
-                    f"{explainer}, sufficiency: {torch.Tensor(_sufficiency).mean():.4}"
+                    f"{explainer}, sufficiency: {torch.Tensor(_sufficiency[explainer]).mean():.4}"
                 )
 
     with open("results.csv", "a") as fp:
         for k in attr:
             fp.write(k + ",")
-            fp.write(f"{torch.Tensor(_log_odds).mean():.4},")
-            fp.write(f"{torch.Tensor(_comprehensiveness).mean():.4},")
-            fp.write(f"{torch.Tensor(_sufficiency).mean():.4},")
+            fp.write(f"{torch.Tensor(_log_odds[k]).mean():.4},")
+            fp.write(f"{torch.Tensor(_comprehensiveness[k]).mean():.4},")
+            fp.write(f"{torch.Tensor(_sufficiency[k]).mean():.4},")
             fp.write("\n")
 
 
@@ -285,7 +284,7 @@ def parse_args():
     parser.add_argument(
         "--knns-path",
         type=str,
-        default="knns",
+        default="knns/bert_sst2.pkl",
         help="Where the knns are stored. If not provided, compute them.",
     )
     parser.add_argument(
