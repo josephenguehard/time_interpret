@@ -167,6 +167,73 @@ class Hawkes(DataModule):
         hawkes.simulate()
         return hawkes.timestamps
 
+    def true_saliency(self, split: str = "train"):
+        # Get params
+        mu = th.Tensor(self.mu)
+        alpha = th.Tensor(self.alpha)
+        decay = th.Tensor(self.decay)
+
+        # Get data
+        data = self.preprocess(split=split)
+        times, labels = data["x"], data["y"]
+
+        # Compute intensity for each process
+        # at every time point
+        intensities = th.zeros(times.shape[:-1] + (len(mu),))
+        for i in range(len(data)):
+            intensities[i] = self.intensity(
+                mu=mu,
+                alpha=alpha,
+                decay=decay,
+                times=times[i].unsqueeze(0),
+                labels=labels[i].unsqueeze(0),
+                t=times[i].squeeze(),
+            )
+
+        # Return intensities for true labels
+        return intensities.gather(-1, labels)
+
+    @staticmethod
+    def intensity(
+        mu: th.Tensor,
+        alpha: th.Tensor,
+        decay: th.Tensor,
+        times: th.Tensor,
+        labels: th.Tensor,
+        t: th.Tensor,
+    ) -> th.Tensor:
+        """
+        Given parameters mu, alpha and decay, some
+        times and labels, and a vector of query times t,
+        compute intensities at these time points.
+
+        Args:
+            mu (th.Tensor): Intensity baselines.
+                Should have a shape of
+            alpha (th.Tensor): Events parameters.
+            decay (th.Tensor): Intensity decays.
+            times (th.Tensor): Times of the process.
+            labels (th.Tensor: Labels of the process.
+            t (th.Tensor): Query times.
+
+        Returns:
+            th.Tensor: Intensities.
+        """
+        t = t.unsqueeze(0).unsqueeze(0)
+
+        diff = (times - t) * (times > 0) * (times < t)
+        exp = (th.exp(diff) * (times > 0) * (times < t)).float()
+
+        labelled_exp = th.zeros(exp.shape + (len(mu),)).scatter(
+            -1,
+            labels.unsqueeze(-1).repeat(1, 1, t.shape[-1], 1),
+            exp.unsqueeze(-1),
+        )
+
+        sum_ = th.matmul(labelled_exp, decay).sum(1)
+
+        return th.matmul(sum_, alpha) + mu
+
     @staticmethod
     def get_features(point: list) -> th.Tensor:
         """
