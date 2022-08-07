@@ -11,10 +11,12 @@ from tint.attr import (
     IntegratedGradients,
 )
 from tint.attr.models import scale_inputs
-from tint.metrics import comprehensiveness, log_odds, sufficiency
+from tint.metrics import log_odds
+from tint.models import Bert
 from tint.utils import get_progress_bars
 
 from knn import knn
+from metrics import eval_comprehensiveness, eval_sufficiency
 from utils import (
     load_mappings,
     get_base_token_emb,
@@ -35,8 +37,6 @@ def summarize_attributions(attributions):
 
 
 def main(
-    tokenizer,
-    model,
     explainers: List[str],
     device: str,
     steps: int,
@@ -52,6 +52,12 @@ def main(
     assert load_dataset is not None, "datasets is not installed."
     dataset = load_dataset("glue", "sst2")["test"]
     data = list(zip(dataset["sentence"], dataset["label"], dataset["idx"]))
+
+    # Load model and tokenizer
+    # This can be replaced with another hugingface model
+    tokenizer, model = Bert(
+        pretrained_model_name_or_path="textattack/bert-base-uncased-SST-2",
+    )
 
     # Load knn mapping
     if knns_path is not None:
@@ -191,33 +197,25 @@ def main(
                 )
             )
             _comprehensiveness[explainer].append(
-                comprehensiveness(
-                    nn_forward_func,
-                    input_embed,
-                    attributions=_attr[-1],
-                    baselines=base_token_emb,
-                    additional_forward_args=(
-                        attention_mask,
-                        position_embed,
-                        type_embed,
-                    ),
-                    target=row[1],
-                    topk=topk,
+                eval_comprehensiveness(
+                    forward_fn=nn_forward_func,
+                    input_embed=input_embed,
+                    position_embed=position_embed,
+                    type_embed=type_embed,
+                    attention_mask=attention_mask,
+                    attr=_attr[-1],
+                    topk=int(topk * 100),
                 )
             )
             _sufficiency[explainer].append(
-                sufficiency(
-                    nn_forward_func,
-                    input_embed,
-                    attributions=_attr[-1],
-                    baselines=base_token_emb,
-                    additional_forward_args=(
-                        attention_mask,
-                        position_embed,
-                        type_embed,
-                    ),
-                    target=row[1],
-                    topk=topk,
+                eval_sufficiency(
+                    forward_fn=nn_forward_func,
+                    input_embed=input_embed,
+                    position_embed=position_embed,
+                    type_embed=type_embed,
+                    attention_mask=attention_mask,
+                    attr=_attr[-1],
+                    topk=int(topk * 100),
                 )
             )
 
