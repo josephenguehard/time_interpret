@@ -8,6 +8,7 @@ from captum.log import log_usage
 from captum._utils.common import (
     _format_input,
     _format_baseline,
+    _format_additional_forward_args,
     _is_tuple,
     _format_tensor_into_tuples,
     _format_output,
@@ -79,6 +80,7 @@ class TimeForwardTunnel(Attribution):
     def attribute(
         self,
         inputs: Union[Tensor, Tuple[Tensor, ...]],
+        temporal_additional_forward_args: Tuple[bool] = None,
         show_progress: bool = False,
         **kwargs: Any,
     ) -> Union[
@@ -109,6 +111,10 @@ class TimeForwardTunnel(Attribution):
                         (e.g. time estimation). Otherwise, it will fallback to
                         a simple output of progress.
                         Default: False
+            temporal_additional_forward_args (tuple, optional): For each
+                    additional forward arg, determine if it is temporal
+                    or not.
+                    Default: None
             **kwargs: (Any, optional): Contains a list of arguments that are
                        passed  to `attribution_method` attribution algorithm.
                        Any additional arguments that should be used for the
@@ -148,7 +154,7 @@ class TimeForwardTunnel(Attribution):
             and kwargs["return_convergence_delta"]
         )
 
-        # Pop target, this param is ignore
+        # Pop target, this param is ignored
         target = kwargs.pop("target", None)
         if target is not None:
             warnings.warn(
@@ -170,9 +176,8 @@ class TimeForwardTunnel(Attribution):
             partial_targets = self.get_target(partial_inputs=partial_inputs)
 
             # Get partial baselines if provided
-            _kwargs = None
+            _kwargs = copy.deepcopy(kwargs)
             if "baselines" in kwargs:
-                _kwargs = copy.deepcopy(kwargs)
                 baselines = _format_baseline(
                     _kwargs["baselines"], partial_inputs
                 )
@@ -180,6 +185,25 @@ class TimeForwardTunnel(Attribution):
                     _kwargs["baselines"] = tuple(
                         x[:, :time, ...] for x in baselines
                     )
+
+            # Get partial additional forward args if provided
+            if temporal_additional_forward_args is not None:
+                additional_forward_args = _format_additional_forward_args(
+                    _kwargs["additional_forward_args"]
+                )
+                assert len(additional_forward_args) == len(
+                    temporal_additional_forward_args
+                ), (
+                    "Length mismatch between additional_forward_args "
+                    "and temporal_additional_forward_args"
+                )
+                _kwargs["additional_forward_args"] = (
+                    arg[:, :time, ...] if is_temporal else arg
+                    for arg, is_temporal in zip(
+                        additional_forward_args,
+                        temporal_additional_forward_args,
+                    )
+                )
 
             attributions_partial_sublist = list()
             delta_partial_list_sublist = list()
