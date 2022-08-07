@@ -17,7 +17,7 @@ class StateClassifier(nn.Module):
         regres: bool = True,
         bidirectional: bool = False,
     ):
-        super(StateClassifier, self).__init__()
+        super().__init__()
         self.hidden_size = hidden_size
         self.n_state = n_state
         self.rnn_type = rnn

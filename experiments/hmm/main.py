@@ -177,6 +177,7 @@ def main(
     with open("results.csv", "a") as fp:
         for k, v in attr.items():
             fp.write(str(seed) + ",")
+            fp.write(str(fold) + ",")
             fp.write(k + ",")
             fp.write(f"{aup(v, true_saliency):.4},")
             fp.write(f"{aur(v, true_saliency):.4},")
