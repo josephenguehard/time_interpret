@@ -6,6 +6,7 @@ from pytorch_lightning import Trainer
 from typing import List
 
 from tint.attr import (
+    BayesMask,
     DynaMask,
     IntegratedGradients,
     Occlusion,
@@ -13,7 +14,7 @@ from tint.attr import (
     ShapleyValueSampling,
     TemporalIntegratedGradients,
 )
-from tint.attr.models import MaskNet
+from tint.attr.models import BayesMaskNet, MaskNet
 from tint.datasets import Arma
 from tint.metrics.white_box import aup, aur, information, entropy
 
@@ -34,6 +35,23 @@ def main(
 
     # Create dict of attributions
     attr = dict()
+
+    if "bayes_mask" in explainers:
+        trainer = Trainer(max_epochs=500, accelerator=accelerator, devices=1)
+        mask = BayesMaskNet(
+            forward_func=arma.get_white_box,
+            optim="adam",
+            lr=0.01,
+        )
+        explainer = BayesMask(arma.get_white_box)
+        _attr = explainer.attribute(
+            x,
+            trainer=trainer,
+            mask_net=mask,
+            batch_size=50,
+            additional_forward_args=(true_saliency,),
+        )
+        attr["dyna_mask"] = _attr
 
     if "dyna_mask" in explainers:
         trainer = Trainer(max_epochs=1000, accelerator=accelerator, devices=1)
@@ -139,6 +157,7 @@ def parse_args():
         "--explainers",
         type=str,
         default=[
+            "bayes_mask",
             "dyna_mask",
             "integrated_gradients",
             "occlusion",

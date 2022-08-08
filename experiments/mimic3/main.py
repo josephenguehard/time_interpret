@@ -6,19 +6,21 @@ from pytorch_lightning import Trainer
 from typing import List
 
 from tint.attr import (
+    BayesMask,
     DeepLift,
     DynaMask,
     Fit,
     GradientShap,
     IntegratedGradients,
     Lime,
+    LOFLime,
     Retain,
     TemporalAugmentedOcclusion,
     TemporalIntegratedGradients,
     TemporalOcclusion,
     TimeForwardTunnel,
 )
-from tint.attr.models import JointFeatureGeneratorNet, MaskNet, RetainNet
+from tint.attr.models import BayesMaskNet, JointFeatureGeneratorNet, MaskNet, RetainNet
 from tint.datasets import Mimic3
 from tint.metrics import (
     accuracy,
@@ -65,6 +67,18 @@ def main(
 
     # Create dict of attributions
     attr = dict()
+
+    if "bayes_mask" in explainers:
+        trainer = Trainer(max_epochs=500, accelerator=accelerator, devices=1)
+        mask = BayesMaskNet(forward_func=classifier)
+        explainer = BayesMask(classifier)
+        _attr = explainer.attribute(
+            x_test,
+            trainer=trainer,
+            mask_net=mask,
+            batch_size=100,
+        )
+        attr["bayes_mask"] = _attr
 
     if "deep_lift" in explainers:
         explainer = TimeForwardTunnel(DeepLift(classifier))
@@ -130,6 +144,13 @@ def main(
     if "lime" in explainers:
         explainer = TimeForwardTunnel(Lime(classifier))
         attr["lime"] = explainer.attribute(
+            x_test,
+            show_progress=True,
+        ).abs()
+
+    if "lof_lime" in explainers:
+        explainer = TimeForwardTunnel(LOFLime(classifier, embeddings=x_train))
+        attr["lof_lime"] = explainer.attribute(
             x_test,
             show_progress=True,
         ).abs()
@@ -235,12 +256,14 @@ def parse_args():
         "--explainers",
         type=str,
         default=[
+            "bayes_mask",
             "deep_lift",
             "dyna_mask",
             "fit",
             "gradient_shap",
             "integrated_gradients",
             "lime",
+            "lof_lime",
             "retain",
             "augmented_occlusion",
             "occlusion",
