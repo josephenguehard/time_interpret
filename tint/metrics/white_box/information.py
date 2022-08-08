@@ -25,9 +25,11 @@ def _information(
 def information(
     attributions: TensorOrTupleOfTensorsGeneric,
     true_attributions: TensorOrTupleOfTensorsGeneric,
+    normalize: bool = True,
 ) -> Tuple[float]:
     return _base_white_box_metric(
         metric=_information,
         attributions=attributions,
         true_attributions=true_attributions,
+        normalize=normalize,
     )

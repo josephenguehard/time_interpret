@@ -24,9 +24,11 @@ def _roc_auc(
 def roc_auc(
     attributions: TensorOrTupleOfTensorsGeneric,
     true_attributions: TensorOrTupleOfTensorsGeneric,
+    normalize: bool = True,
 ) -> Tuple[float]:
     return _base_white_box_metric(
         metric=_roc_auc,
         attributions=attributions,
         true_attributions=true_attributions,
+        normalize=normalize,
     )

@@ -25,9 +25,11 @@ def _aup(
 def aup(
     attributions: TensorOrTupleOfTensorsGeneric,
     true_attributions: TensorOrTupleOfTensorsGeneric,
+    normalize: bool = True,
 ) -> Tuple[float]:
     return _base_white_box_metric(
         metric=_aup,
         attributions=attributions,
         true_attributions=true_attributions,
+        normalize=normalize,
     )

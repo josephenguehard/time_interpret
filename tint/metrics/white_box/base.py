@@ -19,6 +19,7 @@ def _base_white_box_metric(
     metric: Callable,
     attributions: TensorOrTupleOfTensorsGeneric,
     true_attributions: TensorOrTupleOfTensorsGeneric,
+    normalize: bool = False,
 ) -> Tuple[float]:
     # Convert attributions into tuple
     is_inputs_tuple = _is_tuple(attributions)
@@ -29,24 +30,27 @@ def _base_white_box_metric(
     _validate_input(attributions, true_attributions)
 
     # Normalise attributions
-    min_tpl = tuple(
-        attr.reshape(len(attr), -1).min(dim=-1).values for attr in attributions
-    )
-    max_tpl = tuple(
-        attr.reshape(len(attr), -1).max(dim=-1).values for attr in attributions
-    )
-    min_tpl = tuple(
-        min_.view((len(attr),) + (1,) * (len(attr.shape) - 1))
-        for min_, attr in zip(min_tpl, attributions)
-    )
-    max_tpl = tuple(
-        max_.view((len(attr),) + (1,) * (len(attr.shape) - 1))
-        for max_, attr in zip(max_tpl, attributions)
-    )
-    attributions = tuple(
-        (attr - min_) / (max_ + EPS)
-        for attr, min_, max_ in zip(attributions, min_tpl, max_tpl)
-    )
+    if normalize:
+        min_tpl = tuple(
+            attr.reshape(len(attr), -1).min(dim=-1).values
+            for attr in attributions
+        )
+        max_tpl = tuple(
+            attr.reshape(len(attr), -1).max(dim=-1).values
+            for attr in attributions
+        )
+        min_tpl = tuple(
+            min_.view((len(attr),) + (1,) * (len(attr.shape) - 1))
+            for min_, attr in zip(min_tpl, attributions)
+        )
+        max_tpl = tuple(
+            max_.view((len(attr),) + (1,) * (len(attr.shape) - 1))
+            for max_, attr in zip(max_tpl, attributions)
+        )
+        attributions = tuple(
+            (attr - min_) / (max_ + EPS)
+            for attr, min_, max_ in zip(attributions, min_tpl, max_tpl)
+        )
 
     # Reshape attributions and get a subset corresponding to the true ones
     attributions = tuple(attr.reshape(-1) for attr in attributions)
