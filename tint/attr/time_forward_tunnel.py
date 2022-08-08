@@ -1,7 +1,6 @@
 import copy
 
 import torch
-import warnings
 
 from captum.attr._utils.attribution import Attribution, GradientAttribution
 from captum.log import log_usage
@@ -12,6 +11,7 @@ from captum._utils.common import (
     _is_tuple,
     _format_tensor_into_tuples,
     _format_output,
+    _run_forward,
 )
 from captum._utils.typing import TensorOrTupleOfTensorsGeneric
 
@@ -81,6 +81,7 @@ class TimeForwardTunnel(Attribution):
         self,
         inputs: Union[Tensor, Tuple[Tensor, ...]],
         temporal_additional_forward_args: Tuple[bool] = None,
+        return_all_saliencies: bool = False,
         show_progress: bool = False,
         **kwargs: Any,
     ) -> Union[
@@ -106,15 +107,18 @@ class TimeForwardTunnel(Attribution):
                     dimension 1 corresponds to the time dimension, and if
                     multiple input tensors are provided, the examples must
                     be aligned appropriately.
+            temporal_additional_forward_args (tuple, optional): For each
+                    additional forward arg, determine if it is temporal
+                    or not.
+                    Default: None
+            return_all_saliencies (bool): Whether to return all saliencies
+                for all time points or only the last one per time point.
+                    Default: False
             show_progress (bool, optional): Displays the progress of computation.
                         It will try to use tqdm if available for advanced features
                         (e.g. time estimation). Otherwise, it will fallback to
                         a simple output of progress.
                         Default: False
-            temporal_additional_forward_args (tuple, optional): For each
-                    additional forward arg, determine if it is temporal
-                    or not.
-                    Default: None
             **kwargs: (Any, optional): Contains a list of arguments that are
                        passed  to `attribution_method` attribution algorithm.
                        Any additional arguments that should be used for the
@@ -154,13 +158,6 @@ class TimeForwardTunnel(Attribution):
             and kwargs["return_convergence_delta"]
         )
 
-        # Pop target, this param is ignored
-        target = kwargs.pop("target", None)
-        if target is not None:
-            warnings.warn(
-                f"target is ignored when using {self.__class__.__name__}"
-            )
-
         attributions_partial_list = list()
         delta_partial_list = list()
         is_attrib_tuple = True
@@ -171,25 +168,25 @@ class TimeForwardTunnel(Attribution):
                 times, desc=f"{self.attribution_method.get_name()} attribution"
             )
 
+        # Compute attributions over time
         for time in times:
             partial_inputs = tuple(x[:, :time, ...] for x in inputs)
-            partial_targets = self.get_target(partial_inputs=partial_inputs)
 
             # Get partial baselines if provided
-            _kwargs = copy.deepcopy(kwargs)
+            kwargs_copy = copy.deepcopy(kwargs)
             if "baselines" in kwargs:
                 baselines = _format_baseline(
-                    _kwargs["baselines"], partial_inputs
+                    kwargs_copy["baselines"], partial_inputs
                 )
                 if isinstance(baselines[0], Tensor):
-                    _kwargs["baselines"] = tuple(
+                    kwargs_copy["baselines"] = tuple(
                         x[:, :time, ...] for x in baselines
                     )
 
             # Get partial additional forward args if provided
             if temporal_additional_forward_args is not None:
                 additional_forward_args = _format_additional_forward_args(
-                    _kwargs["additional_forward_args"]
+                    kwargs_copy["additional_forward_args"]
                 )
                 assert len(additional_forward_args) == len(
                     temporal_additional_forward_args
@@ -197,7 +194,7 @@ class TimeForwardTunnel(Attribution):
                     "Length mismatch between additional_forward_args "
                     "and temporal_additional_forward_args"
                 )
-                _kwargs["additional_forward_args"] = (
+                kwargs_copy["additional_forward_args"] = (
                     arg[:, :time, ...] if is_temporal else arg
                     for arg, is_temporal in zip(
                         additional_forward_args,
@@ -205,6 +202,13 @@ class TimeForwardTunnel(Attribution):
                     )
                 )
 
+            # If target is not passed, get model prediction
+            partial_targets = self.get_target(
+                partial_inputs=partial_inputs, kwargs_copy=kwargs_copy
+            )
+
+            # Compute attribution for a specific time
+            # and for each partial target
             attributions_partial_sublist = list()
             delta_partial_list_sublist = list()
             for partial_target in partial_targets:
@@ -217,11 +221,12 @@ class TimeForwardTunnel(Attribution):
                     partial_target=partial_target,
                     is_inputs_tuple=is_inputs_tuple,
                     return_convergence_delta=return_convergence_delta,
-                    kwargs_partition=_kwargs or kwargs,
+                    kwargs_partition=kwargs_copy or kwargs,
                 )
                 attributions_partial_sublist.append(attributions_partial)
                 delta_partial_list_sublist.append(delta_partial)
 
+            # Group attributions
             attributions_partial = tuple()
             for i in range(len(attributions_partial_sublist[0])):
                 attributions_partial += (
@@ -233,6 +238,7 @@ class TimeForwardTunnel(Attribution):
                     .values,
                 )
 
+            # Group delta is required
             delta_partial = None
             if self.is_delta_supported and return_convergence_delta:
                 delta_partial = torch.stack(
@@ -242,14 +248,29 @@ class TimeForwardTunnel(Attribution):
             attributions_partial_list.append(attributions_partial)
             delta_partial_list.append(delta_partial)
 
+        # If return all saliencies, stack attributions
+        # else, select the last one in time for each time point
         attributions = tuple()
-        for i in range(len(attributions_partial_list[0])):
-            attributions += (
-                torch.stack(
-                    [x[i][:, -1, ...] for x in attributions_partial_list],
-                    dim=1,
-                ),
-            )
+        if return_all_saliencies:
+            for i in range(len(attributions_partial_list[0])):
+                attr = [
+                    torch.zeros_like(
+                        attributions_partial_list[-1][i],
+                        dtype=attributions_partial_list[-1][i].dtype,
+                    )
+                    for _ in range(len(attributions_partial_list))
+                ]
+                for j in range(len(attributions_partial_list)):
+                    attr[j][:, : j + 1, ...] = attributions_partial_list[j][i]
+                attributions += (torch.stack(attr, dim=1),)
+        else:
+            for i in range(len(attributions_partial_list[0])):
+                attributions += (
+                    torch.stack(
+                        [x[i][:, -1, ...] for x in attributions_partial_list],
+                        dim=1,
+                    ),
+                )
 
         delta = None
         if self.is_delta_supported and return_convergence_delta:
@@ -263,19 +284,43 @@ class TimeForwardTunnel(Attribution):
         )
 
     def get_target(
-        self, partial_inputs: Tuple[Tensor, ...]
+        self,
+        partial_inputs: Tuple[Tensor, ...],
+        kwargs_copy: Any,
     ) -> Tuple[Tensor, ...]:
         """
         Get the target given partial inputs and a task.
+        If the target is provided, return it. Otherwise, return the model
+        predictions.
 
         Args:
             partial_inputs (tuple): The partial input up to a certain time.
+            kwargs_copy (Any): Additional args for the forward_pass.
 
         Returns:
             partial_targets (Tensor): The partial targets.
         """
-        partial_targets = self.attribution_method.forward_func(*partial_inputs)
+        # If target is present, set it as a tuple
+        # and return it
+        if "target" in kwargs_copy:
+            target = kwargs_copy["target"]
+            if not isinstance(target, tuple):
+                target = (target,)
+            return target
 
+        # Get additional args
+        additional_forward_args = None
+        if "additional_forward_args" in kwargs_copy:
+            additional_forward_args = kwargs_copy["additional_forward_args"]
+
+        # Get model outputs
+        partial_targets = _run_forward(
+            self.attribution_method.forward_func,
+            partial_inputs,
+            additional_forward_args=additional_forward_args,
+        )
+
+        # Get target as predictions
         if self.task in ["binary", "multiclass"]:
             partial_targets = (torch.argmax(partial_targets, -1),)
         elif self.task == "multilabel":
