@@ -8,6 +8,7 @@ from captum._utils.common import (
     _expand_target,
     _format_input,
     _format_additional_forward_args,
+    _format_baseline,
     _is_tuple,
     _format_tensor_into_tuples,
     _format_output,
@@ -20,6 +21,8 @@ from captum._utils.typing import (
 )
 from captum.attr._utils.approximation_methods import approximation_parameters
 from captum.attr._utils.common import _reshape_and_sum
+
+from tint.utils import get_progress_bars
 
 from torch import Tensor
 from typing import Any, Callable, List, Tuple, Union, cast
@@ -51,6 +54,8 @@ class TemporalIntegratedGradients(IntegratedGradients):
         method: str = "gausslegendre",
         internal_batch_size: Union[None, int] = None,
         return_convergence_delta: Literal[False] = False,
+        temporal_additional_forward_args: Tuple[bool] = None,
+        show_progress: bool = False,
     ) -> TensorOrTupleOfTensorsGeneric:
         ...
 
@@ -66,6 +71,8 @@ class TemporalIntegratedGradients(IntegratedGradients):
         internal_batch_size: Union[None, int] = None,
         *,
         return_convergence_delta: Literal[True],
+        temporal_additional_forward_args: Tuple[bool] = None,
+        show_progress: bool = False,
     ) -> Tuple[TensorOrTupleOfTensorsGeneric, Tensor]:
         ...
 
@@ -80,6 +87,8 @@ class TemporalIntegratedGradients(IntegratedGradients):
         method: str = "gausslegendre",
         internal_batch_size: Union[None, int] = None,
         return_convergence_delta: bool = False,
+        temporal_additional_forward_args: Tuple[bool] = None,
+        show_progress: bool = False,
     ) -> Union[
         TensorOrTupleOfTensorsGeneric,
         Tuple[TensorOrTupleOfTensorsGeneric, Tensor],
@@ -90,6 +99,9 @@ class TemporalIntegratedGradients(IntegratedGradients):
 
         inputs = _format_input(inputs)
 
+        # Get baselines
+        baselines = _format_baseline(baselines, inputs)
+
         assert all(
             x.shape[1] == inputs[0].shape[1] for x in inputs
         ), "All inputs must have the same time dimension. (dimension 1)"
@@ -97,8 +109,39 @@ class TemporalIntegratedGradients(IntegratedGradients):
         attributions_partial_list = list()
         delta_partial_list = list()
         is_attrib_tuple = True
-        for time in range(1, inputs[0].shape[1] + 1):
+
+        times = range(1, inputs[0].shape[1] + 1)
+        if show_progress:
+            times = get_progress_bars()(
+                times, desc=f"{self.get_name()} attribution"
+            )
+
+        for time in times:
+            # Get partial inputs up to time
             partial_inputs = tuple(x[:, :time, ...] for x in inputs)
+
+            # Get partial baselines up to time if provided
+            partial_baselines = tuple(
+                x[:, :time, ...] if isinstance(x, Tensor) else x
+                for x in baselines
+            )
+
+            # Get partial additional forward args if provided
+            partial_additional_forward_args = additional_forward_args
+            if temporal_additional_forward_args is not None:
+                assert len(additional_forward_args) == len(
+                    temporal_additional_forward_args
+                ), (
+                    "Length mismatch between additional_forward_args "
+                    "and temporal_additional_forward_args"
+                )
+                partial_additional_forward_args = tuple(
+                    x[:, :time, ...] if y else x
+                    for x, y in zip(
+                        additional_forward_args,
+                        temporal_additional_forward_args,
+                    )
+                )
 
             (
                 attributions_partial,
@@ -107,9 +150,9 @@ class TemporalIntegratedGradients(IntegratedGradients):
             ) = self.compute_partial_attribution(
                 partial_inputs=partial_inputs,
                 is_inputs_tuple=is_inputs_tuple,
-                baselines=baselines,
+                baselines=partial_baselines,
                 target=target,
-                additional_forward_args=additional_forward_args,
+                additional_forward_args=partial_additional_forward_args,
                 n_steps=n_steps,
                 method=method,
                 internal_batch_size=internal_batch_size,
@@ -227,14 +270,6 @@ class TemporalIntegratedGradients(IntegratedGradients):
         baselines: Tuple[Union[Tensor, int, float], ...],
         alphas: List[float],
     ) -> Tuple[Tensor]:
-
-        # If baseline is a Tensor, cut it
-        baselines = list(baselines)
-        for i in range(len(baselines)):
-            if isinstance(baselines[i], Tensor):
-                baselines[i] = baselines[:, -1, ...]
-        baselines = tuple(baselines)
-
         # Only rescale the last time of the inputs
         scaled_features_tpl = tuple(
             torch.cat(
@@ -243,8 +278,9 @@ class TemporalIntegratedGradients(IntegratedGradients):
                         [
                             input[:, :-1, ...],
                             (
-                                baseline
-                                + alpha * (input[:, -1, ...] - baseline)
+                                baseline[:, -1, ...]
+                                + alpha
+                                * (input[:, -1, ...] - baseline[:, -1, ...])
                             ).unsqueeze(1),
                         ],
                         dim=1,
@@ -273,7 +309,7 @@ class TemporalIntegratedGradients(IntegratedGradients):
         attributions = super().attribute.__wrapped__(
             self,
             partial_inputs if is_inputs_tuple else partial_inputs[0],
-            baselines=baselines,
+            baselines=baselines if is_inputs_tuple else baselines[0],
             target=target,
             additional_forward_args=additional_forward_args,
             n_steps=n_steps,
