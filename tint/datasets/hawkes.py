@@ -125,9 +125,9 @@ class Hawkes(DataModule):
         labels = pad_sequence(
             [self.get_labels(x) for x in data],
             batch_first=True,
-        ).unsqueeze(-1)
+        )
 
-        return {"x": features, "y": labels}
+        return {"x": features.float(), "y": labels.long()}
 
     @staticmethod
     def generate_points(
@@ -215,7 +215,7 @@ class Hawkes(DataModule):
 
         labelled_exp = th.zeros(exp.shape + (len(mu),)).scatter(
             -1,
-            labels.unsqueeze(-1).repeat(1, 1, t.shape[-1], 1),
+            labels.unsqueeze(-1).unsqueeze(-1).repeat(1, 1, t.shape[-1], 1),
             exp.unsqueeze(-1),
         )
 
@@ -265,7 +265,7 @@ class Hawkes(DataModule):
 
         labelled_exp = th.zeros(exp.shape + (len(mu),)).scatter(
             -1,
-            labels.unsqueeze(-1).repeat(1, 1, t.shape[-1], 1),
+            labels.unsqueeze(-1).unsqueeze(-1).repeat(1, 1, t.shape[-1], 1),
             exp.unsqueeze(-1),
         )
 
