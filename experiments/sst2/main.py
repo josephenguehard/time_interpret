@@ -14,9 +14,13 @@ from tint.attr.models import scale_inputs
 from tint.models import Bert
 from tint.utils import get_progress_bars
 
-from .knn import knn
-from .metrics import eval_comprehensiveness, eval_log_odds, eval_sufficiency
-from .utils import (
+from experiments.sst2.knn import knn
+from experiments.sst2.metrics import (
+    eval_comprehensiveness,
+    eval_log_odds,
+    eval_sufficiency,
+)
+from experiments.sst2.utils import (
     ForwardModel,
     get_base_token_emb,
     get_inputs,
