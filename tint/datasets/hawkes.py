@@ -167,7 +167,41 @@ class Hawkes(DataModule):
         hawkes.simulate()
         return hawkes.timestamps
 
-    def true_saliency(
+    def true_saliency(self, split: str = "train"):
+        """
+        Get process true saliency.
+
+        Args:
+            split (str): Data split. Default to ``'train'``
+
+        Returns:
+            th.Tensor: The true saliency.
+        """
+        # Load data
+        data = self.preprocess(split=split)
+        times, labels = data["x"], data["y"]
+
+        # Compute true saliency for each process
+        # The query is times[1:], window
+        true_saliency = list()
+        for i in range(len(times)):
+            true_saliency_i = self.true_saliency_t(
+                t=th.cat(
+                    [
+                        times[i][times[i].nonzero(as_tuple=True)].squeeze(-1)[
+                            1:
+                        ],
+                        th.Tensor([self.window]),
+                    ]
+                ),
+                times=times[i].unsqueeze(0),
+                labels=labels[i].unsqueeze(0),
+            )[0]
+            true_saliency.append(true_saliency_i)
+
+        return pad_sequence(true_saliency).transpose(0, 1)
+
+    def true_saliency_t(
         self,
         t: th.Tensor,
         mu: th.Tensor = None,
@@ -208,25 +242,36 @@ class Hawkes(DataModule):
             times, labels = data["x"], data["y"]
 
         # Compute influence of each element
+        # Reshape some data
         t = t.unsqueeze(0).unsqueeze(0)
+        labels = (
+            labels.unsqueeze(-1).unsqueeze(-1).repeat(1, 1, t.shape[-1], 1)
+        )
 
+        # Get exp(-(t-ti))
         diff = (times - t) * (times > 0) * (times < t)
         exp = (th.exp(diff) * (times > 0) * (times < t)).float()
 
+        # Scatter to get exp(-(t-ti))_m for m marks
         labelled_exp = th.zeros(exp.shape + (len(mu),)).scatter(
             -1,
-            labels.unsqueeze(-1).unsqueeze(-1).repeat(1, 1, t.shape[-1], 1),
+            labels,
             exp.unsqueeze(-1),
         )
 
+        # Multiply by process params
         true_saliency = th.matmul(labelled_exp, decay)
         true_saliency = th.matmul(true_saliency, alpha)
-        true_saliency = true_saliency.sum(-1) / true_saliency.sum(-1).sum(
-            1, keepdim=True
-        )
+
+        # Gather to get the marked points
+        true_saliency = true_saliency.gather(-1, labels)
+
+        # Normalise saliency
+        true_saliency = true_saliency / true_saliency.sum(1, keepdim=True)
 
         # We set eventual nans to zeros due to the division
-        return true_saliency.nan_to_num_()
+        # We transpose to get the temporal dim first after batch
+        return true_saliency.nan_to_num_().transpose(1, 2)
 
     @staticmethod
     def intensity(
@@ -258,19 +303,27 @@ class Hawkes(DataModule):
         Returns:
             th.Tensor: Intensities. Shape B x Q x N
         """
+        # Reshape some data
         t = t.unsqueeze(0).unsqueeze(0)
+        labels = (
+            labels.unsqueeze(-1).unsqueeze(-1).repeat(1, 1, t.shape[-1], 1)
+        )
 
+        # Get exp(-(t-ti))
         diff = (times - t) * (times > 0) * (times < t)
         exp = (th.exp(diff) * (times > 0) * (times < t)).float()
 
+        # Scatter to get exp(-(t-ti))_m for m marks
         labelled_exp = th.zeros(exp.shape + (len(mu),)).scatter(
             -1,
-            labels.unsqueeze(-1).unsqueeze(-1).repeat(1, 1, t.shape[-1], 1),
+            labels,
             exp.unsqueeze(-1),
         )
 
+        # Get sum(decay * exp(-(t-ti))
         sum_ = th.matmul(labelled_exp, decay).sum(1)
 
+        # Scale by params process
         return th.matmul(sum_, alpha) + mu
 
     @staticmethod
