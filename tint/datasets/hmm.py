@@ -253,8 +253,8 @@ class HMM(DataModule):
 
             true_saliency = th.zeros(features.shape)
             for exp_id, time_slice in enumerate(true_states):
-                for feature_id, t_id in enumerate(time_slice):
-                    true_saliency[exp_id, feature_id, t_id] = 1
+                for t_id, feature_id in enumerate(time_slice):
+                    true_saliency[exp_id, t_id, feature_id] = 1
             true_saliency = true_saliency.long()
 
         return true_saliency
