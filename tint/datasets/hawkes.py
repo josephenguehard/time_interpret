@@ -167,31 +167,66 @@ class Hawkes(DataModule):
         hawkes.simulate()
         return hawkes.timestamps
 
-    def true_saliency(self, split: str = "train"):
+    def true_saliency(
+        self,
+        t: th.Tensor,
+        mu: th.Tensor = None,
+        alpha: th.Tensor = None,
+        decay: th.Tensor = None,
+        times: th.Tensor = None,
+        labels: th.Tensor = None,
+        split: str = "train",
+    ):
+        """
+        Compute the true saliency given some time queries.
+
+        B: Batch size.
+        T: Temporal dim.
+        N: Number of processes.
+        Q: Number of time queries.
+
+        Args:
+            t (th.Tensor): Time queries. Shape Q
+            mu (th.Tensor): Intensity baselines. Shape N, Values 0..1
+            alpha (th.Tensor): Events parameters. Shape N x N, Values 0..1
+            decay (th.Tensor): Intensity decays. Shape N x N, Values 0..1
+            times (th.Tensor): Times of the process. Shape B x T x 1
+            labels (th.Tensor: Labels of the process. Shape B x T x 1
+            split (str): Data split. Default to ``'train'``
+
+        Returns:
+            th.Tensor: true_saliency
+        """
         # Get params
-        mu = th.Tensor(self.mu)
-        alpha = th.Tensor(self.alpha)
-        decay = th.Tensor(self.decay)
+        mu = th.Tensor(self.mu) if mu is None else mu
+        alpha = th.Tensor(self.alpha) if alpha is None else alpha
+        decay = th.Tensor(self.decay) if decay is None else decay
 
         # Get data
-        data = self.preprocess(split=split)
-        times, labels = data["x"], data["y"]
+        if times is None or labels is None:
+            data = self.preprocess(split=split)
+            times, labels = data["x"], data["y"]
 
-        # Compute intensity for each process
-        # at every time point
-        intensities = th.zeros(times.shape[:-1] + (len(mu),))
-        for i in range(len(data)):
-            intensities[i] = self.intensity(
-                mu=mu,
-                alpha=alpha,
-                decay=decay,
-                times=times[i].unsqueeze(0),
-                labels=labels[i].unsqueeze(0),
-                t=times[i].squeeze(),
-            )
+        # Compute influence of each element
+        t = t.unsqueeze(0).unsqueeze(0)
 
-        # Return intensities for true labels
-        return intensities.gather(-1, labels)
+        diff = (times - t) * (times > 0) * (times < t)
+        exp = (th.exp(diff) * (times > 0) * (times < t)).float()
+
+        labelled_exp = th.zeros(exp.shape + (len(mu),)).scatter(
+            -1,
+            labels.unsqueeze(-1).repeat(1, 1, t.shape[-1], 1),
+            exp.unsqueeze(-1),
+        )
+
+        true_saliency = th.matmul(labelled_exp, decay)
+        true_saliency = th.matmul(true_saliency, alpha)
+        true_saliency = true_saliency.sum(-1) / true_saliency.sum(-1).sum(
+            1, keepdim=True
+        )
+
+        # We set eventual nans to zeros due to the division
+        return true_saliency.nan_to_num_()
 
     @staticmethod
     def intensity(
@@ -207,17 +242,21 @@ class Hawkes(DataModule):
         times and labels, and a vector of query times t,
         compute intensities at these time points.
 
+        B: Batch size.
+        T: Temporal dim.
+        N: Number of processes.
+        Q: Number of time queries.
+
         Args:
-            mu (th.Tensor): Intensity baselines.
-                Should have a shape of
-            alpha (th.Tensor): Events parameters.
-            decay (th.Tensor): Intensity decays.
-            times (th.Tensor): Times of the process.
-            labels (th.Tensor: Labels of the process.
-            t (th.Tensor): Query times.
+            mu (th.Tensor): Intensity baselines. Shape N, Values 0..1
+            alpha (th.Tensor): Events parameters. Shape N x N, Values 0..1
+            decay (th.Tensor): Intensity decays. Shape N x N, Values 0..1
+            times (th.Tensor): Times of the process. Shape B x T x 1
+            labels (th.Tensor: Labels of the process. Shape B x T x 1
+            t (th.Tensor): Query times. Shape Q
 
         Returns:
-            th.Tensor: Intensities.
+            th.Tensor: Intensities. Shape B x Q x N
         """
         t = t.unsqueeze(0).unsqueeze(0)
 
