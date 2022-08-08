@@ -6,7 +6,7 @@ from sklearn.neighbors import kneighbors_graph
 
 from tint.models import Bert
 
-from utils import get_word_embeddings
+from .utils import get_word_embeddings
 
 
 def knn(

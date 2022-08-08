@@ -29,7 +29,7 @@ from tint.metrics.white_box import (
 )
 
 
-from classifier import StateClassifierNet
+from .classifier import StateClassifierNet
 
 
 def main(
