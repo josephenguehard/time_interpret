@@ -25,7 +25,7 @@ usage: experiments/hmm/main.py [-h] [--explainers] [--accelerator] [--seed]
 
 optional arguments:
   -h, --help            Show this help message and exit.
-  --explainers          List of the explainers to use. Default to ["deep_lift", "dyna_mask", "fit", "gradient_shap", "integrated_gradients", "lime", "retain", "augmented_occlusion", "occlusion"]
+  --explainers          List of the explainers to use. Default to ["bayes_mask", "deep_lift", "dyna_mask", "fit", "gradient_shap", "integrated_gradients", "lime", "lof_lime", "retain", "augmented_occlusion", "occlusion", "temporal_integrated_gradients"]
   --accelerator         Which accelerator to use. Default to 'cpu'
   --seed                Which seed to use to generate the data. Default to 42
 ```
