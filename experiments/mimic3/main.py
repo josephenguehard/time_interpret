@@ -20,7 +20,12 @@ from tint.attr import (
     TemporalOcclusion,
     TimeForwardTunnel,
 )
-from tint.attr.models import BayesMaskNet, JointFeatureGeneratorNet, MaskNet, RetainNet
+from tint.attr.models import (
+    BayesMaskNet,
+    JointFeatureGeneratorNet,
+    MaskNet,
+    RetainNet,
+)
 from tint.datasets import Mimic3
 from tint.metrics import (
     accuracy,
