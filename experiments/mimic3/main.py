@@ -14,6 +14,7 @@ from tint.attr import (
     Lime,
     Retain,
     TemporalAugmentedOcclusion,
+    TemporalIntegratedGradients,
     TemporalOcclusion,
     TimeForwardTunnel,
 )
@@ -172,6 +173,15 @@ def main(
             show_progress=True,
         ).abs()
 
+    if "temporal_integrated_gradients" in explainers:
+        explainer = TimeForwardTunnel(TemporalIntegratedGradients(classifier))
+        attr["temporal_integrated_gradients"] = explainer.attribute(
+            x_test,
+            baselines=x_test * 0,
+            n_steps=2,
+            show_progress=True,
+        ).abs()
+
     # Compute x_avg for the baseline
     x_avg = x_test.mean(1, keepdim=True).repeat(1, x_test.shape[1], 1)
 
@@ -234,6 +244,7 @@ def parse_args():
             "retain",
             "augmented_occlusion",
             "occlusion",
+            "temporal_integrated_gradients",
         ],
         nargs="+",
         metavar="N",

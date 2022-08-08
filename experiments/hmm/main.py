@@ -14,6 +14,7 @@ from tint.attr import (
     Lime,
     Retain,
     TemporalAugmentedOcclusion,
+    TemporalIntegratedGradients,
     TemporalOcclusion,
     TimeForwardTunnel,
 )
@@ -173,6 +174,15 @@ def main(
             show_progress=True,
         ).abs()
 
+    if "temporal_integrated_gradients" in explainers:
+        explainer = TimeForwardTunnel(TemporalIntegratedGradients(classifier))
+        attr["temporal_integrated_gradients"] = explainer.attribute(
+            x_test,
+            baselines=x_test * 0,
+            n_steps=2,
+            show_progress=True,
+        ).abs()
+
     # Get true saliency
     true_saliency = hmm.true_saliency(split="test")
 
@@ -205,6 +215,7 @@ def parse_args():
             "retain",
             "augmented_occlusion",
             "occlusion",
+            "temporal_integrated_gradients",
         ],
         nargs="+",
         metavar="N",
