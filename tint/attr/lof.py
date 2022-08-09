@@ -49,7 +49,7 @@ class LOF:
         ) * max(score.mean().item(), EPS)
 
 
-class LOFLime(Lime, LOF):
+class LofLime(Lime, LOF):
     def __init__(
         self,
         forward_func: Callable,
@@ -79,7 +79,7 @@ class LOFLime(Lime, LOF):
         self.similarity_func = self.lof_similarity_func
 
 
-class LOFKernelShap(KernelShap, LOF):
+class LofKernelShap(KernelShap, LOF):
     def __init__(
         self,
         forward_func: Callable,

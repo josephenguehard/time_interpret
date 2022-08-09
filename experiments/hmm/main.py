@@ -13,7 +13,7 @@ from tint.attr import (
     GradientShap,
     IntegratedGradients,
     Lime,
-    LOFLime,
+    LofLime,
     Retain,
     TemporalAugmentedOcclusion,
     TemporalIntegratedGradients,
@@ -163,7 +163,7 @@ def main(
         ).abs()
 
     if "lof_lime" in explainers:
-        explainer = TimeForwardTunnel(LOFLime(classifier, embeddings=x_train))
+        explainer = TimeForwardTunnel(LofLime(classifier, embeddings=x_train))
         attr["lof_lime"] = explainer.attribute(
             x_test,
             show_progress=True,
