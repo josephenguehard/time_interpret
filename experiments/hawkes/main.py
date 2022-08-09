@@ -1,3 +1,4 @@
+import numpy as np
 import torch as th
 
 from argparse import ArgumentParser
@@ -6,6 +7,7 @@ from typing import List
 
 from tint.attr import (
     DeepLift,
+    DynaMask,
     GradientShap,
     IntegratedGradients,
     Lime,
@@ -14,6 +16,12 @@ from tint.attr import (
     TemporalIntegratedGradients,
     TemporalOcclusion,
     TimeForwardTunnel,
+)
+from tint.attr.models import (
+    BayesMaskNet,
+    JointFeatureGeneratorNet,
+    MaskNet,
+    RetainNet,
 )
 from tint.datasets import Hawkes
 from tint.metrics.white_box import (
@@ -72,6 +80,27 @@ def main(
             return_all_saliencies=True,
             show_progress=True,
         ).abs()
+
+    if "dyna_mask" in explainers:
+        trainer = Trainer(max_epochs=1000, accelerator=accelerator, devices=1)
+        mask = MaskNet(
+            forward_func=classifier,
+            perturbation="gaussian_blur",
+            keep_ratio=list(np.arange(0.25, 0.35, 0.01)),
+            size_reg_factor_init=0.1,
+            size_reg_factor_dilation=100,
+            time_reg_factor=1.0,
+        )
+        explainer = DynaMask(classifier)
+        _attr = explainer.attribute(
+            x_test,
+            trainer=trainer,
+            mask_net=mask,
+            batch_size=100,
+            return_temporal_attributions=True,
+        )
+        print(f"Best keep ratio is {_attr[1]}")
+        attr["dyna_mask"] = _attr[0]
 
     if "gradient_shap" in explainers:
         explainer = TimeForwardTunnel(GradientShap(classifier))
@@ -166,6 +195,7 @@ def parse_args():
         type=str,
         default=[
             "deep_lift",
+            "dyna_mask",
             "gradient_shap",
             "integrated_gradients",
             "lime",
