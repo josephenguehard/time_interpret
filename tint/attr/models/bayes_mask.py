@@ -1,5 +1,6 @@
 import torch as th
 import torch.nn as nn
+import torch.nn.functional as F
 
 from captum._utils.common import _run_forward
 
@@ -90,15 +91,22 @@ class BayesMask(nn.Module):
             )
         else:
             raise NotImplementedError
-        sample = dist.rsample().abs()
+        samples = dist.rsample()
 
         # Subset sample to current batch
-        sample = sample[
+        samples = samples[
             self.batch_size * batch_idx : self.batch_size * (batch_idx + 1)
         ]
 
-        # Mask data
-        x[sample < 0.5] = 0.0
+        # The threshold we use is 0.5, so we set 1 - s as
+        # the opposite logit
+        samples = th.stack([samples, 1. - samples], dim=-1)
+
+        # We use the Gumbel-Max trick to discretize the samples
+        samples = F.gumbel_softmax(samples, tau=0.01, hard=True, dim=-1)[..., 0]
+
+        # Mask data according to samples
+        x *= samples
 
         # Return f(perturbed x)
         return _run_forward(
