@@ -80,6 +80,7 @@ class TimeForwardTunnel(Attribution):
     def attribute(
         self,
         inputs: Union[Tensor, Tuple[Tensor, ...]],
+        temporal_target: bool = False,
         temporal_additional_forward_args: Tuple[bool] = None,
         return_all_saliencies: bool = False,
         show_progress: bool = False,
@@ -107,6 +108,9 @@ class TimeForwardTunnel(Attribution):
                     dimension 1 corresponds to the time dimension, and if
                     multiple input tensors are provided, the examples must
                     be aligned appropriately.
+            temporal_target (bool, optional): Determine if the targe is
+                    temporal and needs to be cut.
+                    Default: False
             temporal_additional_forward_args (tuple, optional): For each
                     additional forward arg, determine if it is temporal
                     or not.
@@ -204,7 +208,10 @@ class TimeForwardTunnel(Attribution):
 
             # If target is not passed, get model prediction
             partial_targets = self.get_target(
-                partial_inputs=partial_inputs, kwargs_copy=kwargs_copy
+                partial_inputs=partial_inputs,
+                temporal_target=temporal_target,
+                time=time,
+                kwargs_copy=kwargs_copy,
             )
 
             # Compute attribution for a specific time
@@ -286,6 +293,8 @@ class TimeForwardTunnel(Attribution):
     def get_target(
         self,
         partial_inputs: Tuple[Tensor, ...],
+        temporal_target: bool,
+        time: int,
         kwargs_copy: Any,
     ) -> Tuple[Tensor, ...]:
         """
@@ -295,6 +304,9 @@ class TimeForwardTunnel(Attribution):
 
         Args:
             partial_inputs (tuple): The partial input up to a certain time.
+            temporal_target (bool): Whether the target is temporal,
+                if provided.
+            time (int): Time point to cut target.
             kwargs_copy (Any): Additional args for the forward_pass.
 
         Returns:
@@ -302,8 +314,14 @@ class TimeForwardTunnel(Attribution):
         """
         # If target is present, set it as a tuple
         # and return it
+        # If target is temporal, cut it up to time
         if "target" in kwargs_copy:
             target = kwargs_copy["target"]
+            if temporal_target:
+                assert isinstance(
+                    target, Tensor
+                ), "target must be a tensor if temporal"
+                target = target[:, :time, ...]
             if not isinstance(target, tuple):
                 target = (target,)
             return target
