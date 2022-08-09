@@ -163,23 +163,6 @@ def main(
             show_progress=True,
         ).abs()
 
-    if "retain" in explainers:
-        retain = RetainNet(
-            dim_emb=128,
-            dropout_emb=0.4,
-            dim_alpha=8,
-            dim_beta=8,
-            dropout_context=0.4,
-            dim_output=2,
-            loss="cross_entropy",
-        )
-        explainer = Retain(
-            datamodule=hmm,
-            retain=retain,
-            trainer=Trainer(max_epochs=50, accelerator=accelerator),
-        )
-        attr["retain"] = explainer.attribute(x_test, target=y_test).abs()
-
     if "augmented_occlusion" in explainers:
         explainer = TimeForwardTunnel(
             TemporalAugmentedOcclusion(
@@ -200,6 +183,23 @@ def main(
             baselines=x_train.mean(0, keepdim=True),
             show_progress=True,
         ).abs()
+
+    if "retain" in explainers:
+        retain = RetainNet(
+            dim_emb=128,
+            dropout_emb=0.4,
+            dim_alpha=8,
+            dim_beta=8,
+            dropout_context=0.4,
+            dim_output=2,
+            loss="cross_entropy",
+        )
+        explainer = Retain(
+            datamodule=hmm,
+            retain=retain,
+            trainer=Trainer(max_epochs=50, accelerator=accelerator),
+        )
+        attr["retain"] = explainer.attribute(x_test, target=y_test).abs()
 
     if "temporal_integrated_gradients" in explainers:
         explainer = TimeForwardTunnel(TemporalIntegratedGradients(classifier))
@@ -241,9 +241,9 @@ def parse_args():
             "integrated_gradients",
             "lime",
             "lof_lime",
-            "retain",
             "augmented_occlusion",
             "occlusion",
+            "retain",
             "temporal_integrated_gradients",
         ],
         nargs="+",
