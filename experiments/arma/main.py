@@ -40,6 +40,8 @@ def main(
         trainer = Trainer(max_epochs=500, accelerator=accelerator, devices=1)
         mask = BayesMaskNet(
             forward_func=arma.get_white_box,
+            distribution="normal",
+            eps=1e-1,
             optim="adam",
             lr=0.01,
         )
