@@ -72,8 +72,8 @@ class Hawkes(DataModule):
         )
 
         self.mu = mu or [0.05, 0.05]
-        self.alpha = alpha or [[0.1, 0.2], [0.2, 0.1]]
-        self.decay = decay or [[1.0, 1.0], [1.0, 1.0]]
+        self.alpha = alpha or [[0.05, 0.2], [0.3, 0.1]]
+        self.decay = decay or [[1.0, 1.0], [2.0, 1.0]]
         self.window = window or 1000
 
     def download(
