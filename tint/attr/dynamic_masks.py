@@ -44,6 +44,7 @@ class DynaMask(PerturbationAttribution):
         batch_size: int = 32,
         temporal_additional_forward_args: Tuple[bool] = None,
         return_temporal_attributions: bool = False,
+        return_best_ratio: bool = False,
     ) -> TensorOrTupleOfTensorsGeneric:
         """
         attribute method.
@@ -63,6 +64,8 @@ class DynaMask(PerturbationAttribution):
                 Default to ``None``
             return_temporal_attributions (bool): Whether to return
                 attributions for all times or not. Default to ``False``
+            return_best_ratio (bool): Whether to return the best keep_ratio
+                or not. Default to ``False``
 
         Returns:
             (th.Tensor, tuple): Attributions.
@@ -145,7 +148,7 @@ class DynaMask(PerturbationAttribution):
         mask_net.eval()
 
         # Get attributions as mask representation
-        representation = self.representation(
+        attributions, best_ratio = self.representation(
             mask_net=mask_net,
             trainer=trainer,
             dataloader=dataloader,
@@ -153,16 +156,16 @@ class DynaMask(PerturbationAttribution):
 
         # Reshape representation if temporal attributions
         if return_temporal_attributions:
-            representation = (
-                representation[0].reshape(
-                    (-1, data.shape[1]) + data.shape[1:]
-                ),
-                representation[1],
+            attributions = attributions.reshape(
+                (-1, data.shape[1]) + data.shape[1:]
             )
 
-        attributions = (representation,)
+        # Reshape as a tuple
+        attributions = (attributions,)
 
         # Format attributions and return
+        if return_best_ratio:
+            return _format_output(is_inputs_tuple, attributions), best_ratio
         return _format_output(is_inputs_tuple, attributions)
 
     @staticmethod

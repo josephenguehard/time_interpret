@@ -71,6 +71,7 @@ def main(
             mask_net=mask,
             batch_size=50,
             additional_forward_args=(true_saliency,),
+            return_best_ratio=True,
         )
         print(f"Best keep ratio is {_attr[1]}")
         attr["dyna_mask"] = _attr[0]
