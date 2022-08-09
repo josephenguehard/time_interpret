@@ -4,6 +4,7 @@ import torch as th
 from captum.attr._utils.attribution import PerturbationAttribution
 from captum.log import log_usage
 from captum._utils.common import (
+    _expand_additional_forward_args,
     _format_input,
     _format_output,
     _is_tuple,
@@ -12,7 +13,7 @@ from captum._utils.typing import TensorOrTupleOfTensorsGeneric
 
 from pytorch_lightning import Trainer
 from torch.utils.data import DataLoader
-from typing import Any, Callable
+from typing import Any, Callable, Tuple
 
 from tint.utils import TensorDataset, default_collate
 from .models import MaskNet
@@ -41,6 +42,8 @@ class DynaMask(PerturbationAttribution):
         trainer: Trainer = None,
         mask_net: MaskNet = None,
         batch_size: int = 32,
+        temporal_additional_forward_args: Tuple[bool] = None,
+        return_temporal_attributions: bool = False,
     ) -> TensorOrTupleOfTensorsGeneric:
         """
         attribute method.
@@ -54,6 +57,12 @@ class DynaMask(PerturbationAttribution):
             mask_net (MaskNet): A Mask model. If ``None``, a default model
                 will be provided. Default to ``None``
             batch_size (int): Batch size for Mask training. Default to 32
+            temporal_additional_forward_args (tuple): Set each
+                additional forward arg which is temporal.
+                Only used with return_temporal_attributions.
+                Default to ``None``
+            return_temporal_attributions (bool): Whether to return
+                attributions for all times or not. Default to ``False``
 
         Returns:
             (th.Tensor, tuple): Attributions.
@@ -73,9 +82,37 @@ class DynaMask(PerturbationAttribution):
         assert (
             len(inputs) == 1
         ), "Multiple inputs are not accepted for this method"
+        data = inputs[0]
 
-        # Get input and output shape
-        shape = (min(batch_size, len(inputs[0])),) + inputs[0].shape[1:]
+        # If return temporal attr, we expand the input data
+        # and multiply it with a lower triangular mask
+        if return_temporal_attributions:
+            # Create a lower triangular mask
+            temporal_mask = th.ones(
+                (data.shape[0], data.shape[1], data.shape[1])
+            )
+            temporal_mask = th.tril(temporal_mask)
+            temporal_mask = temporal_mask.reshape(
+                (data.shape[0] * data.shape[1], data.shape[1])
+                + (1,) * len(data.shape[2:])
+            )
+
+            # Expand data and args along the first dim
+            data = th.cat([data] * data.shape[1], dim=0)
+            additional_forward_args = _expand_additional_forward_args(
+                additional_forward_args, data.shape[1]
+            )
+
+            # Multiply data and args by the tempora mask
+            data = data * temporal_mask
+            if additional_forward_args is not None:
+                additional_forward_args = tuple(
+                    arg * temporal_mask if is_temporal else arg
+                    for arg, is_temporal in zip(
+                        additional_forward_args,
+                        temporal_additional_forward_args,
+                    )
+                )
 
         # Init MaskNet if not provided
         if mask_net is None:
@@ -85,16 +122,17 @@ class DynaMask(PerturbationAttribution):
 
         # Init model
         mask_net.net.init(
-            shape=shape,
+            shape=data.shape,
             n_epochs=trainer.max_epochs,
+            batch_size=batch_size,
         )
 
         # Prepare data
         dataloader = DataLoader(
             TensorDataset(
-                *(inputs[0], inputs[0], *additional_forward_args)
+                *(data, data, *additional_forward_args)
                 if additional_forward_args is not None
-                else (inputs[0], inputs[0], None)
+                else (data, data, None)
             ),
             batch_size=batch_size,
             collate_fn=default_collate,
@@ -107,13 +145,58 @@ class DynaMask(PerturbationAttribution):
         mask_net.eval()
 
         # Get attributions as mask representation
-        attributions = (
-            mask_net.representation(
-                *(inputs[0], *additional_forward_args)
-                if additional_forward_args is not None
-                else (inputs[0], None)
-            ),
+        representation = self.representation(
+            mask_net=mask_net,
+            trainer=trainer,
+            dataloader=dataloader,
         )
+
+        # Reshape representation if temporal attributions
+        if return_temporal_attributions:
+            representation = (
+                representation[0].reshape(
+                    (-1, data.shape[1]) + data.shape[1:]
+                ),
+                representation[1],
+            )
+
+        attributions = (representation,)
 
         # Format attributions and return
         return _format_output(is_inputs_tuple, attributions)
+
+    @staticmethod
+    def representation(
+        mask_net: MaskNet, trainer: Trainer, dataloader: DataLoader
+    ):
+        mask = (
+            1.0 - mask_net.net.mask
+            if mask_net.net.deletion_mode
+            else mask_net.net.mask
+        )
+
+        # Get the loss without reduction
+        pred = trainer.predict(mask_net, dataloaders=dataloader)
+        _loss = mask_net._loss
+        _loss.reduction = "none"
+        loss = _loss(
+            th.cat([x[0] for x in pred]), th.cat([x[1] for x in pred])
+        )
+
+        # Average the loss over each keep_ratio subset
+        loss = loss.sum(tuple(range(1, len(loss.shape))))
+        loss = loss.reshape(
+            len(mask_net.net.keep_ratio),
+            len(loss) // len(mask_net.net.keep_ratio),
+        )
+        loss = loss.sum(-1)
+
+        # Get the minimum loss
+        i = loss.argmin().item()
+        length = len(mask) // len(mask_net.net.keep_ratio)
+
+        # Return the mask subset given the minimum loss
+        return (
+            mask.detach().cpu()[i * length : (i + 1) * length],
+            mask_net.net.keep_ratio[i],
+        )

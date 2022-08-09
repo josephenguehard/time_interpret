@@ -45,6 +45,7 @@ class Mask(nn.Module):
         self,
         forward_func: Callable,
         perturbation: str = "fade_moving_average",
+        batch_size: int = 32,
         deletion_mode: bool = False,
         initial_mask_coef: float = 0.5,
         keep_ratio: Union[float, List[float]] = 0.5,
@@ -64,6 +65,7 @@ class Mask(nn.Module):
 
         self.forward_func = forward_func
         self.perturbation = perturbation
+        self.batch_size = batch_size
         self.deletion_mode = deletion_mode
         self.initial_mask_coef = initial_mask_coef
         self.keep_ratio = (
@@ -77,7 +79,7 @@ class Mask(nn.Module):
         self.register_parameter("mask", None)
         self.reg_ref = None
 
-    def init(self, shape: tuple, n_epochs: int):
+    def init(self, shape: tuple, n_epochs: int, batch_size: int):
         # Create mask param
         shape = (len(self.keep_ratio) * shape[0],) + shape[1:]
         self.mask = nn.Parameter(th.ones(*shape) * 0.5)
@@ -95,15 +97,32 @@ class Mask(nn.Module):
         # Update multiplier with n_epochs
         self.reg_multiplier /= n_epochs
 
-    def fade_moving_average(self, x):
+        # Update batch size
+        self.batch_size = batch_size
+
+    def fade_moving_average(self, x, batch_idx):
         mask = 1.0 - self.mask if self.deletion_mode else self.mask
+        mask = mask[
+            len(self.keep_ratio)
+            * self.batch_size
+            * batch_idx : len(self.keep_ratio)
+            * self.batch_size
+            * (batch_idx + 1)
+        ]
         x = x.repeat((len(self.keep_ratio),) + (1,) * (len(x.shape) - 1))
 
         moving_average = th.mean(x, TIME_DIM).unsqueeze(TIME_DIM)
         return mask * x + (1 - mask) * moving_average
 
-    def gaussian_blur(self, x, sigma_max=2):
+    def gaussian_blur(self, x, batch_idx, sigma_max=2):
         mask = 1.0 - self.mask if self.deletion_mode else self.mask
+        mask = mask[
+            len(self.keep_ratio)
+            * self.batch_size
+            * batch_idx : len(self.keep_ratio)
+            * self.batch_size
+            * (batch_idx + 1)
+        ]
         x = x.repeat((len(self.keep_ratio),) + (1,) * (len(x.shape) - 1))
 
         t_axis = th.arange(1, x.shape[TIME_DIM] + 1).int()
@@ -127,8 +146,15 @@ class Mask(nn.Module):
         # linear combination weighted by Gaussian coefs
         return th.einsum("bsti,bsi->bti", filter_coefs, x)
 
-    def fade_moving_average_window(self, x, window_size=2):
+    def fade_moving_average_window(self, x, batch_idx, window_size=2):
         mask = 1.0 - self.mask if self.deletion_mode else self.mask
+        mask = mask[
+            len(self.keep_ratio)
+            * self.batch_size
+            * batch_idx : len(self.keep_ratio)
+            * self.batch_size
+            * (batch_idx + 1)
+        ]
         x = x.repeat((len(self.keep_ratio),) + (1,) * (len(x.shape) - 1))
 
         t_axis = th.arange(1, x.shape[TIME_DIM] + 1).int()
@@ -145,18 +171,27 @@ class Mask(nn.Module):
         # and the previous tensor weighted by the mask
         return x_avg + mask * (x - x_avg)
 
-    def fade_reference(self, x, x_ref):
+    def fade_reference(self, x, batch_idx, x_ref):
         mask = 1.0 - self.mask if self.deletion_mode else self.mask
+        mask = mask[
+            len(self.keep_ratio)
+            * self.batch_size
+            * batch_idx : len(self.keep_ratio)
+            * self.batch_size
+            * (batch_idx + 1)
+        ]
         x = x.repeat((len(self.keep_ratio),) + (1,) * (len(x.shape) - 1))
 
         return x_ref + mask * (x - x_ref)
 
-    def forward(self, x: th.Tensor, *additional_forward_args) -> th.Tensor:
+    def forward(
+        self, x: th.Tensor, batch_idx, *additional_forward_args
+    ) -> th.Tensor:
         # Clamp mask
         self.clamp()
 
         # Get perturbed input
-        x_pert = getattr(self, self.perturbation)(x, **self.kwargs)
+        x_pert = getattr(self, self.perturbation)(x, batch_idx, **self.kwargs)
 
         # Expand target and additional inputs when using several keep_ratio
         input_additional_args = (
@@ -236,6 +271,7 @@ class MaskNet(Net):
         self,
         forward_func: Callable,
         perturbation: str = "fade_moving_average",
+        batch_size: int = 32,
         deletion_mode: bool = False,
         initial_mask_coef: float = 0.5,
         keep_ratio: Union[float, List[float]] = 0.5,
@@ -253,6 +289,7 @@ class MaskNet(Net):
         mask = Mask(
             forward_func=forward_func,
             perturbation=perturbation,
+            batch_size=batch_size,
             deletion_mode=deletion_mode,
             initial_mask_coef=initial_mask_coef,
             keep_ratio=keep_ratio,
@@ -275,7 +312,7 @@ class MaskNet(Net):
     def forward(self, *args, **kwargs) -> th.Tensor:
         return self.net(*args, **kwargs)
 
-    def step(self, batch, stage):
+    def step(self, batch, batch_idx, stage):
         # x is the data to be perturbed
         # y is the same data without perturbation
         x, y, *additional_forward_args = batch
@@ -287,9 +324,9 @@ class MaskNet(Net):
 
         # Get perturbed output
         if additional_forward_args is None:
-            y_hat = self(x.float())
+            y_hat = self(x.float(), batch_idx)
         else:
-            y_hat = self(x.float(), *additional_forward_args)
+            y_hat = self(x.float(), batch_idx, *additional_forward_args)
 
         # Get unperturbed output
         y_target = _run_forward(
@@ -304,6 +341,34 @@ class MaskNet(Net):
         loss = self._loss(y_hat, y_target)
         return loss
 
+    def predict_step(self, batch, batch_idx, dataloader_idx=0):
+        # x is the data to be perturbed
+        # y is the same data without perturbation
+        x, y, *additional_forward_args = batch
+
+        # If additional_forward_args is only one None,
+        # set it to None
+        if additional_forward_args == [None]:
+            additional_forward_args = None
+
+        # Get unperturbed output
+        y_target = _run_forward(
+            forward_func=self.net.forward_func,
+            inputs=y,
+            additional_forward_args=tuple(additional_forward_args)
+            if additional_forward_args is not None
+            else None,
+        )
+        y_target = th.cat([y_target] * len(self.net.keep_ratio), dim=0)
+
+        if additional_forward_args is None:
+            return self(x.float(), batch_idx), y_target
+        else:
+            return (
+                self(x.float(), batch_idx, *additional_forward_args),
+                y_target,
+            )
+
     def training_step_end(self, step_output):
         # Add regularisation from Mask network
         step_output = self.net.regularisation(step_output)
@@ -313,29 +378,3 @@ class MaskNet(Net):
     def training_epoch_end(self, outputs) -> None:
         # Increase the regulator coefficient
         self.net.size_reg_factor *= self.net.reg_multiplier
-
-    def representation(self, inputs, *additional_forward_args):
-        mask = 1.0 - self.net.mask if self.net.deletion_mode else self.net.mask
-
-        # Get the loss without reduction
-        reduction = self._loss.reduction
-        self._loss.reduction = "none"
-        loss = self.step((inputs, inputs, *additional_forward_args), None)
-        self._loss.reduction = reduction
-
-        # Average the loss over each keep_ratio subset
-        loss = loss.sum(tuple(range(1, len(loss.shape))))
-        loss = loss.reshape(
-            len(self.net.keep_ratio), len(loss) // len(self.net.keep_ratio)
-        )
-        loss = loss.sum(-1)
-
-        # Get the minimum loss
-        i = loss.argmin().item()
-        length = len(mask) // len(self.net.keep_ratio)
-
-        # Return the mask subset given the minimum loss
-        return (
-            mask.detach().cpu()[i * length : (i + 1) * length],
-            self.net.keep_ratio[i],
-        )
