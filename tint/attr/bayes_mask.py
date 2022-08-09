@@ -11,9 +11,10 @@ from captum._utils.common import (
 from captum._utils.typing import TensorOrTupleOfTensorsGeneric
 
 from pytorch_lightning import Trainer
-from torch.utils.data import DataLoader, TensorDataset
-from typing import Callable
+from torch.utils.data import DataLoader
+from typing import Any, Callable, Tuple
 
+from tint.utils import TensorDataset, _add_temporal_mask, default_collate
 from .models import BayesMaskNet
 
 
@@ -36,9 +37,12 @@ class BayesMask(PerturbationAttribution):
     def attribute(
         self,
         inputs: TensorOrTupleOfTensorsGeneric,
+        additional_forward_args: Any = None,
         trainer: Trainer = None,
         mask_net: BayesMaskNet = None,
         batch_size: int = 32,
+        temporal_additional_forward_args: Tuple[bool] = None,
+        return_temporal_attributions: bool = False,
         return_covariance: bool = False,
     ) -> TensorOrTupleOfTensorsGeneric:
         """
@@ -46,11 +50,19 @@ class BayesMask(PerturbationAttribution):
 
         Args:
             inputs (tuple, th.Tensor): Input data.
+            additional_forward_args (Any): Any additional argument passed
+                to the model. Default to ``None``
             trainer (Trainer): Pytorch Lightning trainer. If ``None``, a
                 default trainer will be provided. Default to ``None``
             mask_net (BayesMaskNet): A Mask model. If ``None``, a default model
                 will be provided. Default to ``None``
             batch_size (int): Batch size for Mask training. Default to 32
+            temporal_additional_forward_args (tuple): Set each
+                additional forward arg which is temporal.
+                Only used with return_temporal_attributions.
+                Default to ``None``
+            return_temporal_attributions (bool): Whether to return
+                attributions for all times or not. Default to ``False``
             return_covariance (bool): Whether to return the covariance of the
                 bayes mask network or not. Default to ``False``
 
@@ -65,14 +77,23 @@ class BayesMask(PerturbationAttribution):
         # Init trainer if not provided
         if trainer is None:
             trainer = Trainer(max_epochs=100)
+        else:
+            trainer = copy.deepcopy(trainer)
 
         # Assert only one input, as the Retain only accepts one
         assert (
             len(inputs) == 1
         ), "Multiple inputs are not accepted for this method"
+        data = inputs[0]
 
-        # Get input and output shape
-        shape = (min(batch_size, len(inputs[0])),) + inputs[0].shape[1:]
+        # If return temporal attr, we expand the input data
+        # and multiply it with a lower triangular mask
+        if return_temporal_attributions:
+            data, additional_forward_args, _ = _add_temporal_mask(
+                inputs=data,
+                additional_forward_args=additional_forward_args,
+                temporal_additional_forward_args=temporal_additional_forward_args,
+            )
 
         # Init MaskNet if not provided
         if mask_net is None:
@@ -81,11 +102,17 @@ class BayesMask(PerturbationAttribution):
             mask_net = copy.deepcopy(mask_net)
 
         # Init model
-        mask_net.net.init(input_size=shape)
+        mask_net.net.init(input_size=data.shape, batch_size=batch_size)
 
         # Prepare data
         dataloader = DataLoader(
-            TensorDataset(inputs[0], inputs[0]), batch_size=batch_size
+            TensorDataset(
+                *(data, data, *additional_forward_args)
+                if additional_forward_args is not None
+                else (data, data, None)
+            ),
+            batch_size=batch_size,
+            collate_fn=default_collate,
         )
 
         # Fit model
@@ -95,11 +122,27 @@ class BayesMask(PerturbationAttribution):
         mask_net.eval()
 
         # Get attributions as mask representation
-        attributions = (mask_net.net.representation(),)
+        attributions = mask_net.net.representation()
+
+        # Reshape representation if temporal attributions
+        if return_temporal_attributions:
+            attributions = attributions.reshape(
+                (-1, data.shape[1]) + data.shape[1:]
+            )
 
         if return_covariance:
             covariance = mask_net.net.covariance()
-            return _format_output(is_inputs_tuple, attributions), covariance
+
+            # Reshape representation if temporal attributions
+            if return_temporal_attributions:
+                covariance = covariance.reshape(
+                    (-1, data.shape[1]) + data.shape[1:] + (data.shape[-1],)
+                )
+
+            return (
+                _format_output(is_inputs_tuple, attributions),
+                _format_output(is_inputs_tuple, covariance),
+            )
 
         # Format attributions and return
         return _format_output(is_inputs_tuple, attributions)
