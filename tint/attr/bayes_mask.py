@@ -130,6 +130,9 @@ class BayesMask(PerturbationAttribution):
                 (-1, data.shape[1]) + data.shape[1:]
             )
 
+        # Reshape as a tuple
+        attributions = (attributions,)
+
         if return_covariance:
             covariance = mask_net.net.covariance()
 
@@ -138,6 +141,9 @@ class BayesMask(PerturbationAttribution):
                 covariance = covariance.reshape(
                     (-1, data.shape[1]) + data.shape[1:] + (data.shape[-1],)
                 )
+
+            # Reshape as a tuple
+            covariance = (covariance,)
 
             return (
                 _format_output(is_inputs_tuple, attributions),
