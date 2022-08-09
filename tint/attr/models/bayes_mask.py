@@ -75,7 +75,9 @@ class BayesMask(nn.Module):
                 == th.tril_indices(shape, shape)[1],
             ] = 1.0
 
-    def forward(self, x: th.Tensor, *additional_forward_args) -> th.Tensor:
+    def forward(
+        self, x: th.Tensor, batch_idx, *additional_forward_args
+    ) -> th.Tensor:
         # Clamp mask
         self.clamp()
 
@@ -89,6 +91,11 @@ class BayesMask(nn.Module):
         else:
             raise NotImplementedError
         sample = dist.rsample().abs()
+
+        # Subset sample to current batch
+        sample = sample[
+            self.batch_size * batch_idx : self.batch_size * (batch_idx + 1)
+        ]
 
         # Mask data
         x[sample < 0.5] = 0.0
@@ -189,9 +196,9 @@ class BayesMaskNet(Net):
 
         # Get perturbed output
         if additional_forward_args is None:
-            y_hat = self(x.float())
+            y_hat = self(x.float(), batch_idx)
         else:
-            y_hat = self(x.float(), *additional_forward_args)
+            y_hat = self(x.float(), batch_idx, *additional_forward_args)
 
         # Get unperturbed output
         y_target = _run_forward(
