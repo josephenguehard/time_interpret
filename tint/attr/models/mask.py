@@ -234,7 +234,7 @@ class Mask(nn.Module):
         )
 
     def clamp(self):
-        self.mask.data = self.mask.data.clamp(0, 1)
+        self.mask.data.clamp_(0, 1)
 
 
 class MaskNet(Net):
