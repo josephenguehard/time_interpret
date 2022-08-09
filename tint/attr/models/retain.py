@@ -211,7 +211,7 @@ class RetainNet(Net):
         for stage in ["train", "val", "test"]:
             setattr(self, stage + "_auroc", AUROC())
 
-    def step(self, batch, stage):
+    def step(self, batch, batch_idx, stage):
         x, y = batch
 
         lengths = th.randint(low=4, high=x.shape[1], size=(len(x),))

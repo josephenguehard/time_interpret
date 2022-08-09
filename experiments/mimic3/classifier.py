@@ -97,7 +97,7 @@ class MimicClassifierNet(Net):
             setattr(self, stage + "_rec", Recall())
             setattr(self, stage + "_auroc", AUROC())
 
-    def step(self, batch, stage):
+    def step(self, batch, batch_idx, stage):
         x, y = batch
         y_hat = self(x)
         loss = self._loss(y_hat, y.long())

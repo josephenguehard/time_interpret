@@ -38,5 +38,5 @@ class HawkesClassifier(StateClassifierNet):
 
     def test_step(self, batch, batch_idx):
         t = th.randint(batch[1].shape[-1], (1,)).item()
-        loss = self.step(batch=batch, stage="test", t=t)
+        loss = self.step(batch=batch, batch_idx=batch_idx, stage="test", t=t)
         self.log("test_loss", loss)
