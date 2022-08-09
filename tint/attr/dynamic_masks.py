@@ -4,7 +4,6 @@ import torch as th
 from captum.attr._utils.attribution import PerturbationAttribution
 from captum.log import log_usage
 from captum._utils.common import (
-    _expand_additional_forward_args,
     _format_input,
     _format_output,
     _is_tuple,
@@ -15,7 +14,7 @@ from pytorch_lightning import Trainer
 from torch.utils.data import DataLoader
 from typing import Any, Callable, Tuple
 
-from tint.utils import TensorDataset, default_collate
+from tint.utils import TensorDataset, _add_temporal_mask, default_collate
 from .models import MaskNet
 
 
@@ -90,32 +89,11 @@ class DynaMask(PerturbationAttribution):
         # If return temporal attr, we expand the input data
         # and multiply it with a lower triangular mask
         if return_temporal_attributions:
-            # Create a lower triangular mask
-            temporal_mask = th.ones(
-                (data.shape[0], data.shape[1], data.shape[1])
+            data, additional_forward_args, _ = _add_temporal_mask(
+                inputs=data,
+                additional_forward_args=additional_forward_args,
+                temporal_additional_forward_args=temporal_additional_forward_args,
             )
-            temporal_mask = th.tril(temporal_mask)
-            temporal_mask = temporal_mask.reshape(
-                (data.shape[0] * data.shape[1], data.shape[1])
-                + (1,) * len(data.shape[2:])
-            )
-
-            # Expand data and args along the first dim
-            data = th.cat([data] * data.shape[1], dim=0)
-            additional_forward_args = _expand_additional_forward_args(
-                additional_forward_args, data.shape[1]
-            )
-
-            # Multiply data and args by the tempora mask
-            data = data * temporal_mask
-            if additional_forward_args is not None:
-                additional_forward_args = tuple(
-                    arg * temporal_mask if is_temporal else arg
-                    for arg, is_temporal in zip(
-                        additional_forward_args,
-                        temporal_additional_forward_args,
-                    )
-                )
 
         # Init MaskNet if not provided
         if mask_net is None:

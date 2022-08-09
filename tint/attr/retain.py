@@ -15,6 +15,7 @@ from pytorch_lightning import LightningDataModule, Trainer
 from torch.utils.data import DataLoader, TensorDataset
 from typing import Callable
 
+from tint.utils import _add_temporal_mask
 from .models import Retain as RetainModel, RetainNet
 
 
@@ -90,6 +91,7 @@ class Retain(PerturbationAttribution):
         self,
         inputs: TensorOrTupleOfTensorsGeneric,
         target: TargetType,
+        return_temporal_attributions: bool = False,
     ) -> TensorOrTupleOfTensorsGeneric:
         """
         attribute method.
@@ -98,6 +100,8 @@ class Retain(PerturbationAttribution):
             inputs (tuple, th.Tensor): Input data.
             target (int, tuple, tensor, list): Output indices. Default to
                 ``None``
+            return_temporal_attributions (bool): Whether to return
+                attributions for all times or not. Default to ``False``
 
         Returns:
             (th.Tensor, tuple): Attributions.
@@ -115,6 +119,18 @@ class Retain(PerturbationAttribution):
         # Make target a tensor
         target = self._format_target(inputs, target)
 
+        # Get data as only value in inputs
+        data = inputs[0]
+
+        # If return temporal attr, we expand the input data
+        # and multiply it with a lower triangular mask
+        if return_temporal_attributions:
+            data, _, target = _add_temporal_mask(
+                inputs=data,
+                target=target,
+                temporal_target=self.forward_func.temporal_labels,
+            )
+
         # Get attributions
         attributions = (
             self.representation(
@@ -122,6 +138,12 @@ class Retain(PerturbationAttribution):
                 target=target,
             ),
         )
+
+        # Reshape attributions if temporal attributions
+        if return_temporal_attributions:
+            attributions = (
+                attributions[0].reshape((-1, data.shape[1]) + data.shape[1:]),
+            )
 
         return _format_output(is_inputs_tuple, attributions)
 
@@ -171,7 +193,7 @@ class Retain(PerturbationAttribution):
         return score.detach().cpu()
 
     @staticmethod
-    def _format_target(inputs: tuple, target: TargetType):
+    def _format_target(inputs: tuple, target: TargetType) -> th.Tensor:
         """
         Convert target into a Tensor.
 

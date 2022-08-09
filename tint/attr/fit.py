@@ -14,9 +14,9 @@ from captum._utils.typing import TensorOrTupleOfTensorsGeneric
 
 from pytorch_lightning import LightningDataModule, Trainer
 from torch.utils.data import DataLoader, TensorDataset
-from typing import Any, Callable
+from typing import Any, Callable, Tuple
 
-from tint.utils import get_progress_bars
+from tint.utils import get_progress_bars, _add_temporal_mask
 
 from .models import JointFeatureGeneratorNet
 
@@ -109,6 +109,8 @@ class Fit(PerturbationAttribution):
         n_samples: int = 10,
         distance_metric: str = "kl",
         multilabel: bool = False,
+        temporal_additional_forward_args: Tuple[bool] = None,
+        return_temporal_attributions: bool = False,
         show_progress: bool = False,
     ) -> TensorOrTupleOfTensorsGeneric:
         """
@@ -124,6 +126,12 @@ class Fit(PerturbationAttribution):
             distance_metric (str): Distance metric. Default to ``'kl'``
             multilabel (bool): Whether the task is single or multi-labeled.
                 Default to ``False``
+            temporal_additional_forward_args (tuple): Set each
+                additional forward arg which is temporal.
+                Only used with return_temporal_attributions.
+                Default to ``None``
+            return_temporal_attributions (bool): Whether to return
+                attributions for all times or not. Default to ``False``
             show_progress (bool): Displays the progress of computation.
                 Default to False
 
@@ -139,10 +147,18 @@ class Fit(PerturbationAttribution):
         assert (
             len(inputs) == 1
         ), "Multiple inputs are not accepted for this method"
+        data = inputs[0]
+
+        if return_temporal_attributions:
+            data, additional_forward_args, _ = _add_temporal_mask(
+                inputs=data,
+                additional_forward_args=additional_forward_args,
+                temporal_additional_forward_args=temporal_additional_forward_args,
+            )
 
         attributions = (
             self.representation(
-                inputs=inputs[0],
+                inputs=data,
                 additional_forward_args=additional_forward_args,
                 n_samples=n_samples,
                 distance_metric=distance_metric,
@@ -150,6 +166,11 @@ class Fit(PerturbationAttribution):
                 show_progress=show_progress,
             ),
         )
+
+        if return_temporal_attributions:
+            attributions = (
+                attributions[0].reshape((-1, data.shape[1]) + data.shape[1:]),
+            )
 
         return _format_output(is_inputs_tuple, attributions)
 

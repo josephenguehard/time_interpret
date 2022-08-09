@@ -8,10 +8,12 @@ from typing import List
 from tint.attr import (
     DeepLift,
     DynaMask,
+    Fit,
     GradientShap,
     IntegratedGradients,
     Lime,
     LOFLime,
+    Retain,
     TemporalAugmentedOcclusion,
     TemporalIntegratedGradients,
     TemporalOcclusion,
@@ -103,6 +105,25 @@ def main(
         print(f"Best keep ratio is {_attr[1]}")
         attr["dyna_mask"] = _attr[0]
 
+    if "fit" in explainers:
+        generator = JointFeatureGeneratorNet(rnn_hidden_size=6)
+        trainer = Trainer(
+            max_epochs=1000,
+            accelerator=accelerator,
+            log_every_n_steps=10,
+        )
+        explainer = Fit(
+            classifier,
+            generator=generator,
+            datamodule=hawkes,
+            trainer=trainer,
+        )
+        attr["fit"] = explainer.attribute(
+            x_test,
+            return_temporal_attributions=True,
+            show_progress=True,
+        )
+
     if "gradient_shap" in explainers:
         explainer = TimeForwardTunnel(GradientShap(classifier))
         attr["gradient_shap"] = explainer.attribute(
@@ -162,6 +183,27 @@ def main(
             show_progress=True,
         ).abs()
 
+    if "retain" in explainers:
+        retain = RetainNet(
+            dim_emb=128,
+            dropout_emb=0.4,
+            dim_alpha=8,
+            dim_beta=8,
+            dropout_context=0.4,
+            dim_output=2,
+            loss="cross_entropy",
+        )
+        explainer = Retain(
+            datamodule=hawkes,
+            retain=retain,
+            trainer=Trainer(max_epochs=50, accelerator=accelerator),
+        )
+        attr["retain"] = explainer.attribute(
+            x_test,
+            target=y_test,
+            return_temporal_attributions=True,
+        ).abs()
+
     if "temporal_integrated_gradients" in explainers:
         explainer = TimeForwardTunnel(TemporalIntegratedGradients(classifier))
         attr["temporal_integrated_gradients"] = explainer.attribute(
@@ -197,12 +239,14 @@ def parse_args():
         default=[
             "deep_lift",
             "dyna_mask",
+            "fit",
             "gradient_shap",
             "integrated_gradients",
             "lime",
             "lof_lime",
             "augmented_occlusion",
             "occlusion",
+            "retain",
             "temporal_integrated_gradients",
         ],
         nargs="+",
