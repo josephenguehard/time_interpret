@@ -82,7 +82,7 @@ class TimeForwardTunnel(Attribution):
         inputs: Union[Tensor, Tuple[Tensor, ...]],
         temporal_target: bool = False,
         temporal_additional_forward_args: Tuple[bool] = None,
-        return_all_saliencies: bool = False,
+        return_temporal_attributions: bool = False,
         show_progress: bool = False,
         **kwargs: Any,
     ) -> Union[
@@ -115,7 +115,7 @@ class TimeForwardTunnel(Attribution):
                     additional forward arg, determine if it is temporal
                     or not.
                     Default: None
-            return_all_saliencies (bool): Whether to return all saliencies
+            return_temporal_attributions (bool): Whether to return all saliencies
                 for all time points or only the last one per time point.
                     Default: False
             show_progress (bool, optional): Displays the progress of computation.
@@ -258,7 +258,7 @@ class TimeForwardTunnel(Attribution):
         # If return all saliencies, stack attributions
         # else, select the last one in time for each time point
         attributions = tuple()
-        if return_all_saliencies:
+        if return_temporal_attributions:
             for i in range(len(attributions_partial_list[0])):
                 attr = [
                     torch.zeros_like(
