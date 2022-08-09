@@ -53,7 +53,7 @@ def main(
             batch_size=50,
             additional_forward_args=(true_saliency,),
         )
-        attr["dyna_mask"] = _attr
+        attr["bayes_mask"] = _attr
 
     if "dyna_mask" in explainers:
         trainer = Trainer(max_epochs=1000, accelerator=accelerator, devices=1)
