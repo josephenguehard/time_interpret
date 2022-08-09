@@ -134,7 +134,7 @@ class Retain(PerturbationAttribution):
         # Get attributions
         attributions = (
             self.representation(
-                inputs=inputs[0],
+                inputs=data,
                 target=target,
             ),
         )
