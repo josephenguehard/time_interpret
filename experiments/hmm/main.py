@@ -77,7 +77,13 @@ def main(
 
     if "bayes_mask" in explainers:
         trainer = Trainer(max_epochs=500, accelerator=accelerator, devices=1)
-        mask = BayesMaskNet(forward_func=classifier)
+        mask = BayesMaskNet(
+            forward_func=classifier,
+            distribution="normal",
+            eps=1e-1,
+            optim="adam",
+            lr=0.01,
+        )
         explainer = BayesMask(classifier)
         _attr = explainer.attribute(
             x_test,

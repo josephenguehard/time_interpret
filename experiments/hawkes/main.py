@@ -6,6 +6,7 @@ from pytorch_lightning import Trainer
 from typing import List
 
 from tint.attr import (
+    BayesMask,
     DeepLift,
     DynaMask,
     Fit,
@@ -73,6 +74,25 @@ def main(
 
     # Create dict of attributions
     attr = dict()
+
+    if "bayes_mask" in explainers:
+        trainer = Trainer(max_epochs=500, accelerator=accelerator, devices=1)
+        mask = BayesMaskNet(
+            forward_func=classifier,
+            distribution="normal",
+            eps=1e-1,
+            optim="adam",
+            lr=0.01,
+        )
+        explainer = BayesMask(classifier)
+        _attr = explainer.attribute(
+            x_test,
+            trainer=trainer,
+            mask_net=mask,
+            batch_size=50,
+            return_temporal_attributions=True,
+        )
+        attr["dyna_mask"] = _attr
 
     if "deep_lift" in explainers:
         explainer = TimeForwardTunnel(DeepLift(classifier))
@@ -237,6 +257,7 @@ def parse_args():
         "--explainers",
         type=str,
         default=[
+            "bayes_mask",
             "deep_lift",
             "dyna_mask",
             "fit",
