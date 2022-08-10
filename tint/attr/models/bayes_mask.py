@@ -294,7 +294,7 @@ class BayesMaskNet(Net):
             else:
                 optim = th.optim.SGD(
                     [
-                        {"params": self.net.mean.parameters()},
+                        {"params": self.net.mean},
                     ],
                     lr=self.lr,
                     weight_decay=self.l2,
