@@ -37,11 +37,16 @@ def main(
     attr = dict()
 
     if "bayes_mask" in explainers:
-        trainer = Trainer(max_epochs=500, accelerator=accelerator, devices=1)
+        trainer = Trainer(
+            max_epochs=2000,
+            accelerator=accelerator,
+            devices=1,
+            log_every_n_steps=2,
+        )
         mask = BayesMaskNet(
             forward_func=arma.get_white_box,
             distribution="normal",
-            eps=1e-1,
+            eps=1e-5,
             optim="adam",
             lr=0.01,
         )
@@ -53,7 +58,7 @@ def main(
             batch_size=50,
             additional_forward_args=(true_saliency,),
         )
-        attr["bayes_mask"] = _attr
+        attr["bayes_mask"] = _attr.clamp(0, 1)
 
     if "dyna_mask" in explainers:
         trainer = Trainer(max_epochs=1000, accelerator=accelerator, devices=1)

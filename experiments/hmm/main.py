@@ -76,11 +76,17 @@ def main(
     attr = dict()
 
     if "bayes_mask" in explainers:
-        trainer = Trainer(max_epochs=500, accelerator=accelerator, devices=1)
+        trainer = Trainer(
+            max_epochs=500,
+            accelerator=accelerator,
+            devices=1,
+            log_every_n_steps=2,
+        )
         mask = BayesMaskNet(
             forward_func=classifier,
             distribution="normal",
-            eps=1e-1,
+            eps=1e-5,
+            loss="cross_entropy",
             optim="adam",
             lr=0.01,
         )
@@ -91,7 +97,7 @@ def main(
             mask_net=mask,
             batch_size=100,
         )
-        attr["bayes_mask"] = _attr
+        attr["bayes_mask"] = _attr.clamp(0, 1)
 
     if "deep_lift" in explainers:
         explainer = TimeForwardTunnel(DeepLift(classifier))
@@ -227,7 +233,7 @@ def main(
             fp.write(f"{aup(v, true_saliency):.4},")
             fp.write(f"{aur(v, true_saliency):.4},")
             fp.write(f"{information(v, true_saliency):.4},")
-            fp.write(f"{entropy(v, true_saliency):.4}")
+            fp.write(f"{entropy(v, true_saliency):.4},")
             fp.write(f"{roc_auc(v, true_saliency):.4},")
             fp.write(f"{auprc(v, true_saliency):.4},")
             fp.write("\n")
