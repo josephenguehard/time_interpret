@@ -64,12 +64,6 @@ class Mask(nn.Module):
             "fade_reference",
         ], f"{perturbation} perturbation not recognised."
 
-        # If forward func is a module, copy it
-        # and deactivate gradients
-        if isinstance(forward_func, nn.Module):
-            forward_func = copy.deepcopy(forward_func)
-            forward_func.requires_grad_(False)
-
         self.forward_func = forward_func
         self.perturbation = perturbation
         self.batch_size = batch_size
@@ -210,11 +204,13 @@ class Mask(nn.Module):
         )
 
         # Return f(perturbed x)
-        return _run_forward(
-            forward_func=self.forward_func,
-            inputs=x_pert,
-            additional_forward_args=input_additional_args,
-        )
+        with th.autograd.set_grad_enabled(False):
+            y_hat = _run_forward(
+                forward_func=self.forward_func,
+                inputs=x_pert,
+                additional_forward_args=input_additional_args,
+            )
+        return y_hat
 
     def regularisation(self, loss: th.Tensor) -> th.Tensor:
         # Get size regularisation
@@ -336,13 +332,14 @@ class MaskNet(Net):
             y_hat = self(x.float(), batch_idx, *additional_forward_args)
 
         # Get unperturbed output
-        y_target = _run_forward(
-            forward_func=self.net.forward_func,
-            inputs=y,
-            additional_forward_args=tuple(additional_forward_args)
-            if additional_forward_args is not None
-            else None,
-        )
+        with th.autograd.set_grad_enabled(False):
+            y_target = _run_forward(
+                forward_func=self.net.forward_func,
+                inputs=y,
+                additional_forward_args=tuple(additional_forward_args)
+                if additional_forward_args is not None
+                else None,
+            )
         y_target = th.cat([y_target] * len(self.net.keep_ratio), dim=0)
 
         # If loss is cross_entropy, take softmax of y_target
