@@ -19,7 +19,7 @@ def _base_white_box_metric(
     metric: Callable,
     attributions: TensorOrTupleOfTensorsGeneric,
     true_attributions: TensorOrTupleOfTensorsGeneric,
-    normalize: bool = False,
+    normalize: bool = True,
 ) -> Tuple[float]:
     # Convert attributions into tuple
     is_inputs_tuple = _is_tuple(attributions)
