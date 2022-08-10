@@ -31,11 +31,16 @@ POOLS = {
 
 
 class CNN(nn.Module):
-    """
+    r"""
     Base CNN class.
 
+    For more insights into specific arguments of the CNN, please refer
+    to `pytorch documentation <conv2d>`_.
+
+    .. _conv2d: https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html#torch.nn.Conv2d
+
     Args:
-        units (list, str): A list of units, which creates the layers.
+        units (list): A list of units, which creates the layers.
             Default to ``None``
         dropout (list, float): Dropout rates. Default to 0.0
         norm (list, str): Normalisation layers. Either a list or a string.
@@ -45,13 +50,16 @@ class CNN(nn.Module):
         pooling (list, str): Pooling module. Either a list or a string.
             Default t0 ``None``
 
+    References:
+        conv2d_
+
     Examples:
         >>> import torch.nn as nn
         >>> from tint.models import CNN
         <BLANKLINE>
-        >>> cnn = CNN(units=[5, 10, 1])  # Simple cnn with relu activations.
-        >>> cnn = CNN(units=[5, 10, 1], dropout=.1)  # Adding dropout.
-        >>> cnn = CNN(units=[5, 10, 1], activations="elu")  # Elu activations.
+        >>> cnn = CNN(units=[10, 8, 6], kernel_size=3)  # Simple cnn with relu activations.
+        >>> cnn = CNN(units=[10, 8, 6], kernel_size=3, dropout=.1)  # Adding dropout.
+        >>> cnn = CNN(units=[10, 8, 6], kernel_size=3, activations="elu")  # Elu activations.
     """
 
     def __init__(

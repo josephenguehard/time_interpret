@@ -29,8 +29,14 @@ class MLP(nn.Module):
     """
     Base MLP class.
 
+    For more insights into specific arguments of the CNN, please refer
+    to `pytorch documentation <linear>`_.
+
+    .. _linear: https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear
+
+
     Args:
-        units (list, str): A list of units, which creates the layers.
+        units (list): A list of units, which creates the layers.
             Default to ``None``
         bias (list, bool): Whether to add bias to each layer.
             Default to ``True``
@@ -40,6 +46,9 @@ class MLP(nn.Module):
         activations (list, str): Activation functions. Either a list or a
             string. Default to ``'relu'``
         activation_final (str): Final activation. Default to ``None``
+
+    References:
+        linear_
 
     Examples:
         >>> import torch.nn as nn

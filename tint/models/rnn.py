@@ -31,6 +31,16 @@ class RNN(nn.Module):
             Default to ``False``
         many_to_one (bool): Whether to reduce the temporal dimension.
             Default to ``False``
+
+    References:
+        https://pytorch.org/docs/stable/nn.html#recurrent-layers
+
+    Examples:
+        >>> from tint.models import RNN
+        <BLANKLINE>
+        >>> rnn = RNN(10, hidden_size=32)
+        >>> gru = RNN(10, rnn="gru", bidirectional=True)
+        >>> lstm = RNN(10, rnn="lstm", many_to_one=True)
     """
 
     def __init__(

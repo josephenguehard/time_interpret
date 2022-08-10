@@ -40,6 +40,9 @@ class Net(pl.LightningModule):
             Default to ``None``
         l2 (float): L2 regularisation. Default to 0.0
 
+    References:
+        https://pytorch-lightning.readthedocs.io/en/latest/common/lightning_module.html
+
     Examples:
         >>> import torch.nn as nn
         >>> from tint.models import MLP, Net

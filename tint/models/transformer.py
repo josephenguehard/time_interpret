@@ -26,6 +26,15 @@ class TransformerEncoder(nn.Module):
             convert to nested tensor. Default to ``False``
         many_to_one (bool): Whether to reduce the temporal dimension.
             Default to ``False``
+
+    References:
+        https://pytorch.org/docs/stable/nn.html#transformer-layers
+
+    Examples:
+        >>> from tint.models import TransformerEncoder
+        <BLANKLINE>
+        >>> transformer = TransformerEncoder(10)
+        >>> transformer = TransformerEncoder(10, nhead=2, dropout=0.1)
     """
 
     def __init__(
