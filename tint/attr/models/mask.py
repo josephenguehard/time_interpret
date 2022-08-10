@@ -387,13 +387,17 @@ class MaskNet(Net):
     def configure_optimizers(self):
         if self._optim == "adam":
             optim = th.optim.Adam(
-                self.net.mask,
+                [
+                    {"params": self.net.mask},
+                ],
                 lr=self.lr,
                 weight_decay=self.l2,
             )
         elif self._optim == "sgd":
             optim = th.optim.SGD(
-                self.net.mask,
+                [
+                    {"params": self.net.mask},
+                ],
                 lr=self.lr,
                 weight_decay=self.l2,
                 momentum=0.9,
