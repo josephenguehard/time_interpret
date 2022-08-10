@@ -127,7 +127,7 @@ def _slice_to_time(
             "and temporal_additional_forward_args"
         )
 
-        kwargs_copy["additional_forward_args"] = (
+        kwargs_copy["additional_forward_args"] = tuple(
             arg[:, :time, ...] if is_temporal else arg
             for arg, is_temporal in zip(
                 additional_forward_args,
