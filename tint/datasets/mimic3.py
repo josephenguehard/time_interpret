@@ -87,6 +87,14 @@ class Mimic3(DataModule):
     References:
         https://github.com/sanatonek/time_series_explainability/blob/master/data_generator/icu_mortality.py
         https://physionet.org/content/mimiciii/1.4/
+
+    Examples:
+        >>> from tint.datasets import Mimic3
+        <BLANKLINE>
+        >>> mimci3 = Mimic3()
+        >>> mimci3.download(sqluser="your_username", split="train")
+        >>> x_train = mimci3.preprocess(split="train")["x"]
+        >>> y_train = mimci3.preprocess(split="train")["y"]
     """
 
     def __init__(

@@ -41,6 +41,17 @@ class Hawkes(DataModule):
             Ignored if n_folds is None. Default to ``None``
         num_workers (int): Number of workers for the loaders. Default to 0
         seed (int): For the random split. Default to 42
+
+    References:
+        https://x-datainitiative.github.io/tick/modules/hawkes.html
+
+    Examples:
+        >>> from tint.datasets import Hawkes()
+        <BLANKLINE>
+        >>> hawkes = Hawkes()
+        >>> hawkes.download(split="train")
+        >>> x_train = hawkes.preprocess(split="train")["x"]
+        >>> y_train = hawkes.preprocess(split="train")["y"]
     """
 
     def __init__(

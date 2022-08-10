@@ -38,6 +38,9 @@ class DataModule(pl.LightningDataModule):
             Ignored if n_folds is None. Default to ``None``
         num_workers (int): Number of workers for the loaders. Default to 0
         seed (int): For the random split. Default to 42
+
+    References:
+        https://pytorch-lightning.readthedocs.io/en/stable/data/datamodule.html?highlight=datamodule
     """
 
     def __init__(

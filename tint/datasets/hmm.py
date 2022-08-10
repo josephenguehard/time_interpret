@@ -42,6 +42,14 @@ class HMM(DataModule):
 
     References:
         https://arxiv.org/pdf/2106.05303
+
+    Examples:
+        >>> from tint.datasets import HMM
+        <BLANKLINE>
+        >>> hmm = HMM()
+        >>> hmm.download(split="train")
+        >>> x_train = hmm.preprocess(split="train")["x"]
+        >>> y_train = hmm.preprocess(split="train")["y"]
     """
 
     def __init__(

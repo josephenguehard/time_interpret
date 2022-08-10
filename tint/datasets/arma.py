@@ -21,7 +21,7 @@ class Arma(DataModule):
     Args:
         times (int): Length of each time series. Default to 50
         features (int): Number of features in each time series. Default to 50
-        ar (list): Coefficient for auto-regressive lag polynomial, including
+        ar (list): Coefficient for autoregressive lag polynomial, including
             zero lag. If ``None``, use default values. Default to ``None``
         ma (list): Coefficient for moving-average lag polynomial, including
             zero lag. If ``None``, use default values. Default to ``None``
@@ -39,6 +39,14 @@ class Arma(DataModule):
     References:
         https://www.statsmodels.org/dev/generated/statsmodels.tsa.arima_process.ArmaProcess.html
         https://arxiv.org/abs/2106.05303
+
+    Examples:
+        >>> from tint.datasets import Arma
+        <BLANKLINE>
+        >>> arma = Arma()
+        >>> arma.download(split="train")
+        >>> x_train = arma.preprocess(split="train")["x"]
+        >>> y_train = arma.preprocess(split="train")["y"]
     """
 
     def __init__(
