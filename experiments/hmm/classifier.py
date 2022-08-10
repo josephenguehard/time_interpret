@@ -97,7 +97,8 @@ class StateClassifierNet(Net):
             setattr(self, stage + "_rec", Recall())
             setattr(self, stage + "_auroc", AUROC())
 
-    def step(self, batch, batch_idx, stage, t):  # noqa
+    def step(self, batch, batch_idx, stage):  # noqa
+        t = th.randint(batch[1].shape[-1], (1,)).item()
         x, y = batch
         x = x[:, : t + 1]
         y = y[:, t]
@@ -110,18 +111,8 @@ class StateClassifierNet(Net):
 
         return loss
 
-    def training_step(self, batch, batch_idx):
-        t = th.randint(batch[1].shape[-1], (1,)).item()
-        loss = self.step(batch=batch, batch_idx=batch_idx, stage="train", t=t)
-        self.log("train_loss", loss)
-        return loss
-
-    def validation_step(self, batch, batch_idx):
-        t = th.randint(batch[1].shape[-1], (1,)).item()
-        loss = self.step(batch=batch, batch_idx=batch_idx, stage="val", t=t)
-        self.log("val_loss", loss)
-
-    def test_step(self, batch, batch_idx):
+    def predict_step(self, batch, batch_idx, dataloader_idx=0):
         t = batch[1].shape[-1] - 1
-        loss = self.step(batch=batch, batch_idx=batch_idx, stage="test", t=t)
-        self.log("test_loss", loss)
+        x, y = batch
+        x = x[:, : t + 1]
+        return self(x)

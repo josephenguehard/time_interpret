@@ -37,7 +37,7 @@ from tint.metrics.white_box import (
 )
 
 
-from experiments.hawkes.classifier import HawkesClassifier
+from experiments.hawkes.classifier import HawkesClassifierNet
 
 
 def main(
@@ -50,7 +50,7 @@ def main(
     hawkes = Hawkes(n_folds=5, fold=fold, seed=seed)
 
     # Create classifier
-    classifier = HawkesClassifier(
+    classifier = HawkesClassifierNet(
         feature_size=1,
         n_state=2,
         hidden_size=200,
