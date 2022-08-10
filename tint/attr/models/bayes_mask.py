@@ -7,11 +7,12 @@ from captum._utils.common import _run_forward
 from torch.distributions import (
     ContinuousBernoulli,
     MultivariateNormal,
-    kl_divergence,
 )
 from typing import Callable, Union
 
 from tint.models import Net
+
+EPS = 1e-7
 
 
 class BayesMask(nn.Module):
@@ -19,17 +20,24 @@ class BayesMask(nn.Module):
         self,
         forward_func: Callable,
         distribution: str = "bernoulli",
+        hard: bool = True,
         eps: float = 1e-3,
         batch_size: int = 32,
     ) -> None:
-        assert distribution in ["bernoulli", "normal"], (
-            f"distribution should be either bernoulli or normal, "
-            f"got {distribution}."
+        assert distribution in [
+            "none",
+            "bernoulli",
+            "normal",
+            "gumbel_softmax",
+        ], (
+            f"distribution should be either none, bernoulli, "
+            f"normal or gumbel_softmax, got {distribution}."
         )
 
         super().__init__()
         self.forward_func = forward_func
         self.distribution = distribution
+        self.hard = hard
         self.eps = eps
         self.batch_size = batch_size
 
@@ -83,37 +91,62 @@ class BayesMask(nn.Module):
         self.clamp()
 
         # Sample from distribution
-        if self.distribution == "bernoulli":
+        if self.distribution == "none":
+            samples = self.mean
+
+        elif self.distribution == "bernoulli":
             dist = ContinuousBernoulli(probs=self.mean)
+            samples = dist.rsample()
+
         elif self.distribution == "normal":
             dist = MultivariateNormal(
                 loc=self.mean, scale_tril=self.get_cov(self.tril)
             )
+            samples = dist.rsample()
+
+        elif self.distribution == "gumbel_softmax":
+            samples = self.mean
+
+            # The threshold we use is 0.5, so we set 1 - s as
+            # the opposite logit
+            samples = th.stack([samples, 1.0 - samples], dim=-1)
+
+            # We compute the inverse of the softmax so the logits passed to
+            # the gumbel softmax are accurate
+            samples = th.log(samples + EPS) + th.logsumexp(
+                samples, -1, keepdim=True
+            )
+
+            samples = F.gumbel_softmax(samples, tau=0.01, dim=-1)[..., 0]
+
         else:
             raise NotImplementedError
-        samples = dist.rsample()
 
         # Subset sample to current batch
         samples = samples[
             self.batch_size * batch_idx : self.batch_size * (batch_idx + 1)
         ]
 
-        # The threshold we use is 0.5, so we set 1 - s as
-        # the opposite logit
-        samples = th.stack([samples, 1. - samples], dim=-1)
-
-        # We use the Gumbel-Max trick to discretize the samples
-        samples = F.gumbel_softmax(samples, tau=0.01, hard=True, dim=-1)[..., 0]
+        if self.hard:
+            # We subtract and add samples
+            # By detaching one, the gradients are equivalent to just passing
+            # soft samples.
+            index = samples.max(-1, keepdim=True)[1]
+            y_hard = th.zeros_like(samples).scatter_(-1, index, 1.0)
+            samples = y_hard - samples.detach() + samples
 
         # Mask data according to samples
-        x *= samples
+        # We eventually cut samples up to x time dimension
+        x *= samples[:, : x.shape[1], ...]
 
         # Return f(perturbed x)
-        return _run_forward(
-            forward_func=self.forward_func,
-            inputs=x,
-            additional_forward_args=additional_forward_args,
-        )
+        with th.autograd.set_grad_enabled(False):
+            y_hat = _run_forward(
+                forward_func=self.forward_func,
+                inputs=x,
+                additional_forward_args=additional_forward_args,
+            )
+        return y_hat
 
     def regularisation(self, loss: th.Tensor) -> th.Tensor:
         # Get uninformative mean and tril
@@ -127,23 +160,12 @@ class BayesMask(nn.Module):
                 == th.tril_indices(shape, shape)[1],
             ] = self.eps
 
-        # Compute kl divergence between distributions
-        if self.distribution == "bernoulli":
-            dist = ContinuousBernoulli(probs=self.mean)
-            target = ContinuousBernoulli(probs=mean)
-        elif self.distribution == "normal":
-            dist = MultivariateNormal(
-                loc=self.mean, scale_tril=self.get_cov(self.tril)
-            )
-            target = MultivariateNormal(
-                loc=mean, scale_tril=self.get_cov(tril)
-            )
-        else:
-            raise NotImplementedError
-        kl = kl_divergence(target, dist)
-
         # Return loss + regularisation
-        return loss + kl.sum()
+        loss += (self.mean - mean).mean()
+        if self.distribution == "normal":
+            loss += (self.tril - tril).mean().abs()
+
+        return loss
 
     def clamp(self):
         self.mean.data.clamp_(0, 1)
@@ -163,8 +185,10 @@ class BayesMaskNet(Net):
         self,
         forward_func: Callable,
         distribution: str = "bernoulli",
+        hard: bool = True,
         eps: float = 1e-3,
         batch_size: int = 32,
+        temporal: bool = False,
         loss: Union[str, Callable] = "mse",
         optim: str = "adam",
         lr: float = 0.001,
@@ -175,6 +199,7 @@ class BayesMaskNet(Net):
         mask = BayesMask(
             forward_func=forward_func,
             distribution=distribution,
+            hard=hard,
             eps=eps,
             batch_size=batch_size,
         )
@@ -188,6 +213,7 @@ class BayesMaskNet(Net):
             lr_scheduler_args=lr_scheduler_args,
             l2=l2,
         )
+        self.temporal = temporal
 
     def forward(self, *args, **kwargs) -> th.Tensor:
         return self.net(*args, **kwargs)
@@ -196,6 +222,11 @@ class BayesMaskNet(Net):
         # x is the data to be perturbed
         # y is the same data without perturbation
         x, y, *additional_forward_args = batch
+
+        if self.temporal:
+            t = th.randint(x.shape[1], (1,)).item()
+            x = x[:, : t + 1, ...]
+            y = y[:, : t + 1, ...]
 
         # If additional_forward_args is only one None,
         # set it to None
@@ -209,13 +240,18 @@ class BayesMaskNet(Net):
             y_hat = self(x.float(), batch_idx, *additional_forward_args)
 
         # Get unperturbed output
-        y_target = _run_forward(
-            forward_func=self.net.forward_func,
-            inputs=y,
-            additional_forward_args=tuple(additional_forward_args)
-            if additional_forward_args is not None
-            else None,
-        )
+        with th.autograd.set_grad_enabled(False):
+            y_target = _run_forward(
+                forward_func=self.net.forward_func,
+                inputs=y,
+                additional_forward_args=tuple(additional_forward_args)
+                if additional_forward_args is not None
+                else None,
+            )
+
+        # If loss is cross_entropy, take softmax of y_target
+        if isinstance(self._loss, nn.CrossEntropyLoss):
+            y_target = y_target.softmax(-1)
 
         # Compute loss
         loss = self._loss(y_hat, y_target)
