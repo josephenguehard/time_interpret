@@ -26,4 +26,4 @@ jobs:
           # Install tests packages
           pip install -r tests/requirements.txt
           # Perform the tests
-          pytest --cov-report term-missing --cov-report=xml --cov=app tests/ --cov-config=tests/.coveragerc
+          pytest --cov-report term-missing --cov-report=xml --cov=tint tests/ --cov-config=tests/.coveragerc

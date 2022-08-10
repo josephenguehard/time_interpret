@@ -57,6 +57,6 @@ def test_mlp(
         activations=activations,
         activation_final=activations_final,
     )
-    x = th.rand(32, 5)
+    x = th.rand(32, 10)
     out = mlp.forward(x)
     assert tuple(out.shape) == outputs

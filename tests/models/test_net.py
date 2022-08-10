@@ -132,7 +132,7 @@ def test_net(
     assert tuple(out.shape) == outputs
 
     y = th.rand(32, 1)
-    batch = {"x": x, "y": y}
+    batch = (x, y)
     loss = net.step(batch, 0, "train").item()
     assert isinstance(loss, float)
 

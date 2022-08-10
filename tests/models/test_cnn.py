@@ -95,6 +95,7 @@ def test_init(
         "norm",
         "activations",
         "pooling",
+        "outputs",
     ],
     [
         ([16, 33], 3, 2, 0, 1, 1, True, 0.0, None, "relu", None, (8, 396)),
@@ -186,6 +187,6 @@ def test_cnn(
         activations=activations,
         pooling=pooling,
     )
-    x = th.rand(8, units[0], 9, 7)
+    x = th.rand(8, units[0], 9, 8)
     out = cnn.forward(x)
     assert tuple(out.shape) == outputs

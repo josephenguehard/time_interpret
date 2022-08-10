@@ -67,8 +67,10 @@ class Net(pl.LightningModule):
             self.net = layers
         else:
             self.net = nn.Sequential()
-            for layer in layers:
-                self.net.add_module(layer.__class__.__name__.lower(), layer)
+            for i, layer in enumerate(layers):
+                self.net.add_module(
+                    f"{layer.__class__.__name__.lower()}_{i}", layer
+                )
 
         if isinstance(loss, str):
             loss = LOSSES[loss]()

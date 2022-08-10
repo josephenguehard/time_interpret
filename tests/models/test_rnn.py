@@ -66,7 +66,7 @@ def test_init(
         (10, "rnn", 32, 2, True, 0.0, False, False, (8, 5, 32)),
         (10, "rnn", 32, 1, False, 0.0, False, False, (8, 5, 32)),
         (10, "rnn", 32, 1, True, 0.1, False, False, (8, 5, 32)),
-        (10, "rnn", 32, 1, True, 0.0, True, False, (8, 5, 32)),
+        (10, "rnn", 32, 1, True, 0.0, True, False, (8, 5, 64)),
         (10, "rnn", 32, 1, True, 0.0, False, True, (8, 32)),
     ],
 )

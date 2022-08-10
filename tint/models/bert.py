@@ -9,7 +9,12 @@ except ImportError:
     BertForSequenceClassification = None
 
 
-def Bert(pretrained_model_name_or_path: str = None, config=None, **kwargs):
+def Bert(
+    pretrained_model_name_or_path: str = None,
+    config=None,
+    vocab_file=None,
+    **kwargs
+):
     r"""
     Get Bert model for sentence classification, either as a pre-trained model
     or from scratch. Any transformers model could theoretically be used, this
@@ -22,6 +27,8 @@ def Bert(pretrained_model_name_or_path: str = None, config=None, **kwargs):
             If ``None``, return an untrained Bert model. Default to ``None``
         config: Config of the Bert. Required when not loading a pre-trained
             model, otherwise unused. Default to ``None``
+        vocab_file: Path to a vocab file for the tokenizer.
+            Default to ``None``
         kwargs: Additional arguments for the tokenizer if not pretrained.
 
     Returns:
@@ -40,8 +47,9 @@ def Bert(pretrained_model_name_or_path: str = None, config=None, **kwargs):
     # Load pretrained model if path provided
     if pretrained_model_name_or_path is None:
         assert config is not None, "Bert config must be provided."
+        assert vocab_file is not None, "vocab file must be provided."
         return (
-            BertTokenizer(config.vocab_size),
+            BertTokenizer(vocab_file, **kwargs),
             BertForSequenceClassification(config=config),
         )
 
