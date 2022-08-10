@@ -99,6 +99,7 @@ def main(
         attr["deep_lift"] = explainer.attribute(
             x_test,
             baselines=x_test * 0,
+            task="binary",
             return_temporal_attributions=True,
             show_progress=True,
         ).abs()
@@ -151,6 +152,7 @@ def main(
             baselines=th.cat([x_test * 0, x_test]),
             n_samples=50,
             stdevs=0.0001,
+            task="binary",
             return_temporal_attributions=True,
             show_progress=True,
         ).abs()
@@ -160,6 +162,7 @@ def main(
         attr["integrated_gradients"] = explainer.attribute(
             x_test,
             baselines=x_test * 0,
+            task="binary",
             return_temporal_attributions=True,
             show_progress=True,
         ).abs()
@@ -168,6 +171,7 @@ def main(
         explainer = TimeForwardTunnel(Lime(classifier))
         attr["lime"] = explainer.attribute(
             x_test,
+            task="binary",
             return_temporal_attributions=True,
             show_progress=True,
         ).abs()
@@ -176,6 +180,7 @@ def main(
         explainer = TimeForwardTunnel(LofLime(classifier, embeddings=x_train))
         attr["lof_lime"] = explainer.attribute(
             x_test,
+            task="binary",
             return_temporal_attributions=True,
             show_progress=True,
         ).abs()
@@ -190,6 +195,7 @@ def main(
             x_test,
             sliding_window_shapes=(1,),
             attributions_fn=abs,
+            task="binary",
             return_temporal_attributions=True,
             show_progress=True,
         ).abs()
@@ -201,6 +207,7 @@ def main(
             sliding_window_shapes=(1,),
             baselines=x_train.mean(0, keepdim=True),
             attributions_fn=abs,
+            task="binary",
             return_temporal_attributions=True,
             show_progress=True,
         ).abs()
@@ -232,6 +239,7 @@ def main(
             x_test,
             baselines=x_test * 0,
             n_steps=2,
+            task="binary",
             return_temporal_attributions=True,
             show_progress=True,
         ).abs()
