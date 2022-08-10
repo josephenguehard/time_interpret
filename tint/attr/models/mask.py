@@ -204,13 +204,11 @@ class Mask(nn.Module):
         )
 
         # Return f(perturbed x)
-        with th.autograd.set_grad_enabled(False):
-            y_hat = _run_forward(
-                forward_func=self.forward_func,
-                inputs=x_pert,
-                additional_forward_args=input_additional_args,
-            )
-        return y_hat
+        return _run_forward(
+            forward_func=self.forward_func,
+            inputs=x_pert,
+            additional_forward_args=input_additional_args,
+        )
 
     def regularisation(self, loss: th.Tensor) -> th.Tensor:
         # Get size regularisation
@@ -332,14 +330,13 @@ class MaskNet(Net):
             y_hat = self(x.float(), batch_idx, *additional_forward_args)
 
         # Get unperturbed output
-        with th.autograd.set_grad_enabled(False):
-            y_target = _run_forward(
-                forward_func=self.net.forward_func,
-                inputs=y,
-                additional_forward_args=tuple(additional_forward_args)
-                if additional_forward_args is not None
-                else None,
-            )
+        y_target = _run_forward(
+            forward_func=self.net.forward_func,
+            inputs=y,
+            additional_forward_args=tuple(additional_forward_args)
+            if additional_forward_args is not None
+            else None,
+        )
         y_target = th.cat([y_target] * len(self.net.keep_ratio), dim=0)
 
         # If loss is cross_entropy, take softmax of y_target
@@ -386,3 +383,31 @@ class MaskNet(Net):
     def training_epoch_end(self, outputs) -> None:
         # Increase the regulator coefficient
         self.net.size_reg_factor *= self.net.reg_multiplier
+
+    def configure_optimizers(self):
+        if self._optim == "adam":
+            optim = th.optim.Adam(
+                self.net.mask,
+                lr=self.lr,
+                weight_decay=self.l2,
+            )
+        elif self._optim == "sgd":
+            optim = th.optim.SGD(
+                self.net.mask,
+                lr=self.lr,
+                weight_decay=self.l2,
+                momentum=0.9,
+                nesterov=True,
+            )
+        else:
+            raise NotImplementedError
+
+        lr_scheduler = self._lr_scheduler
+        if lr_scheduler is not None:
+            lr_scheduler = lr_scheduler.copy()
+            lr_scheduler["scheduler"] = lr_scheduler["scheduler"](
+                optim, **self._lr_scheduler_args
+            )
+            return {"optimizer": optim, "lr_scheduler": lr_scheduler}
+
+        return {"optimizer": optim}
