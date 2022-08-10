@@ -140,13 +140,11 @@ class BayesMask(nn.Module):
         x *= samples[:, : x.shape[1], ...]
 
         # Return f(perturbed x)
-        with th.autograd.set_grad_enabled(False):
-            y_hat = _run_forward(
-                forward_func=self.forward_func,
-                inputs=x,
-                additional_forward_args=additional_forward_args,
-            )
-        return y_hat
+        return _run_forward(
+            forward_func=self.forward_func,
+            inputs=x,
+            additional_forward_args=additional_forward_args,
+        )
 
     def regularisation(self, loss: th.Tensor) -> th.Tensor:
         # Get uninformative mean and tril
@@ -240,14 +238,13 @@ class BayesMaskNet(Net):
             y_hat = self(x.float(), batch_idx, *additional_forward_args)
 
         # Get unperturbed output
-        with th.autograd.set_grad_enabled(False):
-            y_target = _run_forward(
-                forward_func=self.net.forward_func,
-                inputs=y,
-                additional_forward_args=tuple(additional_forward_args)
-                if additional_forward_args is not None
-                else None,
-            )
+        y_target = _run_forward(
+            forward_func=self.net.forward_func,
+            inputs=y,
+            additional_forward_args=tuple(additional_forward_args)
+            if additional_forward_args is not None
+            else None,
+        )
 
         # If loss is cross_entropy, take softmax of y_target
         if isinstance(self._loss, nn.CrossEntropyLoss):
@@ -262,3 +259,57 @@ class BayesMaskNet(Net):
         step_output = self.net.regularisation(step_output)
 
         return step_output
+
+    def configure_optimizers(self):
+        if self._optim == "adam":
+            if self.net.distribution == "normal":
+                optim = th.optim.Adam(
+                    [
+                        {"params": self.net.mean},
+                        {"params": self.net.tril},
+                    ],
+                    lr=self.lr,
+                    weight_decay=self.l2,
+                )
+            else:
+                optim = th.optim.Adam(
+                    [
+                        {"params": self.net.mean},
+                    ],
+                    lr=self.lr,
+                    weight_decay=self.l2,
+                )
+        elif self._optim == "sgd":
+            if self.net.distribution == "normal":
+                optim = th.optim.SGD(
+                    [
+                        {"params": self.net.mean},
+                        {"params": self.net.tril},
+                    ],
+                    lr=self.lr,
+                    weight_decay=self.l2,
+                    momentum=0.9,
+                    nesterov=True,
+                )
+            else:
+                optim = th.optim.SGD(
+                    [
+                        {"params": self.net.mean.parameters()},
+                    ],
+                    lr=self.lr,
+                    weight_decay=self.l2,
+                    momentum=0.9,
+                    nesterov=True,
+                )
+        else:
+            raise NotImplementedError
+
+        lr_scheduler = self._lr_scheduler
+        if lr_scheduler is not None:
+            lr_scheduler = lr_scheduler.copy()
+            lr_scheduler["scheduler"] = lr_scheduler["scheduler"](
+                optim, **self._lr_scheduler_args
+            )
+            return {"optimizer": optim, "lr_scheduler": lr_scheduler}
+
+        return {"optimizer": optim}
