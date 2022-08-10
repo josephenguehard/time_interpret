@@ -1,3 +1,4 @@
+import copy
 import numpy as np
 import torch as th
 import torch.nn as nn
@@ -62,6 +63,12 @@ class Mask(nn.Module):
             "fade_moving_average_window",
             "fade_reference",
         ], f"{perturbation} perturbation not recognised."
+
+        # If forward func is a module, copy it
+        # and deactivate gradients
+        if isinstance(forward_func, nn.Module):
+            forward_func = copy.deepcopy(forward_func)
+            forward_func.requires_grad_(False)
 
         self.forward_func = forward_func
         self.perturbation = perturbation
@@ -337,6 +344,10 @@ class MaskNet(Net):
             else None,
         )
         y_target = th.cat([y_target] * len(self.net.keep_ratio), dim=0)
+
+        # If loss is cross_entropy, take softmax of y_target
+        if isinstance(self._loss, nn.CrossEntropyLoss):
+            y_target = y_target.softmax(-1)
 
         loss = self._loss(y_hat, y_target)
         return loss
