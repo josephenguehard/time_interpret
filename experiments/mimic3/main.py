@@ -176,6 +176,7 @@ def main(
         attr["augmented_occlusion"] = explainer.attribute(
             x_test,
             sliding_window_shapes=(1,),
+            attributions_fn=abs,
             show_progress=True,
         ).abs()
 
@@ -185,6 +186,7 @@ def main(
             x_test,
             sliding_window_shapes=(1,),
             baselines=x_train.mean(0, keepdim=True),
+            attributions_fn=abs,
             show_progress=True,
         ).abs()
 

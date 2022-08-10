@@ -1,6 +1,5 @@
 import torch
 
-from captum.attr import Occlusion
 from captum.log import log_usage
 from captum._utils.common import _format_input
 from captum._utils.typing import (
@@ -11,6 +10,8 @@ from captum._utils.typing import (
 
 from torch import Tensor
 from typing import Any, Callable, Tuple, Union
+
+from .occlusion import Occlusion
 
 
 class TemporalOcclusion(Occlusion):
@@ -42,6 +43,7 @@ class TemporalOcclusion(Occlusion):
         target: TargetType = None,
         additional_forward_args: Any = None,
         perturbations_per_eval: int = 1,
+        attributions_fn: Callable = None,
         show_progress: bool = False,
     ) -> TensorOrTupleOfTensorsGeneric:
         r"""
@@ -164,6 +166,9 @@ class TemporalOcclusion(Occlusion):
                             (perturbations_per_eval * #examples) / num_devices
                             samples.
                             Default: 1
+                attributions_fn (Callable, optional): Applies a function to the
+                        attributions before performing the weighted sum.
+                        Default: None
                 show_progress (bool, optional): Displays the progress of computation.
                             It will try to use tqdm if available for advanced features
                             (e.g. time estimation). Otherwise, it will fallback to
@@ -207,6 +212,7 @@ class TemporalOcclusion(Occlusion):
             target=target,
             additional_forward_args=additional_forward_args,
             perturbations_per_eval=perturbations_per_eval,
+            attributions_fn=attributions_fn,
             show_progress=show_progress,
         )
 

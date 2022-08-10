@@ -5,7 +5,6 @@ from captum.attr import (
     GradientShap,
     IntegratedGradients,
     Lime,
-    Occlusion,
     Saliency,
     KernelShap,
     ShapleyValueSampling,
@@ -18,6 +17,7 @@ from .discretised_ig import DiscretetizedIntegratedGradients
 from .dynamic_masks import DynaMask
 from .fit import Fit
 from .lof import LofKernelShap, LofLime
+from .occlusion import Occlusion
 from .retain import Retain
 from .smooth_grad import SmoothGrad
 from .temporal_augmented_occlusion import TemporalAugmentedOcclusion

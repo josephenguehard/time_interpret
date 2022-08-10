@@ -1,7 +1,6 @@
 import numpy as np
 import torch
 
-from captum.attr import Occlusion
 from captum.log import log_usage
 from captum._utils.common import _format_input
 from captum._utils.typing import (
@@ -9,10 +8,11 @@ from captum._utils.typing import (
     TensorOrTupleOfTensorsGeneric,
 )
 
-from tint.utils import _validate_input
-
 from torch import Tensor
 from typing import Any, Callable, Tuple, Union
+
+from tint.utils import _validate_input
+from .occlusion import Occlusion
 
 
 class AugmentedOcclusion(Occlusion):
@@ -60,6 +60,7 @@ class AugmentedOcclusion(Occlusion):
         target: TargetType = None,
         additional_forward_args: Any = None,
         perturbations_per_eval: int = 1,
+        attributions_fn: Callable = None,
         show_progress: bool = False,
     ) -> TensorOrTupleOfTensorsGeneric:
         """
@@ -154,6 +155,9 @@ class AugmentedOcclusion(Occlusion):
                     (perturbations_per_eval * #examples) / num_devices
                     samples.
                     Default: 1
+            attributions_fn (Callable, optional): Applies a function to the
+                        attributions before performing the weighted sum.
+                        Default: None
             show_progress (bool, optional): Displays the progress of
                     computation. It will try to use tqdm if available for
                     advanced features (e.g. time estimation). Otherwise, it
@@ -194,6 +198,7 @@ class AugmentedOcclusion(Occlusion):
             # We multiply perturbations_per_eval by the number of
             # sampling to expand tensors along the first dim
             perturbations_per_eval=perturbations_per_eval * self.n_sampling,
+            attributions_fn=attributions_fn,
             show_progress=False,
         )
 
