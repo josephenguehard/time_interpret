@@ -85,6 +85,8 @@ def main(
         mask = BayesMaskNet(
             forward_func=classifier,
             distribution="normal",
+            hard=False,
+            temporal=True,
             eps=1e-5,
             loss="cross_entropy",
             optim="adam",
@@ -95,7 +97,7 @@ def main(
             x_test,
             trainer=trainer,
             mask_net=mask,
-            batch_size=100,
+            batch_size=200,
         )
         attr["bayes_mask"] = _attr.clamp(0, 1)
 
