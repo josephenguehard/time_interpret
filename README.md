@@ -1,8 +1,7 @@
 # Time Interpret (tint)
 
 This package expands the [captum library](https://captum.ai) with a specific 
-focus on time series. However, most of the developed methods can be used with 
-any dataset. Please see the documentation and examples for more details.
+focus on time series. Please see the documentation and examples for more details.
 
 ## Install
 
@@ -25,52 +24,61 @@ pip install --no-deps -e .
 
 ## Quick-start
 
-First, let's load Mnist data:
+First, let's load an Arma dataset:
 
 ```python
-from torchvision.datasets import MNIST
-from torchvision.transforms import ToTensor
+from tint.datasets import Arma
 
-mnist = MNIST(".", download=True, transform=ToTensor())
+arma = Arma()
+arma.download()  # This method generates the dataset
 ```
 
-Let's then create a simple Neural Network and train it on this dataset using 
-Pytorch-Lightning:
+We then load some test data from the dataset and the
+corresponding true saliency:
 
 ```python
-from pytorch_lightning import Trainer
-from torch.utils.data import DataLoader
-
-from tint.models import CNN, MLP, Net
-
-cnn = CNN(units=[1, 32, 64], kernel_size=3, pooling="max_pool_2d")
-mlp = MLP(units=[7744, 128, 10], dropout=0.25, activation_final="log_softmax")
-net = Net([cnn, mlp], loss="nll")
-
-trainer = Trainer(max_epochs=10)
-trainer.fit(net, DataLoader(mnist, batch_size=32))
+x = arma.preprocess()["x"][0]
+true_saliency = arma.true_saliency(dim=rare_dim)[0]
 ```
 
-We have now a trained model on Mnist. We can then use any captum or tint
-interpretability method:
+We can now load an attribution method and use it to compute the saliency:
 
 ```python
-from tint.attr import BayesShap
+from tint.attr import TemporalIntegratedGradients
 
-explainer = BayesShap(net)
-data, target = mnist[0]
-data = data.unsqueeze(0)
-data.require_grad = True
+explainer = TemporalIntegratedGradients(arma.get_white_box)
 
-attributions = explainer.attribute(data)
+baseline = inputs * 0
+attr = explainer.attribute(
+    inputs,
+    baselines=inputs * 0,
+    additional_forward_args=(true_saliency,),
+    temporal_additional_forward_args=(True,),
+).abs()
+```
+
+Finally, we evaluate our method using the true saliency and a white box metric:
+
+```python
+from tint.metrics.white_box import aup
+
+print(f"{aup(attr, true_saliency):.4})
 ```
 
 ## Methods (under development)
 
+- [AugmentedOcclusion](https://arxiv.org/abs/2003.02821)
 - [BayesLime](https://arxiv.org/pdf/2008.05030)
 - [BayesShap](https://arxiv.org/pdf/2008.05030)
 - [DynaMask](https://arxiv.org/pdf/2106.05303)
 - [Discretised Integrated Gradients](https://arxiv.org/abs/2108.13654)
+- [Fit](https://arxiv.org/abs/2003.02821)
+- [Occlusion](https://arxiv.org/abs/1311.2901)
+- [Retain](https://arxiv.org/pdf/1608.05745)
+- [SmoothGrad](https://arxiv.org/abs/1810.03292)
 
 
 ## Acknowledgment
+- [Jonathan Crabbe](https://github.com/JonathanCrabbe/Dynamask) for the DynaMask implementation.
+- [Sana Tonekaboni](https://github.com/sanatonek/time_series_explainability/tree/master/TSX) for the fit implementation.
+- [INK Lab](https://github.com/INK-USC/DIG)for the discretized integrated gradients implementation.

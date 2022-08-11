@@ -45,7 +45,7 @@ class Fit(PerturbationAttribution):
             modification of it.
 
     References:
-        https://proceedings.neurips.cc/paper/2015/hash/b618c3210e934362ac261db280128c22-Abstract.html
+        https://arxiv.org/abs/2003.02821
     """
 
     def __init__(
