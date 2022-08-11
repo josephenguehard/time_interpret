@@ -1,14 +1,16 @@
 import torch
 
 from argparse import ArgumentParser
-from typing import List
-
-from tint.attr import (
+from captum.attr import (
     DeepLift,
-    DiscretetizedIntegratedGradients,
     GradientShap,
     InputXGradient,
     IntegratedGradients,
+)
+from typing import List
+
+from tint.attr import (
+    DiscretetizedIntegratedGradients,
 )
 from tint.attr.models import scale_inputs
 from tint.models import Bert

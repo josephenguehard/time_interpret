@@ -20,8 +20,6 @@ def Bert(
     or from scratch. Any transformers model could theoretically be used, this
     method is provided as an example.
 
-    .. _bert: https://huggingface.co/docs/transformers/main/en/model_doc/bert
-
     Args:
         pretrained_model_name_or_path: Path of the pre-trained model.
             If ``None``, return an untrained Bert model. Default to ``None``
@@ -35,7 +33,7 @@ def Bert(
         BertForSequenceClassification: Bert model for sentence classification.
 
     References:
-        bert_
+        https://huggingface.co/docs/transformers/main/en/model_doc/bert
 
     Examples:
         >>> from tint.models import Bert

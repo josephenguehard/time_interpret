@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>tint.metrics.lipschitz_max &mdash; Time Interpret 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sphinx_paramlinks.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="../../../_static/toggleprompt.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Time Interpret
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../attr.html">Attribution Methods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../datasets.html">Datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../metrics.html">Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../white_box_metrics.html">White Box Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../models.html">Models</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Time Interpret</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>tint.metrics.lipschitz_max</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for tint.metrics.lipschitz_max</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">signature</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">cast</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">captum._utils.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_expand_and_update_additional_forward_args</span><span class="p">,</span>
+    <span class="n">_expand_and_update_baselines</span><span class="p">,</span>
+    <span class="n">_expand_and_update_target</span><span class="p">,</span>
+    <span class="n">_format_baseline</span><span class="p">,</span>
+    <span class="n">_format_tensor_into_tuples</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">captum._utils.typing</span> <span class="kn">import</span> <span class="n">TensorOrTupleOfTensorsGeneric</span>
+<span class="kn">from</span> <span class="nn">captum.log</span> <span class="kn">import</span> <span class="n">log_usage</span>
+<span class="kn">from</span> <span class="nn">captum.metrics._utils.batching</span> <span class="kn">import</span> <span class="n">_divide_and_aggregate_metrics</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
+
+
+<span class="k">def</span> <span class="nf">default_perturb_func</span><span class="p">(</span>
+    <span class="n">inputs</span><span class="p">:</span> <span class="n">TensorOrTupleOfTensorsGeneric</span><span class="p">,</span> <span class="n">perturb_radius</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.02</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;A default function for generating perturbations of `inputs`</span>
+<span class="sd">    within perturbation radius of `perturb_radius`.</span>
+<span class="sd">    This function samples uniformly random from the L_Infinity ball</span>
+<span class="sd">    with `perturb_radius` radius.</span>
+<span class="sd">    The users can override this function if they prefer to use a</span>
+<span class="sd">    different perturbation function.</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        inputs (tensor or a tuple of tensors): The input tensors that we&#39;d</span>
+<span class="sd">                like to perturb by adding a random noise sampled unifromly</span>
+<span class="sd">                random from an L_infinity ball with a radius `perturb_radius`.</span>
+
+<span class="sd">        radius (float): A radius used for sampling from</span>
+<span class="sd">                an L_infinity ball.</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">        perturbed_input (tuple(tensor)): A list of perturbed inputs that</span>
+<span class="sd">                are createed by adding noise sampled uniformly random</span>
+<span class="sd">                from L_infiniy ball with a radius `perturb_radius` to the</span>
+<span class="sd">                original inputs.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">inputs</span> <span class="o">=</span> <span class="n">_format_tensor_into_tuples</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+    <span class="n">perturbed_input</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+        <span class="nb">input</span>
+        <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">size</span><span class="p">())</span>  <span class="c1"># type: ignore</span>
+        <span class="o">.</span><span class="n">uniform_</span><span class="p">(</span><span class="o">-</span><span class="n">perturb_radius</span><span class="p">,</span> <span class="n">perturb_radius</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">for</span> <span class="nb">input</span> <span class="ow">in</span> <span class="n">inputs</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">perturbed_input</span>
+
+
+<div class="viewcode-block" id="lipschitz_max"><a class="viewcode-back" href="../../../metrics.html#tint.metrics.lipschitz_max">[docs]</a><span class="nd">@log_usage</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">lipschitz_max</span><span class="p">(</span>
+    <span class="n">explanation_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">inputs</span><span class="p">:</span> <span class="n">TensorOrTupleOfTensorsGeneric</span><span class="p">,</span>
+    <span class="n">perturb_func</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">default_perturb_func</span><span class="p">,</span>
+    <span class="n">perturb_radius</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.02</span><span class="p">,</span>
+    <span class="n">n_perturb_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="n">norm_ord</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;fro&quot;</span><span class="p">,</span>
+    <span class="n">max_examples_per_batch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Lipschitz Max as a stability metric.</span>
+
+<span class="sd">    Args:</span>
+
+<span class="sd">        explanation_func (callable):</span>
+<span class="sd">            This function can be the `attribute` method of an</span>
+<span class="sd">            attribution algorithm or any other explanation method</span>
+<span class="sd">            that returns the explanations.</span>
+
+<span class="sd">        inputs (tensor or tuple of tensors):  Input for which</span>
+<span class="sd">            explanations are computed. If `explanation_func` takes a</span>
+<span class="sd">            single tensor as input, a single input tensor should</span>
+<span class="sd">            be provided.</span>
+<span class="sd">            If `explanation_func` takes multiple tensors as input, a tuple</span>
+<span class="sd">            of the input tensors should be provided. It is assumed</span>
+<span class="sd">            that for all given input tensors, dimension 0 corresponds</span>
+<span class="sd">            to the number of examples (aka batch size), and if</span>
+<span class="sd">            multiple input tensors are provided, the examples must</span>
+<span class="sd">            be aligned appropriately.</span>
+
+<span class="sd">        perturb_func (callable):</span>
+<span class="sd">            The perturbation function of model inputs. This function takes</span>
+<span class="sd">            model inputs and optionally `perturb_radius` if</span>
+<span class="sd">            the function takes more than one argument and returns</span>
+<span class="sd">            perturbed inputs.</span>
+
+<span class="sd">            If there are more than one inputs passed to sensitivity function those</span>
+<span class="sd">            will be passed to `perturb_func` as tuples in the same order as they</span>
+<span class="sd">            are passed to sensitivity function.</span>
+
+<span class="sd">            It is important to note that for performance reasons `perturb_func`</span>
+<span class="sd">            isn&#39;t called for each example individually but on a batch of</span>
+<span class="sd">            input examples that are repeated `max_examples_per_batch / batch_size`</span>
+<span class="sd">            times within the batch.</span>
+<span class="sd">            Default: default_perturb_func</span>
+
+<span class="sd">        perturb_radius (float, optional): The epsilon radius used for sampling.</span>
+<span class="sd">            In the `default_perturb_func` it is used as the radius of</span>
+<span class="sd">            the L-Infinity ball. In a general case it can serve as a radius of</span>
+<span class="sd">            any L_p nom.</span>
+<span class="sd">            This argument is passed to `perturb_func` if it takes more than</span>
+<span class="sd">            one argument.</span>
+<span class="sd">            Default: 0.02</span>
+
+<span class="sd">        n_perturb_samples (int, optional): The number of times input tensors</span>
+<span class="sd">            are perturbed. Each input example in the inputs tensor is</span>
+<span class="sd">            expanded `n_perturb_samples` times before calling</span>
+<span class="sd">            `perturb_func` function.</span>
+<span class="sd">            Default: 10</span>
+
+<span class="sd">        norm_ord (int, float, inf, -inf, &#39;fro&#39;, &#39;nuc&#39;, optional): The type of norm</span>
+<span class="sd">            that is used to compute the</span>
+<span class="sd">            norm of the sensitivity matrix which is defined as the difference</span>
+<span class="sd">            between the explanation function at its input and perturbed input.</span>
+<span class="sd">            Default: &#39;fro&#39;</span>
+
+<span class="sd">        max_examples_per_batch (int, optional): The number of maximum input</span>
+<span class="sd">            examples that are processed together. In case the number of</span>
+<span class="sd">            examples (`input batch size * n_perturb_samples`) exceeds</span>
+<span class="sd">            `max_examples_per_batch`, they will be sliced</span>
+<span class="sd">            into batches of `max_examples_per_batch` examples and processed</span>
+<span class="sd">            in a sequential order. If `max_examples_per_batch` is None, all</span>
+<span class="sd">            examples are processed together. `max_examples_per_batch` should</span>
+<span class="sd">            at least be equal `input batch size` and at most</span>
+<span class="sd">            `input batch size * n_perturb_samples`.</span>
+<span class="sd">            Default: None</span>
+
+<span class="sd">        **kwargs (Any, optional): Contains a list of arguments that are passed</span>
+<span class="sd">            to `explanation_func` explanation function which in some cases</span>
+<span class="sd">            could be the `attribute` function of an attribution algorithm.</span>
+<span class="sd">            Any additional arguments that need be passed to the explanation</span>
+<span class="sd">            function should be included here.</span>
+<span class="sd">            For instance, such arguments include:</span>
+<span class="sd">            `additional_forward_args`, `baselines` and `target`.</span>
+
+<span class="sd">    Returns:</span>
+
+<span class="sd">        sensitivities (tensor): A tensor of scalar sensitivity scores per</span>
+<span class="sd">            input example. The first dimension is equal to the</span>
+<span class="sd">            number of examples in the input batch and the second</span>
+<span class="sd">            dimension is one. Returned sensitivities are normalized by</span>
+<span class="sd">            the magnitudes of the input explanations.</span>
+
+<span class="sd">    Examples::</span>
+<span class="sd">        &gt;&gt;&gt; # ImageClassifier takes a single input tensor of images Nx3x32x32,</span>
+<span class="sd">        &gt;&gt;&gt; # and returns an Nx10 tensor of class probabilities.</span>
+<span class="sd">        &gt;&gt;&gt; net = ImageClassifier()</span>
+<span class="sd">        &gt;&gt;&gt; saliency = Saliency(net)</span>
+<span class="sd">        &gt;&gt;&gt; input = torch.randn(2, 3, 32, 32, requires_grad=True)</span>
+<span class="sd">        &gt;&gt;&gt; # Computes sensitivity score for saliency maps of class 3</span>
+<span class="sd">        &gt;&gt;&gt; sens = lipschitz_max(saliency.attribute, input, target = 3)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_generate_perturbations</span><span class="p">(</span>
+        <span class="n">current_n_perturb_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TensorOrTupleOfTensorsGeneric</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The perturbations are generated for each example</span>
+<span class="sd">        `current_n_perturb_samples` times.</span>
+
+<span class="sd">        For perfomance reasons we are not calling `perturb_func` on each example but</span>
+<span class="sd">        on a batch that contains `current_n_perturb_samples` repeated instances</span>
+<span class="sd">        per example.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">inputs_expanded</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">repeat_interleave</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">current_n_perturb_samples</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">for</span> <span class="nb">input</span> <span class="ow">in</span> <span class="n">inputs</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">inputs_expanded</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">inputs_expanded</span> <span class="o">=</span> <span class="n">inputs_expanded</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">perturb_func</span><span class="p">(</span><span class="n">inputs_expanded</span><span class="p">,</span> <span class="n">perturb_radius</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">signature</span><span class="p">(</span><span class="n">perturb_func</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span>
+            <span class="k">else</span> <span class="n">perturb_func</span><span class="p">(</span><span class="n">inputs_expanded</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">max_values</span><span class="p">(</span><span class="n">input_tnsr</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">input_tnsr</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>  <span class="c1"># type: ignore</span>
+
+    <span class="n">kwarg_expanded_for</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">kwargs_copy</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">_next_sensitivity_max</span><span class="p">(</span><span class="n">current_n_perturb_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="n">inputs_perturbed</span> <span class="o">=</span> <span class="n">_generate_perturbations</span><span class="p">(</span><span class="n">current_n_perturb_samples</span><span class="p">)</span>
+
+        <span class="c1"># copy kwargs and update some of the arguments that need to be expanded</span>
+        <span class="k">nonlocal</span> <span class="n">kwarg_expanded_for</span>
+        <span class="k">nonlocal</span> <span class="n">kwargs_copy</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">kwarg_expanded_for</span> <span class="ow">is</span> <span class="kc">None</span>
+            <span class="ow">or</span> <span class="n">kwarg_expanded_for</span> <span class="o">!=</span> <span class="n">current_n_perturb_samples</span>
+        <span class="p">):</span>
+            <span class="n">kwarg_expanded_for</span> <span class="o">=</span> <span class="n">current_n_perturb_samples</span>
+            <span class="n">kwargs_copy</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">_expand_and_update_additional_forward_args</span><span class="p">(</span>
+                <span class="n">current_n_perturb_samples</span><span class="p">,</span> <span class="n">kwargs_copy</span>
+            <span class="p">)</span>
+            <span class="n">_expand_and_update_target</span><span class="p">(</span><span class="n">current_n_perturb_samples</span><span class="p">,</span> <span class="n">kwargs_copy</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">&quot;baselines&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+                <span class="n">baselines</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;baselines&quot;</span><span class="p">]</span>
+                <span class="n">baselines</span> <span class="o">=</span> <span class="n">_format_baseline</span><span class="p">(</span>
+                    <span class="n">baselines</span><span class="p">,</span> <span class="n">cast</span><span class="p">(</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">inputs</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="nb">isinstance</span><span class="p">(</span><span class="n">baselines</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Tensor</span><span class="p">)</span>
+                    <span class="ow">and</span> <span class="n">baselines</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>
+                <span class="p">):</span>
+                    <span class="n">_expand_and_update_baselines</span><span class="p">(</span>
+                        <span class="n">cast</span><span class="p">(</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">inputs</span><span class="p">),</span>
+                        <span class="n">current_n_perturb_samples</span><span class="p">,</span>
+                        <span class="n">kwargs_copy</span><span class="p">,</span>
+                    <span class="p">)</span>
+
+        <span class="n">expl_perturbed_inputs</span> <span class="o">=</span> <span class="n">explanation_func</span><span class="p">(</span>
+            <span class="n">inputs_perturbed</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs_copy</span>
+        <span class="p">)</span>
+
+        <span class="c1"># tuplize `expl_perturbed_inputs` in case it is not</span>
+        <span class="n">expl_perturbed_inputs</span> <span class="o">=</span> <span class="n">_format_tensor_into_tuples</span><span class="p">(</span>
+            <span class="n">expl_perturbed_inputs</span>
+        <span class="p">)</span>
+
+        <span class="n">expl_inputs_expanded</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">expl_input</span><span class="o">.</span><span class="n">repeat_interleave</span><span class="p">(</span><span class="n">current_n_perturb_samples</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">expl_input</span> <span class="ow">in</span> <span class="n">expl_inputs</span>
+        <span class="p">)</span>
+
+        <span class="n">sensitivities</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="p">(</span><span class="n">expl_input</span> <span class="o">-</span> <span class="n">expl_perturbed</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">expl_perturbed</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">expl_perturbed</span><span class="p">,</span> <span class="n">expl_input</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+                    <span class="n">expl_perturbed_inputs</span><span class="p">,</span> <span class="n">expl_inputs_expanded</span>
+                <span class="p">)</span>
+            <span class="p">],</span>
+            <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">inputs_expanded</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">repeat_interleave</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">current_n_perturb_samples</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">for</span> <span class="nb">input</span> <span class="ow">in</span> <span class="n">inputs</span>
+        <span class="p">)</span>
+
+        <span class="c1"># compute ||inputs - inputs_pert||</span>
+        <span class="n">inputs_diff</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="p">(</span><span class="nb">input</span> <span class="o">-</span> <span class="n">input_pert</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">input_pert</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+                <span class="k">for</span> <span class="nb">input</span><span class="p">,</span> <span class="n">input_pert</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">inputs_expanded</span><span class="p">,</span> <span class="n">inputs_perturbed</span><span class="p">)</span>
+            <span class="p">],</span>
+            <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">inputs_diff_norm</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span>
+            <span class="n">inputs_diff</span><span class="p">,</span>
+            <span class="n">p</span><span class="o">=</span><span class="n">norm_ord</span><span class="p">,</span>
+            <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">inputs_diff_norm</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+            <span class="n">inputs_diff_norm</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span>
+                <span class="mf">1.0</span><span class="p">,</span>
+                <span class="n">device</span><span class="o">=</span><span class="n">inputs_diff_norm</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="n">inputs_diff_norm</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">inputs_diff_norm</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># compute the norm for each input noisy example</span>
+        <span class="n">lipschitz</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">sensitivities</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">norm_ord</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="o">/</span> <span class="n">inputs_diff_norm</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">max_values</span><span class="p">(</span><span class="n">lipschitz</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">bsz</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+
+    <span class="n">inputs</span> <span class="o">=</span> <span class="n">_format_tensor_into_tuples</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+
+    <span class="n">bsz</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+        <span class="n">expl_inputs</span> <span class="o">=</span> <span class="n">explanation_func</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">metrics_max</span> <span class="o">=</span> <span class="n">_divide_and_aggregate_metrics</span><span class="p">(</span>
+            <span class="n">cast</span><span class="p">(</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">inputs</span><span class="p">),</span>
+            <span class="n">n_perturb_samples</span><span class="p">,</span>
+            <span class="n">_next_sensitivity_max</span><span class="p">,</span>
+            <span class="n">max_examples_per_batch</span><span class="o">=</span><span class="n">max_examples_per_batch</span><span class="p">,</span>
+            <span class="n">agg_func</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">metrics_max</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Joseph Enguehard.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

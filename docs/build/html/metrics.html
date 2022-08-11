@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Metrics &mdash; Time Interpret 0.0.1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sphinx_paramlinks.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/clipboard.min.js"></script>
+        <script src="_static/copybutton.js"></script>
+        <script src="_static/toggleprompt.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="White Box Metrics" href="white_box_metrics.html" />
+    <link rel="prev" title="Datasets" href="datasets.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Time Interpret
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="attr.html">Attribution Methods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="datasets.html">Datasets</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Metrics</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#summary">Summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-tint.metrics">Detailed classes and methods</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="white_box_metrics.html">White Box Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">Models</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Time Interpret</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Metrics</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/metrics.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="metrics">
+<h1>Metrics<a class="headerlink" href="#metrics" title="Permalink to this heading"></a></h1>
+<p>time_interpret provides several metrics to evaluate the
+performance of time series attribution methods. These metrics
+are listed below:</p>
+<section id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Permalink to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.metrics.accuracy</span></code>(forward_func, inputs, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.metrics.comprehensiveness</span></code>(forward_func, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.metrics.cross_entropy</span></code>(forward_func, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#tint.metrics.lipschitz_max" title="tint.metrics.lipschitz_max"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.metrics.lipschitz_max</span></code></a>(explanation_func, ...)</p></td>
+<td><p>Lipschitz Max as a stability metric.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.metrics.log_odds</span></code>(forward_func, inputs, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.metrics.sufficiency</span></code>(forward_func, ...)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-tint.metrics">
+<span id="detailed-classes-and-methods"></span><h2>Detailed classes and methods<a class="headerlink" href="#module-tint.metrics" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="tint.metrics.lipschitz_max">
+<span class="sig-prename descclassname"><span class="pre">tint.metrics.</span></span><span class="sig-name descname"><span class="pre">lipschitz_max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">explanation_func:</span> <span class="pre">~typing.Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inputs:</span> <span class="pre">~captum._utils.typing.TensorOrTupleOfTensorsGeneric</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perturb_func:</span> <span class="pre">~typing.Callable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">default_perturb_func&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perturb_radius:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.02</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_perturb_samples:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_ord:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'fro'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_examples_per_batch:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs:</span> <span class="pre">~typing.Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/tint/metrics/lipschitz_max.html#lipschitz_max"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.metrics.lipschitz_max" title="Permalink to this definition"></a></dt>
+<dd><p>Lipschitz Max as a stability metric.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.metrics.lipschitz_max.params.explanation_func"></span><strong>explanation_func</strong><a class="paramlink headerlink reference internal" href="#tint.metrics.lipschitz_max.params.explanation_func">¶</a> (<em>callable</em>) – This function can be the <cite>attribute</cite> method of an
+attribution algorithm or any other explanation method
+that returns the explanations.</p></li>
+<li><p><span class="target" id="tint.metrics.lipschitz_max.params.inputs"></span><strong>inputs</strong><a class="paramlink headerlink reference internal" href="#tint.metrics.lipschitz_max.params.inputs">¶</a> (<em>tensor</em><em> or </em><em>tuple of tensors</em>) – Input for which
+explanations are computed. If <cite>explanation_func</cite> takes a
+single tensor as input, a single input tensor should
+be provided.
+If <cite>explanation_func</cite> takes multiple tensors as input, a tuple
+of the input tensors should be provided. It is assumed
+that for all given input tensors, dimension 0 corresponds
+to the number of examples (aka batch size), and if
+multiple input tensors are provided, the examples must
+be aligned appropriately.</p></li>
+<li><p><span class="target" id="tint.metrics.lipschitz_max.params.perturb_func"></span><strong>perturb_func</strong><a class="paramlink headerlink reference internal" href="#tint.metrics.lipschitz_max.params.perturb_func">¶</a> (<em>callable</em>) – <p>The perturbation function of model inputs. This function takes
+model inputs and optionally <cite>perturb_radius</cite> if
+the function takes more than one argument and returns
+perturbed inputs.</p>
+<p>If there are more than one inputs passed to sensitivity function those
+will be passed to <cite>perturb_func</cite> as tuples in the same order as they
+are passed to sensitivity function.</p>
+<p>It is important to note that for performance reasons <cite>perturb_func</cite>
+isn’t called for each example individually but on a batch of
+input examples that are repeated <cite>max_examples_per_batch / batch_size</cite>
+times within the batch.
+Default: default_perturb_func</p>
+</p></li>
+<li><p><span class="target" id="tint.metrics.lipschitz_max.params.perturb_radius"></span><strong>perturb_radius</strong><a class="paramlink headerlink reference internal" href="#tint.metrics.lipschitz_max.params.perturb_radius">¶</a> (<em>float</em><em>, </em><em>optional</em>) – The epsilon radius used for sampling.
+In the <cite>default_perturb_func</cite> it is used as the radius of
+the L-Infinity ball. In a general case it can serve as a radius of
+any L_p nom.
+This argument is passed to <cite>perturb_func</cite> if it takes more than
+one argument.
+Default: 0.02</p></li>
+<li><p><span class="target" id="tint.metrics.lipschitz_max.params.n_perturb_samples"></span><strong>n_perturb_samples</strong><a class="paramlink headerlink reference internal" href="#tint.metrics.lipschitz_max.params.n_perturb_samples">¶</a> (<em>int</em><em>, </em><em>optional</em>) – The number of times input tensors
+are perturbed. Each input example in the inputs tensor is
+expanded <cite>n_perturb_samples</cite> times before calling
+<cite>perturb_func</cite> function.
+Default: 10</p></li>
+<li><p><span class="target" id="tint.metrics.lipschitz_max.params.norm_ord"></span><strong>norm_ord</strong><a class="paramlink headerlink reference internal" href="#tint.metrics.lipschitz_max.params.norm_ord">¶</a> (<em>int</em><em>, </em><em>float</em><em>, </em><em>inf</em><em>, </em><em>-inf</em><em>, </em><em>'fro'</em><em>, </em><em>'nuc'</em><em>, </em><em>optional</em>) – The type of norm
+that is used to compute the
+norm of the sensitivity matrix which is defined as the difference
+between the explanation function at its input and perturbed input.
+Default: ‘fro’</p></li>
+<li><p><span class="target" id="tint.metrics.lipschitz_max.params.max_examples_per_batch"></span><strong>max_examples_per_batch</strong><a class="paramlink headerlink reference internal" href="#tint.metrics.lipschitz_max.params.max_examples_per_batch">¶</a> (<em>int</em><em>, </em><em>optional</em>) – The number of maximum input
+examples that are processed together. In case the number of
+examples (<cite>input batch size * n_perturb_samples</cite>) exceeds
+<cite>max_examples_per_batch</cite>, they will be sliced
+into batches of <cite>max_examples_per_batch</cite> examples and processed
+in a sequential order. If <cite>max_examples_per_batch</cite> is None, all
+examples are processed together. <cite>max_examples_per_batch</cite> should
+at least be equal <cite>input batch size</cite> and at most
+<cite>input batch size * n_perturb_samples</cite>.
+Default: None</p></li>
+<li><p><span class="target" id="tint.metrics.lipschitz_max.params.**kwargs"></span><strong>**kwargs</strong><a class="paramlink headerlink reference internal" href="#tint.metrics.lipschitz_max.params.**kwargs">¶</a> (<em>Any</em><em>, </em><em>optional</em>) – Contains a list of arguments that are passed
+to <cite>explanation_func</cite> explanation function which in some cases
+could be the <cite>attribute</cite> function of an attribution algorithm.
+Any additional arguments that need be passed to the explanation
+function should be included here.
+For instance, such arguments include:
+<cite>additional_forward_args</cite>, <cite>baselines</cite> and <cite>target</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A tensor of scalar sensitivity scores per</dt><dd><p>input example. The first dimension is equal to the
+number of examples in the input batch and the second
+dimension is one. Returned sensitivities are normalized by
+the magnitudes of the input explanations.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>sensitivities (tensor)</p>
+</dd>
+</dl>
+<dl>
+<dt>Examples::</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># ImageClassifier takes a single input tensor of images Nx3x32x32,</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># and returns an Nx10 tensor of class probabilities.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">net</span> <span class="o">=</span> <span class="n">ImageClassifier</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">saliency</span> <span class="o">=</span> <span class="n">Saliency</span><span class="p">(</span><span class="n">net</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Computes sensitivity score for saliency maps of class 3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sens</span> <span class="o">=</span> <span class="n">lipschitz_max</span><span class="p">(</span><span class="n">saliency</span><span class="o">.</span><span class="n">attribute</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="datasets.html" class="btn btn-neutral float-left" title="Datasets" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="white_box_metrics.html" class="btn btn-neutral float-right" title="White Box Metrics" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Joseph Enguehard.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

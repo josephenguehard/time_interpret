@@ -30,9 +30,7 @@ class MLP(nn.Module):
     Base MLP class.
 
     For more insights into specific arguments of the CNN, please refer
-    to `pytorch documentation <linear>`_.
-
-    .. _linear: https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear
+    to `pytorch documentation <https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear>`_.
 
 
     Args:
@@ -48,7 +46,7 @@ class MLP(nn.Module):
         activation_final (str): Final activation. Default to ``None``
 
     References:
-        linear_
+        https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear
 
     Examples:
         >>> import torch.nn as nn

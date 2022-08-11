@@ -23,7 +23,7 @@ class TemporalOcclusion(Occlusion):
 
     Args:
         forward_func (callable): The forward function of the model or
-            any modification of it
+            any modification of it.
     """
 
     def __init__(self, forward_func: Callable):
@@ -111,6 +111,7 @@ class TemporalOcclusion(Occlusion):
                               - or a scalar, corresponding to a tensor in the
                                 inputs' tuple. This scalar value is broadcasted
                                 for corresponding input tensor.
+
                             In the cases when `baselines` is not provided, we internally
                             use zero scalar corresponding to each input tensor.
                             Default: None

@@ -234,6 +234,7 @@ class HMM(DataModule):
         }
 
     def prepare_data(self):
+        """"""
         if not os.path.exists(
             os.path.join(self.data_dir, "train_features.npz")
         ):

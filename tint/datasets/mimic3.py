@@ -706,6 +706,7 @@ class Mimic3(DataModule):
             pkl.dump(test_samples, f)
 
     def prepare_data(self):
+        """"""
         if not os.path.exists(
             os.path.join(self.data_dir, "train_patient_vital_preprocessed.pkl")
         ) or not os.path.join(

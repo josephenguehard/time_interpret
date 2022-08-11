@@ -2,16 +2,18 @@ import numpy as np
 import torch as th
 
 from argparse import ArgumentParser
+from captum.attr import (
+    IntegratedGradients,
+    FeaturePermutation,
+    ShapleyValueSampling,
+)
 from pytorch_lightning import Trainer
 from typing import List
 
 from tint.attr import (
     BayesMask,
     DynaMask,
-    IntegratedGradients,
     Occlusion,
-    FeaturePermutation,
-    ShapleyValueSampling,
     TemporalIntegratedGradients,
 )
 from tint.attr.models import BayesMaskNet, MaskNet

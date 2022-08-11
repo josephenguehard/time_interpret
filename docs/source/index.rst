@@ -4,57 +4,7 @@ Time Interpret (tint)
 
 This package expands the `Captum library <https://captum.ai>`_ with a
 specific focus on time-series. As such, it includes various interpretability
-methods specifically designed to handle time series data. More documentation
-about these methods can be found here:
-
-.. toctree::
-    :glob:
-    :maxdepth: 1
-    :caption: Attribution
-
-    attr
-
-
-In addition, tint also provides some time series datasets which have been used
-as benchmark in recent publications. These datasets are listed here:
-
-.. toctree::
-    :glob:
-    :maxdepth: 1
-    :caption: Datasets
-
-    datasets
-
-
-We also provide some metrics to evaluate different attribution methods.
-These metrics differ depending on if the true saliency is known:
-
-.. toctree::
-    :glob:
-    :maxdepth: 1
-    :caption: Metrics
-
-    metrics
-
-
-.. toctree::
-    :glob:
-    :maxdepth: 1
-    :caption: White box metrics
-
-    white_box_metrics
-
-
-Finally, a few general deep learning models, as well as a network to be used along with the
-`Pytorch Lightning <https://pytorch-lightning.rtfd.io/en/latest/>`_ framework.
-These models can easily be used and trained with this framework.
-
-.. toctree::
-    :glob:
-    :maxdepth: 1
-    :caption: White box metrics
-
-    models
+methods specifically designed to handle time series data.
 
 
 Installation
@@ -63,7 +13,6 @@ Installation
 .. toctree::
     :glob:
     :maxdepth: 1
-    :caption: Installation
 
     install
 
@@ -114,3 +63,90 @@ Finally, we evaluate our method using the true saliency and a white box metric:
     from tint.metrics.white_box import aup
 
     print(f"{aup(attr, true_saliency):.4})
+
+
+API
+========================================
+
+Each of the implemented interpretability methods can be found here:
+
+.. autosummary::
+
+    tint.attr.AugmentedOcclusion
+    tint.attr.BayesLime
+    tint.attr.BayesMask
+    tint.attr.BayesShap
+    tint.attr.DiscretetizedIntegratedGradients
+    tint.attr.DynaMask
+    tint.attr.Fit
+    tint.attr.LofKernelShap
+    tint.attr.LofLime
+    tint.attr.Occlusion
+    tint.attr.Retain
+    tint.attr.SmoothGrad
+    tint.attr.TemporalAugmentedOcclusion
+    tint.attr.TemporalIntegratedGradients
+    tint.attr.TemporalOcclusion
+    tint.attr.TimeForwardTunnel
+
+
+In addition, tint also provides some time series datasets which have been used
+as benchmark in recent publications. These datasets are listed here:
+
+.. autosummary::
+
+    tint.datasets.Arma
+    tint.datasets.BioBank
+    tint.datasets.Hawkes
+    tint.datasets.HMM
+    tint.datasets.Mimic3
+
+
+We also provide some metrics to evaluate different attribution methods.
+These metrics differ depending on if the true saliency is known:
+
+.. autosummary::
+
+    tint.metrics.accuracy
+    tint.metrics.comprehensiveness
+    tint.metrics.cross_entropy
+    tint.metrics.lipschitz_max
+    tint.metrics.log_odds
+    tint.metrics.sufficiency
+
+
+.. autosummary::
+
+    tint.metrics.white_box.aup
+    tint.metrics.white_box.auprc
+    tint.metrics.white_box.aur
+    tint.metrics.white_box.entropy
+    tint.metrics.white_box.information
+    tint.metrics.white_box.roc_auc
+
+
+Finally, a few general deep learning models, as well as a network to be used along with the
+`Pytorch Lightning <https://pytorch-lightning.rtfd.io/en/latest/>`_ framework.
+These models can easily be used and trained with this framework.
+
+.. autosummary::
+
+    tint.models.Bert
+    tint.models.CNN
+    tint.models.MLP
+    tint.models.Net
+    tint.models.RNN
+    tint.models.TransformerEncoder
+
+
+More details about each of these categories can be found here:
+
+.. toctree::
+    :glob:
+    :maxdepth: 1
+
+    attr
+    datasets
+    metrics
+    white_box_metrics
+    models

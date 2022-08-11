@@ -35,9 +35,7 @@ class CNN(nn.Module):
     Base CNN class.
 
     For more insights into specific arguments of the CNN, please refer
-    to `pytorch documentation <conv2d>`_.
-
-    .. _conv2d: https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html#torch.nn.Conv2d
+    to `pytorch documentation <https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html#torch.nn.Conv2d>`_.
 
     Args:
         units (list): A list of units, which creates the layers.
@@ -51,7 +49,7 @@ class CNN(nn.Module):
             Default t0 ``None``
 
     References:
-        conv2d_
+        https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html#torch.nn.Conv2d
 
     Examples:
         >>> import torch.nn as nn

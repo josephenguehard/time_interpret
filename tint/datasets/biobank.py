@@ -341,6 +341,7 @@ class BioBank(DataModule):
         }
 
     def prepare_data(self):
+        """"""
         if not os.path.exists(os.path.join(self.data_dir, "biobank_data.csv")):
             self.download()
 

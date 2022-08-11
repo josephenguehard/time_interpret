@@ -2,17 +2,14 @@ import numpy as np
 import torch as th
 
 from argparse import ArgumentParser
+from captum.attr import DeepLift, GradientShap, IntegratedGradients, Lime
 from pytorch_lightning import Trainer
 from typing import List
 
 from tint.attr import (
     BayesMask,
-    DeepLift,
     DynaMask,
     Fit,
-    GradientShap,
-    IntegratedGradients,
-    Lime,
     LofLime,
     Retain,
     TemporalAugmentedOcclusion,

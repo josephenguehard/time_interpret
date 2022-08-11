@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Datasets &mdash; Time Interpret 0.0.1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sphinx_paramlinks.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/clipboard.min.js"></script>
+        <script src="_static/copybutton.js"></script>
+        <script src="_static/toggleprompt.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Metrics" href="metrics.html" />
+    <link rel="prev" title="Attribution Methods" href="attr.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Time Interpret
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="attr.html">Attribution Methods</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Datasets</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#summary">Summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-tint.datasets">Detailed classes and methods</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="metrics.html">Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="white_box_metrics.html">White Box Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">Models</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Time Interpret</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Datasets</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/datasets.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="datasets">
+<h1>Datasets<a class="headerlink" href="#datasets" title="Permalink to this heading"></a></h1>
+<p>time_interpret provides several datasets used as benchmark
+for time series attribution methods. These datasets are listed below:</p>
+<section id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Permalink to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#tint.datasets.Arma" title="tint.datasets.Arma"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.datasets.Arma</span></code></a>([times, features, ...])</p></td>
+<td><p>Arma dataset.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#tint.datasets.BioBank" title="tint.datasets.BioBank"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.datasets.BioBank</span></code></a>([label, discretised, ...])</p></td>
+<td><p>BioBank dataset.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#tint.datasets.Hawkes" title="tint.datasets.Hawkes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.datasets.Hawkes</span></code></a>([mu, alpha, decay, ...])</p></td>
+<td><p>Hawkes dataset.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#tint.datasets.HMM" title="tint.datasets.HMM"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.datasets.HMM</span></code></a>([n_signal, n_state, ...])</p></td>
+<td><p>2-state Hidden Markov Model as described in the DynaMask paper.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#tint.datasets.Mimic3" title="tint.datasets.Mimic3"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.datasets.Mimic3</span></code></a>([data_dir, batch_size, ...])</p></td>
+<td><p>MIMIC-III dataset.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-tint.datasets">
+<span id="detailed-classes-and-methods"></span><h2>Detailed classes and methods<a class="headerlink" href="#module-tint.datasets" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="tint.datasets.Arma">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tint.datasets.</span></span><span class="sig-name descname"><span class="pre">Arma</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">times</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ar</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'/Users/joseph.enguehard/Documents/Python/time_interpret/tint/data/arma'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prop_val</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_folds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_workers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">42</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/datasets/arma.html#Arma"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.datasets.Arma" title="Permalink to this definition"></a></dt>
+<dd><p>Arma dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.datasets.Arma.params.times"></span><strong>times</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Arma.params.times">¶</a> (<em>int</em>) – Length of each time series. Default to 50</p></li>
+<li><p><span class="target" id="tint.datasets.Arma.params.features"></span><strong>features</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Arma.params.features">¶</a> (<em>int</em>) – Number of features in each time series. Default to 50</p></li>
+<li><p><span class="target" id="tint.datasets.Arma.params.ar"></span><strong>ar</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Arma.params.ar">¶</a> (<em>list</em>) – Coefficient for autoregressive lag polynomial, including
+zero lag. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, use default values. Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.datasets.Arma.params.ma"></span><strong>ma</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Arma.params.ma">¶</a> (<em>list</em>) – Coefficient for moving-average lag polynomial, including
+zero lag. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, use default values. Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.datasets.Arma.params.data_dir"></span><strong>data_dir</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Arma.params.data_dir">¶</a> (<em>str</em>) – Where to download files.</p></li>
+<li><p><span class="target" id="tint.datasets.Arma.params.batch_size"></span><strong>batch_size</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Arma.params.batch_size">¶</a> (<em>int</em>) – Batch size. Default to 32</p></li>
+<li><p><span class="target" id="tint.datasets.Arma.params.n_folds"></span><strong>n_folds</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Arma.params.n_folds">¶</a> (<em>int</em>) – Number of folds for cross validation. If <code class="docutils literal notranslate"><span class="pre">None</span></code>,
+the dataset is only split once between train and val using
+<code class="docutils literal notranslate"><span class="pre">prop_val</span></code>. Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.datasets.Arma.params.fold"></span><strong>fold</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Arma.params.fold">¶</a> (<em>int</em>) – Index of the fold to use with cross-validation.
+Ignored if n_folds is None. Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.datasets.Arma.params.prop_val"></span><strong>prop_val</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Arma.params.prop_val">¶</a> (<em>float</em>) – Proportion of validation. Default to .2</p></li>
+<li><p><span class="target" id="tint.datasets.Arma.params.num_workers"></span><strong>num_workers</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Arma.params.num_workers">¶</a> (<em>int</em>) – Number of workers for the loaders. Default to 0</p></li>
+<li><p><span class="target" id="tint.datasets.Arma.params.seed"></span><strong>seed</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Arma.params.seed">¶</a> (<em>int</em>) – For the random split. Default to 42</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p><a class="reference external" href="https://www.statsmodels.org/dev/generated/statsmodels.tsa.arima_process.ArmaProcess.html">https://www.statsmodels.org/dev/generated/statsmodels.tsa.arima_process.ArmaProcess.html</a>
+<a class="reference external" href="https://arxiv.org/abs/2106.05303">https://arxiv.org/abs/2106.05303</a></p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.datasets</span> <span class="kn">import</span> <span class="n">Arma</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">arma</span> <span class="o">=</span> <span class="n">Arma</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">arma</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">split</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x_train</span> <span class="o">=</span> <span class="n">arma</span><span class="o">.</span><span class="n">preprocess</span><span class="p">(</span><span class="n">split</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">)[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_train</span> <span class="o">=</span> <span class="n">arma</span><span class="o">.</span><span class="n">preprocess</span><span class="p">(</span><span class="n">split</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">)[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="tint.datasets.Arma.get_white_box">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_white_box</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">true_saliency</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/tint/datasets/arma.html#Arma.get_white_box"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.datasets.Arma.get_white_box" title="Permalink to this definition"></a></dt>
+<dd><p>Create a white box regressor to be interpreted.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.datasets.Arma.get_white_box.params.inputs"></span><strong>inputs</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Arma.get_white_box.params.inputs">¶</a> (<em>th.Tensor</em>) – The input data.</p></li>
+<li><p><span class="target" id="tint.datasets.Arma.get_white_box.params.true_saliency"></span><strong>true_saliency</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Arma.get_white_box.params.true_saliency">¶</a> (<em>th.Tensor</em>) – The true saliency.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Output data.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>th.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tint.datasets.BioBank">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tint.datasets.</span></span><span class="sig-name descname"><span class="pre">BioBank</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">discretised</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">granularity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maximum_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">115</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fasttext</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Fasttext</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_to_task</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">std_time_to_task</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'/Users/joseph.enguehard/Documents/Python/time_interpret/tint/data/biobank'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prop_val</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_folds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_workers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">42</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/datasets/biobank.html#BioBank"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.datasets.BioBank" title="Permalink to this definition"></a></dt>
+<dd><p>BioBank dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.datasets.BioBank.params.discretised"></span><strong>discretised</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.BioBank.params.discretised">¶</a> (<em>bool</em>) – Whether to return a discretised dataset or not.
+Default to <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
+<li><p><span class="target" id="tint.datasets.BioBank.params.granularity"></span><strong>granularity</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.BioBank.params.granularity">¶</a> (<em>str</em><em>, </em><em>int</em>) – The time granularity.
+Default to a year: 24*365.25 hours</p></li>
+<li><p><span class="target" id="tint.datasets.BioBank.params.maximum_time"></span><strong>maximum_time</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.BioBank.params.maximum_time">¶</a> (<em>int</em>) – Maximum time to record. Default to 1,000,000 hours
+which is around 114 years</p></li>
+<li><p><span class="target" id="tint.datasets.BioBank.params.fasttext"></span><strong>fasttext</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.BioBank.params.fasttext">¶</a> (<em>Fasttext</em>) – A Fasttext model to encode categorical features.
+Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.datasets.BioBank.params.time_to_task"></span><strong>time_to_task</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.BioBank.params.time_to_task">¶</a> (<em>float</em>) – Special arg for diabetes task. Stops the
+recording before diabetes happens. Default to .5</p></li>
+<li><p><span class="target" id="tint.datasets.BioBank.params.std_time_to_task"></span><strong>std_time_to_task</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.BioBank.params.std_time_to_task">¶</a> (<em>float</em>) – Add randomness into when to stop recording.
+Default to .2</p></li>
+<li><p><span class="target" id="tint.datasets.BioBank.params.data_dir"></span><strong>data_dir</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.BioBank.params.data_dir">¶</a> (<em>str</em>) – Where to download files.</p></li>
+<li><p><span class="target" id="tint.datasets.BioBank.params.batch_size"></span><strong>batch_size</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.BioBank.params.batch_size">¶</a> (<em>int</em>) – Batch size. Default to 32</p></li>
+<li><p><span class="target" id="tint.datasets.BioBank.params.prop_val"></span><strong>prop_val</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.BioBank.params.prop_val">¶</a> (<em>float</em>) – Proportion of validation. Default to .2</p></li>
+<li><p><span class="target" id="tint.datasets.BioBank.params.n_folds"></span><strong>n_folds</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.BioBank.params.n_folds">¶</a> (<em>int</em>) – Number of folds for cross validation. If <code class="docutils literal notranslate"><span class="pre">None</span></code>,
+the dataset is only split once between train and val using
+<code class="docutils literal notranslate"><span class="pre">prop_val</span></code>. Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.datasets.BioBank.params.fold"></span><strong>fold</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.BioBank.params.fold">¶</a> (<em>int</em>) – Index of the fold to use with cross-validation.
+Ignored if n_folds is None. Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.datasets.BioBank.params.num_workers"></span><strong>num_workers</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.BioBank.params.num_workers">¶</a> (<em>int</em>) – Number of workers for the loaders. Default to 0</p></li>
+<li><p><span class="target" id="tint.datasets.BioBank.params.seed"></span><strong>seed</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.BioBank.params.seed">¶</a> (<em>int</em>) – For the random split. Default to 42</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p><a class="reference external" href="https://www.ukbiobank.ac.uk">https://www.ukbiobank.ac.uk</a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="tint.datasets.BioBank.build_discretized_features">
+<span class="sig-name descname"><span class="pre">build_discretized_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">events</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">times</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/datasets/biobank.html#BioBank.build_discretized_features"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.datasets.BioBank.build_discretized_features" title="Permalink to this definition"></a></dt>
+<dd><p>Build discretized features.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.datasets.BioBank.build_discretized_features.params.events"></span><strong>events</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.BioBank.build_discretized_features.params.events">¶</a> (<em>list</em>) – The read codes.</p></li>
+<li><p><span class="target" id="tint.datasets.BioBank.build_discretized_features.params.times"></span><strong>times</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.BioBank.build_discretized_features.params.times">¶</a> (<em>list</em>) – Times of each event.</p></li>
+<li><p><span class="target" id="tint.datasets.BioBank.build_discretized_features.params.verbose"></span><strong>verbose</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.BioBank.build_discretized_features.params.verbose">¶</a> (<em>bool</em><em>, </em><em>int</em>) – Verbosity level. Default to <code class="docutils literal notranslate"><span class="pre">False</span></code></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Preprocessed features.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tint.datasets.BioBank.build_discretized_labels">
+<span class="sig-name descname"><span class="pre">build_discretized_labels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">events:</span> <span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">times:</span> <span class="pre">list)</span> <span class="pre">-&gt;</span> <span class="pre">(&lt;class</span> <span class="pre">'torch.Tensor'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;class</span> <span class="pre">'torch.Tensor'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/datasets/biobank.html#BioBank.build_discretized_labels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.datasets.BioBank.build_discretized_labels" title="Permalink to this definition"></a></dt>
+<dd><p>Build discretized labels.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.datasets.BioBank.build_discretized_labels.params.events"></span><strong>events</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.BioBank.build_discretized_labels.params.events">¶</a> (<em>list</em>) – List of events.</p></li>
+<li><p><span class="target" id="tint.datasets.BioBank.build_discretized_labels.params.times"></span><strong>times</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.BioBank.build_discretized_labels.params.times">¶</a> (<em>list</em>) – List of times.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Two tensors of labels and tasks</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(th.Tensor, th.Tensor)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tint.datasets.BioBank.build_features">
+<span class="sig-name descname"><span class="pre">build_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">events</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">times</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/datasets/biobank.html#BioBank.build_features"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.datasets.BioBank.build_features" title="Permalink to this definition"></a></dt>
+<dd><p>Build features.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.datasets.BioBank.build_features.params.events"></span><strong>events</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.BioBank.build_features.params.events">¶</a> (<em>list</em>) – The read codes.</p></li>
+<li><p><span class="target" id="tint.datasets.BioBank.build_features.params.times"></span><strong>times</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.BioBank.build_features.params.times">¶</a> (<em>list</em>) – Times of each event.</p></li>
+<li><p><span class="target" id="tint.datasets.BioBank.build_features.params.verbose"></span><strong>verbose</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.BioBank.build_features.params.verbose">¶</a> (<em>bool</em><em>, </em><em>int</em>) – Verbosity level. Default to <code class="docutils literal notranslate"><span class="pre">False</span></code></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Preprocessed features.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tint.datasets.BioBank.build_labels">
+<span class="sig-name descname"><span class="pre">build_labels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">events:</span> <span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">times:</span> <span class="pre">list)</span> <span class="pre">-&gt;</span> <span class="pre">(&lt;class</span> <span class="pre">'list'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;class</span> <span class="pre">'list'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/datasets/biobank.html#BioBank.build_labels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.datasets.BioBank.build_labels" title="Permalink to this definition"></a></dt>
+<dd><p>Build labels.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.datasets.BioBank.build_labels.params.events"></span><strong>events</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.BioBank.build_labels.params.events">¶</a> (<em>list</em>) – Dict of events.</p></li>
+<li><p><span class="target" id="tint.datasets.BioBank.build_labels.params.times"></span><strong>times</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.BioBank.build_labels.params.times">¶</a> (<em>list</em>) – List of times.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Two lists of labels and tasks</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(list, list)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tint.datasets.HMM">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tint.datasets.</span></span><span class="sig-name descname"><span class="pre">HMM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_signal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">corr_features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">imp_features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'/Users/joseph.enguehard/Documents/Python/time_interpret/tint/data/hmm'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prop_val</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_folds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_workers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">42</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/datasets/hmm.html#HMM"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.datasets.HMM" title="Permalink to this definition"></a></dt>
+<dd><p>2-state Hidden Markov Model as described in the DynaMask paper.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.datasets.HMM.params.n_signal"></span><strong>n_signal</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.HMM.params.n_signal">¶</a> (<em>int</em>) – Number of different signals. Default to 3</p></li>
+<li><p><span class="target" id="tint.datasets.HMM.params.n_state"></span><strong>n_state</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.HMM.params.n_state">¶</a> (<em>int</em>) – Number of different possible states. Default to 1</p></li>
+<li><p><span class="target" id="tint.datasets.HMM.params.corr_features"></span><strong>corr_features</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.HMM.params.corr_features">¶</a> (<em>list</em>) – Features that re correlated with the important
+feature in each state. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, use default values.
+Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.datasets.HMM.params.imp_features"></span><strong>imp_features</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.HMM.params.imp_features">¶</a> (<em>list</em>) – Features that are always set as important.
+If <code class="docutils literal notranslate"><span class="pre">None</span></code>, use default values. Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.datasets.HMM.params.scale"></span><strong>scale</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.HMM.params.scale">¶</a> (<em>list</em>) – Scaling factor for distribution mean in each state.
+If <code class="docutils literal notranslate"><span class="pre">None</span></code>, use default values. Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.datasets.HMM.params.p0"></span><strong>p0</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.HMM.params.p0">¶</a> (<em>list</em>) – Starting probability. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, use default values.
+Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.datasets.HMM.params.data_dir"></span><strong>data_dir</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.HMM.params.data_dir">¶</a> (<em>str</em>) – Where to download files.</p></li>
+<li><p><span class="target" id="tint.datasets.HMM.params.batch_size"></span><strong>batch_size</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.HMM.params.batch_size">¶</a> (<em>int</em>) – Batch size. Default to 32</p></li>
+<li><p><span class="target" id="tint.datasets.HMM.params.prop_val"></span><strong>prop_val</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.HMM.params.prop_val">¶</a> (<em>float</em>) – Proportion of validation. Default to .2</p></li>
+<li><p><span class="target" id="tint.datasets.HMM.params.n_folds"></span><strong>n_folds</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.HMM.params.n_folds">¶</a> (<em>int</em>) – Number of folds for cross validation. If <code class="docutils literal notranslate"><span class="pre">None</span></code>,
+the dataset is only split once between train and val using
+<code class="docutils literal notranslate"><span class="pre">prop_val</span></code>. Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.datasets.HMM.params.fold"></span><strong>fold</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.HMM.params.fold">¶</a> (<em>int</em>) – Index of the fold to use with cross-validation.
+Ignored if n_folds is None. Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.datasets.HMM.params.num_workers"></span><strong>num_workers</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.HMM.params.num_workers">¶</a> (<em>int</em>) – Number of workers for the loaders. Default to 0</p></li>
+<li><p><span class="target" id="tint.datasets.HMM.params.seed"></span><strong>seed</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.HMM.params.seed">¶</a> (<em>int</em>) – For the random split. Default to 42</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p><a class="reference external" href="https://arxiv.org/pdf/2106.05303">https://arxiv.org/pdf/2106.05303</a></p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.datasets</span> <span class="kn">import</span> <span class="n">HMM</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">hmm</span> <span class="o">=</span> <span class="n">HMM</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">hmm</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">split</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x_train</span> <span class="o">=</span> <span class="n">hmm</span><span class="o">.</span><span class="n">preprocess</span><span class="p">(</span><span class="n">split</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">)[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_train</span> <span class="o">=</span> <span class="n">hmm</span><span class="o">.</span><span class="n">preprocess</span><span class="p">(</span><span class="n">split</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">)[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tint.datasets.Hawkes">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tint.datasets.</span></span><span class="sig-name descname"><span class="pre">Hawkes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'/Users/joseph.enguehard/Documents/Python/time_interpret/tint/data/hawkes'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prop_val</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_folds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_workers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">42</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/datasets/hawkes.html#Hawkes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.datasets.Hawkes" title="Permalink to this definition"></a></dt>
+<dd><p>Hawkes dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.datasets.Hawkes.params.mu"></span><strong>mu</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Hawkes.params.mu">¶</a> (<em>list</em>) – Intensity baselines. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, use default values.
+Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.datasets.Hawkes.params.alpha"></span><strong>alpha</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Hawkes.params.alpha">¶</a> (<em>list</em>) – Events parameters. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, use default values.
+Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.datasets.Hawkes.params.decay"></span><strong>decay</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Hawkes.params.decay">¶</a> (<em>list</em>) – Intensity decays. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, use default values.
+Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.datasets.Hawkes.params.window"></span><strong>window</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Hawkes.params.window">¶</a> (<em>int</em>) – The window of the simulated process. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, use
+default value. Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.datasets.Hawkes.params.data_dir"></span><strong>data_dir</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Hawkes.params.data_dir">¶</a> (<em>str</em>) – Where to download files.</p></li>
+<li><p><span class="target" id="tint.datasets.Hawkes.params.batch_size"></span><strong>batch_size</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Hawkes.params.batch_size">¶</a> (<em>int</em>) – Batch size. Default to 32</p></li>
+<li><p><span class="target" id="tint.datasets.Hawkes.params.prop_val"></span><strong>prop_val</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Hawkes.params.prop_val">¶</a> (<em>float</em>) – Proportion of validation. Default to .2</p></li>
+<li><p><span class="target" id="tint.datasets.Hawkes.params.n_folds"></span><strong>n_folds</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Hawkes.params.n_folds">¶</a> (<em>int</em>) – Number of folds for cross validation. If <code class="docutils literal notranslate"><span class="pre">None</span></code>,
+the dataset is only split once between train and val using
+<code class="docutils literal notranslate"><span class="pre">prop_val</span></code>. Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.datasets.Hawkes.params.fold"></span><strong>fold</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Hawkes.params.fold">¶</a> (<em>int</em>) – Index of the fold to use with cross-validation.
+Ignored if n_folds is None. Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.datasets.Hawkes.params.num_workers"></span><strong>num_workers</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Hawkes.params.num_workers">¶</a> (<em>int</em>) – Number of workers for the loaders. Default to 0</p></li>
+<li><p><span class="target" id="tint.datasets.Hawkes.params.seed"></span><strong>seed</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Hawkes.params.seed">¶</a> (<em>int</em>) – For the random split. Default to 42</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p><a class="reference external" href="https://x-datainitiative.github.io/tick/modules/hawkes.html">https://x-datainitiative.github.io/tick/modules/hawkes.html</a></p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.datasets</span> <span class="kn">import</span> <span class="n">Hawkes</span><span class="p">()</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">hawkes</span> <span class="o">=</span> <span class="n">Hawkes</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">hawkes</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">split</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x_train</span> <span class="o">=</span> <span class="n">hawkes</span><span class="o">.</span><span class="n">preprocess</span><span class="p">(</span><span class="n">split</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">)[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_train</span> <span class="o">=</span> <span class="n">hawkes</span><span class="o">.</span><span class="n">preprocess</span><span class="p">(</span><span class="n">split</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">)[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="tint.datasets.Hawkes.generate_points">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">generate_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/datasets/hawkes.html#Hawkes.generate_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.datasets.Hawkes.generate_points" title="Permalink to this definition"></a></dt>
+<dd><p>Generates points of an marked Hawkes processes using the tick library.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.datasets.Hawkes.generate_points.params.mu"></span><strong>mu</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Hawkes.generate_points.params.mu">¶</a> (<em>list</em>) – Hawkes baseline.</p></li>
+<li><p><span class="target" id="tint.datasets.Hawkes.generate_points.params.alpha"></span><strong>alpha</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Hawkes.generate_points.params.alpha">¶</a> (<em>list</em>) – Event parameter.</p></li>
+<li><p><span class="target" id="tint.datasets.Hawkes.generate_points.params.decay"></span><strong>decay</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Hawkes.generate_points.params.decay">¶</a> (<em>list</em>) – Decay parameter.</p></li>
+<li><p><span class="target" id="tint.datasets.Hawkes.generate_points.params.window"></span><strong>window</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Hawkes.generate_points.params.window">¶</a> (<em>int</em>) – The window of the simulated process.</p></li>
+<li><p><span class="target" id="tint.datasets.Hawkes.generate_points.params.seed"></span><strong>seed</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Hawkes.generate_points.params.seed">¶</a> (<em>int</em>) – The random seed.</p></li>
+<li><p><span class="target" id="tint.datasets.Hawkes.generate_points.params.dt"></span><strong>dt</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Hawkes.generate_points.params.dt">¶</a> (<em>float</em>) – Granularity. Default to 0.01</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tint.datasets.Hawkes.get_features">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/tint/datasets/hawkes.html#Hawkes.get_features"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.datasets.Hawkes.get_features" title="Permalink to this definition"></a></dt>
+<dd><p>Create features and labels from a hawkes process.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><span class="target" id="tint.datasets.Hawkes.get_features.params.point"></span><strong>point</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Hawkes.get_features.params.point">¶</a> (<em>list</em>) – A hawkes process.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tint.datasets.Hawkes.get_labels">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_labels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/tint/datasets/hawkes.html#Hawkes.get_labels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.datasets.Hawkes.get_labels" title="Permalink to this definition"></a></dt>
+<dd><p>Create features and labels from a hawkes process.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><span class="target" id="tint.datasets.Hawkes.get_labels.params.point"></span><strong>point</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Hawkes.get_labels.params.point">¶</a> (<em>list</em>) – A hawkes process.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tint.datasets.Hawkes.intensity">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">intensity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">times</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/tint/datasets/hawkes.html#Hawkes.intensity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.datasets.Hawkes.intensity" title="Permalink to this definition"></a></dt>
+<dd><p>Given parameters mu, alpha and decay, some
+times and labels, and a vector of query times t,
+compute intensities at these time points.</p>
+<p>B: Batch size.
+T: Temporal dim.
+N: Number of processes.
+Q: Number of time queries.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.datasets.Hawkes.intensity.params.mu"></span><strong>mu</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Hawkes.intensity.params.mu">¶</a> (<em>th.Tensor</em>) – Intensity baselines. Shape N, Values 0..1</p></li>
+<li><p><span class="target" id="tint.datasets.Hawkes.intensity.params.alpha"></span><strong>alpha</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Hawkes.intensity.params.alpha">¶</a> (<em>th.Tensor</em>) – Events parameters. Shape N x N, Values 0..1</p></li>
+<li><p><span class="target" id="tint.datasets.Hawkes.intensity.params.decay"></span><strong>decay</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Hawkes.intensity.params.decay">¶</a> (<em>th.Tensor</em>) – Intensity decays. Shape N x N, Values 0..1</p></li>
+<li><p><span class="target" id="tint.datasets.Hawkes.intensity.params.times"></span><strong>times</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Hawkes.intensity.params.times">¶</a> (<em>th.Tensor</em>) – Times of the process. Shape B x T x 1</p></li>
+<li><p><span class="target" id="tint.datasets.Hawkes.params.intensity."></span><strong>intensity.</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Hawkes.params.intensity.">¶</a><strong>(</strong><strong>th.Tensor</strong> (<em>labels</em>) – Labels of the process. Shape B x T x 1</p></li>
+<li><p><span class="target" id="tint.datasets.Hawkes.intensity.params.t"></span><strong>t</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Hawkes.intensity.params.t">¶</a> (<em>th.Tensor</em>) – Query times. Shape Q</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Intensities. Shape B x Q x N</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>th.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tint.datasets.Hawkes.true_saliency">
+<span class="sig-name descname"><span class="pre">true_saliency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'train'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/datasets/hawkes.html#Hawkes.true_saliency"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.datasets.Hawkes.true_saliency" title="Permalink to this definition"></a></dt>
+<dd><p>Get process true saliency.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><span class="target" id="tint.datasets.Hawkes.true_saliency.params.split"></span><strong>split</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Hawkes.true_saliency.params.split">¶</a> (<em>str</em>) – Data split. Default to <code class="docutils literal notranslate"><span class="pre">'train'</span></code></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The true saliency.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>th.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tint.datasets.Hawkes.true_saliency_t">
+<span class="sig-name descname"><span class="pre">true_saliency_t</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decay</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">times</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'train'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/datasets/hawkes.html#Hawkes.true_saliency_t"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.datasets.Hawkes.true_saliency_t" title="Permalink to this definition"></a></dt>
+<dd><p>Compute the true saliency given some time queries.</p>
+<p>B: Batch size.
+T: Temporal dim.
+N: Number of processes.
+Q: Number of time queries.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.datasets.Hawkes.true_saliency_t.params.t"></span><strong>t</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Hawkes.true_saliency_t.params.t">¶</a> (<em>th.Tensor</em>) – Time queries. Shape Q</p></li>
+<li><p><span class="target" id="tint.datasets.Hawkes.true_saliency_t.params.mu"></span><strong>mu</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Hawkes.true_saliency_t.params.mu">¶</a> (<em>th.Tensor</em>) – Intensity baselines. Shape N, Values 0..1</p></li>
+<li><p><span class="target" id="tint.datasets.Hawkes.true_saliency_t.params.alpha"></span><strong>alpha</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Hawkes.true_saliency_t.params.alpha">¶</a> (<em>th.Tensor</em>) – Events parameters. Shape N x N, Values 0..1</p></li>
+<li><p><span class="target" id="tint.datasets.Hawkes.true_saliency_t.params.decay"></span><strong>decay</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Hawkes.true_saliency_t.params.decay">¶</a> (<em>th.Tensor</em>) – Intensity decays. Shape N x N, Values 0..1</p></li>
+<li><p><span class="target" id="tint.datasets.Hawkes.true_saliency_t.params.times"></span><strong>times</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Hawkes.true_saliency_t.params.times">¶</a> (<em>th.Tensor</em>) – Times of the process. Shape B x T x 1</p></li>
+<li><p><span class="target" id="tint.datasets.Hawkes.params.true_saliency_t."></span><strong>true_saliency_t.</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Hawkes.params.true_saliency_t.">¶</a><strong>(</strong><strong>th.Tensor</strong> (<em>labels</em>) – Labels of the process. Shape B x T x 1</p></li>
+<li><p><span class="target" id="tint.datasets.Hawkes.true_saliency_t.params.split"></span><strong>split</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Hawkes.true_saliency_t.params.split">¶</a> (<em>str</em>) – Data split. Default to <code class="docutils literal notranslate"><span class="pre">'train'</span></code></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>true_saliency</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>th.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tint.datasets.MNIST">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tint.datasets.</span></span><span class="sig-name descname"><span class="pre">MNIST</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_transform</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">download</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torchvision/datasets/mnist.html#MNIST"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.datasets.MNIST" title="Permalink to this definition"></a></dt>
+<dd><p><a class="reference external" href="http://yann.lecun.com/exdb/mnist/">MNIST</a> Dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.datasets.MNIST.params.root"></span><strong>root</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.MNIST.params.root">¶</a> (<em>string</em>) – Root directory of dataset where <code class="docutils literal notranslate"><span class="pre">MNIST/raw/train-images-idx3-ubyte</span></code>
+and  <code class="docutils literal notranslate"><span class="pre">MNIST/raw/t10k-images-idx3-ubyte</span></code> exist.</p></li>
+<li><p><span class="target" id="tint.datasets.MNIST.params.train"></span><strong>train</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.MNIST.params.train">¶</a> (<em>bool</em><em>, </em><em>optional</em>) – If True, creates dataset from <code class="docutils literal notranslate"><span class="pre">train-images-idx3-ubyte</span></code>,
+otherwise from <code class="docutils literal notranslate"><span class="pre">t10k-images-idx3-ubyte</span></code>.</p></li>
+<li><p><span class="target" id="tint.datasets.MNIST.params.download"></span><strong>download</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.MNIST.params.download">¶</a> (<em>bool</em><em>, </em><em>optional</em>) – If True, downloads the dataset from the internet and
+puts it in root directory. If dataset is already downloaded, it is not
+downloaded again.</p></li>
+<li><p><span class="target" id="tint.datasets.MNIST.params.transform"></span><strong>transform</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.MNIST.params.transform">¶</a> (<em>callable</em><em>, </em><em>optional</em>) – A function/transform that  takes in an PIL image
+and returns a transformed version. E.g, <code class="docutils literal notranslate"><span class="pre">transforms.RandomCrop</span></code></p></li>
+<li><p><span class="target" id="tint.datasets.MNIST.params.target_transform"></span><strong>target_transform</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.MNIST.params.target_transform">¶</a> (<em>callable</em><em>, </em><em>optional</em>) – A function/transform that takes in the
+target and transforms it.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="tint.datasets.MNIST.download">
+<span class="sig-name descname"><span class="pre">download</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/torchvision/datasets/mnist.html#MNIST.download"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.datasets.MNIST.download" title="Permalink to this definition"></a></dt>
+<dd><p>Download the MNIST data if it doesn’t exist already.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tint.datasets.Mimic3">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tint.datasets.</span></span><span class="sig-name descname"><span class="pre">Mimic3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'/Users/joseph.enguehard/Documents/Python/time_interpret/tint/data/mimic3'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prop_val</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_folds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_workers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">42</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/datasets/mimic3.html#Mimic3"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.datasets.Mimic3" title="Permalink to this definition"></a></dt>
+<dd><p>MIMIC-III dataset.</p>
+<p>Download is set up according to this repository:
+<a class="reference external" href="https://github.com/sanatonek/time_series_explainability">https://github.com/sanatonek/time_series_explainability</a>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Using this dataset requires to have the MIMIC III data running on a
+local server. Please see <a class="reference external" href="https://mimic.mit.edu/docs/gettingstarted/local/install-mimic-locally-ubuntu/">https://mimic.mit.edu/docs/gettingstarted/local/install-mimic-locally-ubuntu/</a>
+for more information.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.datasets.Mimic3.params.data_dir"></span><strong>data_dir</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Mimic3.params.data_dir">¶</a> (<em>str</em>) – Where to download files.</p></li>
+<li><p><span class="target" id="tint.datasets.Mimic3.params.batch_size"></span><strong>batch_size</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Mimic3.params.batch_size">¶</a> (<em>int</em>) – Batch size. Default to 32</p></li>
+<li><p><span class="target" id="tint.datasets.Mimic3.params.n_folds"></span><strong>n_folds</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Mimic3.params.n_folds">¶</a> (<em>int</em>) – Number of folds for cross validation. If <code class="docutils literal notranslate"><span class="pre">None</span></code>,
+the dataset is only split once between train and val using
+<code class="docutils literal notranslate"><span class="pre">prop_val</span></code>. Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.datasets.Mimic3.params.fold"></span><strong>fold</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Mimic3.params.fold">¶</a> (<em>int</em>) – Index of the fold to use with cross-validation.
+Ignored if n_folds is None. Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.datasets.Mimic3.params.prop_val"></span><strong>prop_val</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Mimic3.params.prop_val">¶</a> (<em>float</em>) – Proportion of validation. Default to .2</p></li>
+<li><p><span class="target" id="tint.datasets.Mimic3.params.num_workers"></span><strong>num_workers</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Mimic3.params.num_workers">¶</a> (<em>int</em>) – Number of workers for the loaders. Default to 0</p></li>
+<li><p><span class="target" id="tint.datasets.Mimic3.params.seed"></span><strong>seed</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.Mimic3.params.seed">¶</a> (<em>int</em>) – For the random split. Default to 42</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p><a class="reference external" href="https://github.com/sanatonek/time_series_explainability/blob/master/data_generator/icu_mortality.py">https://github.com/sanatonek/time_series_explainability/blob/master/data_generator/icu_mortality.py</a>
+<a class="reference external" href="https://physionet.org/content/mimiciii/1.4/">https://physionet.org/content/mimiciii/1.4/</a></p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.datasets</span> <span class="kn">import</span> <span class="n">Mimic3</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mimci3</span> <span class="o">=</span> <span class="n">Mimic3</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mimci3</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">sqluser</span><span class="o">=</span><span class="s2">&quot;your_username&quot;</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x_train</span> <span class="o">=</span> <span class="n">mimci3</span><span class="o">.</span><span class="n">preprocess</span><span class="p">(</span><span class="n">split</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">)[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_train</span> <span class="o">=</span> <span class="n">mimci3</span><span class="o">.</span><span class="n">preprocess</span><span class="p">(</span><span class="n">split</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">)[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="attr.html" class="btn btn-neutral float-left" title="Attribution Methods" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="metrics.html" class="btn btn-neutral float-right" title="Metrics" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Joseph Enguehard.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

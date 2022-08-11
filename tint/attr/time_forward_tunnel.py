@@ -77,59 +77,59 @@ class TimeForwardTunnel(Attribution):
 
         Args:
             inputs (tensor or tuple of tensors):  Input for which integrated
-                    gradients are computed. If forward_func takes a single
-                    tensor as input, a single input tensor should be provided.
-                    If forward_func takes multiple tensors as input, a tuple
-                    of the input tensors should be provided. It is assumed
-                    that for all given input tensors, dimension 0 corresponds
-                    to the number of examples, and if multiple input tensors
-                    are provided, the examples must be aligned appropriately.
-                    It is also assumed that for all given input tensors,
-                    dimension 1 corresponds to the time dimension, and if
-                    multiple input tensors are provided, the examples must
-                    be aligned appropriately.
+                gradients are computed. If forward_func takes a single
+                tensor as input, a single input tensor should be provided.
+                If forward_func takes multiple tensors as input, a tuple
+                of the input tensors should be provided. It is assumed
+                that for all given input tensors, dimension 0 corresponds
+                to the number of examples, and if multiple input tensors
+                are provided, the examples must be aligned appropriately.
+                It is also assumed that for all given input tensors,
+                dimension 1 corresponds to the time dimension, and if
+                multiple input tensors are provided, the examples must
+                be aligned appropriately.
             task (str): Type of task done by the model. Either ``'binary'``,
-                        ``'multilabel'``, ``'multiclass'`` or ``'regression'``.
-                        Default to ``'binary'``
+                ``'multilabel'``, ``'multiclass'`` or ``'regression'``.
+                Default to ``'binary'``
             threshold (float): Threshold for the multilabel task.
-                        Default to 0.5
+                Default to 0.5
             temporal_target (bool, optional): Determine if the targe is
-                    temporal and needs to be cut.
-                    Default: False
+                temporal and needs to be cut.
+                Default: False
             temporal_additional_forward_args (tuple, optional): For each
-                    additional forward arg, determine if it is temporal
-                    or not.
-                    Default: None
+                additional forward arg, determine if it is temporal
+                or not.
+                Default: None
             return_temporal_attributions (bool): Whether to return all saliencies
                 for all time points or only the last one per time point.
-                    Default: False
+                Default: False
             show_progress (bool, optional): Displays the progress of computation.
-                        It will try to use tqdm if available for advanced features
-                        (e.g. time estimation). Otherwise, it will fallback to
-                        a simple output of progress.
-                        Default: False
+                It will try to use tqdm if available for advanced features
+                (e.g. time estimation). Otherwise, it will fallback to
+                a simple output of progress.
+                Default: False
             **kwargs: (Any, optional): Contains a list of arguments that are
-                       passed  to `attribution_method` attribution algorithm.
-                       Any additional arguments that should be used for the
-                       chosen attribution method should be included here.
-                       For instance, such arguments include
-                       `additional_forward_args` and `baselines`.
+                passed  to `attribution_method` attribution algorithm.
+                Any additional arguments that should be used for the
+                chosen attribution method should be included here.
+                For instance, such arguments include
+                `additional_forward_args` and `baselines`.
 
         Returns:
             **attributions** or 2-element tuple of **attributions**, **delta**:
             - **attributions** (*tensor* or tuple of *tensors*):
-                    Attribution with
-                    respect to each input feature. attributions will always be
-                    the same size as the provided inputs, with each value
-                    providing the attribution of the corresponding input index.
-                    If a single tensor is provided as inputs, a single tensor
-                    is returned. If a tuple is provided for inputs, a tuple of
-                    corresponding sized tensors is returned.
+                Attribution with
+                respect to each input feature. attributions will always be
+                the same size as the provided inputs, with each value
+                providing the attribution of the corresponding input index.
+                If a single tensor is provided as inputs, a single tensor
+                is returned. If a tuple is provided for inputs, a tuple of
+                corresponding sized tensors is returned.
             - **delta** (*float*, returned if return_convergence_delta=True):
-                    Approximation error computed by the
-                    attribution algorithm. Not all attribution algorithms
-                    return delta value. It is computed only for some
-                    algorithms, e.g. integrated gradients.
+                Approximation error computed by the
+                attribution algorithm. Not all attribution algorithms
+                return delta value. It is computed only for some
+                algorithms, e.g. integrated gradients.
         """
         # Keeps track whether original input is a tuple or not before
         # converting it into a tuple.

@@ -1,15 +1,3 @@
-from captum.attr import (
-    DeepLift,
-    InputXGradient,
-    FeaturePermutation,
-    GradientShap,
-    IntegratedGradients,
-    Lime,
-    Saliency,
-    KernelShap,
-    ShapleyValueSampling,
-)
-
 from .augmented_occlusion import AugmentedOcclusion
 from .bayes import BayesLime, BayesShap
 from .bayes_mask import BayesMask
@@ -30,22 +18,13 @@ __all__ = [
     "BayesLime",
     "BayesMask",
     "BayesShap",
-    "DeepLift",
     "DiscretetizedIntegratedGradients",
     "DynaMask",
-    "FeaturePermutation",
     "Fit",
-    "GradientShap",
-    "InputXGradient",
-    "IntegratedGradients",
-    "KernelShap",
-    "Lime",
     "LofKernelShap",
     "LofLime",
     "Occlusion",
     "Retain",
-    "Saliency",
-    "ShapleyValueSampling",
     "SmoothGrad",
     "TemporalAugmentedOcclusion",
     "TemporalIntegratedGradients",

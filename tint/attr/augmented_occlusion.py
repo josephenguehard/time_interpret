@@ -144,7 +144,9 @@ class AugmentedOcclusion(Occlusion):
                       examples in inputs (dim 0), and each tuple containing
                       #output_dims - 1 elements. Each tuple is applied as the
                       target for the corresponding example.
+
                     Default: None
+
             additional_forward_args (any, optional): If the forward function
                     requires additional arguments other than the inputs for
                     which attributions should not be computed, this argument

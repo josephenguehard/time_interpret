@@ -71,35 +71,35 @@ def lipschitz_max(
     Args:
 
         explanation_func (callable):
-                This function can be the `attribute` method of an
-                attribution algorithm or any other explanation method
-                that returns the explanations.
+            This function can be the `attribute` method of an
+            attribution algorithm or any other explanation method
+            that returns the explanations.
 
         inputs (tensor or tuple of tensors):  Input for which
-                explanations are computed. If `explanation_func` takes a
-                single tensor as input, a single input tensor should
-                be provided.
-                If `explanation_func` takes multiple tensors as input, a tuple
-                of the input tensors should be provided. It is assumed
-                that for all given input tensors, dimension 0 corresponds
-                to the number of examples (aka batch size), and if
-                multiple input tensors are provided, the examples must
-                be aligned appropriately.
+            explanations are computed. If `explanation_func` takes a
+            single tensor as input, a single input tensor should
+            be provided.
+            If `explanation_func` takes multiple tensors as input, a tuple
+            of the input tensors should be provided. It is assumed
+            that for all given input tensors, dimension 0 corresponds
+            to the number of examples (aka batch size), and if
+            multiple input tensors are provided, the examples must
+            be aligned appropriately.
 
         perturb_func (callable):
-                The perturbation function of model inputs. This function takes
-                model inputs and optionally `perturb_radius` if
-                the function takes more than one argument and returns
-                perturbed inputs.
+            The perturbation function of model inputs. This function takes
+            model inputs and optionally `perturb_radius` if
+            the function takes more than one argument and returns
+            perturbed inputs.
 
-                If there are more than one inputs passed to sensitivity function those
-                will be passed to `perturb_func` as tuples in the same order as they
-                are passed to sensitivity function.
+            If there are more than one inputs passed to sensitivity function those
+            will be passed to `perturb_func` as tuples in the same order as they
+            are passed to sensitivity function.
 
-                It is important to note that for performance reasons `perturb_func`
-                isn't called for each example individually but on a batch of
-                input examples that are repeated `max_examples_per_batch / batch_size`
-                times within the batch.
+            It is important to note that for performance reasons `perturb_func`
+            isn't called for each example individually but on a batch of
+            input examples that are repeated `max_examples_per_batch / batch_size`
+            times within the batch.
             Default: default_perturb_func
 
         perturb_radius (float, optional): The epsilon radius used for sampling.
@@ -111,43 +111,43 @@ def lipschitz_max(
             Default: 0.02
 
         n_perturb_samples (int, optional): The number of times input tensors
-                are perturbed. Each input example in the inputs tensor is
-                expanded `n_perturb_samples` times before calling
-                `perturb_func` function.
-                Default: 10
+            are perturbed. Each input example in the inputs tensor is
+            expanded `n_perturb_samples` times before calling
+            `perturb_func` function.
+            Default: 10
 
         norm_ord (int, float, inf, -inf, 'fro', 'nuc', optional): The type of norm
-                that is used to compute the
-                norm of the sensitivity matrix which is defined as the difference
-                between the explanation function at its input and perturbed input.
-                Default: 'fro'
+            that is used to compute the
+            norm of the sensitivity matrix which is defined as the difference
+            between the explanation function at its input and perturbed input.
+            Default: 'fro'
 
         max_examples_per_batch (int, optional): The number of maximum input
-                examples that are processed together. In case the number of
-                examples (`input batch size * n_perturb_samples`) exceeds
-                `max_examples_per_batch`, they will be sliced
-                into batches of `max_examples_per_batch` examples and processed
-                in a sequential order. If `max_examples_per_batch` is None, all
-                examples are processed together. `max_examples_per_batch` should
-                at least be equal `input batch size` and at most
-                `input batch size * n_perturb_samples`.
-                Default: None
+            examples that are processed together. In case the number of
+            examples (`input batch size * n_perturb_samples`) exceeds
+            `max_examples_per_batch`, they will be sliced
+            into batches of `max_examples_per_batch` examples and processed
+            in a sequential order. If `max_examples_per_batch` is None, all
+            examples are processed together. `max_examples_per_batch` should
+            at least be equal `input batch size` and at most
+            `input batch size * n_perturb_samples`.
+            Default: None
 
-         **kwargs (Any, optional): Contains a list of arguments that are passed
-                to `explanation_func` explanation function which in some cases
-                could be the `attribute` function of an attribution algorithm.
-                Any additional arguments that need be passed to the explanation
-                function should be included here.
-                For instance, such arguments include:
-                `additional_forward_args`, `baselines` and `target`.
+        **kwargs (Any, optional): Contains a list of arguments that are passed
+            to `explanation_func` explanation function which in some cases
+            could be the `attribute` function of an attribution algorithm.
+            Any additional arguments that need be passed to the explanation
+            function should be included here.
+            For instance, such arguments include:
+            `additional_forward_args`, `baselines` and `target`.
 
     Returns:
 
         sensitivities (tensor): A tensor of scalar sensitivity scores per
-               input example. The first dimension is equal to the
-               number of examples in the input batch and the second
-               dimension is one. Returned sensitivities are normalized by
-               the magnitudes of the input explanations.
+            input example. The first dimension is equal to the
+            number of examples in the input batch and the second
+            dimension is one. Returned sensitivities are normalized by
+            the magnitudes of the input explanations.
 
     Examples::
         >>> # ImageClassifier takes a single input tensor of images Nx3x32x32,

@@ -1,6 +1,8 @@
 .idea
 **/__pycache__
 *.egg-info
+.DS_Store
+docs/.DS_Store
 .htmlcov
 .coverage
 coverage.xml
