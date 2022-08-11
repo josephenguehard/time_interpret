@@ -22,13 +22,30 @@ class AugmentedOcclusion(Occlusion):
 
     Args:
         forward_func (callable): The forward function of the model or
-            any modification of it
+            any modification of it.
         data (tuple, Tensor): The data from which the baselines are sampled.
+            The shape of the data must be the same as the inputs, except
+            on the first dimension.
         n_sampling (int): Number of sampling to run for each occlusion.
             Default to 1
         is_temporal (bool): Whether the data is temporal or not.
             If ``True``, the data will be ablated to the inputs
             on the temporal dimension (dimension 1). Default to ``False``
+
+    References:
+        https://arxiv.org/abs/2003.02821
+
+    Examples:
+        >>> import torch as th
+        >>> from tint.attr import AugmentedOcclusion
+        >>> from tint.models import MLP
+        <BLANKLINE>
+        >>> inputs = th.rand(8, 7, 5)
+        >>> data = th.rand(32, 7, 5)
+        >>> mlp = MLP([5, 3, 1])
+        <BLANKLINE>
+        >>> explainer = AugmentedOcclusion(mlp, data)
+        >>> attr = explainer.attribute(inputs)
     """
 
     def __init__(

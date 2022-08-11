@@ -31,10 +31,8 @@ class BayesLinearModel(LinearModel):
         super().__init__(train_fn=train_fn, **kwargs)
 
         self.prior_log_sigma = None
-        self.weight_log_sigma = None
-        self.bias_log_sigma = None
-        self._freeze = False
-        self.has_bias = True
+        self.register_parameter("weight_log_sigma", None)
+        self.register_parameter("bias_log_sigma", None)
 
     def _construct_model_params(
         self,
@@ -137,7 +135,7 @@ class BayesLinearModel(LinearModel):
         else:
             bias = None
 
-        return F.linear(x, weight, bias)
+        return F.linear(x.float(), weight, bias)
 
     def kl_loss(self, reduction: str = "mean") -> th.Tensor:
         """
@@ -156,7 +154,7 @@ class BayesLinearModel(LinearModel):
             0.0,
             self.prior_log_sigma,
         )
-        n = len(self.weight.view(-1))
+        n = len(self.linear.weight.view(-1))
 
         if hasattr(self, "bias"):
             kl += _kl_loss(

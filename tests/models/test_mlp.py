@@ -46,9 +46,7 @@ def test_init(units, bias, dropout, norm, activations, activations_final):
         ([10, 5, 1], True, 0.0, None, "relu", "softmax", (32, 1)),
     ],
 )
-def test_mlp(
-    units, bias, dropout, norm, activations, activations_final, outputs
-):
+def test_mlp(units, bias, dropout, norm, activations, activations_final, outputs):
     mlp = MLP(
         units=units,
         bias=bias,

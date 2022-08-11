@@ -89,7 +89,7 @@ def _slice_to_time(
     inputs = _format_input(inputs)
 
     # Slice inputs
-    partial_inputs = tuple(x[:, :time, ...] for x in inputs)
+    partial_inputs = tuple(x[:, :time, ...].clone() for x in inputs)
 
     # Format and slice args
     args_copy = copy.deepcopy(args)

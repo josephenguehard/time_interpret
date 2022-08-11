@@ -5,3 +5,4 @@
 .coverage
 coverage.xml
 examples/.ipynb_checkpoints
+lightning_logs

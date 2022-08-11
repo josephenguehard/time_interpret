@@ -28,6 +28,18 @@ class DynaMask(PerturbationAttribution):
 
     References:
         https://arxiv.org/pdf/2106.05303
+
+    Examples:
+        >> import torch as th
+        >>> from tint.attr import DynaMask
+        >>> from tint.models import MLP
+        <BLANKLINE>
+        >>> inputs = th.rand(8, 7, 5)
+        >>> data = th.rand(32, 7, 5)
+        >>> mlp = MLP([5, 3, 1])
+        <BLANKLINE>
+        >>> explainer = DynaMask(mlp)
+        >>> attr = explainer.attribute(inputs)
     """
 
     def __init__(self, forward_func: Callable) -> None:
@@ -46,7 +58,7 @@ class DynaMask(PerturbationAttribution):
         return_best_ratio: bool = False,
     ) -> TensorOrTupleOfTensorsGeneric:
         """
-        attribute method.
+        Attribute method.
 
         Args:
             inputs (tuple, th.Tensor): Input data.

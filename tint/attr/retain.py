@@ -13,7 +13,7 @@ from captum._utils.typing import TensorOrTupleOfTensorsGeneric, TargetType
 
 from pytorch_lightning import LightningDataModule, Trainer
 from torch.utils.data import DataLoader, TensorDataset
-from typing import Callable
+from typing import Callable, Union
 
 from tint.utils import _add_temporal_mask
 from .models import Retain as RetainModel, RetainNet
@@ -23,8 +23,35 @@ class Retain(PerturbationAttribution):
     """
     Retain explainer method.
 
+    Args:
+        forward_func (Callable): The forward function of the model or any
+            modification of it.
+        retain (RetainNet): A Retain network as a Pytorch Lightning
+            module. If ``None``, a default Retain Net will be created.
+            Default to ``None``
+        datamodule (LightningDataModule): A Pytorch Lightning data
+            module which will be used to train the RetainNet.
+            Either a datamodule or features must be provided, they cannot be
+            None together. Default to ``None``
+        features (Tensor): A tensor of features which will be used to train
+            the RetainNet. Either a datamodule or features must be provided,
+            they cannot be None together. If both are provided, features is
+            ignored. Default to ``None``
+
     References:
         https://arxiv.org/pdf/1608.05745
+
+    Examples:
+        >>> import torch as th
+        >>> from tint.attr import Retain
+        >>> from tint.models import MLP
+        <BLANKLINE>
+        >>> inputs = th.rand(8, 7, 5)
+        >>> data = th.rand(32, 7, 5)
+        >>> mlp = MLP([5, 3, 1])
+        <BLANKLINE>
+        >>> explainer = Retain(mlp)
+        >>> attr = explainer.attribute(inputs)
     """
 
     def __init__(
@@ -193,7 +220,9 @@ class Retain(PerturbationAttribution):
         return score.detach().cpu()
 
     @staticmethod
-    def _format_target(inputs: tuple, target: TargetType) -> th.Tensor:
+    def _format_target(
+        inputs: tuple, target: TargetType
+    ) -> Union[None, th.Tensor]:
         """
         Convert target into a Tensor.
 
@@ -204,7 +233,8 @@ class Retain(PerturbationAttribution):
         Returns:
             th.Tensor: Converted target.
         """
-        assert target is not None, "target must be provided"
+        if target is None:
+            return None
 
         if isinstance(target, int):
             target = th.Tensor([target] * len(inputs[0]))

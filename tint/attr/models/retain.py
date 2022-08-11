@@ -208,8 +208,9 @@ class RetainNet(Net):
             l2=l2,
         )
 
-        for stage in ["train", "val", "test"]:
-            setattr(self, stage + "_auroc", AUROC())
+        if loss == "cross_entropy":
+            for stage in ["train", "val", "test"]:
+                setattr(self, stage + "_auroc", AUROC())
 
     def step(self, batch, batch_idx, stage):
         x, y = batch
@@ -223,7 +224,8 @@ class RetainNet(Net):
             y = y[th.arange(len(x)), lengths - 1, ...]
         loss = self._loss(y_hat, y)
 
-        getattr(self, stage + "_auroc")(y_hat[:, 1], y.long())
-        self.log(stage + "_auroc", getattr(self, stage + "_auroc"))
+        if isinstance(self._loss, nn.CrossEntropyLoss):
+            getattr(self, stage + "_auroc")(y_hat[:, 1], y.long())
+            self.log(stage + "_auroc", getattr(self, stage + "_auroc"))
 
         return loss

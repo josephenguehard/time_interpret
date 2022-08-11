@@ -9,6 +9,15 @@ EPS = 1e-5
 
 
 class LOF:
+    """
+    Local Outlier Factor Lime.
+
+    Args:
+        embeddings (Tensor): Tensor of embeddings to compute the LOF.
+        n_neighbors (int): Number of neighbors to use by default.
+            Default to 20
+    """
+
     def __init__(
         self,
         embeddings: Tensor,
@@ -50,6 +59,95 @@ class LOF:
 
 
 class LofLime(Lime, LOF):
+    r"""
+    Local Outlier Factor Lime.
+
+    Args:
+        forward_func (Callable): The forward function of the model or any
+            modification of it.
+        embeddings (Tensor): Tensor of embeddings to compute the LOF.
+        n_neighbors (int): Number of neighbors to use by default.
+            Default to 20
+        interpretable_model (optional, Model): Model object to train
+            interpretable model.
+
+            This argument is optional and defaults to SkLearnLasso(alpha=0.01),
+            which is a wrapper around the Lasso linear model in SkLearn.
+            This requires having sklearn version >= 0.23 available.
+
+            Other predefined interpretable linear models are provided in
+            captum._utils.models.linear_model.
+
+            Alternatively, a custom model object must provide a `fit` method to
+            train the model, given a dataloader, with batches containing
+            three tensors:
+
+            - interpretable_inputs: Tensor
+              [2D num_samples x num_interp_features],
+            - expected_outputs: Tensor [1D num_samples],
+            - weights: Tensor [1D num_samples]
+
+            The model object must also provide a `representation` method to
+            access the appropriate coefficients or representation of the
+            interpretable model after fitting.
+
+            Note that calling fit multiple times should retrain the
+            interpretable model, each attribution call reuses
+            the same given interpretable model object.
+        similarity_func (optional, callable): Function which takes a single sample
+            along with its corresponding interpretable representation
+            and returns the weight of the interpretable sample for
+            training the interpretable model.
+            This is often referred to as a similarity kernel.
+
+            This argument is optional and defaults to a function which
+            applies an exponential kernel to the consine distance between
+            the original input and perturbed input, with a kernel width
+            of 1.0.
+
+            A similarity function applying an exponential
+            kernel to cosine / euclidean distances can be constructed
+            using the provided get_exp_kernel_similarity_function in
+            captum.attr._core.lime.
+
+            Alternately, a custom callable can also be provided.
+            The expected signature of this callable is:
+
+            >>> def similarity_func(
+            >>>    original_input: Tensor or tuple of Tensors,
+            >>>    perturbed_input: Tensor or tuple of Tensors,
+            >>>    perturbed_interpretable_input:
+            >>>        Tensor [2D 1 x num_interp_features],
+            >>>    **kwargs: Any
+            >>> ) -> float or Tensor containing float scalar
+
+            perturbed_input and original_input will be the same type and
+            contain tensors of the same shape, with original_input
+            being the same as the input provided when calling attribute.
+
+            kwargs includes baselines, feature_mask, num_interp_features
+            (integer, determined from feature mask).
+        perturb_func (optional, callable): Function which returns a single
+            sampled input, which is a binary vector of length
+            num_interp_features, or a generator of such tensors.
+
+            This function is optional, the default function returns
+            a binary vector where each element is selected
+            independently and uniformly at random. Custom
+            logic for selecting sampled binary vectors can
+            be implemented by providing a function with the
+            following expected signature:
+
+            >>> perturb_func(
+            >>>    original_input: Tensor or tuple of Tensors,
+            >>>    **kwargs: Any
+            >>> ) -> Tensor [Binary 2D Tensor 1 x num_interp_features]
+            >>>  or generator yielding such tensors
+
+            kwargs includes baselines, feature_mask, num_interp_features
+            (integer, determined from feature mask).
+    """
+
     def __init__(
         self,
         forward_func: Callable,
@@ -80,6 +178,17 @@ class LofLime(Lime, LOF):
 
 
 class LofKernelShap(KernelShap, LOF):
+    """
+    Local Outlier Factor Kernel Shap.
+
+    Args:
+        forward_func (Callable): The forward function of the model or any
+            modification of it.
+        embeddings (Tensor): Tensor of embeddings to compute the LOF.
+        n_neighbors (int): Number of neighbors to use by default.
+            Default to 20
+    """
+
     def __init__(
         self,
         forward_func: Callable,

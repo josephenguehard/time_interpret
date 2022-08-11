@@ -1,4 +1,3 @@
-import numpy as np
 import torch
 
 from captum.log import log_usage
@@ -16,7 +15,6 @@ from captum._utils.typing import (
 from captum.attr._utils.attribution import GradientAttribution
 from captum.attr._utils.common import _reshape_and_sum, _format_input
 
-from sklearn.neighbors import kneighbors_graph
 from torch import Tensor
 from typing import Any, Callable, Tuple, Union
 
@@ -50,6 +48,18 @@ class DiscretetizedIntegratedGradients(GradientAttribution):
     References:
         https://github.com/INK-USC/DIG
         https://arxiv.org/abs/2108.13654
+
+    Examples:
+        >>> import torch as th
+        >>> from tint.attr import DiscretetizedIntegratedGradients
+        >>> from tint.models import MLP
+        <BLANKLINE>
+        >>> inputs = th.rand(8, 7, 5)
+        >>> data = th.rand(32, 7, 5)
+        >>> mlp = MLP([5, 3, 1])
+        <BLANKLINE>
+        >>> explainer = DiscretetizedIntegratedGradients(mlp)
+        >>> attr = explainer.attribute(inputs)
     """
 
     def __init__(
@@ -63,7 +73,7 @@ class DiscretetizedIntegratedGradients(GradientAttribution):
     @log_usage()
     def attribute(
         self,
-        scaled_features: Tuple[Tensor, ...],
+        scaled_features: TensorOrTupleOfTensorsGeneric,
         target: TargetType = None,
         additional_forward_args: Any = None,
         n_steps: int = 50,
@@ -72,10 +82,97 @@ class DiscretetizedIntegratedGradients(GradientAttribution):
         TensorOrTupleOfTensorsGeneric,
         Tuple[TensorOrTupleOfTensorsGeneric, Tensor],
     ]:
+        """
+        Attribute method.
+
+        Args:
+            scaled_features: (tensor, tuple):  Input for which integrated
+                gradients are computed. If forward_func takes a single
+                tensor as input, a single input tensor should be provided.
+                If forward_func takes multiple tensors as input, a tuple
+                of the input tensors should be provided. It is assumed
+                that for all given input tensors, dimension 0 corresponds
+                to the number of examples, and if multiple input tensors
+                are provided, the examples must be aligned appropriately.
+            target (int, int, tuple, tensor, list): Output indices for
+                which gradients are computed (for classification cases,
+                this is usually the target class).
+                If the network returns a scalar value per example,
+                no target index is necessary.
+                For general 2D outputs, targets can be either:
+
+                - a single integer or a tensor containing a single
+                  integer, which is applied to all input examples
+
+                - a list of integers or a 1D tensor, with length matching
+                  the number of examples in inputs (dim 0). Each integer
+                  is applied as the target for the corresponding example.
+
+                For outputs with > 2 dimensions, targets can be either:
+
+                - A single tuple, which contains #output_dims - 1
+                  elements. This target index is applied to all examples.
+
+                - A list of tuples with length equal to the number of
+                  examples in inputs (dim 0), and each tuple containing
+                  #output_dims - 1 elements. Each tuple is applied as the
+                  target for the corresponding example.
+
+                Default: None
+            additional_forward_args (Any): If the forward function
+                requires additional arguments other than the inputs for
+                which attributions should not be computed, this argument
+                can be provided. It must be either a single additional
+                argument of a Tensor or arbitrary (non-tuple) type or a
+                tuple containing multiple additional arguments including
+                tensors or any arbitrary python types. These arguments
+                are provided to forward_func in order following the
+                arguments in inputs.
+                For a tensor, the first dimension of the tensor must
+                correspond to the number of examples. It will be
+                repeated for each of `n_steps` along the integrated
+                path. For all other types, the given argument is used
+                for all forward evaluations.
+                Note that attributions are not computed with respect
+                to these arguments.
+                Default: None
+            n_steps: The number of steps used by the approximation
+                method. Default: 50.
+            return_convergence_delta: Indicates whether to return
+                convergence delta or not. If `return_convergence_delta`
+                is set to True convergence delta will be returned in
+                a tuple following attributions.
+                Default: False
+
+        Returns:
+            **attributions** or 2-element tuple of **attributions**, **delta**:
+            - **attributions** (*tensor* or tuple of *tensors*):
+                Integrated gradients with respect to each input feature.
+                attributions will always be the same size as the provided
+                inputs, with each value providing the attribution of the
+                corresponding input index.
+                If a single tensor is provided as inputs, a single tensor is
+                returned. If a tuple is provided for inputs, a tuple of
+                corresponding sized tensors is returned.
+            - **delta** (*tensor*, returned if return_convergence_delta=True):
+                The difference between the total approximated and true
+                integrated gradients. This is computed using the property
+                that the total sum of forward_func(inputs) -
+                forward_func(baselines) must equal the total sum of the
+                integrated gradient.
+                Delta is calculated per example, meaning that the number of
+                elements in returned delta tensor is equal to the number of
+                of examples in inputs.
+        """
         # Keeps track whether original input is a tuple or not before
         # converting it into a tuple.
         is_inputs_tuple = _is_tuple(scaled_features)
         scaled_features_tpl = _format_input(scaled_features)
+
+        # Set requires_grad = True to inputs
+        scaled_features_tpl = tuple(
+            x.requires_grad_() for x in scaled_features_tpl
+        )
 
         attributions = self.calculate_dig_attributions(
             scaled_features_tpl=scaled_features_tpl,

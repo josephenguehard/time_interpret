@@ -114,9 +114,7 @@ def test_init(layers, loss, optim, lr, lr_scheduler, lr_scheduler_args, l2):
         (MLP([5, 10, 1]), "mse", "adam", 0.001, None, None, 0.01, (32, 1)),
     ],
 )
-def test_net(
-    layers, loss, optim, lr, lr_scheduler, lr_scheduler_args, l2, outputs
-):
+def test_net(layers, loss, optim, lr, lr_scheduler, lr_scheduler_args, l2, outputs):
     net = Net(
         layers=layers,
         loss=loss,

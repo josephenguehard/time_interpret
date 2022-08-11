@@ -16,7 +16,7 @@ from pytorch_lightning import LightningDataModule, Trainer
 from torch.utils.data import DataLoader, TensorDataset
 from typing import Any, Callable, Tuple
 
-from tint.utils import get_progress_bars, _add_temporal_mask
+from tint.utils import get_progress_bars, _add_temporal_mask, _slice_to_time
 
 from .models import JointFeatureGeneratorNet
 
@@ -163,6 +163,7 @@ class Fit(PerturbationAttribution):
                 n_samples=n_samples,
                 distance_metric=distance_metric,
                 multilabel=multilabel,
+                temporal_additional_forward_args=temporal_additional_forward_args,
                 show_progress=show_progress,
             ),
         )
@@ -181,6 +182,7 @@ class Fit(PerturbationAttribution):
         n_samples: int = 10,
         distance_metric: str = "kl",
         multilabel: bool = False,
+        temporal_additional_forward_args: Tuple[bool] = None,
         show_progress: bool = False,
     ):
         """
@@ -194,6 +196,10 @@ class Fit(PerturbationAttribution):
             distance_metric (str): Distance metric. Default to ``'kl'``
             multilabel (bool): Whether the task is single or multi-labeled.
                 Default to ``False``
+            temporal_additional_forward_args (tuple): Set each
+                additional forward arg which is temporal.
+                Only used with return_temporal_attributions.
+                Default to ``None``
             show_progress (bool): Displays the progress of computation.
                 Default to False
 
@@ -223,23 +229,45 @@ class Fit(PerturbationAttribution):
             )
 
         for t in t_range:
+            partial_inputs, kwargs_copy = _slice_to_time(
+                inputs=inputs,
+                time=t + 1,
+                additional_forward_args=additional_forward_args,
+                temporal_additional_forward_args=temporal_additional_forward_args,
+            )
             p_y_t = activation(
                 _run_forward(
                     forward_func=self.forward_func,
-                    inputs=inputs[:, : t + 1, :],
-                    additional_forward_args=additional_forward_args,
+                    inputs=partial_inputs,
+                    additional_forward_args=kwargs_copy[
+                        "additional_forward_args"
+                    ],
                 )
+            )
+
+            partial_inputs, kwargs_copy = _slice_to_time(
+                inputs=inputs,
+                time=t,
+                additional_forward_args=additional_forward_args,
+                temporal_additional_forward_args=temporal_additional_forward_args,
             )
             p_tm1 = activation(
                 _run_forward(
                     forward_func=self.forward_func,
-                    inputs=inputs[:, :t, :],
-                    additional_forward_args=additional_forward_args,
+                    inputs=partial_inputs,
+                    additional_forward_args=kwargs_copy[
+                        "additional_forward_args"
+                    ],
                 )
             )
 
             for i in range(n_features):
-                x_hat = inputs[:, : t + 1, :].clone()
+                x_hat, kwargs_copy = _slice_to_time(
+                    inputs=inputs,
+                    time=t + 1,
+                    additional_forward_args=additional_forward_args,
+                    temporal_additional_forward_args=temporal_additional_forward_args,
+                )
                 div_all = []
 
                 for _ in range(n_samples):
@@ -251,7 +279,9 @@ class Fit(PerturbationAttribution):
                         _run_forward(
                             forward_func=self.forward_func,
                             inputs=x_hat,
-                            additional_forward_args=additional_forward_args,
+                            additional_forward_args=kwargs_copy[
+                                "additional_forward_args"
+                            ],
                         )
                     )
 
