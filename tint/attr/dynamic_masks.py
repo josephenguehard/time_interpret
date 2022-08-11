@@ -116,7 +116,7 @@ class DynaMask(PerturbationAttribution):
         # Init model
         mask_net.net.init(
             shape=data.shape,
-            n_epochs=trainer.max_epochs,
+            n_epochs=trainer.max_epochs or trainer.max_steps,
             batch_size=batch_size,
         )
 
