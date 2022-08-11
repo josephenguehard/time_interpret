@@ -27,7 +27,7 @@ First, let's load an Arma dataset:
     from tint.datasets import Arma
 
     arma = Arma()
-    arma.download()  #This methods generates the dataset
+    arma.download()  # This method generates the dataset
 
 
 We then load some test data from the dataset and the

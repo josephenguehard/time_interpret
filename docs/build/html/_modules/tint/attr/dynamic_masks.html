@@ -194,7 +194,7 @@
         <span class="c1"># Init model</span>
         <span class="n">mask_net</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">init</span><span class="p">(</span>
             <span class="n">shape</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
-            <span class="n">n_epochs</span><span class="o">=</span><span class="n">trainer</span><span class="o">.</span><span class="n">max_epochs</span><span class="p">,</span>
+            <span class="n">n_epochs</span><span class="o">=</span><span class="n">trainer</span><span class="o">.</span><span class="n">max_epochs</span> <span class="ow">or</span> <span class="n">trainer</span><span class="o">.</span><span class="n">max_steps</span><span class="p">,</span>
             <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
         <span class="p">)</span>
 
