@@ -22,7 +22,7 @@ class StateClassifier(nn.Module):
         self.n_state = n_state
         self.rnn_type = rnn
         self.regres = regres
-        # Input to torch LSTM should be of size (seq_len, batch, input_size)
+        # Input to torch LSTM should be of size (batch, seq_len, input_size)
         if self.rnn_type == "GRU":
             self.rnn = nn.GRU(
                 feature_size,
