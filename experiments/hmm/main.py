@@ -62,12 +62,15 @@ def main(
     trainer.fit(classifier, datamodule=hmm)
 
     # Get data for explainers
-    x_train = hmm.preprocess(split="train")["x"]
-    x_test = hmm.preprocess(split="test")["x"]
-    y_test = hmm.preprocess(split="test")["y"]
+    x_train = hmm.preprocess(split="train")["x"].to(accelerator)
+    x_test = hmm.preprocess(split="test")["x"].to(accelerator)
+    y_test = hmm.preprocess(split="test")["y"].to(accelerator)
 
     # Switch to eval
     classifier.eval()
+
+    # Set model to accelerator
+    classifier.to(accelerator)
 
     # Create dict of attributions
     attr = dict()
@@ -96,7 +99,7 @@ def main(
             mask_net=mask,
             batch_size=200,
         )
-        attr["bayes_mask"] = _attr.clamp(0, 1)
+        attr["bayes_mask"] = _attr
 
     if "deep_lift" in explainers:
         explainer = TimeForwardTunnel(DeepLift(classifier))
@@ -120,6 +123,7 @@ def main(
         explainer = DynaMask(classifier)
         _attr = explainer.attribute(
             x_test,
+            additional_forward_args=(True,),
             trainer=trainer,
             mask_net=mask,
             batch_size=100,
@@ -160,6 +164,7 @@ def main(
             x_test,
             baselines=x_test * 0,
             task="binary",
+            internal_batch_size=200,
             show_progress=True,
         ).abs()
 
@@ -232,7 +237,7 @@ def main(
         ).abs()
 
     # Get true saliency
-    true_saliency = hmm.true_saliency(split="test")
+    true_saliency = hmm.true_saliency(split="test").to(accelerator)
 
     with open("results.csv", "a") as fp:
         for k, v in attr.items():

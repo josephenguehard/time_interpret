@@ -60,12 +60,15 @@ def main(
     trainer.fit(classifier, datamodule=mimic3)
 
     # Get data for explainers
-    x_train = mimic3.preprocess(split="train")["x"]
-    x_test = mimic3.preprocess(split="test")["x"]
-    y_test = mimic3.preprocess(split="test")["y"]
+    x_train = mimic3.preprocess(split="train")["x"].to(accelerator)
+    x_test = mimic3.preprocess(split="test")["x"].to(accelerator)
+    y_test = mimic3.preprocess(split="test")["y"].to(accelerator)
 
     # Switch to eval
     classifier.eval()
+
+    # Set model to accelerator
+    classifier.to(accelerator)
 
     # Create dict of attributions
     attr = dict()

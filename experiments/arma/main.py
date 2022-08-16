@@ -28,12 +28,13 @@ def main(
     fold: int = 0,
     seed: int = 42,
 ):
+    # Load data
     arma = Arma(n_folds=5, fold=fold, seed=seed)
     arma.download()
 
     # Only use the first 10 data points
-    x = arma.preprocess()["x"][:10]
-    true_saliency = arma.true_saliency(dim=rare_dim)[:10]
+    x = arma.preprocess()["x"][:10].to(accelerator)
+    true_saliency = arma.true_saliency(dim=rare_dim)[:10].to(accelerator)
 
     # Create dict of attributions
     attr = dict()
