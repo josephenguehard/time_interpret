@@ -45,15 +45,22 @@ class StateClassifier(nn.Module):
             nn.Linear(self.hidden_size, self.n_state),
         )
 
-    def forward(self, x):
+    def forward(self, x, return_all: bool = False):
         if self.rnn_type == "GRU":
             all_encodings, encoding = self.rnn(x)
         else:
             all_encodings, (encoding, state) = self.rnn(x)
 
         if self.regres:
-            return self.regressor(encoding.view(encoding.shape[1], -1))
-        return encoding.view(encoding.shape[1], -1)
+            if return_all:
+                reshaped_encodings = all_encodings.reshape(
+                    all_encodings.shape[0] * all_encodings.shape[1], -1
+                )
+                return self.regressor(reshaped_encodings).reshape(
+                    all_encodings.shape[0], -1
+                )
+            return self.regressor(encoding.reshape(encoding.shape[1], -1))
+        return encoding.reshape(encoding.shape[1], -1)
 
 
 class StateClassifierNet(Net):
@@ -97,7 +104,10 @@ class StateClassifierNet(Net):
             setattr(self, stage + "_rec", Recall())
             setattr(self, stage + "_auroc", AUROC())
 
-    def step(self, batch, batch_idx, stage):  # noqa
+    def forward(self, *args, **kwargs) -> th.Tensor:
+        return self.net(*args, **kwargs)
+
+    def step(self, batch, batch_idx, stage):
         t = th.randint(batch[1].shape[-1], (1,)).item()
         x, y = batch
         x = x[:, : t + 1]

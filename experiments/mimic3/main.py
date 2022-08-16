@@ -113,6 +113,7 @@ def main(
         explainer = DynaMask(classifier)
         _attr = explainer.attribute(
             x_test,
+            additional_forward_args=(True,),
             trainer=trainer,
             mask_net=mask,
             batch_size=100,
