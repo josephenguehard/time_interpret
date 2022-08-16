@@ -18,9 +18,9 @@ setup(
     author="Joseph Enguehard",
     author_email="joseph.enguehard@babylonhealth.com",
     url="https://github.com/babylonhealth/time_interpret",
-    python_requires=">=3.8, <3.11",
+    python_requires=">=3.7, <3.11",
     install_requires=[
-        "torch==1.12.0",
+        "torch==1.12.1",
         "captum",
         "numpy",
         "pandas",
