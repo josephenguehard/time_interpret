@@ -235,12 +235,11 @@ def main(
         ).abs()
 
     if "temporal_integrated_gradients" in explainers:
-        explainer = TimeForwardTunnel(TemporalIntegratedGradients(classifier))
+        explainer = TemporalIntegratedGradients(classifier)
         attr["temporal_integrated_gradients"] = explainer.attribute(
             x_test,
             baselines=x_test * 0,
             n_steps=2,
-            task="binary",
             return_temporal_attributions=True,
             show_progress=True,
         ).abs()

@@ -77,6 +77,7 @@ class TemporalIntegratedGradients(IntegratedGradients):
         return_convergence_delta: Literal[False] = False,
         temporal_target: bool = False,
         temporal_additional_forward_args: Tuple[bool] = None,
+        return_temporal_attributions: bool = False,
         show_progress: bool = False,
     ) -> TensorOrTupleOfTensorsGeneric:
         ...
@@ -95,6 +96,7 @@ class TemporalIntegratedGradients(IntegratedGradients):
         return_convergence_delta: Literal[True],
         temporal_target: bool = False,
         temporal_additional_forward_args: Tuple[bool] = None,
+        return_temporal_attributions: bool = False,
         show_progress: bool = False,
     ) -> Tuple[TensorOrTupleOfTensorsGeneric, Tensor]:
         ...
