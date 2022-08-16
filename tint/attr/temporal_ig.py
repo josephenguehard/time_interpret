@@ -112,6 +112,7 @@ class TemporalIntegratedGradients(IntegratedGradients):
         return_convergence_delta: bool = False,
         temporal_target: bool = False,
         temporal_additional_forward_args: Tuple[bool] = None,
+        return_temporal_attributions: bool = False,
         show_progress: bool = False,
     ) -> Union[
         TensorOrTupleOfTensorsGeneric,
@@ -227,6 +228,9 @@ class TemporalIntegratedGradients(IntegratedGradients):
                 additional forward arg which is temporal.
                 Only used with return_temporal_attributions.
                 Default: None
+            return_temporal_attributions (bool): Whether to return all saliencies
+                for all time points or only the last one per time point.
+                Default: False
             show_progress (bool, optional): Displays the progress of
                 computation. It will try to use tqdm if available for
                 advanced features (e.g. time estimation). Otherwise, it
@@ -318,13 +322,26 @@ class TemporalIntegratedGradients(IntegratedGradients):
             delta_partial_list.append(delta_partial)
 
         attributions = tuple()
-        for i in range(len(attributions_partial_list[0])):
-            attributions += (
-                torch.stack(
-                    [x[i][:, -1, ...] for x in attributions_partial_list],
-                    dim=1,
-                ),
-            )
+        if return_temporal_attributions:
+            for i in range(len(attributions_partial_list[0])):
+                attr = [
+                    torch.zeros_like(
+                        attributions_partial_list[-1][i],
+                        dtype=attributions_partial_list[-1][i].dtype,
+                    )
+                    for _ in range(len(attributions_partial_list))
+                ]
+                for j in range(len(attributions_partial_list)):
+                    attr[j][:, : j + 1, ...] = attributions_partial_list[j][i]
+                attributions += (torch.stack(attr, dim=1),)
+        else:
+            for i in range(len(attributions_partial_list[0])):
+                attributions += (
+                    torch.stack(
+                        [x[i][:, -1, ...] for x in attributions_partial_list],
+                        dim=1,
+                    ),
+                )
 
         delta = None
         if return_convergence_delta:
