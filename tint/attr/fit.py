@@ -25,7 +25,7 @@ def kl_multilabel(p1, p2, reduction="none"):
     # treats each column as separate class and calculates KL over the class,
     # sums it up and sends batched
     n_classes = p1.shape[1]
-    total_kl = th.zeros(p1.shape)
+    total_kl = th.zeros(p1.shape).to(p1.device)
 
     for n in range(n_classes):
         p2_tensor = th.stack([p2[:, n], 1 - p2[:, n]], dim=1)
@@ -214,7 +214,7 @@ class Fit(PerturbationAttribution):
         ], "Unrecognised distance metric."
 
         _, t_len, n_features = inputs.shape
-        score = th.zeros(inputs.shape)
+        score = th.zeros(inputs.shape).to(inputs.device)
 
         if multilabel:
             activation = F.sigmoid

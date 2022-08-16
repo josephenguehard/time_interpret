@@ -64,7 +64,7 @@ class BayesMask(nn.Module):
 
     def get_cov(self, tril):
         shape = self.input_size[-1]
-        cov = th.zeros(self.input_size + (shape,))
+        cov = th.zeros(self.input_size + (shape,)).to(tril.device)
         cov[
             ...,
             th.tril_indices(shape, shape)[0],
@@ -132,7 +132,11 @@ class BayesMask(nn.Module):
             # By detaching one, the gradients are equivalent to just passing
             # soft samples.
             index = samples.max(-1, keepdim=True)[1]
-            y_hard = th.zeros_like(samples).scatter_(-1, index, 1.0)
+            y_hard = (
+                th.zeros_like(samples)
+                .to(samples.device)
+                .scatter_(-1, index, 1.0)
+            )
             samples = y_hard - samples.detach() + samples
 
         # Mask data according to samples
@@ -148,10 +152,10 @@ class BayesMask(nn.Module):
 
     def regularisation(self, loss: th.Tensor) -> th.Tensor:
         # Get uninformative mean and tril
-        mean = th.zeros_like(self.mean)
+        mean = th.zeros_like(self.mean).to(self.mean.device)
         if self.distribution == "normal":
             shape = self.input_size[-1]
-            tril = th.zeros_like(self.tril)
+            tril = th.zeros_like(self.tril).to(self.tril.device)
             tril[
                 ...,
                 th.tril_indices(shape, shape)[0]

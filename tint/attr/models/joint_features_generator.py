@@ -88,7 +88,7 @@ class JointFeatureGenerator(nn.Module):
         mean = self.mean_generator(z)
         cov_noise = (
             th.eye(self.feature_size).unsqueeze(0).repeat(len(z), 1, 1) * 1e-5
-        )
+        ).to(z.device)
         a = self.cov_generator(z).view(
             -1, self.feature_size, self.feature_size
         )

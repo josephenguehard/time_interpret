@@ -189,10 +189,13 @@ class Retain(PerturbationAttribution):
         Returns:
             th.Tensor: attributions.
         """
-        score = th.zeros(inputs.shape)
+        score = th.zeros(inputs.shape).to(inputs.device)
 
         logit, alpha, beta = self.forward_func(
-            inputs, (th.ones((len(inputs),)) * inputs.shape[1]).long()
+            inputs,
+            (
+                th.ones((len(inputs),)).to(inputs.device) * inputs.shape[1]
+            ).long(),
         )
         w_emb = self.forward_func.embedding[1].weight
 

@@ -111,7 +111,9 @@ class Retain(nn.Module):
                     [1.0 if i < lengths[idx] else 0.0 for i in range(max_len)]
                     for idx in range(batch_size)
                 ]
-            ).unsqueeze(2),
+            )
+            .unsqueeze(2)
+            .to(x.device),
             requires_grad=False,
         )
 

@@ -181,7 +181,7 @@ class Arma(DataModule):
         Returns:
             th.Tensor: Output data.
         """
-        outputs = th.zeros(inputs.shape)
+        outputs = th.zeros(inputs.shape).to(inputs.device)
 
         # Populate the features
         outputs[true_saliency.bool()] = inputs[true_saliency.bool()]

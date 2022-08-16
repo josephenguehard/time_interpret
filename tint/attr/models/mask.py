@@ -126,7 +126,7 @@ class Mask(nn.Module):
         ]
         x = x.repeat((len(self.keep_ratio),) + (1,) * (len(x.shape) - 1))
 
-        t_axis = th.arange(1, x.shape[TIME_DIM] + 1).int()
+        t_axis = th.arange(1, x.shape[TIME_DIM] + 1).int().to(x.device)
 
         # Convert the mask into a tensor containing the width of each
         # Gaussian perturbation
@@ -158,7 +158,7 @@ class Mask(nn.Module):
         ]
         x = x.repeat((len(self.keep_ratio),) + (1,) * (len(x.shape) - 1))
 
-        t_axis = th.arange(1, x.shape[TIME_DIM] + 1).int()
+        t_axis = th.arange(1, x.shape[TIME_DIM] + 1).int().to(x.device)
 
         # For each feature and each time, we compute the coefficients
         # of the perturbation tensor
@@ -213,7 +213,9 @@ class Mask(nn.Module):
     def regularisation(self, loss: th.Tensor) -> th.Tensor:
         # Get size regularisation
         mask_sorted = self.mask.reshape(len(self.mask), -1).sort().values
-        size_reg = ((self.reg_ref - mask_sorted) ** 2).mean()
+        size_reg = (
+            (self.reg_ref.to(self.mask.device) - mask_sorted) ** 2
+        ).mean()
 
         # Get time regularisation
         mask = self.mask.reshape(
