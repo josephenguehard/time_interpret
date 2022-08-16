@@ -92,7 +92,7 @@ class Net(pl.LightningModule):
         y_hat = self(x)
         if isinstance(y_hat, tuple):  # For Bert model
             y_hat = y_hat[0]
-        loss = self._loss(y_hat, y)
+        loss = self.loss(y_hat, y)
         return loss
 
     def training_step(self, batch, batch_idx):
@@ -111,6 +111,17 @@ class Net(pl.LightningModule):
     def predict_step(self, batch, batch_idx, dataloader_idx=0):
         x, y = batch
         return self(x.float())
+
+    def loss(self, inputs, target):
+        inputs = inputs.reshape(-1, inputs.shape[-1])
+        target = target.reshape(-1, target.shape[-1])
+
+        if isinstance(self._loss, nn.CrossEntropyLoss):
+            if inputs.shape == target.shape:
+                target = target.argmax(-1)
+            target = target.reshape(-1).long()
+
+        return self._loss(inputs, target)
 
     def configure_optimizers(self):
         if self._optim == "adam":

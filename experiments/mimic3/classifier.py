@@ -54,7 +54,7 @@ class MimicClassifierNet(Net):
     def step(self, batch, batch_idx, stage):
         x, y = batch
         y_hat = self(x)
-        loss = self._loss(y_hat, y.long())
+        loss = self.loss(y_hat, y)
 
         for metric in ["acc", "pre", "rec", "auroc"]:
             getattr(self, stage + "_" + metric)(y_hat[:, 1], y.long())

@@ -340,11 +340,7 @@ class MaskNet(Net):
         )
         y_target = th.cat([y_target] * len(self.net.keep_ratio), dim=0)
 
-        # If loss is cross_entropy, take softmax of y_target
-        if isinstance(self._loss, nn.CrossEntropyLoss):
-            y_target = y_target.softmax(-1)
-
-        loss = self._loss(y_hat, y_target)
+        loss = self.loss(y_hat, y_target)
         return loss
 
     def predict_step(self, batch, batch_idx, dataloader_idx=0):

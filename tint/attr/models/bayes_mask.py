@@ -243,12 +243,8 @@ class BayesMaskNet(Net):
             else None,
         )
 
-        # If loss is cross_entropy, take softmax of y_target
-        if isinstance(self._loss, nn.CrossEntropyLoss):
-            y_target = y_target.softmax(-1)
-
         # Compute loss
-        loss = self._loss(y_hat, y_target)
+        loss = self.loss(y_hat, y_target)
         return loss
 
     def training_step_end(self, step_output):

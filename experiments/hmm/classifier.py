@@ -57,7 +57,7 @@ class StateClassifier(nn.Module):
                     all_encodings.shape[0] * all_encodings.shape[1], -1
                 )
                 return self.regressor(reshaped_encodings).reshape(
-                    all_encodings.shape[0], -1
+                    all_encodings.shape[0], all_encodings.shape[1], -1
                 )
             return self.regressor(encoding.reshape(encoding.shape[1], -1))
         return encoding.reshape(encoding.shape[1], -1)
@@ -113,7 +113,7 @@ class StateClassifierNet(Net):
         x = x[:, : t + 1]
         y = y[:, t]
         y_hat = self(x)
-        loss = self._loss(y_hat, y.long())
+        loss = self.loss(y_hat, y)
 
         for metric in ["acc", "pre", "rec", "auroc"]:
             getattr(self, stage + "_" + metric)(y_hat[:, 1], y.long())

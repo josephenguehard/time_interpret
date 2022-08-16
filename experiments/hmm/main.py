@@ -111,7 +111,12 @@ def main(
         ).abs()
 
     if "dyna_mask" in explainers:
-        trainer = Trainer(max_epochs=1000, accelerator=accelerator, devices=1)
+        trainer = Trainer(
+            max_epochs=1000,
+            accelerator=accelerator,
+            devices=1,
+            log_every_n_steps=2,
+        )
         mask = MaskNet(
             forward_func=classifier,
             perturbation="gaussian_blur",
@@ -119,6 +124,7 @@ def main(
             size_reg_factor_init=0.1,
             size_reg_factor_dilation=100,
             time_reg_factor=1.0,
+            loss="cross_entropy",
         )
         explainer = DynaMask(classifier)
         _attr = explainer.attribute(

@@ -224,7 +224,7 @@ class RetainNet(Net):
         y_hat, _, _ = self.net(x=x.float(), lengths=lengths)
         if self.net.temporal_labels:
             y = y[th.arange(len(x)), lengths - 1, ...]
-        loss = self._loss(y_hat, y)
+        loss = self.loss(y_hat, y)
 
         if isinstance(self._loss, nn.CrossEntropyLoss):
             getattr(self, stage + "_auroc")(y_hat[:, 1], y.long())
