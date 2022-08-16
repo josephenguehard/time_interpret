@@ -48,7 +48,7 @@ def _base_white_box_metric(
             for max_, attr in zip(max_tpl, attributions)
         )
         attributions = tuple(
-            (attr - min_) / (max_ + EPS)
+            (attr - min_) / (max_ - min_ + EPS)
             for attr, min_, max_ in zip(attributions, min_tpl, max_tpl)
         )
 
