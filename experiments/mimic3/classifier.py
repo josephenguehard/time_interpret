@@ -1,66 +1,10 @@
 import torch as th
-import torch.nn as nn
 
 from torchmetrics import Accuracy, Precision, Recall, AUROC
 from typing import Callable, Union
 
+from experiments.hmm.classifier import StateClassifier
 from tint.models import Net
-
-
-class MimicClassifier(nn.Module):
-    def __init__(
-        self,
-        feature_size: int,
-        n_state: int,
-        hidden_size: int,
-        rnn: str = "GRU",
-        regres: bool = True,
-        bidirectional: bool = False,
-    ):
-        super().__init__()
-        self.hidden_size = hidden_size
-        self.n_state = n_state
-        self.rnn_type = rnn
-        self.regres = regres
-        # Input to torch LSTM should be of size (seq_len, batch, input_size)
-        if self.rnn_type == "GRU":
-            self.rnn = nn.GRU(
-                feature_size,
-                self.hidden_size,
-                bidirectional=bidirectional,
-                batch_first=True,
-            )
-        else:
-            self.rnn = nn.LSTM(
-                feature_size,
-                self.hidden_size,
-                bidirectional=bidirectional,
-                batch_first=True,
-            )
-
-        self.regressor = nn.Sequential(
-            nn.BatchNorm1d(num_features=self.hidden_size),
-            nn.ReLU(),
-            nn.Dropout(0.5),
-            nn.Linear(self.hidden_size, self.n_state),
-        )
-
-    def forward(self, x, return_all: bool = False):
-        if self.rnn_type == "GRU":
-            all_encodings, encoding = self.rnn(x)
-        else:
-            all_encodings, (encoding, state) = self.rnn(x)
-
-        if self.regres:
-            if return_all:
-                reshaped_encodings = all_encodings.reshape(
-                    all_encodings.shape[0] * all_encodings.shape[1], -1
-                )
-                return self.regressor(reshaped_encodings).reshape(
-                    all_encodings.shape[0], -1
-                )
-            return self.regressor(encoding.reshape(encoding.shape[1], -1))
-        return encoding.reshape(encoding.shape[1], -1)
 
 
 class MimicClassifierNet(Net):
@@ -79,7 +23,7 @@ class MimicClassifierNet(Net):
         lr_scheduler_args: dict = None,
         l2: float = 0.0,
     ):
-        classifier = MimicClassifier(
+        classifier = StateClassifier(
             feature_size=feature_size,
             n_state=n_state,
             hidden_size=hidden_size,
