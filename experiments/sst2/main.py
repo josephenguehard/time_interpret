@@ -285,7 +285,7 @@ def parse_args():
         default="greedy",
         type=str,
         choices=["greedy", "maxcount"],
-        help="The algorithm to find the next anchor point,",
+        help="The algorithm to find the next anchor point.",
     )
     parser.add_argument(
         "--knns-path",
@@ -297,13 +297,13 @@ def parse_args():
         "--n-neighbors",
         type=int,
         default=500,
-        help="Number of neighbors for the knns",
+        help="Number of neighbors for the knns.",
     )
     parser.add_argument(
         "--n-jobs",
         type=int,
         default=1,
-        help="Number of jobs for the knns",
+        help="Number of jobs for the knns.",
     )
     parser.add_argument(
         "--topk",

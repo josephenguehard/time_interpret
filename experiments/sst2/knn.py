@@ -45,13 +45,13 @@ def parse_args():
         "--n-neighbors",
         type=int,
         default=500,
-        help="Number of neighbors for the knns",
+        help="Number of neighbors for the knns.",
     )
     parser.add_argument(
         "--n-jobs",
         type=int,
         default=1,
-        help="Number of jobs for the knns",
+        help="Number of jobs for the knns.",
     )
     parser.add_argument(
         "--save-path",
