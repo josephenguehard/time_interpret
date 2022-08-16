@@ -81,4 +81,4 @@ print(f"{aup(attr, true_saliency):.4})
 ## Acknowledgment
 - [Jonathan Crabbe](https://github.com/JonathanCrabbe/Dynamask) for the DynaMask implementation.
 - [Sana Tonekaboni](https://github.com/sanatonek/time_series_explainability/tree/master/TSX) for the fit implementation.
-- [INK Lab](https://github.com/INK-USC/DIG)for the discretized integrated gradients implementation.
+- [INK Lab](https://github.com/INK-USC/DIG) for the discretized integrated gradients implementation.
