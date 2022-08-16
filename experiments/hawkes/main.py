@@ -62,12 +62,15 @@ def main(
     trainer.fit(classifier, datamodule=hawkes)
 
     # Get data for explainers
-    x_train = hawkes.preprocess(split="train")["x"]
-    x_test = hawkes.preprocess(split="test")["x"]
-    y_test = hawkes.preprocess(split="test")["y"]
+    x_train = hawkes.preprocess(split="train")["x"].to(accelerator)
+    x_test = hawkes.preprocess(split="test")["x"].to(accelerator)
+    y_test = hawkes.preprocess(split="test")["y"].to(accelerator)
 
     # Switch to eval
     classifier.eval()
+
+    # Set model to accelerator
+    classifier.to(accelerator)
 
     # Create dict of attributions
     attr = dict()
@@ -242,7 +245,7 @@ def main(
         ).abs()
 
     # Get true saliency
-    true_saliency = hawkes.true_saliency(split="test")
+    true_saliency = hawkes.true_saliency(split="test").to(accelerator)
 
     with open("results.csv", "a") as fp:
         for k, v in attr.items():
