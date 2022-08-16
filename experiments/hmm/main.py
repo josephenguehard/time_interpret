@@ -86,7 +86,6 @@ def main(
             forward_func=classifier,
             distribution="normal",
             hard=False,
-            temporal=True,
             eps=1e-5,
             loss="cross_entropy",
             optim="adam",
@@ -95,9 +94,10 @@ def main(
         explainer = BayesMask(classifier)
         _attr = explainer.attribute(
             x_test,
+            additional_forward_args=(True,),
             trainer=trainer,
             mask_net=mask,
-            batch_size=200,
+            batch_size=100,
         )
         attr["bayes_mask"] = _attr
 

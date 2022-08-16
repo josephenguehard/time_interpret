@@ -190,7 +190,6 @@ class BayesMaskNet(Net):
         hard: bool = True,
         eps: float = 1e-3,
         batch_size: int = 32,
-        temporal: bool = False,
         loss: Union[str, Callable] = "mse",
         optim: str = "adam",
         lr: float = 0.001,
@@ -215,7 +214,6 @@ class BayesMaskNet(Net):
             lr_scheduler_args=lr_scheduler_args,
             l2=l2,
         )
-        self.temporal = temporal
 
     def forward(self, *args, **kwargs) -> th.Tensor:
         return self.net(*args, **kwargs)
@@ -224,11 +222,6 @@ class BayesMaskNet(Net):
         # x is the data to be perturbed
         # y is the same data without perturbation
         x, y, *additional_forward_args = batch
-
-        if self.temporal:
-            t = th.randint(x.shape[1], (1,)).item()
-            x = x[:, : t + 1, ...]
-            y = y[:, : t + 1, ...]
 
         # If additional_forward_args is only one None,
         # set it to None
