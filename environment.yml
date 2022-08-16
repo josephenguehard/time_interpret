@@ -8,10 +8,11 @@ channels:
 dependencies:
   - python==3.9.7
   - cudatoolkit==11.6
-  - pytorch==1.12.0
+  - pytorch==1.12.1
   - captum
   - datasets
   - git
+  - jupyter
   - numpy
   - optuna
   - pandas
