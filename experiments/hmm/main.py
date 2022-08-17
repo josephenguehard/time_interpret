@@ -168,8 +168,8 @@ def main(
         attr["integrated_gradients"] = explainer.attribute(
             x_test,
             baselines=x_test * 0,
-            task="binary",
             internal_batch_size=200,
+            task="binary",
             show_progress=True,
         ).abs()
 
@@ -236,6 +236,7 @@ def main(
         attr["temporal_integrated_gradients"] = explainer.attribute(
             x_test,
             baselines=x_test * 0,
+            internal_batch_size=200,
             n_steps=2,
             task="binary",
             show_progress=True,
