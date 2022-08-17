@@ -60,7 +60,7 @@ def _base_metric(
             int(attr.reshape(len(attr), -1).shape[-1] * topk),
             sorted=False,
             largest=largest,
-        ).indices
+        ).indices.to(attr.device)
         for attr in attributions
     )
 
