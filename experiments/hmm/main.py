@@ -87,7 +87,6 @@ def main(
             distribution="normal",
             hard=False,
             eps=1e-5,
-            loss="cross_entropy",
             optim="adam",
             lr=0.01,
         )
@@ -120,11 +119,11 @@ def main(
         mask = MaskNet(
             forward_func=classifier,
             perturbation="gaussian_blur",
+            sigma_max=1,
             keep_ratio=list(np.arange(0.25, 0.35, 0.01)),
             size_reg_factor_init=0.1,
             size_reg_factor_dilation=100,
             time_reg_factor=1.0,
-            loss="cross_entropy",
         )
         explainer = DynaMask(classifier)
         _attr = explainer.attribute(

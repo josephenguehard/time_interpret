@@ -35,7 +35,7 @@ class BayesMask(nn.Module):
         )
 
         super().__init__()
-        self.forward_func = forward_func
+        object.__setattr__(self, "forward_func", forward_func)
         self.distribution = distribution
         self.hard = hard
         self.eps = eps

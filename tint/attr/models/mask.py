@@ -63,7 +63,7 @@ class Mask(nn.Module):
             "fade_reference",
         ], f"{perturbation} perturbation not recognised."
 
-        self.forward_func = forward_func
+        object.__setattr__(self, "forward_func", forward_func)
         self.perturbation = perturbation
         self.batch_size = batch_size
         self.deletion_mode = deletion_mode
@@ -72,12 +72,13 @@ class Mask(nn.Module):
             [keep_ratio] if isinstance(keep_ratio, float) else keep_ratio
         )
         self.size_reg_factor = size_reg_factor_init
-        self.reg_multiplier = np.exp(np.log(size_reg_factor_dilation))
+        self.size_reg_factor_dilation = size_reg_factor_dilation
         self.time_reg_factor = time_reg_factor
         self.kwargs = kwargs
 
         self.register_parameter("mask", None)
         self.reg_ref = None
+        self.reg_multiplier = None
 
     def init(self, shape: tuple, n_epochs: int, batch_size: int):
         # Create mask param
@@ -95,7 +96,9 @@ class Mask(nn.Module):
         self.reg_ref = reg_ref
 
         # Update multiplier with n_epochs
-        self.reg_multiplier /= n_epochs
+        self.reg_multiplier = np.exp(
+            np.log(self.size_reg_factor_dilation) / n_epochs
+        )
 
         # Update batch size
         self.batch_size = batch_size
@@ -140,7 +143,9 @@ class Mask(nn.Module):
                 -1.0 * (t1_tensor - t2_tensor) ** 2, 2.0 * (sigma_tensor**2)
             )
         )
-        filter_coefs = th.divide(filter_coefs, th.sum(filter_coefs, 0) + EPS)
+        filter_coefs = th.divide(
+            filter_coefs, filter_coefs.sum(1, keepdim=True) + EPS
+        )
 
         # The perturbation is obtained by replacing each input by the
         # linear combination weighted by Gaussian coefs
