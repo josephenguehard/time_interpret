@@ -149,6 +149,9 @@ class Fit(PerturbationAttribution):
         ), "Multiple inputs are not accepted for this method"
         data = inputs[0]
 
+        # Set generator to device
+        self.generator.to(data.device)
+
         if return_temporal_attributions:
             data, additional_forward_args, _ = _add_temporal_mask(
                 inputs=data,

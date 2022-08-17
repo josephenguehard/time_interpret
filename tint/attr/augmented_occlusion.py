@@ -277,7 +277,7 @@ class AugmentedOcclusion(Occlusion):
         baseline = torch.index_select(
             data,
             0,
-            torch.randint(high=len(data), size=(size,)),
+            torch.randint(high=len(data), size=(size,)).to(data.device),
         )
         baseline = baseline.reshape((-1,) + expanded_input.shape[1:])
 

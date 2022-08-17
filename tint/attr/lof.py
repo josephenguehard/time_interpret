@@ -29,7 +29,9 @@ class LOF:
             novelty=True,
             **kwargs,
         )
-        self.lof.fit(X=embeddings.reshape(-1, embeddings.shape[-1]).numpy())
+        self.lof.fit(
+            X=embeddings.reshape(-1, embeddings.shape[-1]).cpu().numpy()
+        )
 
         self._similarity_func = None
 
@@ -44,7 +46,7 @@ class LOF:
             original_inp, Tensor
         ), "Only one input is accepted with this method."
         score = self.lof.score_samples(
-            perturbed_inp.reshape(-1, perturbed_inp.shape[-1]).numpy()
+            perturbed_inp.reshape(-1, perturbed_inp.shape[-1]).cpu().numpy()
         )
         train_scores = self.lof.negative_outlier_factor_
         score = (train_scores.max() - train_scores.min()) / (

@@ -63,12 +63,12 @@ def _base_white_box_metric(
     )
 
     # Convert to numpy
-    attributions = tuple(attr.detach().numpy() for attr in attributions)
+    attributions = tuple(attr.detach().cpu().numpy() for attr in attributions)
     true_attributions = tuple(
-        attr.detach().numpy() for attr in true_attributions
+        attr.detach().cpu().numpy() for attr in true_attributions
     )
     attributions_subset = tuple(
-        attr.detach().numpy() for attr in attributions_subset
+        attr.detach().cpu().numpy() for attr in attributions_subset
     )
 
     # Compute metric

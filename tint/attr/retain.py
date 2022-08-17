@@ -149,6 +149,9 @@ class Retain(PerturbationAttribution):
         # Get data as only value in inputs
         data = inputs[0]
 
+        # Set generator to device
+        self.forward_func.to(data.device)
+
         # If return temporal attr, we expand the input data
         # and multiply it with a lower triangular mask
         if return_temporal_attributions:
@@ -193,9 +196,7 @@ class Retain(PerturbationAttribution):
 
         logit, alpha, beta = self.forward_func(
             inputs,
-            (
-                th.ones((len(inputs),)).to(inputs.device) * inputs.shape[1]
-            ).long(),
+            (th.ones((len(inputs),)) * inputs.shape[1]).int(),
         )
         w_emb = self.forward_func.embedding[1].weight
 
