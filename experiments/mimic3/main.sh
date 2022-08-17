@@ -1,6 +1,6 @@
 #!/bin/bash
 
-processes=${processes:-48}
+processes=${processes:-5}
 accelerator=${accelerator:-cpu}
 seed=${seed:-42}
 
