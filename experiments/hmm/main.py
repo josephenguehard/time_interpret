@@ -72,6 +72,12 @@ def main(
     # Set model to accelerator
     classifier.to(accelerator)
 
+    # Disable cudnn if using cuda accelerator.
+    # Please see https://captum.ai/docs/faq#how-can-i-resolve-cudnn-rnn-backward-error-for-rnn-or-lstm-network
+    # for more information.
+    if accelerator == "cuda":
+        th.backends.cudnn.enabled = False
+
     # Create dict of attributions
     attr = dict()
 
