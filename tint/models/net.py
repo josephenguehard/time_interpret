@@ -10,6 +10,7 @@ LOSSES = {
     "mse": nn.MSELoss,
     "nll": nn.NLLLoss,
     "cross_entropy": nn.CrossEntropyLoss,
+    "soft_cross_entropy": nn.CrossEntropyLoss,
     "bce_with_logits": nn.BCEWithLogitsLoss,
 }
 
@@ -62,6 +63,7 @@ class Net(pl.LightningModule):
         l2: float = 0.0,
     ):
         super().__init__()
+        self._soft_labels = False
 
         if isinstance(layers, nn.Module):
             self.net = layers
@@ -73,6 +75,8 @@ class Net(pl.LightningModule):
                 )
 
         if isinstance(loss, str):
+            if loss == "soft_cross_entropy":
+                self._soft_labels = True
             loss = LOSSES[loss]()
         if isinstance(lr_scheduler, str):
             lr_scheduler = LR_SCHEDULERS[lr_scheduler]
@@ -118,7 +122,11 @@ class Net(pl.LightningModule):
 
         if isinstance(self._loss, nn.CrossEntropyLoss):
             if inputs.shape == target.shape:
-                target = target.argmax(-1)
+                target = (
+                    target.softmax(-1)
+                    if self._soft_labels
+                    else target.argmax(-1)
+                )
             target = target.reshape(-1).long()
 
         return self._loss(inputs, target)
