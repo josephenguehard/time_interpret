@@ -91,13 +91,13 @@ def main(
             distribution="normal",
             hard=False,
             eps=1e-5,
+            loss="cross_entropy",
             optim="adam",
             lr=0.01,
         )
         explainer = BayesMask(classifier)
         _attr = explainer.attribute(
             x_test,
-            additional_forward_args=(True,),
             trainer=trainer,
             mask_net=mask,
             batch_size=100,
@@ -122,17 +122,16 @@ def main(
         )
         mask = MaskNet(
             forward_func=classifier,
-            perturbation="gaussian_blur",
-            sigma_max=1,
-            keep_ratio=list(np.arange(0.25, 0.35, 0.01)),
+            perturbation="fade_moving_average",
+            keep_ratio=list(np.arange(0.1, 0.7, 0.1)),
             size_reg_factor_init=0.1,
-            size_reg_factor_dilation=100,
-            time_reg_factor=1.0,
+            size_reg_factor_dilation=10000,
+            time_reg_factor=0.0,
+            loss="cross_entropy",
         )
         explainer = DynaMask(classifier)
         _attr = explainer.attribute(
             x_test,
-            additional_forward_args=(True,),
             trainer=trainer,
             mask_net=mask,
             batch_size=100,
@@ -144,7 +143,7 @@ def main(
     if "fit" in explainers:
         generator = JointFeatureGeneratorNet(rnn_hidden_size=6)
         trainer = Trainer(
-            max_epochs=1000,
+            max_epochs=300,
             accelerator=accelerator,
             log_every_n_steps=10,
         )

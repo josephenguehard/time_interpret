@@ -146,7 +146,7 @@ def main(
     if "fit" in explainers:
         generator = JointFeatureGeneratorNet(rnn_hidden_size=6)
         trainer = Trainer(
-            max_epochs=1000,
+            max_epochs=300,
             accelerator=accelerator,
             log_every_n_steps=10,
         )
