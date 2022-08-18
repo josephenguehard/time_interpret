@@ -25,9 +25,29 @@ LR_SCHEDULERS = {
 
 class Net(pl.LightningModule):
     """
-    Base NN class.
+    Base Net class.
 
-    This provides a flexible class for various neural networks.
+    This provides a wrapper around any Pytorch model into the
+    Pytorch Lightning framework.
+
+    Net adds a loss and an optimizer to the model. The following losses are
+    available:
+
+    - MAE: ``'l1'``
+    - MSE: ``'mse'``
+    - NLL: ``'nll'``
+    - CrossEntropy: ``'cross_entropy'``
+    - CrossEntropy with soft labels: ``'soft_cross_entropy'``
+    - BCE with logits: ``'bce_with_logits'``
+
+    The following optimizer are available:
+
+    - SGD: ``'sgd'``
+    - Adam: ``'adam'``
+
+    It is also possible to pass a custom learning rate to the Net,
+    as well as a learning rate scheduler. Both SGD and Adam also
+    support l2 regularisation.
 
     Args:
         layers (list, nn.Module): The base layers. Can be either a Pytorch
@@ -91,6 +111,20 @@ class Net(pl.LightningModule):
     def forward(self, x: th.Tensor) -> th.Tensor:
         return self.net(x)
 
+    def loss(self, inputs, target):
+        inputs = inputs.reshape(-1, inputs.shape[-1])
+        target = target.reshape(-1, target.shape[-1])
+
+        if isinstance(self._loss, nn.CrossEntropyLoss):
+            if self._soft_labels:
+                target = target.softmax(-1)
+            else:
+                if inputs.shape == target.shape:
+                    target = target.argmax(-1)
+                target = target.reshape(-1).long()
+
+        return self._loss(inputs, target)
+
     def step(self, batch, batch_idx, stage):
         x, y = batch
         y_hat = self(x)
@@ -115,21 +149,6 @@ class Net(pl.LightningModule):
     def predict_step(self, batch, batch_idx, dataloader_idx=0):
         x, y = batch
         return self(x.float())
-
-    def loss(self, inputs, target):
-        inputs = inputs.reshape(-1, inputs.shape[-1])
-        target = target.reshape(-1, target.shape[-1])
-
-        if isinstance(self._loss, nn.CrossEntropyLoss):
-            if inputs.shape == target.shape:
-                target = (
-                    target.softmax(-1)
-                    if self._soft_labels
-                    else target.argmax(-1)
-                )
-            target = target.reshape(-1).long()
-
-        return self._loss(inputs, target)
 
     def configure_optimizers(self):
         if self._optim == "adam":

@@ -19,6 +19,12 @@ class RNN(nn.Module):
     """
     A base recurrent model class.
 
+    The following RNN are supported:
+
+    - RNN: ``'rnn'``
+    - LSTM: ``'lstm'``
+    - GRU: ``'gru'``
+
     Args:
         input_size (int): Input size of the model.
         rnn (nn.RNNBase, str): Which type of RNN to use. Default to ``'rnn'``

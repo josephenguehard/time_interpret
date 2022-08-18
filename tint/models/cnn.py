@@ -34,6 +34,29 @@ class CNN(nn.Module):
     r"""
     Base CNN class.
 
+    The following batch norms are available:
+
+    - BatchNorm2d: ``'batch_norm_2d'``
+
+    the following activations are available:
+
+    - CELU: ``'celu'``
+    - ELU: ``'elu'``
+    - LeakyReLU: ``'leaky_relu'``
+    - LogSoftmax: ``'log_softmax'``
+    - ReLU: ``'relu'``
+    - ReLU6: ``'relu6'``
+    - Sigmoid: ``'sigmoid'``
+    - Softmax: ``'softmax'``
+    - Softplus: ``'softplus'``
+    - SoftSign: ``'softsign'``
+    - Tanh: ``'tanh'``
+    - Tanhshrink: ``'tanhshrink'``
+
+    and the following pooling layers are available:
+
+    - MaxPool2d with a kernel size of 2: ``'max_pool_2d'``
+
     For more insights into specific arguments of the CNN, please refer
     to `pytorch documentation <https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html#torch.nn.Conv2d>`_.
 

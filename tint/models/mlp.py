@@ -29,6 +29,25 @@ class MLP(nn.Module):
     """
     Base MLP class.
 
+    The following batch norms are available:
+
+    - BatchNorm1d: ``'batch_norm_1d'``
+
+    and the following activations are available:
+
+    - CELU: ``'celu'``
+    - ELU: ``'elu'``
+    - LeakyReLU: ``'leaky_relu'``
+    - LogSoftmax: ``'log_softmax'``
+    - ReLU: ``'relu'``
+    - ReLU6: ``'relu6'``
+    - Sigmoid: ``'sigmoid'``
+    - Softmax: ``'softmax'``
+    - Softplus: ``'softplus'``
+    - SoftSign: ``'softsign'``
+    - Tanh: ``'tanh'``
+    - Tanhshrink: ``'tanhshrink'``
+
     For more insights into specific arguments of the CNN, please refer
     to `pytorch documentation <https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear>`_.
 
