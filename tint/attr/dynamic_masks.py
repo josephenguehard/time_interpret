@@ -177,7 +177,8 @@ class DynaMask(PerturbationAttribution):
         )
 
         # Average the loss over each keep_ratio subset
-        loss = loss.sum(tuple(range(1, len(loss.shape))))
+        if len(loss.shape) > 1:
+            loss = loss.sum(tuple(range(1, len(loss.shape))))
         loss = loss.reshape(
             len(mask_net.net.keep_ratio),
             len(loss) // len(mask_net.net.keep_ratio),
