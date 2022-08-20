@@ -104,7 +104,7 @@ def main(
             mask_net=mask,
             batch_size=100,
         )
-        attr["bayes_mask"] = _attr
+        attr["bayes_mask"] = _attr.to(accelerator)
 
     if "deep_lift" in explainers:
         explainer = TimeForwardTunnel(DeepLift(classifier))
@@ -141,7 +141,7 @@ def main(
             return_best_ratio=True,
         )
         print(f"Best keep ratio is {_attr[1]}")
-        attr["dyna_mask"] = _attr[0]
+        attr["dyna_mask"] = _attr[0].to(accelerator)
 
     if "fit" in explainers:
         generator = JointFeatureGeneratorNet(rnn_hidden_size=6)
@@ -235,7 +235,9 @@ def main(
             retain=retain,
             trainer=Trainer(max_epochs=50, accelerator=accelerator),
         )
-        attr["retain"] = explainer.attribute(x_test, target=y_test).abs()
+        attr["retain"] = (
+            explainer.attribute(x_test, target=y_test).abs().to(accelerator)
+        )
 
     if "temporal_integrated_gradients" in explainers:
         explainer = TimeForwardTunnel(TemporalIntegratedGradients(classifier))
