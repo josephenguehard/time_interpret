@@ -345,6 +345,14 @@ class MaskNet(Net):
         )
         y_target = th.cat([y_target] * len(self.net.keep_ratio), dim=0)
 
+        # Uncomment these 2 lines to get the original state experiment.
+        # The task is to predict the next time given the current
+        # perturbed one. To be used with a cross-entropy loss. Please refer to
+        # https://github.com/JonathanCrabbe/Dynamask/issues/4
+        # for more details.
+        # y_hat = y_hat.transpose(1, 2).reshape(y_hat.shape)
+        # y_target = y_target.transpose(1, 2).reshape(y_target.shape)
+
         loss = self.loss(y_hat, y_target)
         return loss
 
