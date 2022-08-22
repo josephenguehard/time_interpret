@@ -248,6 +248,10 @@ def main(
             show_progress=True,
         ).abs()
 
+    # Classifier and x_test to cpu
+    classifier.to("cpu")
+    x_test = x_test.to("cpu")
+
     # Compute x_avg for the baseline
     x_avg = x_test.mean(1, keepdim=True).repeat(1, x_test.shape[1], 1)
 
@@ -256,31 +260,31 @@ def main(
             acc = accuracy(
                 classifier,
                 x_test,
-                attributions=v,
+                attributions=v.cpu(),
                 baselines=x_avg,
             )
             comp = comprehensiveness(
                 classifier,
                 x_test,
-                attributions=v,
+                attributions=v.cpu(),
                 baselines=x_avg,
             )
             ce = cross_entropy(
                 classifier,
                 x_test,
-                attributions=v,
+                attributions=v.cpu(),
                 baselines=x_avg,
             )
             l_odds = log_odds(
                 classifier,
                 x_test,
-                attributions=v,
+                attributions=v.cpu(),
                 baselines=x_avg,
             )
             suff = sufficiency(
                 classifier,
                 x_test,
-                attributions=v,
+                attributions=v.cpu(),
                 baselines=x_avg,
             )
 
