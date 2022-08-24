@@ -5,7 +5,7 @@ import shutil
 def main():
     with open("results.csv", "w") as fp:
         fp.write(
-            "Fold,Seed,Explainer,AUP,AUR,Information,Entropy,AUROC,AUPRC\n"
+            "Seed,Fold,Explainer,AUP,AUR,Information,Entropy,AUROC,AUPRC\n"
         )
 
     if os.path.exists("lightning_logs"):
