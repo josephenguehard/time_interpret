@@ -37,6 +37,7 @@ from experiments.mimic3.classifier import MimicClassifierNet
 
 def main(
     explainers: List[str],
+    areas: list,
     accelerator: str = "cpu",
     fold: int = 0,
     seed: int = 42,
@@ -124,6 +125,7 @@ def main(
             forward_func=classifier,
             perturbation="fade_moving_average",
             keep_ratio=list(np.arange(0.1, 0.7, 0.1)),
+            deletion_mode=True,
             size_reg_factor_init=0.1,
             size_reg_factor_dilation=10000,
             time_reg_factor=0.0,
@@ -256,47 +258,54 @@ def main(
     x_avg = x_test.mean(1, keepdim=True).repeat(1, x_test.shape[1], 1)
 
     with open("results.csv", "a") as fp:
-        for k, v in attr.items():
-            acc = accuracy(
-                classifier,
-                x_test,
-                attributions=v.cpu(),
-                baselines=x_avg,
-            )
-            comp = comprehensiveness(
-                classifier,
-                x_test,
-                attributions=v.cpu(),
-                baselines=x_avg,
-            )
-            ce = cross_entropy(
-                classifier,
-                x_test,
-                attributions=v.cpu(),
-                baselines=x_avg,
-            )
-            l_odds = log_odds(
-                classifier,
-                x_test,
-                attributions=v.cpu(),
-                baselines=x_avg,
-            )
-            suff = sufficiency(
-                classifier,
-                x_test,
-                attributions=v.cpu(),
-                baselines=x_avg,
-            )
+        for topk in areas:
+            for k, v in attr.items():
+                acc = accuracy(
+                    classifier,
+                    x_test,
+                    attributions=v.cpu(),
+                    baselines=x_avg,
+                    topk=topk,
+                )
+                comp = comprehensiveness(
+                    classifier,
+                    x_test,
+                    attributions=v.cpu(),
+                    baselines=x_avg,
+                    topk=topk,
+                )
+                ce = cross_entropy(
+                    classifier,
+                    x_test,
+                    attributions=v.cpu(),
+                    baselines=x_avg,
+                    topk=topk,
+                )
+                l_odds = log_odds(
+                    classifier,
+                    x_test,
+                    attributions=v.cpu(),
+                    baselines=x_avg,
+                    topk=topk,
+                )
+                suff = sufficiency(
+                    classifier,
+                    x_test,
+                    attributions=v.cpu(),
+                    baselines=x_avg,
+                    topk=topk,
+                )
 
-            fp.write(str(seed) + ",")
-            fp.write(str(fold) + ",")
-            fp.write(k + ",")
-            fp.write(f"{acc.mean().item():.4},")
-            fp.write(f"{comp.mean().item():.4},")
-            fp.write(f"{ce.mean().item():.4},")
-            fp.write(f"{l_odds.mean().item():.4},")
-            fp.write(f"{suff.mean().item():.4},")
-            fp.write("\n")
+                fp.write(str(seed) + ",")
+                fp.write(str(fold) + ",")
+                fp.write(str(topk) + ",")
+                fp.write(k + ",")
+                fp.write(f"{acc.mean().item():.4},")
+                fp.write(f"{comp.mean().item():.4},")
+                fp.write(f"{ce.mean().item():.4},")
+                fp.write(f"{l_odds.mean().item():.4},")
+                fp.write(f"{suff.mean().item():.4},")
+                fp.write("\n")
 
 
 def parse_args():
@@ -323,6 +332,21 @@ def parse_args():
         help="List of explainer to use.",
     )
     parser.add_argument(
+        "--areas",
+        type=float,
+        default=[
+            0.1,
+            0.2,
+            0.3,
+            0.4,
+            0.5,
+            0.6,
+        ],
+        nargs="+",
+        metavar="N",
+        help="List of areas to use.",
+    )
+    parser.add_argument(
         "--accelerator",
         type=str,
         default="cpu",
@@ -347,6 +371,7 @@ if __name__ == "__main__":
     args = parse_args()
     main(
         explainers=args.explainers,
+        areas=args.areas,
         accelerator=args.accelerator,
         fold=args.fold,
         seed=args.seed,
