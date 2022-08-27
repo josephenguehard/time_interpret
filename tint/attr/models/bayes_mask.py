@@ -16,11 +16,32 @@ EPS = 1e-7
 
 
 class BayesMask(nn.Module):
+    """
+    Bayes Mask model.
+
+    Args:
+        forward_func (callable): The forward function of the model or any
+            modification of it.
+        distribution (str): Which distribution to use in order to draw the
+            mask. Either ``'none'``, ``'bernoulli'``, ``'normal'`` or
+            ``'gumbel_softmax'``. Default to ``'bernoulli'``
+        hard (bool): Whether to create hard mask values or not. In both
+            cases, soft values will be used for back-propagation.
+            Default to ``True``
+        model (nnn.Module): A model used to recreate the original
+            predictions, in addition to the mask. Default to ``None``
+        eps (float): Optional param for normal distribution.
+            Set the target covariance matrix to eps * th.eye().
+            Default to 1e-3
+        batch_size (int): Batch size of the model. Default to 32
+    """
+
     def __init__(
         self,
         forward_func: Callable,
         distribution: str = "bernoulli",
         hard: bool = True,
+        model: nn.Module = None,
         eps: float = 1e-3,
         batch_size: int = 32,
     ) -> None:
@@ -38,6 +59,7 @@ class BayesMask(nn.Module):
         object.__setattr__(self, "forward_func", forward_func)
         self.distribution = distribution
         self.hard = hard
+        self.model = model
         self.eps = eps
         self.batch_size = batch_size
 
@@ -143,6 +165,10 @@ class BayesMask(nn.Module):
         # We eventually cut samples up to x time dimension
         x *= samples[:, : x.shape[1], ...]
 
+        # We forward model if provided
+        if self.model is not None:
+            x = self.model(x)
+
         # Return f(perturbed x)
         return _run_forward(
             forward_func=self.forward_func,
@@ -183,11 +209,40 @@ class BayesMask(nn.Module):
 
 
 class BayesMaskNet(Net):
+    """
+    Bayes mask model as a Pytorch Lightning model.
+
+    Args:
+        forward_func (callable): The forward function of the model or any
+            modification of it.
+        distribution (str): Which distribution to use in order to draw the
+            mask. Either ``'none'``, ``'bernoulli'``, ``'normal'`` or
+            ``'gumbel_softmax'``. Default to ``'bernoulli'``
+        hard (bool): Whether to create hard mask values or not. In both
+            cases, soft values will be used for back-propagation.
+            Default to ``True``
+        model (nnn.Module): A model used to recreate the original
+            predictions, in addition to the mask. Default to ``None``
+        eps (float): Optional param for normal distribution.
+            Set the target covariance matrix to eps * th.eye().
+            Default to 1e-3
+        batch_size (int): Batch size of the model. Default to 32
+        loss (str, callable): Which loss to use. Default to ``'mse'``
+        optim (str): Which optimizer to use. Default to ``'adam'``
+        lr (float): Learning rate. Default to 1e-3
+        lr_scheduler (dict, str): Learning rate scheduler. Either a dict
+            (custom scheduler) or a string. Default to ``None``
+        lr_scheduler_args (dict): Additional args for the scheduler.
+            Default to ``None``
+        l2 (float): L2 regularisation. Default to 0.0
+    """
+
     def __init__(
         self,
         forward_func: Callable,
         distribution: str = "bernoulli",
         hard: bool = True,
+        model: nn.Module = None,
         eps: float = 1e-3,
         batch_size: int = 32,
         loss: Union[str, Callable] = "mse",
@@ -201,6 +256,7 @@ class BayesMaskNet(Net):
             forward_func=forward_func,
             distribution=distribution,
             hard=hard,
+            model=model,
             eps=eps,
             batch_size=batch_size,
         )
@@ -254,46 +310,28 @@ class BayesMaskNet(Net):
         return step_output
 
     def configure_optimizers(self):
+        params = [{"params": self.net.mean}]
+
+        if self.net.distribution == "normal":
+            params += [{"params": self.net.tril}]
+
+        if self.net.model is not None:
+            params += [{"params": self.net.model}]
+
         if self._optim == "adam":
-            if self.net.distribution == "normal":
-                optim = th.optim.Adam(
-                    [
-                        {"params": self.net.mean},
-                        {"params": self.net.tril},
-                    ],
-                    lr=self.lr,
-                    weight_decay=self.l2,
-                )
-            else:
-                optim = th.optim.Adam(
-                    [
-                        {"params": self.net.mean},
-                    ],
-                    lr=self.lr,
-                    weight_decay=self.l2,
-                )
+            optim = th.optim.Adam(
+                params=params,
+                lr=self.lr,
+                weight_decay=self.l2,
+            )
         elif self._optim == "sgd":
-            if self.net.distribution == "normal":
-                optim = th.optim.SGD(
-                    [
-                        {"params": self.net.mean},
-                        {"params": self.net.tril},
-                    ],
-                    lr=self.lr,
-                    weight_decay=self.l2,
-                    momentum=0.9,
-                    nesterov=True,
-                )
-            else:
-                optim = th.optim.SGD(
-                    [
-                        {"params": self.net.mean},
-                    ],
-                    lr=self.lr,
-                    weight_decay=self.l2,
-                    momentum=0.9,
-                    nesterov=True,
-                )
+            optim = th.optim.SGD(
+                params=params,
+                lr=self.lr,
+                weight_decay=self.l2,
+                momentum=0.9,
+                nesterov=True,
+            )
         else:
             raise NotImplementedError
 
