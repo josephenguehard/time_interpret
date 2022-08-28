@@ -380,8 +380,7 @@ def parse_args():
     )
     parser.add_argument(
         "--deterministic",
-        type=bool,
-        default=False,
+        action="store_true",
         help="Whether to make training deterministic or not.",
     )
     return parser.parse_args()
