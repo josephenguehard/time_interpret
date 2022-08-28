@@ -42,7 +42,7 @@ python bayes_mask_params.py -p --rare-dim 1
 ## Usage
 
 ```
-usage: experiments/arma/main.py [-h] [--rare-dim] [--explainers] [--accelerator] [--seed]
+usage: experiments/arma/main.py [-h] [--rare-dim] [--explainers] [--accelerator] [--seed] [--deterministic]
 
 optional arguments:
   -h, --help            Show this help message and exit.
@@ -50,6 +50,7 @@ optional arguments:
   --explainers          List of the explainers to use. Default to ["bayes_mask", "dyna_mask", "integrated_gradients", "occlusion", "permutation", "shapley_values_sampling", "temporal_integrated_gradients"]
   --accelerator         Which accelerator to use. Default to 'cpu'
   --seed                Which seed to use to generate the data. Default to 42
+  --deterministic       Whether to make training deterministic or not. Default to False
 ```
 
 ```

@@ -36,13 +36,14 @@ python bayes_mask_params.py -p
 ## Usage
 
 ```
-usage: experiments/hmm/main.py [-h] [--explainers] [--accelerator] [--seed]
+usage: experiments/hmm/main.py [-h] [--explainers] [--accelerator] [--seed] [--deterministic]
 
 optional arguments:
   -h, --help            Show this help message and exit.
   --explainers          List of the explainers to use. Default to ["bayes_mask", "deep_lift", "dyna_mask", "fit", "gradient_shap", "integrated_gradients", "lime", "lof_lime", "retain", "augmented_occlusion", "occlusion", "temporal_integrated_gradients"]
   --accelerator         Which accelerator to use. Default to 'cpu'
   --seed                Which seed to use to generate the data. Default to 42
+  --deterministic       Whether to make training deterministic or not. Default to False
 ```
 
 ```

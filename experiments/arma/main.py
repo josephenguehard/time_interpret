@@ -7,7 +7,7 @@ from captum.attr import (
     FeaturePermutation,
     ShapleyValueSampling,
 )
-from pytorch_lightning import Trainer
+from pytorch_lightning import Trainer, seed_everything
 from typing import List
 
 from tint.attr import (
@@ -27,7 +27,12 @@ def main(
     accelerator: str = "cpu",
     fold: int = 0,
     seed: int = 42,
+    deterministic: bool = False,
 ):
+    # If deterministic, seed everything
+    if deterministic:
+        seed_everything(seed=seed, workers=True)
+
     # Load data
     arma = Arma(n_folds=5, fold=fold, seed=seed)
     arma.download()
@@ -45,6 +50,7 @@ def main(
             accelerator=accelerator,
             devices=1,
             log_every_n_steps=2,
+            deterministic=deterministic,
         )
         mask = BayesMaskNet(
             forward_func=arma.get_white_box,
@@ -64,7 +70,12 @@ def main(
         attr["bayes_mask"] = _attr
 
     if "dyna_mask" in explainers:
-        trainer = Trainer(max_epochs=1000, accelerator=accelerator, devices=1)
+        trainer = Trainer(
+            max_epochs=1000,
+            accelerator=accelerator,
+            devices=1,
+            deterministic=deterministic,
+        )
         mask = MaskNet(
             forward_func=arma.get_white_box,
             perturbation="gaussian_blur",
@@ -198,6 +209,12 @@ def parse_args():
         default=42,
         help="Random seed for data generation.",
     )
+    parser.add_argument(
+        "--deterministic",
+        type=bool,
+        default=False,
+        help="Whether to make training deterministic or not.",
+    )
     return parser.parse_args()
 
 
@@ -209,4 +226,5 @@ if __name__ == "__main__":
         accelerator=args.accelerator,
         fold=args.fold,
         seed=args.seed,
+        deterministic=args.deterministic,
     )

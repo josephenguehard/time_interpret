@@ -3,7 +3,7 @@ import torch as th
 
 from argparse import ArgumentParser
 from captum.attr import DeepLift, GradientShap, IntegratedGradients, Lime
-from pytorch_lightning import Trainer
+from pytorch_lightning import Trainer, seed_everything
 from typing import List
 
 from tint.attr import (
@@ -41,7 +41,12 @@ def main(
     accelerator: str = "cpu",
     fold: int = 0,
     seed: int = 42,
+    deterministic: bool = False,
 ):
+    # If deterministic, seed everything
+    if deterministic:
+        seed_everything(seed=seed, workers=True)
+
     # Load data
     mimic3 = Mimic3(n_folds=5, fold=fold, seed=seed)
 
@@ -57,7 +62,9 @@ def main(
     )
 
     # Train classifier
-    trainer = Trainer(max_epochs=100, accelerator=accelerator)
+    trainer = Trainer(
+        max_epochs=100, accelerator=accelerator, deterministic=deterministic
+    )
     trainer.fit(classifier, datamodule=mimic3)
 
     # Get data for explainers
@@ -86,6 +93,7 @@ def main(
             accelerator=accelerator,
             devices=1,
             log_every_n_steps=2,
+            deterministic=deterministic,
         )
         mask = BayesMaskNet(
             forward_func=classifier,
@@ -120,6 +128,7 @@ def main(
             accelerator=accelerator,
             devices=1,
             log_every_n_steps=2,
+            deterministic=deterministic,
         )
         mask = MaskNet(
             forward_func=classifier,
@@ -148,6 +157,7 @@ def main(
             max_epochs=300,
             accelerator=accelerator,
             log_every_n_steps=10,
+            deterministic=deterministic,
         )
         explainer = Fit(
             classifier,
@@ -233,7 +243,11 @@ def main(
         explainer = Retain(
             datamodule=mimic3,
             retain=retain,
-            trainer=Trainer(max_epochs=50, accelerator=accelerator),
+            trainer=Trainer(
+                max_epochs=50,
+                accelerator=accelerator,
+                deterministic=deterministic,
+            ),
         )
         attr["retain"] = (
             explainer.attribute(x_test, target=y_test).abs().to(accelerator)
@@ -364,6 +378,12 @@ def parse_args():
         default=42,
         help="Random seed for data generation.",
     )
+    parser.add_argument(
+        "--deterministic",
+        type=bool,
+        default=False,
+        help="Whether to make training deterministic or not.",
+    )
     return parser.parse_args()
 
 
@@ -375,4 +395,5 @@ if __name__ == "__main__":
         accelerator=args.accelerator,
         fold=args.fold,
         seed=args.seed,
+        deterministic=args.deterministic,
     )
