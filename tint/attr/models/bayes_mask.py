@@ -189,7 +189,7 @@ class BayesMask(nn.Module):
             ] = self.eps
 
         # Return loss + regularisation
-        loss += (self.mean - mean).mean()
+        loss += (self.mean - mean).mean().abs()
         if self.distribution == "normal":
             loss += (self.tril - tril).mean().abs()
 
@@ -201,7 +201,7 @@ class BayesMask(nn.Module):
             self.tril.data.clamp_(self.eps, 1)
 
     def representation(self):
-        return self.mean.detach().cpu()
+        return self.mean.detach().cpu().clamp(0, 1)
 
     def covariance(self):
         assert self.distribution == "normal"
