@@ -3,6 +3,7 @@ import torch as th
 
 from argparse import ArgumentParser
 from pytorch_lightning import Trainer
+from pytorch_lightning.loggers import TensorBoardLogger
 
 from tint.attr import BayesMask
 from tint.attr.models import BayesMaskNet
@@ -42,11 +43,13 @@ def objective(
     eps = trial.suggest_float("eps", 1e-7, 1e-1, log=True)
 
     # Define model and trainer given the hyperparameters
+    version = trial.study.study_name + "_" + str(trial._trial_id)
     trainer = Trainer(
         max_epochs=500,
         accelerator=accelerator,
         devices=1,
         log_every_n_steps=2,
+        logger=TensorBoardLogger(save_dir=".", version=version),
     )
     mask = BayesMaskNet(
         forward_func=classifier,
