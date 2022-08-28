@@ -1,4 +1,5 @@
 import optuna
+import torch as th
 
 from argparse import ArgumentParser
 from pytorch_lightning import Trainer
@@ -12,21 +13,16 @@ from tint.models import MLP
 
 def objective(
     trial: optuna.trial.Trial,
+    x: th.Tensor,
+    true_saliency: th.Tensor,
+    dataset: Arma,
     rare_dim: int,
     metric: str,
     accelerator: str,
     seed: int,
 ):
-    # Load data
-    arma = Arma(n_folds=5, fold=0, seed=seed)
-    arma.download()
-
-    # Only use the first 10 data points
-    x = arma.preprocess()["x"][:10].to(accelerator)
-    true_saliency = arma.true_saliency(dim=rare_dim)[:10].to(accelerator)
-
     # Create several models
-    input_shape = arma.preprocess("test")["x"].shape[-1]
+    input_shape = x.shape[-1]
     model1 = MLP([input_shape, input_shape])
     model2 = MLP([input_shape, input_shape // 4, input_shape])
     model_dict = {"none": None, "model1": model1, "model2": model2}
@@ -47,7 +43,7 @@ def objective(
         log_every_n_steps=2,
     )
     mask = BayesMaskNet(
-        forward_func=arma.get_white_box,
+        forward_func=dataset.get_white_box,
         distribution=distribution,
         hard=hard,
         model=model_dict[model],
@@ -66,7 +62,7 @@ def objective(
     trainer.logger.log_hyperparams(hyperparameters)
 
     # Get attributions given the hyperparameters
-    explainer = BayesMask(arma.get_white_box)
+    explainer = BayesMask(dataset.get_white_box)
     attr = explainer.attribute(
         x,
         trainer=trainer,
@@ -97,6 +93,14 @@ def main(
     timeout: int,
     n_jobs: int,
 ):
+    # Load data
+    arma = Arma(n_folds=5, fold=0, seed=seed)
+    arma.download()
+
+    # Only use the first 10 data points
+    x = arma.preprocess()["x"][:10].to(accelerator)
+    true_saliency = arma.true_saliency(dim=rare_dim)[:10].to(accelerator)
+
     # Set pruner
     pruner: optuna.pruners.BasePruner = (
         optuna.pruners.MedianPruner()
@@ -110,8 +114,11 @@ def main(
 
     # Find best trial
     study.optimize(
-        lambda x: objective(
-            trial=x,
+        lambda t: objective(
+            trial=t,
+            x=x,
+            true_saliency=true_saliency,
+            dataset=arma,
             rare_dim=rare_dim,
             metric=metric,
             accelerator=accelerator,

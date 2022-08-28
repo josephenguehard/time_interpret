@@ -21,15 +21,12 @@ from experiments.mimic3.mortality.classifier import MimicClassifierNet
 
 def objective(
     trial: optuna.trial.Trial,
-    dataset: Mimic3,
+    x_test: th.Tensor,
     classifier: MimicClassifierNet,
     metric: str,
     topk: float,
     accelerator: str,
 ):
-    # Get data for explainers
-    x_test = dataset.preprocess(split="test")["x"].to(accelerator)
-
     # Create several models
     input_shape = x_test.shape[-1]
     model1 = MLP([input_shape, input_shape])
@@ -156,6 +153,9 @@ def main(
     trainer = Trainer(max_epochs=100, accelerator=accelerator)
     trainer.fit(classifier, datamodule=mimic3)
 
+    # Get data for explainers
+    x_test = mimic3.preprocess(split="test")["x"].to(accelerator)
+
     # Switch to eval
     classifier.eval()
 
@@ -186,9 +186,9 @@ def main(
 
     # Find best trial
     study.optimize(
-        lambda x: objective(
-            trial=x,
-            dataset=mimic3,
+        lambda t: objective(
+            trial=t,
+            x_test=x_test,
             classifier=classifier,
             metric=metric,
             topk=topk,

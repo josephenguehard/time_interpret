@@ -15,14 +15,12 @@ from experiments.hmm.classifier import StateClassifierNet
 
 def objective(
     trial: optuna.trial.Trial,
-    dataset: HMM,
+    x_test: th.Tensor,
+    true_saliency: th.Tensor,
     classifier: StateClassifierNet,
     metric: str,
     accelerator: str,
 ):
-    # Get data for explainers
-    x_test = dataset.preprocess(split="test")["x"].to(accelerator)
-
     # Create several models
     input_shape = x_test.shape[-1]
     model1 = MLP([input_shape, input_shape])
@@ -73,9 +71,6 @@ def objective(
         batch_size=100,
     ).to(accelerator)
 
-    # Get true saliency
-    true_saliency = dataset.true_saliency(split="test").to(accelerator)
-
     # Compute the metric
     if metric == "aup":
         return aup(attr, true_saliency)
@@ -115,6 +110,12 @@ def main(
     trainer = Trainer(max_epochs=50, accelerator=accelerator)
     trainer.fit(classifier, datamodule=hmm)
 
+    # Get data for explainers
+    x_test = hmm.preprocess(split="test")["x"].to(accelerator)
+
+    # Get true saliency
+    true_saliency = hmm.true_saliency(split="test").to(accelerator)
+
     # Switch to eval
     classifier.eval()
 
@@ -140,9 +141,10 @@ def main(
 
     # Find best trial
     study.optimize(
-        lambda x: objective(
-            trial=x,
-            dataset=hmm,
+        lambda t: objective(
+            trial=t,
+            x_test=x_test,
+            true_saliency=true_saliency,
             classifier=classifier,
             metric=metric,
             accelerator=accelerator,
