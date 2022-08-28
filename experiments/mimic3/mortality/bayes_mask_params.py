@@ -16,7 +16,7 @@ from tint.metrics import (
 )
 from tint.models import MLP
 
-from experiments.mimic3.classifier import MimicClassifierNet
+from experiments.mimic3.mortality.classifier import MimicClassifierNet
 
 
 def objective(

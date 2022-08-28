@@ -32,7 +32,7 @@ from tint.metrics import (
     sufficiency,
 )
 
-from experiments.mimic3.classifier import MimicClassifierNet
+from experiments.mimic3.mortality.classifier import MimicClassifierNet
 
 
 def main(
