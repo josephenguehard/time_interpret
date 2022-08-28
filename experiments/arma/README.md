@@ -62,7 +62,7 @@ optional arguments:
 ```
 
 ```
-usage: experiments/h_params_search.py [-h] [-p] [--metric] [--accelerator] [--seed] [--n-trials] [--timeout] [--n-jobs]
+usage: experiments/h_params_search.py [-h] [-p] [--rare-dim] [--metric] [--accelerator] [--seed] [--n-trials] [--timeout] [--n-jobs]
 
 optional arguments:
   -h, --help            Show this help message and exit.
