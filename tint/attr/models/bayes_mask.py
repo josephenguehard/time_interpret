@@ -316,7 +316,7 @@ class BayesMaskNet(Net):
             params += [{"params": self.net.tril}]
 
         if self.net.model is not None:
-            params += [{"params": self.net.model}]
+            params += [{"params": self.net.model.parameters()}]
 
         if self._optim == "adam":
             optim = th.optim.Adam(

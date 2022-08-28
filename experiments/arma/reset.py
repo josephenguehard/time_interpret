@@ -14,6 +14,9 @@ def main(experiment: str):
         with open("bayes_mask_params.csv", "w") as fp:
             fp.write("Experiment,Metric,Distribution,Hard,Model,Eps\n")
 
+    else:
+        raise NotImplementedError
+
     if os.path.exists("lightning_logs"):
         shutil.rmtree("lightning_logs")
 
