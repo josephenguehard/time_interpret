@@ -189,9 +189,9 @@ class BayesMask(nn.Module):
             ] = self.eps
 
         # Return loss + regularisation
-        loss += (self.mean - mean).mean().abs()
+        loss += (self.mean - mean).abs().mean()
         if self.distribution == "normal":
-            loss += (self.tril - tril).mean().abs()
+            loss += (self.tril - tril).abs().mean()
 
         return loss
 
