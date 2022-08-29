@@ -18,7 +18,10 @@ def _aup(
         precision_recall_curve(true_attr, attr)
         for true_attr, attr in zip(true_attributions, attributions)
     )
-    return tuple(auc(pre_rec[2], pre_rec[0][:-1]) for pre_rec in pre_rec_tpl)
+    return tuple(
+        auc(pre_rec[2], pre_rec[0][:-1]) if len(pre_rec[2]) > 1 else 0.0
+        for pre_rec in pre_rec_tpl
+    )
 
 
 @log_usage()
