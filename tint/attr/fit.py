@@ -43,6 +43,19 @@ class Fit(PerturbationAttribution):
     Args:
         forward_func (callable): The forward function of the model or any
             modification of it.
+        generator (JointFeatureGeneratorNet): Conditional generator model to
+            predict future observations as a Pytorch Lightning module.
+            If not provided, a default generator is created.
+            Default to ``None``
+        datamodule (LightningDataModule): A Pytorch Lightning data
+            module to train the generator. If not provided, you must provide
+            features. Default to ``None``
+        features (th.Tensor): A tensor of features to train the generator.
+            If not provided, you must provide a datamodule.
+            Default to ``None``
+        trainer (Trainer): A Pytorch Lightning trainer to train the generator.
+            If not provided, a default trainer is created. Default to ``None``
+        batch_size (int): Batch size for generator training. Default to 32
 
     References:
         https://arxiv.org/abs/2003.02821
