@@ -16,10 +16,12 @@ def _entropy(
     attributions_subset: Tuple[np.ndarray],
 ) -> Tuple[float]:
     ent = tuple(
-        (
-            attr * np.abs(np.log2(EPS + attr))
-            + (1 - attr) * np.abs(np.log2(EPS + 1 - attr))
-        ).sum()
+        float(
+            (
+                attr * np.abs(np.log2(EPS + attr))
+                + (1 - attr) * np.abs(np.log2(EPS + 1 - attr))
+            ).sum()
+        )
         for attr in attributions_subset
     )
     return cast(Tuple[float, ...], ent)

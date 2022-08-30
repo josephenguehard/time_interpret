@@ -16,7 +16,8 @@ def _information(
     attributions_subset: Tuple[np.ndarray],
 ) -> Tuple[float]:
     info = tuple(
-        (np.abs(np.log2(1 - attr + EPS))).sum() for attr in attributions_subset
+        float((np.abs(np.log2(1 - attr + EPS))).sum())
+        for attr in attributions_subset
     )
     return cast(Tuple[float, ...], info)
 

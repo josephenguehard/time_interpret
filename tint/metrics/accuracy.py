@@ -18,6 +18,7 @@ def _accuracy(
     target: Tensor,
     threshold: float = 0.5,
 ) -> Tensor:
+    assert 0.0 <= threshold <= 1.0, "threshold must be between 0 and 1"
     return (_select_targets(prob_pert, target) >= threshold).float()
 
 
