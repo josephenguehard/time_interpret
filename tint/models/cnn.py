@@ -58,7 +58,7 @@ class CNN(nn.Module):
     - MaxPool2d with a kernel size of 2: ``'max_pool_2d'``
 
     For more insights into specific arguments of the CNN, please refer
-    to `pytorch documentation <https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html#torch.nn.Conv2d>`_.
+    to `Conv2d pytorch documentation <https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html#torch.nn.Conv2d>`_.
 
     Args:
         units (list): A list of units, which creates the layers.

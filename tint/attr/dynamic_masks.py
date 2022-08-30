@@ -30,7 +30,7 @@ class DynaMask(PerturbationAttribution):
         https://arxiv.org/pdf/2106.05303
 
     Examples:
-        >> import torch as th
+        >>> import torch as th
         >>> from tint.attr import DynaMask
         >>> from tint.models import MLP
         <BLANKLINE>

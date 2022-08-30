@@ -48,8 +48,8 @@ class MLP(nn.Module):
     - Tanh: ``'tanh'``
     - Tanhshrink: ``'tanhshrink'``
 
-    For more insights into specific arguments of the CNN, please refer
-    to `pytorch documentation <https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear>`_.
+    For more insights into specific arguments of the MLP, please refer
+    to `Linear pytorch documentation <https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear>`_.
 
 
     Args:
