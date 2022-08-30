@@ -88,6 +88,7 @@
     <span class="s2">&quot;mse&quot;</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">MSELoss</span><span class="p">,</span>
     <span class="s2">&quot;nll&quot;</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">NLLLoss</span><span class="p">,</span>
     <span class="s2">&quot;cross_entropy&quot;</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">,</span>
+    <span class="s2">&quot;soft_cross_entropy&quot;</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">,</span>
     <span class="s2">&quot;bce_with_logits&quot;</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">BCEWithLogitsLoss</span><span class="p">,</span>
 <span class="p">}</span>
 
@@ -102,9 +103,29 @@
 
 <div class="viewcode-block" id="Net"><a class="viewcode-back" href="../../../models.html#tint.models.Net">[docs]</a><span class="k">class</span> <span class="nc">Net</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">LightningModule</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Base NN class.</span>
+<span class="sd">    Base Net class.</span>
 
-<span class="sd">    This provides a flexible class for various neural networks.</span>
+<span class="sd">    This provides a wrapper around any Pytorch model into the</span>
+<span class="sd">    Pytorch Lightning framework.</span>
+
+<span class="sd">    Net adds a loss and an optimizer to the model. The following losses are</span>
+<span class="sd">    available:</span>
+
+<span class="sd">    - MAE: ``&#39;l1&#39;``</span>
+<span class="sd">    - MSE: ``&#39;mse&#39;``</span>
+<span class="sd">    - NLL: ``&#39;nll&#39;``</span>
+<span class="sd">    - CrossEntropy: ``&#39;cross_entropy&#39;``</span>
+<span class="sd">    - CrossEntropy with soft labels: ``&#39;soft_cross_entropy&#39;``</span>
+<span class="sd">    - BCE with logits: ``&#39;bce_with_logits&#39;``</span>
+
+<span class="sd">    The following optimizer are available:</span>
+
+<span class="sd">    - SGD: ``&#39;sgd&#39;``</span>
+<span class="sd">    - Adam: ``&#39;adam&#39;``</span>
+
+<span class="sd">    It is also possible to pass a custom learning rate to the Net,</span>
+<span class="sd">    as well as a learning rate scheduler. Both SGD and Adam also</span>
+<span class="sd">    support l2 regularisation.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        layers (list, nn.Module): The base layers. Can be either a Pytorch</span>
@@ -140,6 +161,7 @@
         <span class="n">l2</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_soft_labels</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">layers</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">net</span> <span class="o">=</span> <span class="n">layers</span>
@@ -151,6 +173,8 @@
                 <span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">loss</span> <span class="o">==</span> <span class="s2">&quot;soft_cross_entropy&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_soft_labels</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="n">loss</span> <span class="o">=</span> <span class="n">LOSSES</span><span class="p">[</span><span class="n">loss</span><span class="p">]()</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lr_scheduler</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">lr_scheduler</span> <span class="o">=</span> <span class="n">LR_SCHEDULERS</span><span class="p">[</span><span class="n">lr_scheduler</span><span class="p">]</span>
@@ -165,12 +189,26 @@
 <div class="viewcode-block" id="Net.forward"><a class="viewcode-back" href="../../../models.html#tint.models.Net.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
 
+    <span class="k">def</span> <span class="nf">loss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+        <span class="n">inputs</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">inputs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_loss</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_soft_labels</span><span class="p">:</span>
+                <span class="n">target</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">inputs</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+                    <span class="n">target</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">target</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">long</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loss</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+
     <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">,</span> <span class="n">stage</span><span class="p">):</span>
         <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">batch</span>
         <span class="n">y_hat</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">y_hat</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>  <span class="c1"># For Bert model</span>
             <span class="n">y_hat</span> <span class="o">=</span> <span class="n">y_hat</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loss</span><span class="p">(</span><span class="n">y_hat</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">(</span><span class="n">y_hat</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">loss</span>
 
 <div class="viewcode-block" id="Net.training_step"><a class="viewcode-back" href="../../../models.html#tint.models.Net.training_step">[docs]</a>    <span class="k">def</span> <span class="nf">training_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>

@@ -227,6 +227,9 @@
         <span class="c1"># Get data as only value in inputs</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
+        <span class="c1"># Set generator to device</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forward_func</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
         <span class="c1"># If return temporal attr, we expand the input data</span>
         <span class="c1"># and multiply it with a lower triangular mask</span>
         <span class="k">if</span> <span class="n">return_temporal_attributions</span><span class="p">:</span>
@@ -267,10 +270,11 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            th.Tensor: attributions.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">score</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">score</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
 
         <span class="n">logit</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">forward_func</span><span class="p">(</span>
-            <span class="n">inputs</span><span class="p">,</span> <span class="p">(</span><span class="n">th</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">inputs</span><span class="p">),))</span> <span class="o">*</span> <span class="n">inputs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">long</span><span class="p">()</span>
+            <span class="n">inputs</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">th</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">inputs</span><span class="p">),))</span> <span class="o">*</span> <span class="n">inputs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">int</span><span class="p">(),</span>
         <span class="p">)</span>
         <span class="n">w_emb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">forward_func</span><span class="o">.</span><span class="n">embedding</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">weight</span>
 

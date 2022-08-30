@@ -259,7 +259,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            th.Tensor: Output data.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">outputs</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
 
         <span class="c1"># Populate the features</span>
         <span class="n">outputs</span><span class="p">[</span><span class="n">true_saliency</span><span class="o">.</span><span class="n">bool</span><span class="p">()]</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="n">true_saliency</span><span class="o">.</span><span class="n">bool</span><span class="p">()]</span>

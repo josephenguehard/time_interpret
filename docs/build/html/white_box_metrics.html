@@ -95,14 +95,14 @@ against it. These metrics are listed below:</p>
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.metrics.white_box.aup</span></code>(attributions, ...)</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#tint.metrics.white_box.aup" title="tint.metrics.white_box.aup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.metrics.white_box.aup</span></code></a>(attributions, ...)</p></td>
+<td><p>Area under precision.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.metrics.white_box.auprc</span></code>(attributions, ...)</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#tint.metrics.white_box.auprc" title="tint.metrics.white_box.auprc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.metrics.white_box.auprc</span></code></a>(attributions, ...)</p></td>
+<td><p>Area under precision-recall.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.metrics.white_box.aur</span></code>(attributions, ...)</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#tint.metrics.white_box.aur" title="tint.metrics.white_box.aur"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.metrics.white_box.aur</span></code></a>(attributions, ...)</p></td>
+<td><p>Area under recall.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.metrics.white_box.entropy</span></code>(attributions, ...)</p></td>
 <td><p></p></td>
@@ -110,14 +110,135 @@ against it. These metrics are listed below:</p>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.metrics.white_box.information</span></code>(...[, ...])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.metrics.white_box.roc_auc</span></code>(attributions, ...)</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#tint.metrics.white_box.roc_auc" title="tint.metrics.white_box.roc_auc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.metrics.white_box.roc_auc</span></code></a>(attributions, ...)</p></td>
+<td><p>Roc auc score.</p></td>
 </tr>
 </tbody>
 </table>
 </section>
 <section id="module-tint.metrics.white_box">
 <span id="detailed-classes-and-methods"></span><h2>Detailed classes and methods<a class="headerlink" href="#module-tint.metrics.white_box" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="tint.metrics.white_box.aup">
+<span class="sig-prename descclassname"><span class="pre">tint.metrics.white_box.</span></span><span class="sig-name descname"><span class="pre">aup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attributions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TensorOrTupleOfTensorsGeneric</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">true_attributions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TensorOrTupleOfTensorsGeneric</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/tint/metrics/white_box/aup.html#aup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.metrics.white_box.aup" title="Permalink to this definition"></a></dt>
+<dd><p>Area under precision.</p>
+<p>This is the standard area under the precision curve. Higher is better.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.metrics.white_box.aup.params.attributions"></span><strong>attributions</strong><a class="paramlink headerlink reference internal" href="#tint.metrics.white_box.aup.params.attributions">¶</a> (<em>tensor</em><em> or </em><em>tuple of tensors</em>) – The attributions with respect to each input feature.
+Attributions will always be
+the same size as the provided inputs, with each value
+providing the attribution of the corresponding input index.
+If a single tensor is provided as inputs, a single float
+is returned. If a tuple is provided for inputs, a tuple of
+float is returned.</p></li>
+<li><p><span class="target" id="tint.metrics.white_box.aup.params.true_attributions"></span><strong>true_attributions</strong><a class="paramlink headerlink reference internal" href="#tint.metrics.white_box.aup.params.true_attributions">¶</a> (<em>tensor</em><em> or </em><em>tuple of tensors</em>) – True attributions to be used as a benchmark. Should be of
+the same format as the attributions.</p></li>
+<li><p><span class="target" id="tint.metrics.white_box.aup.params.normalize"></span><strong>normalize</strong><a class="paramlink headerlink reference internal" href="#tint.metrics.white_box.aup.params.normalize">¶</a> (<em>bool</em>) – Whether to normalize the attributions before
+computing the metric or not. Default: True</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The aup metric.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(float or tuple or floats)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tint.metrics.white_box.auprc">
+<span class="sig-prename descclassname"><span class="pre">tint.metrics.white_box.</span></span><span class="sig-name descname"><span class="pre">auprc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attributions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TensorOrTupleOfTensorsGeneric</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">true_attributions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TensorOrTupleOfTensorsGeneric</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/tint/metrics/white_box/auprc.html#auprc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.metrics.white_box.auprc" title="Permalink to this definition"></a></dt>
+<dd><p>Area under precision-recall.</p>
+<p>This is the standard area under the precision-recall curve.
+Higher is better.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.metrics.white_box.auprc.params.attributions"></span><strong>attributions</strong><a class="paramlink headerlink reference internal" href="#tint.metrics.white_box.auprc.params.attributions">¶</a> (<em>tensor</em><em> or </em><em>tuple of tensors</em>) – The attributions with respect to each input feature.
+Attributions will always be
+the same size as the provided inputs, with each value
+providing the attribution of the corresponding input index.
+If a single tensor is provided as inputs, a single float
+is returned. If a tuple is provided for inputs, a tuple of
+float is returned.</p></li>
+<li><p><span class="target" id="tint.metrics.white_box.auprc.params.true_attributions"></span><strong>true_attributions</strong><a class="paramlink headerlink reference internal" href="#tint.metrics.white_box.auprc.params.true_attributions">¶</a> (<em>tensor</em><em> or </em><em>tuple of tensors</em>) – True attributions to be used as a benchmark. Should be of
+the same format as the attributions.</p></li>
+<li><p><span class="target" id="tint.metrics.white_box.auprc.params.normalize"></span><strong>normalize</strong><a class="paramlink headerlink reference internal" href="#tint.metrics.white_box.auprc.params.normalize">¶</a> (<em>bool</em>) – Whether to normalize the attributions before
+computing the metric or not. Default: True</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The auprc metric.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(float or tuple or floats)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tint.metrics.white_box.aur">
+<span class="sig-prename descclassname"><span class="pre">tint.metrics.white_box.</span></span><span class="sig-name descname"><span class="pre">aur</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attributions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TensorOrTupleOfTensorsGeneric</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">true_attributions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TensorOrTupleOfTensorsGeneric</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/tint/metrics/white_box/aur.html#aur"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.metrics.white_box.aur" title="Permalink to this definition"></a></dt>
+<dd><p>Area under recall.</p>
+<p>This is the standard area under the recall curve. Higher is better.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.metrics.white_box.aur.params.attributions"></span><strong>attributions</strong><a class="paramlink headerlink reference internal" href="#tint.metrics.white_box.aur.params.attributions">¶</a> (<em>tensor</em><em> or </em><em>tuple of tensors</em>) – The attributions with respect to each input feature.
+Attributions will always be
+the same size as the provided inputs, with each value
+providing the attribution of the corresponding input index.
+If a single tensor is provided as inputs, a single float
+is returned. If a tuple is provided for inputs, a tuple of
+float is returned.</p></li>
+<li><p><span class="target" id="tint.metrics.white_box.aur.params.true_attributions"></span><strong>true_attributions</strong><a class="paramlink headerlink reference internal" href="#tint.metrics.white_box.aur.params.true_attributions">¶</a> (<em>tensor</em><em> or </em><em>tuple of tensors</em>) – True attributions to be used as a benchmark. Should be of
+the same format as the attributions.</p></li>
+<li><p><span class="target" id="tint.metrics.white_box.aur.params.normalize"></span><strong>normalize</strong><a class="paramlink headerlink reference internal" href="#tint.metrics.white_box.aur.params.normalize">¶</a> (<em>bool</em>) – Whether to normalize the attributions before
+computing the metric or not. Default: True</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The aur metric.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(float or tuple or floats)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tint.metrics.white_box.roc_auc">
+<span class="sig-prename descclassname"><span class="pre">tint.metrics.white_box.</span></span><span class="sig-name descname"><span class="pre">roc_auc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attributions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TensorOrTupleOfTensorsGeneric</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">true_attributions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TensorOrTupleOfTensorsGeneric</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/tint/metrics/white_box/roc_auc.html#roc_auc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.metrics.white_box.roc_auc" title="Permalink to this definition"></a></dt>
+<dd><p>Roc auc score.</p>
+<p>This is the standard roc auc score. Higher is better.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.metrics.white_box.roc_auc.params.attributions"></span><strong>attributions</strong><a class="paramlink headerlink reference internal" href="#tint.metrics.white_box.roc_auc.params.attributions">¶</a> (<em>tensor</em><em> or </em><em>tuple of tensors</em>) – The attributions with respect to each input feature.
+Attributions will always be
+the same size as the provided inputs, with each value
+providing the attribution of the corresponding input index.
+If a single tensor is provided as inputs, a single float
+is returned. If a tuple is provided for inputs, a tuple of
+float is returned.</p></li>
+<li><p><span class="target" id="tint.metrics.white_box.roc_auc.params.true_attributions"></span><strong>true_attributions</strong><a class="paramlink headerlink reference internal" href="#tint.metrics.white_box.roc_auc.params.true_attributions">¶</a> (<em>tensor</em><em> or </em><em>tuple of tensors</em>) – True attributions to be used as a benchmark. Should be of
+the same format as the attributions.</p></li>
+<li><p><span class="target" id="tint.metrics.white_box.roc_auc.params.normalize"></span><strong>normalize</strong><a class="paramlink headerlink reference internal" href="#tint.metrics.white_box.roc_auc.params.normalize">¶</a> (<em>bool</em>) – Whether to normalize the attributions before
+computing the metric or not. Default: True</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The roc-auc metric.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(float or tuple or floats)</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 </section>
 

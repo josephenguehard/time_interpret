@@ -83,6 +83,10 @@
 <div class="viewcode-block" id="SmoothGrad"><a class="viewcode-back" href="../../../attr.html#tint.attr.SmoothGrad">[docs]</a><span class="k">def</span> <span class="nf">SmoothGrad</span><span class="p">(</span><span class="n">forward_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Wrapper combining Saliency and NoiseTunnel to recover SmoothGrad.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        forward_func (Callable): The forward function of the model or any</span>
+<span class="sd">            modification of it.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">NoiseTunnel</span><span class="p">(</span><span class="n">Saliency</span><span class="p">(</span><span class="n">forward_func</span><span class="o">=</span><span class="n">forward_func</span><span class="p">))</span></div>
 </pre></div>

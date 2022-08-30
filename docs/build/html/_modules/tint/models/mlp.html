@@ -107,8 +107,27 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Base MLP class.</span>
 
-<span class="sd">    For more insights into specific arguments of the CNN, please refer</span>
-<span class="sd">    to `pytorch documentation &lt;https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear&gt;`_.</span>
+<span class="sd">    The following batch norms are available:</span>
+
+<span class="sd">    - BatchNorm1d: ``&#39;batch_norm_1d&#39;``</span>
+
+<span class="sd">    and the following activations are available:</span>
+
+<span class="sd">    - CELU: ``&#39;celu&#39;``</span>
+<span class="sd">    - ELU: ``&#39;elu&#39;``</span>
+<span class="sd">    - LeakyReLU: ``&#39;leaky_relu&#39;``</span>
+<span class="sd">    - LogSoftmax: ``&#39;log_softmax&#39;``</span>
+<span class="sd">    - ReLU: ``&#39;relu&#39;``</span>
+<span class="sd">    - ReLU6: ``&#39;relu6&#39;``</span>
+<span class="sd">    - Sigmoid: ``&#39;sigmoid&#39;``</span>
+<span class="sd">    - Softmax: ``&#39;softmax&#39;``</span>
+<span class="sd">    - Softplus: ``&#39;softplus&#39;``</span>
+<span class="sd">    - SoftSign: ``&#39;softsign&#39;``</span>
+<span class="sd">    - Tanh: ``&#39;tanh&#39;``</span>
+<span class="sd">    - Tanhshrink: ``&#39;tanhshrink&#39;``</span>
+
+<span class="sd">    For more insights into specific arguments of the MLP, please refer</span>
+<span class="sd">    to `Linear pytorch documentation &lt;https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear&gt;`_.</span>
 
 
 <span class="sd">    Args:</span>

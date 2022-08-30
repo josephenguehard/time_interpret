@@ -103,7 +103,7 @@
     <span class="c1"># treats each column as separate class and calculates KL over the class,</span>
     <span class="c1"># sums it up and sends batched</span>
     <span class="n">n_classes</span> <span class="o">=</span> <span class="n">p1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-    <span class="n">total_kl</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">p1</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">total_kl</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">p1</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">p1</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_classes</span><span class="p">):</span>
         <span class="n">p2_tensor</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">p2</span><span class="p">[:,</span> <span class="n">n</span><span class="p">],</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">p2</span><span class="p">[:,</span> <span class="n">n</span><span class="p">]],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -121,6 +121,19 @@
 <span class="sd">    Args:</span>
 <span class="sd">        forward_func (callable): The forward function of the model or any</span>
 <span class="sd">            modification of it.</span>
+<span class="sd">        generator (JointFeatureGeneratorNet): Conditional generator model to</span>
+<span class="sd">            predict future observations as a Pytorch Lightning module.</span>
+<span class="sd">            If not provided, a default generator is created.</span>
+<span class="sd">            Default to ``None``</span>
+<span class="sd">        datamodule (LightningDataModule): A Pytorch Lightning data</span>
+<span class="sd">            module to train the generator. If not provided, you must provide</span>
+<span class="sd">            features. Default to ``None``</span>
+<span class="sd">        features (th.Tensor): A tensor of features to train the generator.</span>
+<span class="sd">            If not provided, you must provide a datamodule.</span>
+<span class="sd">            Default to ``None``</span>
+<span class="sd">        trainer (Trainer): A Pytorch Lightning trainer to train the generator.</span>
+<span class="sd">            If not provided, a default trainer is created. Default to ``None``</span>
+<span class="sd">        batch_size (int): Batch size for generator training. Default to 32</span>
 
 <span class="sd">    References:</span>
 <span class="sd">        https://arxiv.org/abs/2003.02821</span>
@@ -227,6 +240,9 @@
         <span class="p">),</span> <span class="s2">&quot;Multiple inputs are not accepted for this method&quot;</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
+        <span class="c1"># Set generator to device</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="n">return_temporal_attributions</span><span class="p">:</span>
             <span class="n">data</span><span class="p">,</span> <span class="n">additional_forward_args</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_add_temporal_mask</span><span class="p">(</span>
                 <span class="n">inputs</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
@@ -292,7 +308,7 @@
         <span class="p">],</span> <span class="s2">&quot;Unrecognised distance metric.&quot;</span>
 
         <span class="n">_</span><span class="p">,</span> <span class="n">t_len</span><span class="p">,</span> <span class="n">n_features</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">shape</span>
-        <span class="n">score</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">score</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">multilabel</span><span class="p">:</span>
             <span class="n">activation</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">sigmoid</span>
