@@ -136,6 +136,20 @@ def comprehensiveness(
 
     References:
         https://arxiv.org/abs/1911.03429
+
+    Examples:
+        >>> import torch as th
+        >>> from captum.attr import Saliency
+        >>> from tint.metrics import comprehensiveness
+        >>> from tint.models import MLP
+        <BLANKLINE>
+        >>> inputs = th.rand(8, 7, 5)
+        >>> mlp = MLP([5, 3, 1])
+        <BLANKLINE>
+        >>> explainer = Saliency(mlp)
+        >>> attr = explainer.attribute(inputs, target=0)
+        <BLANKLINE>
+        >>> comp = comprehensiveness(mlp, inputs, attr, target=0)
     """
     return _base_metric(
         metric=_comprehensiveness,

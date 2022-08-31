@@ -136,6 +136,20 @@ def sufficiency(
 
     References:
         https://arxiv.org/abs/1911.03429
+
+    Examples:
+        >>> import torch as th
+        >>> from captum.attr import Saliency
+        >>> from tint.metrics import sufficiency
+        >>> from tint.models import MLP
+        <BLANKLINE>
+        >>> inputs = th.rand(8, 7, 5)
+        >>> mlp = MLP([5, 3, 1])
+        <BLANKLINE>
+        >>> explainer = Saliency(mlp)
+        >>> attr = explainer.attribute(inputs, target=0)
+        <BLANKLINE>
+        >>> suff = sufficiency(mlp, inputs, attr, target=0)
     """
     # Inverse topk to select the non topk
     topk = 1.0 - topk

@@ -48,6 +48,15 @@ def roc_auc(
 
     Returns:
         (float or tuple or floats): The roc-auc metric.
+
+    Examples:
+        >>> import torch as th
+        >>> from tint.metrics.white_box import roc_auc
+        <BLANKLINE>
+        >>> attr = th.rand(8, 7, 5)
+        >>> true_attr = th.randint(2, (8, 7, 5))
+        <BLANKLINE>
+        >>> roc_auc_ = roc_auc(attr, true_attr)
     """
     return _base_white_box_metric(
         metric=_roc_auc,

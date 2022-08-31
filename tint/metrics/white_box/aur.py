@@ -52,6 +52,15 @@ def aur(
 
     Returns:
         (float or tuple or floats): The aur metric.
+
+    Examples:
+        >>> import torch as th
+        >>> from tint.metrics.white_box import aur
+        <BLANKLINE>
+        >>> attr = th.rand(8, 7, 5)
+        >>> true_attr = th.randint(2, (8, 7, 5))
+        <BLANKLINE>
+        >>> aur_ = aur(attr, true_attr)
     """
     return _base_white_box_metric(
         metric=_aur,

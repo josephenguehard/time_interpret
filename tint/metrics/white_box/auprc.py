@@ -49,6 +49,15 @@ def auprc(
 
     Returns:
         (float or tuple or floats): The auprc metric.
+
+    Examples:
+        >>> import torch as th
+        >>> from tint.metrics.white_box import auprc
+        <BLANKLINE>
+        >>> attr = th.rand(8, 7, 5)
+        >>> true_attr = th.randint(2, (8, 7, 5))
+        <BLANKLINE>
+        >>> auprc_ = auprc(attr, true_attr)
     """
     return _base_white_box_metric(
         metric=_auprc,

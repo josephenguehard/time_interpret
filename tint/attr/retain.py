@@ -44,14 +44,13 @@ class Retain(PerturbationAttribution):
     Examples:
         >>> import torch as th
         >>> from tint.attr import Retain
-        >>> from tint.models import MLP
         <BLANKLINE>
         >>> inputs = th.rand(8, 7, 5)
         >>> data = th.rand(32, 7, 5)
-        >>> mlp = MLP([5, 3, 1])
+        >>> labels = th.randint(2, (32, 7))
         <BLANKLINE>
-        >>> explainer = Retain(mlp)
-        >>> attr = explainer.attribute(inputs)
+        >>> explainer = Retain(features=data, labels=labels)
+        >>> attr = explainer.attribute(inputs, target=th.randint(2, (8, 7))))
     """
 
     def __init__(

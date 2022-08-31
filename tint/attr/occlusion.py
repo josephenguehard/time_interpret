@@ -42,6 +42,17 @@ class Occlusion(FeatureAblation):
     Args:
         forward_func (Callable): The forward function of the model or any
             modification of it.
+
+    Examples:
+        >>> import torch as th
+        >>> from tint.attr import Occlusion
+        >>> from tint.models import MLP
+        <BLANKLINE>
+        >>> inputs = th.rand(8, 7, 5)
+        >>> mlp = MLP([5, 3, 1])
+        <BLANKLINE>
+        >>> explainer = Occlusion(mlp)
+        >>> attr = explainer.attribute(inputs, (1, 1))
     """
 
     def __init__(self, forward_func: Callable) -> None:

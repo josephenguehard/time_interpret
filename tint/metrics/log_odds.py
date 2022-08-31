@@ -138,6 +138,20 @@ def log_odds(
 
     References:
         https://arxiv.org/abs/1704.02685
+
+    Examples:
+        >>> import torch as th
+        >>> from captum.attr import Saliency
+        >>> from tint.metrics import log_odds
+        >>> from tint.models import MLP
+        <BLANKLINE>
+        >>> inputs = th.rand(8, 7, 5)
+        >>> mlp = MLP([5, 3, 1])
+        <BLANKLINE>
+        >>> explainer = Saliency(mlp)
+        >>> attr = explainer.attribute(inputs, target=0)
+        <BLANKLINE>
+        >>> log_odds_ = log_odds(mlp, inputs, attr, target=0)
     """
     return _base_metric(
         metric=_log_odds,

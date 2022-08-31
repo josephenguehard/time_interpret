@@ -46,7 +46,7 @@ class DiscretetizedIntegratedGradients(GradientAttribution):
             (inputs - baselines).
 
     References:
-        https://github.com/INK-USC/DIG
+        https://github.com/INK-USC/DIG \n
         https://arxiv.org/abs/2108.13654
 
     Examples:
@@ -54,8 +54,7 @@ class DiscretetizedIntegratedGradients(GradientAttribution):
         >>> from tint.attr import DiscretetizedIntegratedGradients
         >>> from tint.models import MLP
         <BLANKLINE>
-        >>> inputs = th.rand(8, 7, 5)
-        >>> data = th.rand(32, 7, 5)
+        >>> inputs = th.rand(50, 5)
         >>> mlp = MLP([5, 3, 1])
         <BLANKLINE>
         >>> explainer = DiscretetizedIntegratedGradients(mlp)

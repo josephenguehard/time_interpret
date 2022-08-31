@@ -136,6 +136,20 @@ def cross_entropy(
 
     References:
         https://arxiv.org/pdf/2106.05303
+
+    Examples:
+        >>> import torch as th
+        >>> from captum.attr import Saliency
+        >>> from tint.metrics import cross_entropy
+        >>> from tint.models import MLP
+        <BLANKLINE>
+        >>> inputs = th.rand(8, 7, 5)
+        >>> mlp = MLP([5, 3, 1])
+        <BLANKLINE>
+        >>> explainer = Saliency(mlp)
+        >>> attr = explainer.attribute(inputs, target=0)
+        <BLANKLINE>
+        >>> ce = cross_entropy(mlp, inputs, attr, target=0)
     """
     return _base_metric(
         metric=_cross_entropy,

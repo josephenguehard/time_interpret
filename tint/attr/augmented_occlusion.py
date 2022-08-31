@@ -45,7 +45,7 @@ class AugmentedOcclusion(Occlusion):
         >>> mlp = MLP([5, 3, 1])
         <BLANKLINE>
         >>> explainer = AugmentedOcclusion(mlp, data)
-        >>> attr = explainer.attribute(inputs)
+        >>> attr = explainer.attribute(inputs, (1, 1))
     """
 
     def __init__(

@@ -235,6 +235,24 @@ class BayesMaskNet(Net):
         lr_scheduler_args (dict): Additional args for the scheduler.
             Default to ``None``
         l2 (float): L2 regularisation. Default to 0.0
+
+    Examples:
+        >>> import torch as th
+        >>> from tint.attr.models import BayesMaskNet
+        >>> from tint.models import MLP
+        <BLANKLINE>
+        >>> inputs = th.rand(8, 7, 5)
+        >>> data = th.rand(32, 7, 5)
+        >>> mlp = MLP([5, 3, 1])
+        <BLANKLINE>
+        >>> mask = BayesMaskNet(
+        ...     forward_func=mlp,
+        ...     distribution="normal",
+        ...     hard=False,
+        ...     eps=1e-5,
+        ...     optim="adam",
+        ...     lr=0.01,
+        ... )
     """
 
     def __init__(
@@ -304,6 +322,7 @@ class BayesMaskNet(Net):
         return loss
 
     def training_step_end(self, step_output):
+        """"""
         # Add regularisation from Mask network
         step_output = self.net.regularisation(step_output)
 

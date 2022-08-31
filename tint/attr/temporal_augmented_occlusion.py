@@ -29,6 +29,21 @@ class TemporalAugmentedOcclusion(AugmentedOcclusion):
         is_temporal (bool): Whether the data is temporal or not.
             If ``True``, the data will be ablated to the inputs
             on the temporal dimension (dimension 1). Default to ``False``
+
+    References:
+        https://arxiv.org/abs/2003.02821
+
+    Examples:
+        >>> import torch as th
+        >>> from tint.attr import TemporalAugmentedOcclusion
+        >>> from tint.models import MLP
+        <BLANKLINE>
+        >>> inputs = th.rand(8, 7, 5)
+        >>> data = th.rand(32, 7, 5)
+        >>> mlp = MLP([5, 3, 1])
+        <BLANKLINE>
+        >>> explainer = TemporalAugmentedOcclusion(mlp, data)
+        >>> attr = explainer.attribute(inputs, (1,))
     """
 
     def __init__(

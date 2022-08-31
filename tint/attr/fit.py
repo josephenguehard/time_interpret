@@ -59,6 +59,18 @@ class Fit(PerturbationAttribution):
 
     References:
         https://arxiv.org/abs/2003.02821
+
+    Examples:
+        >>> import torch as th
+        >>> from tint.attr import Fit
+        >>> from tint.models import MLP
+        <BLANKLINE>
+        >>> inputs = th.rand(8, 7, 5)
+        >>> data = th.rand(32, 7, 5)
+        >>> mlp = MLP([5, 3, 1])
+        <BLANKLINE>
+        >>> explainer = Fit(mlp, features=data)
+        >>> attr = explainer.attribute(inputs)
     """
 
     def __init__(

@@ -219,6 +219,29 @@ def scale_inputs(
     factor=0,
     strategy="greedy",
 ):
+    """
+    Creates a monotonic path between input_ids and ref_input_ids
+    (the baseline). This path is only composed of data points, which have been
+    'monotonized'. The strategy used to build the path is either ``'greedy'``
+    or ``'maxcount'``.
+
+    Args:
+        input_ids: The inputs.
+        ref_input_ids: The baseline.
+        device: Which device to use for the path.
+        auxiliary_data: The knns previously computed.
+        steps: Number of steps for the path. Default to 30
+        factor: Up-scaling of the embeddings. Default to 0
+        strategy: Strategy to build the path. Either ``'greedy'`` or
+        ``'maxcount'``. Default to ``'greedy'``
+
+    Returns:
+        torch.Tensor: The monotonic path.
+
+    References:
+        https://github.com/INK-USC/DIG \n
+        https://arxiv.org/abs/2108.13654
+    """
     # generates the paths required by DIG
     word_idx_map, word_features, adj = auxiliary_data
 

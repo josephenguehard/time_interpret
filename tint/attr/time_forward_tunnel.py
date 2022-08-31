@@ -17,26 +17,42 @@ from tint.utils import get_progress_bars, _slice_to_time
 
 
 class TimeForwardTunnel(Attribution):
+    r"""
+    Performs interpretation method by iteratively retrieving the input data
+    up to a time, and computing the predictions using this data and the
+    forward_func.
+
+    This method allows to use interpretation methods in a setting which is
+    not retrospective: the true label is not yet known.
+
+    The target will be ignored when using this method, as it will be
+    computed internally.
+
+    Args:
+        attribution_method (Attribution): An instance of any attribution algorithm
+                    of type `Attribution`. E.g. Integrated Gradients,
+                    Conductance or Saliency.
+
+    References:
+        https://arxiv.org/abs/2003.02821
+
+    Examples:
+        >>> import torch as th
+        >>> from captum.attr import Saliency
+        >>> from tint.attr import TimeForwardTunnel
+        >>> from tint.models import MLP
+        <BLANKLINE>
+        >>> inputs = th.rand(8, 7, 5)
+        >>> mlp = MLP([5, 3, 1])
+        <BLANKLINE>
+        >>> explainer = TimeForwardTunnel(Saliency(mlp))
+        >>> attr = explainer.attribute(inputs, target=0)
+    """
+
     def __init__(
         self,
         attribution_method: Attribution,
     ) -> None:
-        r"""
-        Performs interpretation method by iteratively retrieving the input data
-        up to a time, and computing the predictions using this data and the
-        forward_func.
-
-        This method allows to use interpretation methods in a setting which is
-        not retrospective: the true label is not yet known.
-
-        The target will be ignored when using this method, as it will be
-        computed internally.
-
-        Args:
-            attribution_method (Attribution): An instance of any attribution algorithm
-                        of type `Attribution`. E.g. Integrated Gradients,
-                        Conductance or Saliency.
-        """
         self.attribution_method = attribution_method
         self.is_delta_supported = (
             self.attribution_method.has_convergence_delta()

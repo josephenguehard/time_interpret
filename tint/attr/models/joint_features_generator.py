@@ -175,6 +175,11 @@ class JointFeatureGeneratorNet(Net):
 
     References:
         https://proceedings.neurips.cc/paper/2015/hash/b618c3210e934362ac261db280128c22-Abstract.html
+
+    Examples:
+        >>> from tint.attr.models import JointFeatureGeneratorNet
+        <BLANKLINE>
+        >>> generator = JointFeatureGeneratorNet(rnn_hidden_size=6)
     """
 
     def __init__(

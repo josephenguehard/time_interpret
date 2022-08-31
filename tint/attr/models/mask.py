@@ -272,6 +272,29 @@ class MaskNet(Net):
         lr_scheduler_args (dict): Additional args for the scheduler.
             Default to ``None``
         l2 (float): L2 regularisation. Default to 0.0
+
+    References:
+        https://arxiv.org/pdf/2106.05303
+
+    Examples:
+        >>> import numpy as np
+        >>> import torch as th
+        >>> from tint.attr.models import MaskNet
+        >>> from tint.models import MLP
+        <BLANKLINE>
+        >>> inputs = th.rand(8, 7, 5)
+        >>> data = th.rand(32, 7, 5)
+        >>> mlp = MLP([5, 3, 1])
+        <BLANKLINE>
+        >>> mask = MaskNet(
+        ...     forward_func=mlp,
+        ...     perturbation="gaussian_blur",
+        ...     sigma_max=1,
+        ...     keep_ratio=list(np.arange(0.25, 0.35, 0.01)),
+        ...     size_reg_factor_init=0.1,
+        ...     size_reg_factor_dilation=100,
+        ...     time_reg_factor=1.0,
+        ... )
     """
 
     def __init__(
@@ -385,6 +408,7 @@ class MaskNet(Net):
             )
 
     def training_step_end(self, step_output):
+        """"""
         # Add regularisation from Mask network
         step_output = self.net.regularisation(step_output)
 

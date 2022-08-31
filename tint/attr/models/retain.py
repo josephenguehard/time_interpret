@@ -170,6 +170,19 @@ class RetainNet(Net):
 
     References:
         https://arxiv.org/pdf/1608.05745
+
+    Examples:
+        >>> from tint.attr.models import RetainNet
+        <BLANKLINE>
+        >>> retain = RetainNet(
+        ...     dim_emb=128,
+        ...     dropout_emb=0.4,
+        ...     dim_alpha=8,
+        ...     dim_beta=8,
+        ...     dropout_context=0.4,
+        ...     dim_output=2,
+        ...     loss="cross_entropy",
+        ... )
     """
 
     def __init__(

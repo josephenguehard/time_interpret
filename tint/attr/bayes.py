@@ -48,7 +48,7 @@ class BayesLime(Lime):
         >>> from tint.attr import BayesLime
         >>> from tint.models import MLP
         <BLANKLINE>
-        >>> inputs = th.rand(8, 7, 5)
+        >>> inputs = th.rand(8, 5)
         >>> mlp = MLP([5, 3, 1])
         <BLANKLINE>
         >>> explainer = BayesLime(mlp)
@@ -111,7 +111,7 @@ class BayesShap(KernelShap):
         >>> from tint.attr import BayesShap
         >>> from tint.models import MLP
         <BLANKLINE>
-        >>> inputs = th.rand(8, 7, 5)
+        >>> inputs = th.rand(8, 5)
         >>> mlp = MLP([5, 3, 1])
         <BLANKLINE>
         >>> explainer = BayesShap(mlp)
