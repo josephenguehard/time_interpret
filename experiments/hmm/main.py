@@ -169,15 +169,16 @@ def main(
         attr["fit"] = explainer.attribute(x_test, show_progress=True)
 
     if "gradient_shap" in explainers:
-        explainer = TimeForwardTunnel(GradientShap(classifier))
+        explainer = TimeForwardTunnel(GradientShap(classifier.cpu()))
         attr["gradient_shap"] = explainer.attribute(
-            x_test,
-            baselines=th.cat([x_test * 0, x_test]),
+            x_test.cpu(),
+            baselines=th.cat([x_test.cpu() * 0, x_test.cpu()]),
             n_samples=50,
             stdevs=0.0001,
             task="binary",
             show_progress=True,
         ).abs()
+        classifier.to(accelerator)
 
     if "integrated_gradients" in explainers:
         explainer = TimeForwardTunnel(IntegratedGradients(classifier))
