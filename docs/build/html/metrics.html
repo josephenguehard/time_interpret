@@ -48,6 +48,7 @@
 </ul>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="attr.html">Attribution Methods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="attr_models.html">Attribution Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="datasets.html">Datasets</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Metrics</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#summary">Summary</a></li>
@@ -229,6 +230,21 @@ Default: 0.5</p></li>
 </dl>
 <p class="rubric">References</p>
 <p><a class="reference external" href="https://arxiv.org/pdf/2106.05303">https://arxiv.org/pdf/2106.05303</a></p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span> <span class="k">as</span> <span class="nn">th</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">captum.attr</span> <span class="kn">import</span> <span class="n">Saliency</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.metrics</span> <span class="kn">import</span> <span class="n">accuracy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.models</span> <span class="kn">import</span> <span class="n">MLP</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inputs</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mlp</span> <span class="o">=</span> <span class="n">MLP</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">explainer</span> <span class="o">=</span> <span class="n">Saliency</span><span class="p">(</span><span class="n">mlp</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">attr</span> <span class="o">=</span> <span class="n">explainer</span><span class="o">.</span><span class="n">attribute</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">acc</span> <span class="o">=</span> <span class="n">accuracy</span><span class="p">(</span><span class="n">mlp</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -340,6 +356,21 @@ Default: 0.2</p></li>
 </dl>
 <p class="rubric">References</p>
 <p><a class="reference external" href="https://arxiv.org/abs/1911.03429">https://arxiv.org/abs/1911.03429</a></p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span> <span class="k">as</span> <span class="nn">th</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">captum.attr</span> <span class="kn">import</span> <span class="n">Saliency</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.metrics</span> <span class="kn">import</span> <span class="n">comprehensiveness</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.models</span> <span class="kn">import</span> <span class="n">MLP</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inputs</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mlp</span> <span class="o">=</span> <span class="n">MLP</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">explainer</span> <span class="o">=</span> <span class="n">Saliency</span><span class="p">(</span><span class="n">mlp</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">attr</span> <span class="o">=</span> <span class="n">explainer</span><span class="o">.</span><span class="n">attribute</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">comp</span> <span class="o">=</span> <span class="n">comprehensiveness</span><span class="p">(</span><span class="n">mlp</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -451,6 +482,21 @@ Default: 0.2</p></li>
 </dl>
 <p class="rubric">References</p>
 <p><a class="reference external" href="https://arxiv.org/pdf/2106.05303">https://arxiv.org/pdf/2106.05303</a></p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span> <span class="k">as</span> <span class="nn">th</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">captum.attr</span> <span class="kn">import</span> <span class="n">Saliency</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.metrics</span> <span class="kn">import</span> <span class="n">cross_entropy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.models</span> <span class="kn">import</span> <span class="n">MLP</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inputs</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mlp</span> <span class="o">=</span> <span class="n">MLP</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">explainer</span> <span class="o">=</span> <span class="n">Saliency</span><span class="p">(</span><span class="n">mlp</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">attr</span> <span class="o">=</span> <span class="n">explainer</span><span class="o">.</span><span class="n">attribute</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ce</span> <span class="o">=</span> <span class="n">cross_entropy</span><span class="p">(</span><span class="n">mlp</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -659,6 +705,21 @@ Default: 0.2</p></li>
 </dl>
 <p class="rubric">References</p>
 <p><a class="reference external" href="https://arxiv.org/abs/1704.02685">https://arxiv.org/abs/1704.02685</a></p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span> <span class="k">as</span> <span class="nn">th</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">captum.attr</span> <span class="kn">import</span> <span class="n">Saliency</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.metrics</span> <span class="kn">import</span> <span class="n">log_odds</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.models</span> <span class="kn">import</span> <span class="n">MLP</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inputs</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mlp</span> <span class="o">=</span> <span class="n">MLP</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">explainer</span> <span class="o">=</span> <span class="n">Saliency</span><span class="p">(</span><span class="n">mlp</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">attr</span> <span class="o">=</span> <span class="n">explainer</span><span class="o">.</span><span class="n">attribute</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">log_odds_</span> <span class="o">=</span> <span class="n">log_odds</span><span class="p">(</span><span class="n">mlp</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -770,6 +831,21 @@ Default: 0.2</p></li>
 </dl>
 <p class="rubric">References</p>
 <p><a class="reference external" href="https://arxiv.org/abs/1911.03429">https://arxiv.org/abs/1911.03429</a></p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span> <span class="k">as</span> <span class="nn">th</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">captum.attr</span> <span class="kn">import</span> <span class="n">Saliency</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.metrics</span> <span class="kn">import</span> <span class="n">sufficiency</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.models</span> <span class="kn">import</span> <span class="n">MLP</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inputs</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mlp</span> <span class="o">=</span> <span class="n">MLP</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">explainer</span> <span class="o">=</span> <span class="n">Saliency</span><span class="p">(</span><span class="n">mlp</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">attr</span> <span class="o">=</span> <span class="n">explainer</span><span class="o">.</span><span class="n">attribute</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">suff</span> <span class="o">=</span> <span class="n">sufficiency</span><span class="p">(</span><span class="n">mlp</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

@@ -48,6 +48,7 @@
 </ul>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="attr.html">Attribution Methods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="attr_models.html">Attribution Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="datasets.html">Datasets</a></li>
 <li class="toctree-l1"><a class="reference internal" href="metrics.html">Metrics</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">White Box Metrics</a><ul>
@@ -146,6 +147,16 @@ computing the metric or not. Default: True</p></li>
 <dd class="field-odd"><p>(float or tuple or floats)</p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span> <span class="k">as</span> <span class="nn">th</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.metrics.white_box</span> <span class="kn">import</span> <span class="n">aup</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">attr</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">true_attr</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">aup_</span> <span class="o">=</span> <span class="n">aup</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">true_attr</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -177,6 +188,16 @@ computing the metric or not. Default: True</p></li>
 <dd class="field-odd"><p>(float or tuple or floats)</p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span> <span class="k">as</span> <span class="nn">th</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.metrics.white_box</span> <span class="kn">import</span> <span class="n">auprc</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">attr</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">true_attr</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">auprc_</span> <span class="o">=</span> <span class="n">auprc</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">true_attr</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -207,6 +228,16 @@ computing the metric or not. Default: True</p></li>
 <dd class="field-odd"><p>(float or tuple or floats)</p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span> <span class="k">as</span> <span class="nn">th</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.metrics.white_box</span> <span class="kn">import</span> <span class="n">aur</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">attr</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">true_attr</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">aur_</span> <span class="o">=</span> <span class="n">aur</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">true_attr</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -237,6 +268,16 @@ computing the metric or not. Default: True</p></li>
 <dd class="field-odd"><p>(float or tuple or floats)</p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span> <span class="k">as</span> <span class="nn">th</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.metrics.white_box</span> <span class="kn">import</span> <span class="n">roc_auc</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">attr</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">true_attr</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">roc_auc_</span> <span class="o">=</span> <span class="n">roc_auc</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">true_attr</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

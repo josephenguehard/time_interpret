@@ -90,6 +90,16 @@ Each of the implemented interpretability methods can be found here:
     tint.attr.TimeForwardTunnel
 
 
+Some of these attributions use specific models which are listed here:
+
+.. autosummary::
+
+    tint.attr.models.BayesMaskNet
+    tint.attr.models.JointFeatureGeneratorNet
+    tint.attr.models.MaskNet
+    tint.attr.models.RetainNet
+    tint.attr.models.scale_inputs
+
 In addition, tint also provides some time series datasets which have been used
 as benchmark in recent publications. These datasets are listed here:
 
@@ -146,6 +156,7 @@ More details about each of these categories can be found here:
     :maxdepth: 1
 
     attr
+    attr_models
     datasets
     metrics
     white_box_metrics

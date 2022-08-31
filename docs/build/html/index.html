@@ -47,6 +47,7 @@
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="attr.html">Attribution Methods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="attr_models.html">Attribution Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="datasets.html">Datasets</a></li>
 <li class="toctree-l1"><a class="reference internal" href="metrics.html">Metrics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="white_box_metrics.html">White Box Metrics</a></li>
@@ -181,7 +182,31 @@ corresponding true saliency:</p>
 <td><p>Temporal Occlusion</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="attr.html#tint.attr.TimeForwardTunnel" title="tint.attr.TimeForwardTunnel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.TimeForwardTunnel</span></code></a>(attribution_method)</p></td>
-<td><p></p></td>
+<td><p>Performs interpretation method by iteratively retrieving the input data up to a time, and computing the predictions using this data and the forward_func.</p></td>
+</tr>
+</tbody>
+</table>
+<p>Some of these attributions use specific models which are listed here:</p>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="attr_models.html#tint.attr.models.BayesMaskNet" title="tint.attr.models.BayesMaskNet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.models.BayesMaskNet</span></code></a>(forward_func)</p></td>
+<td><p>Bayes mask model as a Pytorch Lightning model.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="attr_models.html#tint.attr.models.JointFeatureGeneratorNet" title="tint.attr.models.JointFeatureGeneratorNet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.models.JointFeatureGeneratorNet</span></code></a>([...])</p></td>
+<td><p>Conditional generator model to predict future observations as a Pytorch Lightning module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="attr_models.html#tint.attr.models.MaskNet" title="tint.attr.models.MaskNet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.models.MaskNet</span></code></a>(forward_func[, ...])</p></td>
+<td><p>Mask network as a Pytorch Lightning module.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="attr_models.html#tint.attr.models.RetainNet" title="tint.attr.models.RetainNet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.models.RetainNet</span></code></a>([dim_emb, ...])</p></td>
+<td><p>Retain Network as a Pytorch Lightning module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="attr_models.html#tint.attr.models.scale_inputs" title="tint.attr.models.scale_inputs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.models.scale_inputs</span></code></a>(input_ids, ...)</p></td>
+<td><p>Creates a monotonic path between input_ids and ref_input_ids (the baseline).</p></td>
 </tr>
 </tbody>
 </table>
@@ -297,6 +322,7 @@ These models can easily be used and trained with this framework.</p>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="attr.html">Attribution Methods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="attr_models.html">Attribution Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="datasets.html">Datasets</a></li>
 <li class="toctree-l1"><a class="reference internal" href="metrics.html">Metrics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="white_box_metrics.html">White Box Metrics</a></li>

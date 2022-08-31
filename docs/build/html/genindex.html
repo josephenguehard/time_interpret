@@ -45,6 +45,7 @@
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="attr.html">Attribution Methods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="attr_models.html">Attribution Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="datasets.html">Datasets</a></li>
 <li class="toctree-l1"><a class="reference internal" href="metrics.html">Metrics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="white_box_metrics.html">White Box Metrics</a></li>
@@ -88,6 +89,7 @@
  | <a href="#G"><strong>G</strong></a>
  | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
+ | <a href="#J"><strong>J</strong></a>
  | <a href="#K"><strong>K</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
@@ -111,9 +113,13 @@
         <li><a href="datasets.html#tint.datasets.Hawkes.true_saliency_t.params.(th.Tensor">(tint.datasets.Hawkes.true_saliency_t parameter)</a>
 </li>
       </ul></li>
-      <li><a href="attr.html#tint.attr.TimeForwardTunnel.attribute.params.**kwargs">**kwargs (tint.attr.TimeForwardTunnel.attribute parameter)</a>
+      <li><a href="attr_models.html#tint.attr.models.BayesMaskNet.forward.params.**kwargs">**kwargs (tint.attr.models.BayesMaskNet.forward parameter)</a>
 
       <ul>
+        <li><a href="attr_models.html#tint.attr.models.MaskNet.forward.params.**kwargs">(tint.attr.models.MaskNet.forward parameter)</a>
+</li>
+        <li><a href="attr.html#tint.attr.TimeForwardTunnel.attribute.params.**kwargs">(tint.attr.TimeForwardTunnel.attribute parameter)</a>
+</li>
         <li><a href="index.html#tint.metrics.lipschitz_max.params.**kwargs">(tint.metrics.lipschitz_max parameter)</a>, <a href="metrics.html#tint.metrics.lipschitz_max.params.**kwargs">[1]</a>, <a href="metrics.html#tint.metrics.lipschitz_max.params.**kwargs">[2]</a>
 </li>
         <li><a href="models.html#tint.models.Net.forward.params.**kwargs">(tint.models.Net.forward parameter)</a>
@@ -121,8 +127,14 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="models.html#tint.models.Net.forward.params.*args">*args (tint.models.Net.forward parameter)</a>
+      <li><a href="attr_models.html#tint.attr.models.BayesMaskNet.forward.params.*args">*args (tint.attr.models.BayesMaskNet.forward parameter)</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.MaskNet.forward.params.*args">(tint.attr.models.MaskNet.forward parameter)</a>
 </li>
+        <li><a href="models.html#tint.models.Net.forward.params.*args">(tint.models.Net.forward parameter)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -213,6 +225,8 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="attr.html#tint.attr.TimeForwardTunnel.params.attribution_method">attribution_method (tint.attr.TimeForwardTunnel parameter)</a>, <a href="attr.html#tint.attr.TimeForwardTunnel.params.attribution_method">[1]</a>, <a href="index.html#tint.attr.TimeForwardTunnel.params.attribution_method">[2]</a>
+</li>
       <li><a href="index.html#tint.metrics.accuracy.params.attributions">attributions (tint.metrics.accuracy parameter)</a>, <a href="metrics.html#tint.metrics.accuracy.params.attributions">[1]</a>, <a href="metrics.html#tint.metrics.accuracy.params.attributions">[2]</a>
 
       <ul>
@@ -251,6 +265,8 @@
 </li>
       <li><a href="white_box_metrics.html#tint.metrics.white_box.aur">aur() (in module tint.metrics.white_box)</a>
 </li>
+      <li><a href="attr_models.html#tint.attr.models.scale_inputs.params.auxiliary_data">auxiliary_data (tint.attr.models.scale_inputs parameter)</a>, <a href="attr_models.html#tint.attr.models.scale_inputs.params.auxiliary_data">[1]</a>, <a href="index.html#tint.attr.models.scale_inputs.params.auxiliary_data">[2]</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -275,9 +291,17 @@
         <li><a href="index.html#tint.metrics.sufficiency.params.baselines">(tint.metrics.sufficiency parameter)</a>, <a href="metrics.html#tint.metrics.sufficiency.params.baselines">[1]</a>, <a href="metrics.html#tint.metrics.sufficiency.params.baselines">[2]</a>
 </li>
       </ul></li>
-      <li><a href="models.html#tint.models.Net.predict_step.params.batch">batch (tint.models.Net.predict_step parameter)</a>
+      <li><a href="attr_models.html#tint.attr.models.JointFeatureGeneratorNet.test_step.params.batch">batch (tint.attr.models.JointFeatureGeneratorNet.test_step parameter)</a>
 
       <ul>
+        <li><a href="attr_models.html#tint.attr.models.JointFeatureGeneratorNet.training_step.params.batch">(tint.attr.models.JointFeatureGeneratorNet.training_step parameter)</a>
+</li>
+        <li><a href="attr_models.html#tint.attr.models.JointFeatureGeneratorNet.validation_step.params.batch">(tint.attr.models.JointFeatureGeneratorNet.validation_step parameter)</a>
+</li>
+        <li><a href="attr_models.html#tint.attr.models.MaskNet.predict_step.params.batch">(tint.attr.models.MaskNet.predict_step parameter)</a>
+</li>
+        <li><a href="models.html#tint.models.Net.predict_step.params.batch">(tint.models.Net.predict_step parameter)</a>
+</li>
         <li><a href="models.html#tint.models.Net.test_step.params.batch">(tint.models.Net.test_step parameter)</a>
 </li>
         <li><a href="models.html#tint.models.Net.training_step.params.batch">(tint.models.Net.training_step parameter)</a>
@@ -285,9 +309,17 @@
         <li><a href="models.html#tint.models.Net.validation_step.params.batch">(tint.models.Net.validation_step parameter)</a>
 </li>
       </ul></li>
-      <li><a href="models.html#tint.models.Net.predict_step.params.batch_idx">batch_idx (tint.models.Net.predict_step parameter)</a>
+      <li><a href="attr_models.html#tint.attr.models.JointFeatureGeneratorNet.test_step.params.batch_idx">batch_idx (tint.attr.models.JointFeatureGeneratorNet.test_step parameter)</a>
 
       <ul>
+        <li><a href="attr_models.html#tint.attr.models.JointFeatureGeneratorNet.training_step.params.batch_idx">(tint.attr.models.JointFeatureGeneratorNet.training_step parameter)</a>
+</li>
+        <li><a href="attr_models.html#tint.attr.models.JointFeatureGeneratorNet.validation_step.params.batch_idx">(tint.attr.models.JointFeatureGeneratorNet.validation_step parameter)</a>
+</li>
+        <li><a href="attr_models.html#tint.attr.models.MaskNet.predict_step.params.batch_idx">(tint.attr.models.MaskNet.predict_step parameter)</a>
+</li>
+        <li><a href="models.html#tint.models.Net.predict_step.params.batch_idx">(tint.models.Net.predict_step parameter)</a>
+</li>
         <li><a href="models.html#tint.models.Net.test_step.params.batch_idx">(tint.models.Net.test_step parameter)</a>
 </li>
         <li><a href="models.html#tint.models.Net.training_step.params.batch_idx">(tint.models.Net.training_step parameter)</a>
@@ -295,12 +327,18 @@
         <li><a href="models.html#tint.models.Net.validation_step.params.batch_idx">(tint.models.Net.validation_step parameter)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="attr.html#tint.attr.BayesMask.attribute.params.batch_size">batch_size (tint.attr.BayesMask.attribute parameter)</a>
 
       <ul>
         <li><a href="attr.html#tint.attr.DynaMask.attribute.params.batch_size">(tint.attr.DynaMask.attribute parameter)</a>
 </li>
         <li><a href="attr.html#tint.attr.Fit.params.batch_size">(tint.attr.Fit parameter)</a>, <a href="attr.html#tint.attr.Fit.params.batch_size">[1]</a>, <a href="index.html#tint.attr.Fit.params.batch_size">[2]</a>
+</li>
+        <li><a href="attr_models.html#tint.attr.models.BayesMask.params.batch_size">(tint.attr.models.BayesMask parameter)</a>
+</li>
+        <li><a href="attr_models.html#tint.attr.models.BayesMaskNet.params.batch_size">(tint.attr.models.BayesMaskNet parameter)</a>, <a href="attr_models.html#tint.attr.models.BayesMaskNet.params.batch_size">[1]</a>, <a href="index.html#tint.attr.models.BayesMaskNet.params.batch_size">[2]</a>
 </li>
         <li><a href="datasets.html#tint.datasets.Arma.params.batch_size">(tint.datasets.Arma parameter)</a>, <a href="datasets.html#tint.datasets.Arma.params.batch_size">[1]</a>, <a href="index.html#tint.datasets.Arma.params.batch_size">[2]</a>
 </li>
@@ -313,11 +351,17 @@
         <li><a href="datasets.html#tint.datasets.Mimic3.params.batch_size">(tint.datasets.Mimic3 parameter)</a>, <a href="datasets.html#tint.datasets.Mimic3.params.batch_size">[1]</a>, <a href="index.html#tint.datasets.Mimic3.params.batch_size">[2]</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="attr.html#tint.attr.BayesLime">BayesLime (class in tint.attr)</a>
 </li>
+      <li><a href="attr_models.html#tint.attr.models.BayesLinearModel">BayesLinearModel (class in tint.attr.models)</a>
+</li>
       <li><a href="attr.html#tint.attr.BayesMask">BayesMask (class in tint.attr)</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.BayesMask">(class in tint.attr.models)</a>
+</li>
+      </ul></li>
+      <li><a href="attr_models.html#tint.attr.models.BayesMaskNet">BayesMaskNet (class in tint.attr.models)</a>
 </li>
       <li><a href="attr.html#tint.attr.BayesShap">BayesShap (class in tint.attr)</a>
 </li>
@@ -383,8 +427,14 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="index.html#tint.models.Bert.params.config">config (tint.models.Bert parameter)</a>, <a href="models.html#tint.models.Bert.params.config">[1]</a>, <a href="models.html#tint.models.Bert.params.config">[2]</a>
 </li>
-      <li><a href="models.html#tint.models.Net.configure_optimizers">configure_optimizers() (tint.models.Net method)</a>
+      <li><a href="attr_models.html#tint.attr.models.BayesMaskNet.configure_optimizers">configure_optimizers() (tint.attr.models.BayesMaskNet method)</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.MaskNet.configure_optimizers">(tint.attr.models.MaskNet method)</a>
 </li>
+        <li><a href="models.html#tint.models.Net.configure_optimizers">(tint.models.Net method)</a>
+</li>
+      </ul></li>
       <li><a href="datasets.html#tint.datasets.HMM.params.corr_features">corr_features (tint.datasets.HMM parameter)</a>, <a href="datasets.html#tint.datasets.HMM.params.corr_features">[1]</a>, <a href="index.html#tint.datasets.HMM.params.corr_features">[2]</a>
 </li>
       <li><a href="metrics.html#tint.metrics.cross_entropy">cross_entropy() (in module tint.metrics)</a>
@@ -415,11 +465,19 @@
         <li><a href="datasets.html#tint.datasets.Mimic3.params.data_dir">(tint.datasets.Mimic3 parameter)</a>, <a href="datasets.html#tint.datasets.Mimic3.params.data_dir">[1]</a>, <a href="index.html#tint.datasets.Mimic3.params.data_dir">[2]</a>
 </li>
       </ul></li>
-      <li><a href="models.html#tint.models.Net.test_step.params.dataloader_id">dataloader_id (tint.models.Net.test_step parameter)</a>
-</li>
-      <li><a href="models.html#tint.models.Net.predict_step.params.dataloader_idx">dataloader_idx (tint.models.Net.predict_step parameter)</a>
+      <li><a href="attr_models.html#tint.attr.models.JointFeatureGeneratorNet.test_step.params.dataloader_id">dataloader_id (tint.attr.models.JointFeatureGeneratorNet.test_step parameter)</a>
 
       <ul>
+        <li><a href="models.html#tint.models.Net.test_step.params.dataloader_id">(tint.models.Net.test_step parameter)</a>
+</li>
+      </ul></li>
+      <li><a href="attr_models.html#tint.attr.models.JointFeatureGeneratorNet.validation_step.params.dataloader_idx">dataloader_idx (tint.attr.models.JointFeatureGeneratorNet.validation_step parameter)</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.MaskNet.predict_step.params.dataloader_idx">(tint.attr.models.MaskNet.predict_step parameter)</a>
+</li>
+        <li><a href="models.html#tint.models.Net.predict_step.params.dataloader_idx">(tint.models.Net.predict_step parameter)</a>
+</li>
         <li><a href="models.html#tint.models.Net.validation_step.params.dataloader_idx">(tint.models.Net.validation_step parameter)</a>
 </li>
       </ul></li>
@@ -439,18 +497,64 @@
         <li><a href="datasets.html#tint.datasets.Hawkes.true_saliency_t.params.decay">(tint.datasets.Hawkes.true_saliency_t parameter)</a>
 </li>
       </ul></li>
+      <li><a href="attr_models.html#tint.attr.models.scale_inputs.params.Default to ``'greedy'``">Default to ``&#39;greedy&#39;`` (tint.attr.models.scale_inputs parameter)</a>, <a href="attr_models.html#tint.attr.models.scale_inputs.params.Default to ``'greedy'``">[1]</a>, <a href="index.html#tint.attr.models.scale_inputs.params.Default to ``'greedy'``">[2]</a>
+</li>
+      <li><a href="attr_models.html#tint.attr.models.Mask.params.deletion_mode">deletion_mode (tint.attr.models.Mask parameter)</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.MaskNet.params.deletion_mode">(tint.attr.models.MaskNet parameter)</a>, <a href="attr_models.html#tint.attr.models.MaskNet.params.deletion_mode">[1]</a>, <a href="index.html#tint.attr.models.MaskNet.params.deletion_mode">[2]</a>
+</li>
+      </ul></li>
+      <li><a href="attr_models.html#tint.attr.models.scale_inputs.params.device">device (tint.attr.models.scale_inputs parameter)</a>, <a href="attr_models.html#tint.attr.models.scale_inputs.params.device">[1]</a>, <a href="index.html#tint.attr.models.scale_inputs.params.device">[2]</a>
+</li>
+      <li><a href="attr_models.html#tint.attr.models.Retain.params.dim_alpha">dim_alpha (tint.attr.models.Retain parameter)</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.RetainNet.params.dim_alpha">(tint.attr.models.RetainNet parameter)</a>, <a href="attr_models.html#tint.attr.models.RetainNet.params.dim_alpha">[1]</a>, <a href="index.html#tint.attr.models.RetainNet.params.dim_alpha">[2]</a>
+</li>
+      </ul></li>
+      <li><a href="attr_models.html#tint.attr.models.Retain.params.dim_beta">dim_beta (tint.attr.models.Retain parameter)</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.RetainNet.params.dim_beta">(tint.attr.models.RetainNet parameter)</a>, <a href="attr_models.html#tint.attr.models.RetainNet.params.dim_beta">[1]</a>, <a href="index.html#tint.attr.models.RetainNet.params.dim_beta">[2]</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="attr_models.html#tint.attr.models.Retain.params.dim_emb">dim_emb (tint.attr.models.Retain parameter)</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.RetainNet.params.dim_emb">(tint.attr.models.RetainNet parameter)</a>, <a href="attr_models.html#tint.attr.models.RetainNet.params.dim_emb">[1]</a>, <a href="index.html#tint.attr.models.RetainNet.params.dim_emb">[2]</a>
+</li>
+      </ul></li>
       <li><a href="index.html#tint.models.TransformerEncoder.params.dim_feedforward">dim_feedforward (tint.models.TransformerEncoder parameter)</a>, <a href="models.html#tint.models.TransformerEncoder.params.dim_feedforward">[1]</a>, <a href="models.html#tint.models.TransformerEncoder.params.dim_feedforward">[2]</a>
 </li>
+      <li><a href="attr_models.html#tint.attr.models.Retain.params.dim_output">dim_output (tint.attr.models.Retain parameter)</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.RetainNet.params.dim_output">(tint.attr.models.RetainNet parameter)</a>, <a href="attr_models.html#tint.attr.models.RetainNet.params.dim_output">[1]</a>, <a href="index.html#tint.attr.models.RetainNet.params.dim_output">[2]</a>
+</li>
+      </ul></li>
       <li><a href="attr.html#tint.attr.DiscretetizedIntegratedGradients">DiscretetizedIntegratedGradients (class in tint.attr)</a>
 </li>
       <li><a href="datasets.html#tint.datasets.BioBank.params.discretised">discretised (tint.datasets.BioBank parameter)</a>, <a href="datasets.html#tint.datasets.BioBank.params.discretised">[1]</a>, <a href="index.html#tint.datasets.BioBank.params.discretised">[2]</a>
 </li>
+      <li><a href="attr_models.html#tint.attr.models.JointFeatureGenerator.params.dist_hidden_size">dist_hidden_size (tint.attr.models.JointFeatureGenerator parameter)</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.JointFeatureGeneratorNet.params.dist_hidden_size">(tint.attr.models.JointFeatureGeneratorNet parameter)</a>, <a href="attr_models.html#tint.attr.models.JointFeatureGeneratorNet.params.dist_hidden_size">[1]</a>, <a href="index.html#tint.attr.models.JointFeatureGeneratorNet.params.dist_hidden_size">[2]</a>
+</li>
+      </ul></li>
       <li><a href="attr.html#tint.attr.Fit.attribute.params.distance_metric">distance_metric (tint.attr.Fit.attribute parameter)</a>
 
       <ul>
         <li><a href="attr.html#tint.attr.Fit.representation.params.distance_metric">(tint.attr.Fit.representation parameter)</a>
+</li>
+      </ul></li>
+      <li><a href="attr_models.html#tint.attr.models.BayesMask.params.distribution">distribution (tint.attr.models.BayesMask parameter)</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.BayesMaskNet.params.distribution">(tint.attr.models.BayesMaskNet parameter)</a>, <a href="attr_models.html#tint.attr.models.BayesMaskNet.params.distribution">[1]</a>, <a href="index.html#tint.attr.models.BayesMaskNet.params.distribution">[2]</a>
 </li>
       </ul></li>
       <li><a href="datasets.html#tint.datasets.MNIST.params.download">download (tint.datasets.MNIST parameter)</a>
@@ -465,6 +569,24 @@
         <li><a href="index.html#tint.models.RNN.params.dropout">(tint.models.RNN parameter)</a>, <a href="models.html#tint.models.RNN.params.dropout">[1]</a>, <a href="models.html#tint.models.RNN.params.dropout">[2]</a>
 </li>
         <li><a href="index.html#tint.models.TransformerEncoder.params.dropout">(tint.models.TransformerEncoder parameter)</a>, <a href="models.html#tint.models.TransformerEncoder.params.dropout">[1]</a>, <a href="models.html#tint.models.TransformerEncoder.params.dropout">[2]</a>
+</li>
+      </ul></li>
+      <li><a href="attr_models.html#tint.attr.models.Retain.params.dropout_context">dropout_context (tint.attr.models.Retain parameter)</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.RetainNet.params.dropout_context">(tint.attr.models.RetainNet parameter)</a>, <a href="attr_models.html#tint.attr.models.RetainNet.params.dropout_context">[1]</a>, <a href="index.html#tint.attr.models.RetainNet.params.dropout_context">[2]</a>
+</li>
+      </ul></li>
+      <li><a href="attr_models.html#tint.attr.models.Retain.params.dropout_emb">dropout_emb (tint.attr.models.Retain parameter)</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.RetainNet.params.dropout_emb">(tint.attr.models.RetainNet parameter)</a>, <a href="attr_models.html#tint.attr.models.RetainNet.params.dropout_emb">[1]</a>, <a href="index.html#tint.attr.models.RetainNet.params.dropout_emb">[2]</a>
+</li>
+      </ul></li>
+      <li><a href="attr_models.html#tint.attr.models.Retain.params.dropout_input">dropout_input (tint.attr.models.Retain parameter)</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.RetainNet.params.dropout_input">(tint.attr.models.RetainNet parameter)</a>, <a href="attr_models.html#tint.attr.models.RetainNet.params.dropout_input">[1]</a>, <a href="index.html#tint.attr.models.RetainNet.params.dropout_input">[2]</a>
 </li>
       </ul></li>
       <li><a href="datasets.html#tint.datasets.Hawkes.generate_points.params.dt">dt (tint.datasets.Hawkes.generate_points parameter)</a>
@@ -485,6 +607,14 @@
       </ul></li>
       <li><a href="index.html#tint.models.TransformerEncoder.params.enable_nested_tensor">enable_nested_tensor (tint.models.TransformerEncoder parameter)</a>, <a href="models.html#tint.models.TransformerEncoder.params.enable_nested_tensor">[1]</a>, <a href="models.html#tint.models.TransformerEncoder.params.enable_nested_tensor">[2]</a>
 </li>
+      <li><a href="attr_models.html#tint.attr.models.BayesMask.params.eps">eps (tint.attr.models.BayesMask parameter)</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.BayesMaskNet.params.eps">(tint.attr.models.BayesMaskNet parameter)</a>, <a href="attr_models.html#tint.attr.models.BayesMaskNet.params.eps">[1]</a>, <a href="index.html#tint.attr.models.BayesMaskNet.params.eps">[2]</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="datasets.html#tint.datasets.BioBank.build_discretized_features.params.events">events (tint.datasets.BioBank.build_discretized_features parameter)</a>
 
       <ul>
@@ -495,8 +625,6 @@
         <li><a href="datasets.html#tint.datasets.BioBank.build_labels.params.events">(tint.datasets.BioBank.build_labels parameter)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="index.html#tint.metrics.lipschitz_max.params.explanation_func">explanation_func (tint.metrics.lipschitz_max parameter)</a>, <a href="metrics.html#tint.metrics.lipschitz_max.params.explanation_func">[1]</a>, <a href="metrics.html#tint.metrics.lipschitz_max.params.explanation_func">[2]</a>
 </li>
   </ul></td>
@@ -505,6 +633,8 @@
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="attr_models.html#tint.attr.models.scale_inputs.params.factor">factor (tint.attr.models.scale_inputs parameter)</a>, <a href="attr_models.html#tint.attr.models.scale_inputs.params.factor">[1]</a>, <a href="index.html#tint.attr.models.scale_inputs.params.factor">[2]</a>
+</li>
       <li><a href="datasets.html#tint.datasets.BioBank.params.fasttext">fasttext (tint.datasets.BioBank parameter)</a>, <a href="datasets.html#tint.datasets.BioBank.params.fasttext">[1]</a>, <a href="index.html#tint.datasets.BioBank.params.fasttext">[2]</a>
 </li>
       <li><a href="attr.html#tint.attr.Fit.params.features">features (tint.attr.Fit parameter)</a>, <a href="attr.html#tint.attr.Fit.params.features">[1]</a>, <a href="index.html#tint.attr.Fit.params.features">[2]</a>
@@ -517,6 +647,20 @@
       </ul></li>
       <li><a href="attr.html#tint.attr.Fit">Fit (class in tint.attr)</a>
 </li>
+      <li><a href="attr_models.html#tint.attr.models.SGDBayesLasso.fit">fit() (tint.attr.models.SGDBayesLasso method)</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.SGDBayesLinearRegression.fit">(tint.attr.models.SGDBayesLinearRegression method)</a>
+</li>
+        <li><a href="attr_models.html#tint.attr.models.SGDBayesRidge.fit">(tint.attr.models.SGDBayesRidge method)</a>
+</li>
+        <li><a href="attr_models.html#tint.attr.models.SkLearnARDRegression.fit">(tint.attr.models.SkLearnARDRegression method)</a>
+</li>
+        <li><a href="attr_models.html#tint.attr.models.SkLearnBayesianRidge.fit">(tint.attr.models.SkLearnBayesianRidge method)</a>
+</li>
+        <li><a href="attr_models.html#tint.attr.models.SkLearnBayesLinearModel.fit">(tint.attr.models.SkLearnBayesLinearModel method)</a>
+</li>
+      </ul></li>
       <li><a href="datasets.html#tint.datasets.Arma.params.fold">fold (tint.datasets.Arma parameter)</a>, <a href="datasets.html#tint.datasets.Arma.params.fold">[1]</a>, <a href="index.html#tint.datasets.Arma.params.fold">[2]</a>
 
       <ul>
@@ -529,9 +673,23 @@
         <li><a href="datasets.html#tint.datasets.Mimic3.params.fold">(tint.datasets.Mimic3 parameter)</a>, <a href="datasets.html#tint.datasets.Mimic3.params.fold">[1]</a>, <a href="index.html#tint.datasets.Mimic3.params.fold">[2]</a>
 </li>
       </ul></li>
-      <li><a href="models.html#tint.models.CNN.forward">forward() (tint.models.CNN method)</a>
+      <li><a href="attr_models.html#tint.attr.models.BayesLinearModel.forward">forward() (tint.attr.models.BayesLinearModel method)</a>
 
       <ul>
+        <li><a href="attr_models.html#tint.attr.models.BayesMask.forward">(tint.attr.models.BayesMask method)</a>
+</li>
+        <li><a href="attr_models.html#tint.attr.models.BayesMaskNet.forward">(tint.attr.models.BayesMaskNet method)</a>
+</li>
+        <li><a href="attr_models.html#tint.attr.models.JointFeatureGenerator.forward">(tint.attr.models.JointFeatureGenerator method)</a>
+</li>
+        <li><a href="attr_models.html#tint.attr.models.Mask.forward">(tint.attr.models.Mask method)</a>
+</li>
+        <li><a href="attr_models.html#tint.attr.models.MaskNet.forward">(tint.attr.models.MaskNet method)</a>
+</li>
+        <li><a href="attr_models.html#tint.attr.models.Retain.forward">(tint.attr.models.Retain method)</a>
+</li>
+        <li><a href="models.html#tint.models.CNN.forward">(tint.models.CNN method)</a>
+</li>
         <li><a href="models.html#tint.models.MLP.forward">(tint.models.MLP method)</a>
 </li>
         <li><a href="models.html#tint.models.Net.forward">(tint.models.Net method)</a>
@@ -541,6 +699,8 @@
         <li><a href="models.html#tint.models.TransformerEncoder.forward">(tint.models.TransformerEncoder method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="attr.html#tint.attr.AugmentedOcclusion.params.forward_func">forward_func (tint.attr.AugmentedOcclusion parameter)</a>, <a href="attr.html#tint.attr.AugmentedOcclusion.params.forward_func">[1]</a>, <a href="index.html#tint.attr.AugmentedOcclusion.params.forward_func">[2]</a>
 
       <ul>
@@ -559,6 +719,14 @@
         <li><a href="attr.html#tint.attr.LofKernelShap.params.forward_func">(tint.attr.LofKernelShap parameter)</a>, <a href="attr.html#tint.attr.LofKernelShap.params.forward_func">[1]</a>, <a href="index.html#tint.attr.LofKernelShap.params.forward_func">[2]</a>
 </li>
         <li><a href="attr.html#tint.attr.LofLime.params.forward_func">(tint.attr.LofLime parameter)</a>, <a href="attr.html#tint.attr.LofLime.params.forward_func">[1]</a>, <a href="index.html#tint.attr.LofLime.params.forward_func">[2]</a>
+</li>
+        <li><a href="attr_models.html#tint.attr.models.BayesMask.params.forward_func">(tint.attr.models.BayesMask parameter)</a>
+</li>
+        <li><a href="attr_models.html#tint.attr.models.BayesMaskNet.params.forward_func">(tint.attr.models.BayesMaskNet parameter)</a>, <a href="attr_models.html#tint.attr.models.BayesMaskNet.params.forward_func">[1]</a>, <a href="index.html#tint.attr.models.BayesMaskNet.params.forward_func">[2]</a>
+</li>
+        <li><a href="attr_models.html#tint.attr.models.Mask.params.forward_func">(tint.attr.models.Mask parameter)</a>
+</li>
+        <li><a href="attr_models.html#tint.attr.models.MaskNet.params.forward_func">(tint.attr.models.MaskNet parameter)</a>, <a href="attr_models.html#tint.attr.models.MaskNet.params.forward_func">[1]</a>, <a href="index.html#tint.attr.models.MaskNet.params.forward_func">[2]</a>
 </li>
         <li><a href="attr.html#tint.attr.Occlusion.params.forward_func">(tint.attr.Occlusion parameter)</a>, <a href="attr.html#tint.attr.Occlusion.params.forward_func">[1]</a>, <a href="index.html#tint.attr.Occlusion.params.forward_func">[2]</a>
 </li>
@@ -609,6 +777,12 @@
 <h2 id="H">H</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="attr_models.html#tint.attr.models.BayesMask.params.hard">hard (tint.attr.models.BayesMask parameter)</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.BayesMaskNet.params.hard">(tint.attr.models.BayesMaskNet parameter)</a>, <a href="attr_models.html#tint.attr.models.BayesMaskNet.params.hard">[1]</a>, <a href="index.html#tint.attr.models.BayesMaskNet.params.hard">[2]</a>
+</li>
+      </ul></li>
       <li><a href="attr.html#tint.attr.TimeForwardTunnel.has_convergence_delta">has_convergence_delta() (tint.attr.TimeForwardTunnel method)</a>
 </li>
       <li><a href="datasets.html#tint.datasets.Hawkes">Hawkes (class in tint.datasets)</a>
@@ -617,8 +791,12 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="index.html#tint.models.RNN.params.hidden_size">hidden_size (tint.models.RNN parameter)</a>, <a href="models.html#tint.models.RNN.params.hidden_size">[1]</a>, <a href="models.html#tint.models.RNN.params.hidden_size">[2]</a>
 </li>
-      <li><a href="models.html#tint.models.Net.training_step.params.hiddens">hiddens (tint.models.Net.training_step parameter)</a>
+      <li><a href="attr_models.html#tint.attr.models.JointFeatureGeneratorNet.training_step.params.hiddens">hiddens (tint.attr.models.JointFeatureGeneratorNet.training_step parameter)</a>
+
+      <ul>
+        <li><a href="models.html#tint.models.Net.training_step.params.hiddens">(tint.models.Net.training_step parameter)</a>
 </li>
+      </ul></li>
       <li><a href="datasets.html#tint.datasets.HMM">HMM (class in tint.datasets)</a>
 </li>
   </ul></td>
@@ -628,6 +806,14 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="datasets.html#tint.datasets.HMM.params.imp_features">imp_features (tint.datasets.HMM parameter)</a>, <a href="datasets.html#tint.datasets.HMM.params.imp_features">[1]</a>, <a href="index.html#tint.datasets.HMM.params.imp_features">[2]</a>
+</li>
+      <li><a href="attr_models.html#tint.attr.models.Mask.params.initial_mask_coef">initial_mask_coef (tint.attr.models.Mask parameter)</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.MaskNet.params.initial_mask_coef">(tint.attr.models.MaskNet parameter)</a>, <a href="attr_models.html#tint.attr.models.MaskNet.params.initial_mask_coef">[1]</a>, <a href="index.html#tint.attr.models.MaskNet.params.initial_mask_coef">[2]</a>
+</li>
+      </ul></li>
+      <li><a href="attr_models.html#tint.attr.models.scale_inputs.params.input_ids">input_ids (tint.attr.models.scale_inputs parameter)</a>, <a href="attr_models.html#tint.attr.models.scale_inputs.params.input_ids">[1]</a>, <a href="index.html#tint.attr.models.scale_inputs.params.input_ids">[2]</a>
 </li>
       <li><a href="index.html#tint.models.RNN.params.input_size">input_size (tint.models.RNN parameter)</a>, <a href="models.html#tint.models.RNN.params.input_size">[1]</a>, <a href="models.html#tint.models.RNN.params.input_size">[2]</a>
 </li>
@@ -694,19 +880,65 @@
   </ul></td>
 </tr></table>
 
+<h2 id="J">J</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="attr_models.html#tint.attr.models.JointFeatureGenerator">JointFeatureGenerator (class in tint.attr.models)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="attr_models.html#tint.attr.models.JointFeatureGeneratorNet">JointFeatureGeneratorNet (class in tint.attr.models)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="K">K</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="index.html#tint.models.Bert.params.kwargs">kwargs (tint.models.Bert parameter)</a>, <a href="models.html#tint.models.Bert.params.kwargs">[1]</a>, <a href="models.html#tint.models.Bert.params.kwargs">[2]</a>
+      <li><a href="attr_models.html#tint.attr.models.Mask.params.keep_ratio">keep_ratio (tint.attr.models.Mask parameter)</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.MaskNet.params.keep_ratio">(tint.attr.models.MaskNet parameter)</a>, <a href="attr_models.html#tint.attr.models.MaskNet.params.keep_ratio">[1]</a>, <a href="index.html#tint.attr.models.MaskNet.params.keep_ratio">[2]</a>
 </li>
+      </ul></li>
+      <li><a href="attr_models.html#tint.attr.models.BayesLinearModel.kl_loss">kl_loss() (tint.attr.models.BayesLinearModel method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="attr_models.html#tint.attr.models.SkLearnARDRegression.fit.params.kwargs">kwargs (tint.attr.models.SkLearnARDRegression.fit parameter)</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.SkLearnBayesianRidge.fit.params.kwargs">(tint.attr.models.SkLearnBayesianRidge.fit parameter)</a>
+</li>
+        <li><a href="attr_models.html#tint.attr.models.SkLearnBayesLinearModel.fit.params.kwargs">(tint.attr.models.SkLearnBayesLinearModel.fit parameter)</a>
+</li>
+        <li><a href="index.html#tint.models.Bert.params.kwargs">(tint.models.Bert parameter)</a>, <a href="models.html#tint.models.Bert.params.kwargs">[1]</a>, <a href="models.html#tint.models.Bert.params.kwargs">[2]</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="index.html#tint.models.Net.params.l2">l2 (tint.models.Net parameter)</a>, <a href="models.html#tint.models.Net.params.l2">[1]</a>, <a href="models.html#tint.models.Net.params.l2">[2]</a>
+      <li><a href="attr_models.html#tint.attr.models.BayesMaskNet.params.l2">l2 (tint.attr.models.BayesMaskNet parameter)</a>, <a href="attr_models.html#tint.attr.models.BayesMaskNet.params.l2">[1]</a>, <a href="index.html#tint.attr.models.BayesMaskNet.params.l2">[2]</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.JointFeatureGeneratorNet.params.l2">(tint.attr.models.JointFeatureGeneratorNet parameter)</a>, <a href="attr_models.html#tint.attr.models.JointFeatureGeneratorNet.params.l2">[1]</a>, <a href="index.html#tint.attr.models.JointFeatureGeneratorNet.params.l2">[2]</a>
 </li>
+        <li><a href="attr_models.html#tint.attr.models.MaskNet.params.l2">(tint.attr.models.MaskNet parameter)</a>, <a href="attr_models.html#tint.attr.models.MaskNet.params.l2">[1]</a>, <a href="index.html#tint.attr.models.MaskNet.params.l2">[2]</a>
+</li>
+        <li><a href="attr_models.html#tint.attr.models.RetainNet.params.l2">(tint.attr.models.RetainNet parameter)</a>, <a href="attr_models.html#tint.attr.models.RetainNet.params.l2">[1]</a>, <a href="index.html#tint.attr.models.RetainNet.params.l2">[2]</a>
+</li>
+        <li><a href="index.html#tint.models.Net.params.l2">(tint.models.Net parameter)</a>, <a href="models.html#tint.models.Net.params.l2">[1]</a>, <a href="models.html#tint.models.Net.params.l2">[2]</a>
+</li>
+      </ul></li>
+      <li><a href="attr_models.html#tint.attr.models.JointFeatureGenerator.params.latent_size">latent_size (tint.attr.models.JointFeatureGenerator parameter)</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.JointFeatureGeneratorNet.params.latent_size">(tint.attr.models.JointFeatureGeneratorNet parameter)</a>, <a href="attr_models.html#tint.attr.models.JointFeatureGeneratorNet.params.latent_size">[1]</a>, <a href="index.html#tint.attr.models.JointFeatureGeneratorNet.params.latent_size">[2]</a>
+</li>
+      </ul></li>
       <li><a href="index.html#tint.models.TransformerEncoder.params.layer_norm_eps">layer_norm_eps (tint.models.TransformerEncoder parameter)</a>, <a href="models.html#tint.models.TransformerEncoder.params.layer_norm_eps">[1]</a>, <a href="models.html#tint.models.TransformerEncoder.params.layer_norm_eps">[2]</a>
 </li>
       <li><a href="index.html#tint.models.Net.params.layers">layers (tint.models.Net parameter)</a>, <a href="models.html#tint.models.Net.params.layers">[1]</a>, <a href="models.html#tint.models.Net.params.layers">[2]</a>
@@ -715,20 +947,58 @@
 </li>
       <li><a href="attr.html#tint.attr.LofKernelShap">LofKernelShap (class in tint.attr)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="attr.html#tint.attr.LofLime">LofLime (class in tint.attr)</a>
 </li>
       <li><a href="metrics.html#tint.metrics.log_odds">log_odds() (in module tint.metrics)</a>
 </li>
-      <li><a href="index.html#tint.models.Net.params.loss">loss (tint.models.Net parameter)</a>, <a href="models.html#tint.models.Net.params.loss">[1]</a>, <a href="models.html#tint.models.Net.params.loss">[2]</a>
+      <li><a href="attr_models.html#tint.attr.models.BayesMaskNet.params.loss">loss (tint.attr.models.BayesMaskNet parameter)</a>, <a href="attr_models.html#tint.attr.models.BayesMaskNet.params.loss">[1]</a>, <a href="index.html#tint.attr.models.BayesMaskNet.params.loss">[2]</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.MaskNet.params.loss">(tint.attr.models.MaskNet parameter)</a>, <a href="attr_models.html#tint.attr.models.MaskNet.params.loss">[1]</a>, <a href="index.html#tint.attr.models.MaskNet.params.loss">[2]</a>
 </li>
-      <li><a href="index.html#tint.models.Net.params.lr">lr (tint.models.Net parameter)</a>, <a href="models.html#tint.models.Net.params.lr">[1]</a>, <a href="models.html#tint.models.Net.params.lr">[2]</a>
+        <li><a href="attr_models.html#tint.attr.models.RetainNet.params.loss">(tint.attr.models.RetainNet parameter)</a>, <a href="attr_models.html#tint.attr.models.RetainNet.params.loss">[1]</a>, <a href="index.html#tint.attr.models.RetainNet.params.loss">[2]</a>
 </li>
-      <li><a href="index.html#tint.models.Net.params.lr_scheduler">lr_scheduler (tint.models.Net parameter)</a>, <a href="models.html#tint.models.Net.params.lr_scheduler">[1]</a>, <a href="models.html#tint.models.Net.params.lr_scheduler">[2]</a>
+        <li><a href="index.html#tint.models.Net.params.loss">(tint.models.Net parameter)</a>, <a href="models.html#tint.models.Net.params.loss">[1]</a>, <a href="models.html#tint.models.Net.params.loss">[2]</a>
 </li>
-      <li><a href="index.html#tint.models.Net.params.lr_scheduler_args">lr_scheduler_args (tint.models.Net parameter)</a>, <a href="models.html#tint.models.Net.params.lr_scheduler_args">[1]</a>, <a href="models.html#tint.models.Net.params.lr_scheduler_args">[2]</a>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="attr_models.html#tint.attr.models.BayesMaskNet.params.lr">lr (tint.attr.models.BayesMaskNet parameter)</a>, <a href="attr_models.html#tint.attr.models.BayesMaskNet.params.lr">[1]</a>, <a href="index.html#tint.attr.models.BayesMaskNet.params.lr">[2]</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.JointFeatureGeneratorNet.params.lr">(tint.attr.models.JointFeatureGeneratorNet parameter)</a>, <a href="attr_models.html#tint.attr.models.JointFeatureGeneratorNet.params.lr">[1]</a>, <a href="index.html#tint.attr.models.JointFeatureGeneratorNet.params.lr">[2]</a>
 </li>
+        <li><a href="attr_models.html#tint.attr.models.MaskNet.params.lr">(tint.attr.models.MaskNet parameter)</a>, <a href="attr_models.html#tint.attr.models.MaskNet.params.lr">[1]</a>, <a href="index.html#tint.attr.models.MaskNet.params.lr">[2]</a>
+</li>
+        <li><a href="attr_models.html#tint.attr.models.RetainNet.params.lr">(tint.attr.models.RetainNet parameter)</a>, <a href="attr_models.html#tint.attr.models.RetainNet.params.lr">[1]</a>, <a href="index.html#tint.attr.models.RetainNet.params.lr">[2]</a>
+</li>
+        <li><a href="index.html#tint.models.Net.params.lr">(tint.models.Net parameter)</a>, <a href="models.html#tint.models.Net.params.lr">[1]</a>, <a href="models.html#tint.models.Net.params.lr">[2]</a>
+</li>
+      </ul></li>
+      <li><a href="attr_models.html#tint.attr.models.BayesMaskNet.params.lr_scheduler">lr_scheduler (tint.attr.models.BayesMaskNet parameter)</a>, <a href="attr_models.html#tint.attr.models.BayesMaskNet.params.lr_scheduler">[1]</a>, <a href="index.html#tint.attr.models.BayesMaskNet.params.lr_scheduler">[2]</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.JointFeatureGeneratorNet.params.lr_scheduler">(tint.attr.models.JointFeatureGeneratorNet parameter)</a>, <a href="attr_models.html#tint.attr.models.JointFeatureGeneratorNet.params.lr_scheduler">[1]</a>, <a href="index.html#tint.attr.models.JointFeatureGeneratorNet.params.lr_scheduler">[2]</a>
+</li>
+        <li><a href="attr_models.html#tint.attr.models.MaskNet.params.lr_scheduler">(tint.attr.models.MaskNet parameter)</a>, <a href="attr_models.html#tint.attr.models.MaskNet.params.lr_scheduler">[1]</a>, <a href="index.html#tint.attr.models.MaskNet.params.lr_scheduler">[2]</a>
+</li>
+        <li><a href="attr_models.html#tint.attr.models.RetainNet.params.lr_scheduler">(tint.attr.models.RetainNet parameter)</a>, <a href="attr_models.html#tint.attr.models.RetainNet.params.lr_scheduler">[1]</a>, <a href="index.html#tint.attr.models.RetainNet.params.lr_scheduler">[2]</a>
+</li>
+        <li><a href="index.html#tint.models.Net.params.lr_scheduler">(tint.models.Net parameter)</a>, <a href="models.html#tint.models.Net.params.lr_scheduler">[1]</a>, <a href="models.html#tint.models.Net.params.lr_scheduler">[2]</a>
+</li>
+      </ul></li>
+      <li><a href="attr_models.html#tint.attr.models.BayesMaskNet.params.lr_scheduler_args">lr_scheduler_args (tint.attr.models.BayesMaskNet parameter)</a>, <a href="attr_models.html#tint.attr.models.BayesMaskNet.params.lr_scheduler_args">[1]</a>, <a href="index.html#tint.attr.models.BayesMaskNet.params.lr_scheduler_args">[2]</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.JointFeatureGeneratorNet.params.lr_scheduler_args">(tint.attr.models.JointFeatureGeneratorNet parameter)</a>, <a href="attr_models.html#tint.attr.models.JointFeatureGeneratorNet.params.lr_scheduler_args">[1]</a>, <a href="index.html#tint.attr.models.JointFeatureGeneratorNet.params.lr_scheduler_args">[2]</a>
+</li>
+        <li><a href="attr_models.html#tint.attr.models.MaskNet.params.lr_scheduler_args">(tint.attr.models.MaskNet parameter)</a>, <a href="attr_models.html#tint.attr.models.MaskNet.params.lr_scheduler_args">[1]</a>, <a href="index.html#tint.attr.models.MaskNet.params.lr_scheduler_args">[2]</a>
+</li>
+        <li><a href="attr_models.html#tint.attr.models.RetainNet.params.lr_scheduler_args">(tint.attr.models.RetainNet parameter)</a>, <a href="attr_models.html#tint.attr.models.RetainNet.params.lr_scheduler_args">[1]</a>, <a href="index.html#tint.attr.models.RetainNet.params.lr_scheduler_args">[2]</a>
+</li>
+        <li><a href="index.html#tint.models.Net.params.lr_scheduler_args">(tint.models.Net parameter)</a>, <a href="models.html#tint.models.Net.params.lr_scheduler_args">[1]</a>, <a href="models.html#tint.models.Net.params.lr_scheduler_args">[2]</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -743,12 +1013,16 @@
         <li><a href="index.html#tint.models.TransformerEncoder.params.many_to_one">(tint.models.TransformerEncoder parameter)</a>, <a href="models.html#tint.models.TransformerEncoder.params.many_to_one">[1]</a>, <a href="models.html#tint.models.TransformerEncoder.params.many_to_one">[2]</a>
 </li>
       </ul></li>
+      <li><a href="attr_models.html#tint.attr.models.Mask">Mask (class in tint.attr.models)</a>
+</li>
       <li><a href="attr.html#tint.attr.BayesMask.attribute.params.mask_net">mask_net (tint.attr.BayesMask.attribute parameter)</a>
 
       <ul>
         <li><a href="attr.html#tint.attr.DynaMask.attribute.params.mask_net">(tint.attr.DynaMask.attribute parameter)</a>
 </li>
       </ul></li>
+      <li><a href="attr_models.html#tint.attr.models.MaskNet">MaskNet (class in tint.attr.models)</a>
+</li>
       <li><a href="index.html#tint.metrics.lipschitz_max.params.max_examples_per_batch">max_examples_per_batch (tint.metrics.lipschitz_max parameter)</a>, <a href="metrics.html#tint.metrics.lipschitz_max.params.max_examples_per_batch">[1]</a>, <a href="metrics.html#tint.metrics.lipschitz_max.params.max_examples_per_batch">[2]</a>
 </li>
       <li><a href="datasets.html#tint.datasets.BioBank.params.maximum_time">maximum_time (tint.datasets.BioBank parameter)</a>, <a href="datasets.html#tint.datasets.BioBank.params.maximum_time">[1]</a>, <a href="index.html#tint.datasets.BioBank.params.maximum_time">[2]</a>
@@ -761,11 +1035,21 @@
 </li>
       <li><a href="datasets.html#tint.datasets.MNIST">MNIST (class in tint.datasets)</a>
 </li>
+      <li><a href="attr_models.html#tint.attr.models.BayesMask.params.model">model (tint.attr.models.BayesMask parameter)</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.BayesMaskNet.params.model">(tint.attr.models.BayesMaskNet parameter)</a>, <a href="attr_models.html#tint.attr.models.BayesMaskNet.params.model">[1]</a>, <a href="index.html#tint.attr.models.BayesMaskNet.params.model">[2]</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     module
 
       <ul>
         <li><a href="attr.html#module-tint.attr">tint.attr</a>
+</li>
+        <li><a href="attr_models.html#module-tint.attr.models">tint.attr.models</a>
 </li>
         <li><a href="datasets.html#module-tint.datasets">tint.datasets</a>
 </li>
@@ -776,8 +1060,6 @@
         <li><a href="models.html#module-tint.models">tint.models</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="datasets.html#tint.datasets.Hawkes.params.mu">mu (tint.datasets.Hawkes parameter)</a>, <a href="datasets.html#tint.datasets.Hawkes.params.mu">[1]</a>, <a href="index.html#tint.datasets.Hawkes.params.mu">[2]</a>
 
       <ul>
@@ -900,11 +1182,27 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="attr.html#tint.attr.Occlusion">Occlusion (class in tint.attr)</a>
 </li>
+      <li><a href="attr_models.html#tint.attr.models.BayesMaskNet.params.optim">optim (tint.attr.models.BayesMaskNet parameter)</a>, <a href="attr_models.html#tint.attr.models.BayesMaskNet.params.optim">[1]</a>, <a href="index.html#tint.attr.models.BayesMaskNet.params.optim">[2]</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.JointFeatureGeneratorNet.params.optim">(tint.attr.models.JointFeatureGeneratorNet parameter)</a>, <a href="attr_models.html#tint.attr.models.JointFeatureGeneratorNet.params.optim">[1]</a>, <a href="index.html#tint.attr.models.JointFeatureGeneratorNet.params.optim">[2]</a>
+</li>
+        <li><a href="attr_models.html#tint.attr.models.MaskNet.params.optim">(tint.attr.models.MaskNet parameter)</a>, <a href="attr_models.html#tint.attr.models.MaskNet.params.optim">[1]</a>, <a href="index.html#tint.attr.models.MaskNet.params.optim">[2]</a>
+</li>
+        <li><a href="attr_models.html#tint.attr.models.RetainNet.params.optim">(tint.attr.models.RetainNet parameter)</a>, <a href="attr_models.html#tint.attr.models.RetainNet.params.optim">[1]</a>, <a href="index.html#tint.attr.models.RetainNet.params.optim">[2]</a>
+</li>
+        <li><a href="index.html#tint.models.Net.params.optim">(tint.models.Net parameter)</a>, <a href="models.html#tint.models.Net.params.optim">[1]</a>, <a href="models.html#tint.models.Net.params.optim">[2]</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="index.html#tint.models.Net.params.optim">optim (tint.models.Net parameter)</a>, <a href="models.html#tint.models.Net.params.optim">[1]</a>, <a href="models.html#tint.models.Net.params.optim">[2]</a>
+      <li><a href="attr_models.html#tint.attr.models.JointFeatureGeneratorNet.training_step.params.optimizer_idx">optimizer_idx (tint.attr.models.JointFeatureGeneratorNet.training_step parameter)</a>
+
+      <ul>
+        <li><a href="models.html#tint.models.Net.training_step.params.optimizer_idx">(tint.models.Net.training_step parameter)</a>
 </li>
-      <li><a href="models.html#tint.models.Net.training_step.params.optimizer_idx">optimizer_idx (tint.models.Net.training_step parameter)</a>
+      </ul></li>
+      <li><a href="attr_models.html#tint.attr.models.MaskNet.training_epoch_end.params.outputs">outputs (tint.attr.models.MaskNet.training_epoch_end parameter)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -922,6 +1220,12 @@
       </ul></li>
       <li><a href="index.html#tint.metrics.lipschitz_max.params.perturb_radius">perturb_radius (tint.metrics.lipschitz_max parameter)</a>, <a href="metrics.html#tint.metrics.lipschitz_max.params.perturb_radius">[1]</a>, <a href="metrics.html#tint.metrics.lipschitz_max.params.perturb_radius">[2]</a>
 </li>
+      <li><a href="attr_models.html#tint.attr.models.Mask.params.perturbation">perturbation (tint.attr.models.Mask parameter)</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.MaskNet.params.perturbation">(tint.attr.models.MaskNet parameter)</a>, <a href="attr_models.html#tint.attr.models.MaskNet.params.perturbation">[1]</a>, <a href="index.html#tint.attr.models.MaskNet.params.perturbation">[2]</a>
+</li>
+      </ul></li>
       <li><a href="attr.html#tint.attr.AugmentedOcclusion.attribute.params.perturbations_per_eval">perturbations_per_eval (tint.attr.AugmentedOcclusion.attribute parameter)</a>
 
       <ul>
@@ -932,18 +1236,22 @@
         <li><a href="attr.html#tint.attr.TemporalOcclusion.attribute.params.perturbations_per_eval">(tint.attr.TemporalOcclusion.attribute parameter)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="datasets.html#tint.datasets.Hawkes.get_features.params.point">point (tint.datasets.Hawkes.get_features parameter)</a>
 
       <ul>
         <li><a href="datasets.html#tint.datasets.Hawkes.get_labels.params.point">(tint.datasets.Hawkes.get_labels parameter)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="index.html#tint.models.CNN.params.pooling">pooling (tint.models.CNN parameter)</a>, <a href="models.html#tint.models.CNN.params.pooling">[1]</a>, <a href="models.html#tint.models.CNN.params.pooling">[2]</a>
 </li>
-      <li><a href="models.html#tint.models.Net.predict_step">predict_step() (tint.models.Net method)</a>
+      <li><a href="attr_models.html#tint.attr.models.MaskNet.predict_step">predict_step() (tint.attr.models.MaskNet method)</a>
+
+      <ul>
+        <li><a href="models.html#tint.models.Net.predict_step">(tint.models.Net method)</a>
 </li>
+      </ul></li>
       <li><a href="index.html#tint.models.Bert.params.pretrained_model_name_or_path">pretrained_model_name_or_path (tint.models.Bert parameter)</a>, <a href="models.html#tint.models.Bert.params.pretrained_model_name_or_path">[1]</a>, <a href="models.html#tint.models.Bert.params.pretrained_model_name_or_path">[2]</a>
 </li>
       <li><a href="datasets.html#tint.datasets.Arma.params.prop_val">prop_val (tint.datasets.Arma parameter)</a>, <a href="datasets.html#tint.datasets.Arma.params.prop_val">[1]</a>, <a href="index.html#tint.datasets.Arma.params.prop_val">[2]</a>
@@ -964,6 +1272,10 @@
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="attr_models.html#tint.attr.models.BayesLinearModel.kl_loss.params.reduction">reduction (tint.attr.models.BayesLinearModel.kl_loss parameter)</a>
+</li>
+      <li><a href="attr_models.html#tint.attr.models.scale_inputs.params.ref_input_ids">ref_input_ids (tint.attr.models.scale_inputs parameter)</a>, <a href="attr_models.html#tint.attr.models.scale_inputs.params.ref_input_ids">[1]</a>, <a href="index.html#tint.attr.models.scale_inputs.params.ref_input_ids">[2]</a>
+</li>
       <li><a href="attr.html#tint.attr.Fit.representation">representation() (tint.attr.Fit method)</a>
 
       <ul>
@@ -971,8 +1283,14 @@
 </li>
       </ul></li>
       <li><a href="attr.html#tint.attr.Retain">Retain (class in tint.attr)</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.Retain">(class in tint.attr.models)</a>
 </li>
+      </ul></li>
       <li><a href="attr.html#tint.attr.Retain.params.retain">retain (tint.attr.Retain parameter)</a>, <a href="attr.html#tint.attr.Retain.params.retain">[1]</a>, <a href="index.html#tint.attr.Retain.params.retain">[2]</a>
+</li>
+      <li><a href="attr_models.html#tint.attr.models.RetainNet">RetainNet (class in tint.attr.models)</a>
 </li>
       <li><a href="attr.html#tint.attr.DynaMask.attribute.params.return_best_ratio">return_best_ratio (tint.attr.DynaMask.attribute parameter)</a>
 </li>
@@ -984,6 +1302,8 @@
       </ul></li>
       <li><a href="attr.html#tint.attr.BayesMask.attribute.params.return_covariance">return_covariance (tint.attr.BayesMask.attribute parameter)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="attr.html#tint.attr.BayesMask.attribute.params.return_temporal_attributions">return_temporal_attributions (tint.attr.BayesMask.attribute parameter)</a>
 
       <ul>
@@ -998,12 +1318,16 @@
         <li><a href="attr.html#tint.attr.TimeForwardTunnel.attribute.params.return_temporal_attributions">(tint.attr.TimeForwardTunnel.attribute parameter)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="models.html#tint.models.RNN">RNN (class in tint.models)</a>
 </li>
       <li><a href="index.html#tint.models.RNN.params.rnn">rnn (tint.models.RNN parameter)</a>, <a href="models.html#tint.models.RNN.params.rnn">[1]</a>, <a href="models.html#tint.models.RNN.params.rnn">[2]</a>
 </li>
+      <li><a href="attr_models.html#tint.attr.models.JointFeatureGenerator.params.rnn_hidden_size">rnn_hidden_size (tint.attr.models.JointFeatureGenerator parameter)</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.JointFeatureGeneratorNet.params.rnn_hidden_size">(tint.attr.models.JointFeatureGeneratorNet parameter)</a>, <a href="attr_models.html#tint.attr.models.JointFeatureGeneratorNet.params.rnn_hidden_size">[1]</a>, <a href="index.html#tint.attr.models.JointFeatureGeneratorNet.params.rnn_hidden_size">[2]</a>
+</li>
+      </ul></li>
       <li><a href="white_box_metrics.html#tint.metrics.white_box.roc_auc">roc_auc() (in module tint.metrics.white_box)</a>
 </li>
       <li><a href="datasets.html#tint.datasets.MNIST.params.root">root (tint.datasets.MNIST parameter)</a>
@@ -1015,6 +1339,8 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="datasets.html#tint.datasets.HMM.params.scale">scale (tint.datasets.HMM parameter)</a>, <a href="datasets.html#tint.datasets.HMM.params.scale">[1]</a>, <a href="index.html#tint.datasets.HMM.params.scale">[2]</a>
+</li>
+      <li><a href="attr_models.html#tint.attr.models.scale_inputs">scale_inputs() (in module tint.attr.models)</a>
 </li>
       <li><a href="attr.html#tint.attr.DiscretetizedIntegratedGradients.attribute.params.scaled_features">scaled_features (tint.attr.DiscretetizedIntegratedGradients.attribute parameter)</a>
 </li>
@@ -1032,6 +1358,14 @@
         <li><a href="datasets.html#tint.datasets.Mimic3.params.seed">(tint.datasets.Mimic3 parameter)</a>, <a href="datasets.html#tint.datasets.Mimic3.params.seed">[1]</a>, <a href="index.html#tint.datasets.Mimic3.params.seed">[2]</a>
 </li>
       </ul></li>
+      <li><a href="attr_models.html#tint.attr.models.SGDBayesLasso">SGDBayesLasso (class in tint.attr.models)</a>
+</li>
+      <li><a href="attr_models.html#tint.attr.models.SGDBayesLinearModel">SGDBayesLinearModel (class in tint.attr.models)</a>
+</li>
+      <li><a href="attr_models.html#tint.attr.models.SGDBayesLinearRegression">SGDBayesLinearRegression (class in tint.attr.models)</a>
+</li>
+      <li><a href="attr_models.html#tint.attr.models.SGDBayesRidge">SGDBayesRidge (class in tint.attr.models)</a>
+</li>
       <li><a href="attr.html#tint.attr.AugmentedOcclusion.attribute.params.show_progress">show_progress (tint.attr.AugmentedOcclusion.attribute parameter)</a>
 
       <ul>
@@ -1050,9 +1384,27 @@
         <li><a href="attr.html#tint.attr.TimeForwardTunnel.attribute.params.show_progress">(tint.attr.TimeForwardTunnel.attribute parameter)</a>
 </li>
       </ul></li>
+      <li><a href="attr.html#tint.attr.LofLime.params.similarity_func">similarity_func (tint.attr.LofLime parameter)</a>, <a href="attr.html#tint.attr.LofLime.params.similarity_func">[1]</a>, <a href="index.html#tint.attr.LofLime.params.similarity_func">[2]</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="attr.html#tint.attr.LofLime.params.similarity_func">similarity_func (tint.attr.LofLime parameter)</a>, <a href="attr.html#tint.attr.LofLime.params.similarity_func">[1]</a>, <a href="index.html#tint.attr.LofLime.params.similarity_func">[2]</a>
+      <li><a href="attr_models.html#tint.attr.models.Mask.params.size_reg_factor_dilation">size_reg_factor_dilation (tint.attr.models.Mask parameter)</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.MaskNet.params.size_reg_factor_dilation">(tint.attr.models.MaskNet parameter)</a>, <a href="attr_models.html#tint.attr.models.MaskNet.params.size_reg_factor_dilation">[1]</a>, <a href="index.html#tint.attr.models.MaskNet.params.size_reg_factor_dilation">[2]</a>
+</li>
+      </ul></li>
+      <li><a href="attr_models.html#tint.attr.models.Mask.params.size_reg_factor_init">size_reg_factor_init (tint.attr.models.Mask parameter)</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.MaskNet.params.size_reg_factor_init">(tint.attr.models.MaskNet parameter)</a>, <a href="attr_models.html#tint.attr.models.MaskNet.params.size_reg_factor_init">[1]</a>, <a href="index.html#tint.attr.models.MaskNet.params.size_reg_factor_init">[2]</a>
+</li>
+      </ul></li>
+      <li><a href="attr_models.html#tint.attr.models.SkLearnARDRegression">SkLearnARDRegression (class in tint.attr.models)</a>
+</li>
+      <li><a href="attr_models.html#tint.attr.models.SkLearnBayesianRidge">SkLearnBayesianRidge (class in tint.attr.models)</a>
+</li>
+      <li><a href="attr_models.html#tint.attr.models.SkLearnBayesLinearModel">SkLearnBayesLinearModel (class in tint.attr.models)</a>
 </li>
       <li><a href="attr.html#tint.attr.AugmentedOcclusion.attribute.params.sliding_window_shapes">sliding_window_shapes (tint.attr.AugmentedOcclusion.attribute parameter)</a>
 
@@ -1075,6 +1427,10 @@
       <li><a href="models.html#tint.models.TransformerEncoder.src_mask">src_mask (tint.models.TransformerEncoder property)</a>
 </li>
       <li><a href="datasets.html#tint.datasets.BioBank.params.std_time_to_task">std_time_to_task (tint.datasets.BioBank parameter)</a>, <a href="datasets.html#tint.datasets.BioBank.params.std_time_to_task">[1]</a>, <a href="index.html#tint.datasets.BioBank.params.std_time_to_task">[2]</a>
+</li>
+      <li><a href="attr_models.html#tint.attr.models.scale_inputs.params.steps">steps (tint.attr.models.scale_inputs parameter)</a>, <a href="attr_models.html#tint.attr.models.scale_inputs.params.steps">[1]</a>, <a href="index.html#tint.attr.models.scale_inputs.params.steps">[2]</a>
+</li>
+      <li><a href="attr_models.html#tint.attr.models.scale_inputs.params.strategy">strategy (tint.attr.models.scale_inputs parameter)</a>, <a href="attr_models.html#tint.attr.models.scale_inputs.params.strategy">[1]</a>, <a href="index.html#tint.attr.models.scale_inputs.params.strategy">[2]</a>
 </li>
       <li><a href="attr.html#tint.attr.AugmentedOcclusion.attribute.params.strides">strides (tint.attr.AugmentedOcclusion.attribute parameter)</a>
 
@@ -1146,6 +1502,12 @@
         <li><a href="attr.html#tint.attr.TimeForwardTunnel.attribute.params.temporal_additional_forward_args">(tint.attr.TimeForwardTunnel.attribute parameter)</a>
 </li>
       </ul></li>
+      <li><a href="attr_models.html#tint.attr.models.Retain.params.temporal_labels">temporal_labels (tint.attr.models.Retain parameter)</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.RetainNet.params.temporal_labels">(tint.attr.models.RetainNet parameter)</a>, <a href="attr_models.html#tint.attr.models.RetainNet.params.temporal_labels">[1]</a>, <a href="index.html#tint.attr.models.RetainNet.params.temporal_labels">[2]</a>
+</li>
+      </ul></li>
       <li><a href="attr.html#tint.attr.TemporalIntegratedGradients.attribute.params.temporal_target">temporal_target (tint.attr.TemporalIntegratedGradients.attribute parameter)</a>
 
       <ul>
@@ -1158,12 +1520,22 @@
 </li>
       <li><a href="attr.html#tint.attr.TemporalOcclusion">TemporalOcclusion (class in tint.attr)</a>
 </li>
-      <li><a href="models.html#tint.models.Net.test_step">test_step() (tint.models.Net method)</a>
+      <li><a href="attr_models.html#tint.attr.models.JointFeatureGeneratorNet.test_step">test_step() (tint.attr.models.JointFeatureGeneratorNet method)</a>
+
+      <ul>
+        <li><a href="models.html#tint.models.Net.test_step">(tint.models.Net method)</a>
 </li>
+      </ul></li>
       <li><a href="attr.html#tint.attr.TimeForwardTunnel.attribute.params.threshold">threshold (tint.attr.TimeForwardTunnel.attribute parameter)</a>
 
       <ul>
         <li><a href="index.html#tint.metrics.accuracy.params.threshold">(tint.metrics.accuracy parameter)</a>, <a href="metrics.html#tint.metrics.accuracy.params.threshold">[1]</a>, <a href="metrics.html#tint.metrics.accuracy.params.threshold">[2]</a>
+</li>
+      </ul></li>
+      <li><a href="attr_models.html#tint.attr.models.Mask.params.time_reg_factor">time_reg_factor (tint.attr.models.Mask parameter)</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.MaskNet.params.time_reg_factor">(tint.attr.models.MaskNet parameter)</a>, <a href="attr_models.html#tint.attr.models.MaskNet.params.time_reg_factor">[1]</a>, <a href="index.html#tint.attr.models.MaskNet.params.time_reg_factor">[2]</a>
 </li>
       </ul></li>
       <li><a href="datasets.html#tint.datasets.BioBank.params.time_to_task">time_to_task (tint.datasets.BioBank parameter)</a>, <a href="datasets.html#tint.datasets.BioBank.params.time_to_task">[1]</a>, <a href="index.html#tint.datasets.BioBank.params.time_to_task">[2]</a>
@@ -1193,6 +1565,13 @@
 
       <ul>
         <li><a href="attr.html#module-tint.attr">module</a>
+</li>
+      </ul></li>
+      <li>
+    tint.attr.models
+
+      <ul>
+        <li><a href="attr_models.html#module-tint.attr.models">module</a>
 </li>
       </ul></li>
       <li>
@@ -1237,6 +1616,16 @@
       </ul></li>
       <li><a href="datasets.html#tint.datasets.MNIST.params.train">train (tint.datasets.MNIST parameter)</a>
 </li>
+      <li><a href="attr_models.html#tint.attr.models.SkLearnARDRegression.fit.params.train_data">train_data (tint.attr.models.SkLearnARDRegression.fit parameter)</a>
+
+      <ul>
+        <li><a href="attr_models.html#tint.attr.models.SkLearnBayesianRidge.fit.params.train_data">(tint.attr.models.SkLearnBayesianRidge.fit parameter)</a>
+</li>
+        <li><a href="attr_models.html#tint.attr.models.SkLearnBayesLinearModel.fit.params.train_data">(tint.attr.models.SkLearnBayesLinearModel.fit parameter)</a>
+</li>
+      </ul></li>
+      <li><a href="attr_models.html#tint.attr.models.BayesLinearModel.params.train_fn">train_fn (tint.attr.models.BayesLinearModel parameter)</a>
+</li>
       <li><a href="attr.html#tint.attr.BayesMask.attribute.params.trainer">trainer (tint.attr.BayesMask.attribute parameter)</a>
 
       <ul>
@@ -1245,8 +1634,14 @@
         <li><a href="attr.html#tint.attr.Fit.params.trainer">(tint.attr.Fit parameter)</a>, <a href="attr.html#tint.attr.Fit.params.trainer">[1]</a>, <a href="index.html#tint.attr.Fit.params.trainer">[2]</a>
 </li>
       </ul></li>
-      <li><a href="models.html#tint.models.Net.training_step">training_step() (tint.models.Net method)</a>
+      <li><a href="attr_models.html#tint.attr.models.MaskNet.training_epoch_end">training_epoch_end() (tint.attr.models.MaskNet method)</a>
 </li>
+      <li><a href="attr_models.html#tint.attr.models.JointFeatureGeneratorNet.training_step">training_step() (tint.attr.models.JointFeatureGeneratorNet method)</a>
+
+      <ul>
+        <li><a href="models.html#tint.models.Net.training_step">(tint.models.Net method)</a>
+</li>
+      </ul></li>
       <li><a href="datasets.html#tint.datasets.MNIST.params.transform">transform (tint.datasets.MNIST parameter)</a>
 </li>
       <li><a href="models.html#tint.models.TransformerEncoder">TransformerEncoder (class in tint.models)</a>
@@ -1285,16 +1680,20 @@
 <h2 id="V">V</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="models.html#tint.models.Net.validation_step">validation_step() (tint.models.Net method)</a>
+      <li><a href="attr_models.html#tint.attr.models.JointFeatureGeneratorNet.validation_step">validation_step() (tint.attr.models.JointFeatureGeneratorNet method)</a>
+
+      <ul>
+        <li><a href="models.html#tint.models.Net.validation_step">(tint.models.Net method)</a>
 </li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="datasets.html#tint.datasets.BioBank.build_discretized_features.params.verbose">verbose (tint.datasets.BioBank.build_discretized_features parameter)</a>
 
       <ul>
         <li><a href="datasets.html#tint.datasets.BioBank.build_features.params.verbose">(tint.datasets.BioBank.build_features parameter)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="index.html#tint.models.Bert.params.vocab_file">vocab_file (tint.models.Bert parameter)</a>, <a href="models.html#tint.models.Bert.params.vocab_file">[1]</a>, <a href="models.html#tint.models.Bert.params.vocab_file">[2]</a>
 </li>
   </ul></td>

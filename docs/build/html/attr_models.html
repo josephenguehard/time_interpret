@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Attribution Models &mdash; Time Interpret 0.0.1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="_static/sphinx_paramlinks.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/clipboard.min.js"></script>
+        <script src="_static/copybutton.js"></script>
+        <script src="_static/toggleprompt.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Datasets" href="datasets.html" />
+    <link rel="prev" title="Attribution Methods" href="attr.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Time Interpret
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="attr.html">Attribution Methods</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Attribution Models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#summary">Summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-tint.attr.models">Detailed classes and methods</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="datasets.html">Datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="metrics.html">Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="white_box_metrics.html">White Box Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">Models</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Time Interpret</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Attribution Models</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/attr_models.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="attribution-models">
+<h1>Attribution Models<a class="headerlink" href="#attribution-models" title="Permalink to this heading"></a></h1>
+<p>Some time_interpret attributions use specific models, which are listed here:</p>
+<section id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Permalink to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#tint.attr.models.BayesMaskNet" title="tint.attr.models.BayesMaskNet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.models.BayesMaskNet</span></code></a>(forward_func)</p></td>
+<td><p>Bayes mask model as a Pytorch Lightning model.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#tint.attr.models.JointFeatureGeneratorNet" title="tint.attr.models.JointFeatureGeneratorNet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.models.JointFeatureGeneratorNet</span></code></a>([...])</p></td>
+<td><p>Conditional generator model to predict future observations as a Pytorch Lightning module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#tint.attr.models.MaskNet" title="tint.attr.models.MaskNet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.models.MaskNet</span></code></a>(forward_func[, ...])</p></td>
+<td><p>Mask network as a Pytorch Lightning module.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#tint.attr.models.RetainNet" title="tint.attr.models.RetainNet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.models.RetainNet</span></code></a>([dim_emb, ...])</p></td>
+<td><p>Retain Network as a Pytorch Lightning module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#tint.attr.models.scale_inputs" title="tint.attr.models.scale_inputs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.models.scale_inputs</span></code></a>(input_ids, ...)</p></td>
+<td><p>Creates a monotonic path between input_ids and ref_input_ids (the baseline).</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-tint.attr.models">
+<span id="detailed-classes-and-methods"></span><h2>Detailed classes and methods<a class="headerlink" href="#module-tint.attr.models" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="tint.attr.models.BayesLinearModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tint.attr.models.</span></span><span class="sig-name descname"><span class="pre">BayesLinearModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/models/bayes_linear.html#BayesLinearModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.BayesLinearModel" title="Permalink to this definition"></a></dt>
+<dd><p>Bayesian Linear model.</p>
+<p>Built on top of the captum linear layer to be integrated in this library.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><span class="target" id="tint.attr.models.BayesLinearModel.params.train_fn"></span><strong>train_fn</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.BayesLinearModel.params.train_fn">¶</a> (<em>callable</em>) – The function to train with.</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p><a class="reference external" href="https://github.com/Harry24k/bayesian-neural-network-pytorch">https://github.com/Harry24k/bayesian-neural-network-pytorch</a>
+<a class="reference external" href="https://arxiv.org/abs/2107.02425">https://arxiv.org/abs/2107.02425</a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="tint.attr.models.BayesLinearModel.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/tint/attr/models/bayes_linear.html#BayesLinearModel.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.BayesLinearModel.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tint.attr.models.BayesLinearModel.kl_loss">
+<span class="sig-name descname"><span class="pre">kl_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/tint/attr/models/bayes_linear.html#BayesLinearModel.kl_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.BayesLinearModel.kl_loss" title="Permalink to this definition"></a></dt>
+<dd><p>Compute KL loss for the BayesLinear layer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><span class="target" id="tint.attr.models.BayesLinearModel.kl_loss.params.reduction"></span><strong>reduction</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.BayesLinearModel.kl_loss.params.reduction">¶</a> – Which type of reduction to apply. Either <code class="docutils literal notranslate"><span class="pre">'mean'</span></code> or
+<code class="docutils literal notranslate"><span class="pre">'sum'</span></code>. Default to <code class="docutils literal notranslate"><span class="pre">'mean'</span></code></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The loss.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>th.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tint.attr.models.BayesMask">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tint.attr.models.</span></span><span class="sig-name descname"><span class="pre">BayesMask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forward_func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distribution</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'bernoulli'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hard</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Module</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">32</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/models/bayes_mask.html#BayesMask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.BayesMask" title="Permalink to this definition"></a></dt>
+<dd><p>Bayes Mask model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.attr.models.BayesMask.params.forward_func"></span><strong>forward_func</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.BayesMask.params.forward_func">¶</a> (<em>callable</em>) – The forward function of the model or any
+modification of it.</p></li>
+<li><p><span class="target" id="tint.attr.models.BayesMask.params.distribution"></span><strong>distribution</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.BayesMask.params.distribution">¶</a> (<em>str</em>) – Which distribution to use in order to draw the
+mask. Either <code class="docutils literal notranslate"><span class="pre">'none'</span></code>, <code class="docutils literal notranslate"><span class="pre">'bernoulli'</span></code>, <code class="docutils literal notranslate"><span class="pre">'normal'</span></code> or
+<code class="docutils literal notranslate"><span class="pre">'gumbel_softmax'</span></code>. Default to <code class="docutils literal notranslate"><span class="pre">'bernoulli'</span></code></p></li>
+<li><p><span class="target" id="tint.attr.models.BayesMask.params.hard"></span><strong>hard</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.BayesMask.params.hard">¶</a> (<em>bool</em>) – Whether to create hard mask values or not. In both
+cases, soft values will be used for back-propagation.
+Default to <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
+<li><p><span class="target" id="tint.attr.models.BayesMask.params.model"></span><strong>model</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.BayesMask.params.model">¶</a> (<em>nnn.Module</em>) – A model used to recreate the original
+predictions, in addition to the mask. Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.attr.models.BayesMask.params.eps"></span><strong>eps</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.BayesMask.params.eps">¶</a> (<em>float</em>) – Optional param for normal distribution.
+Set the target covariance matrix to eps * th.eye().
+Default to 1e-3</p></li>
+<li><p><span class="target" id="tint.attr.models.BayesMask.params.batch_size"></span><strong>batch_size</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.BayesMask.params.batch_size">¶</a> (<em>int</em>) – Batch size of the model. Default to 32</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="tint.attr.models.BayesMask.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_idx</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">additional_forward_args</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/tint/attr/models/bayes_mask.html#BayesMask.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.BayesMask.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tint.attr.models.BayesMaskNet">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tint.attr.models.</span></span><span class="sig-name descname"><span class="pre">BayesMaskNet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forward_func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distribution</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'bernoulli'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hard</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Module</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mse'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'adam'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr_scheduler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr_scheduler_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/models/bayes_mask.html#BayesMaskNet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.BayesMaskNet" title="Permalink to this definition"></a></dt>
+<dd><p>Bayes mask model as a Pytorch Lightning model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.attr.models.BayesMaskNet.params.forward_func"></span><strong>forward_func</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.BayesMaskNet.params.forward_func">¶</a> (<em>callable</em>) – The forward function of the model or any
+modification of it.</p></li>
+<li><p><span class="target" id="tint.attr.models.BayesMaskNet.params.distribution"></span><strong>distribution</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.BayesMaskNet.params.distribution">¶</a> (<em>str</em>) – Which distribution to use in order to draw the
+mask. Either <code class="docutils literal notranslate"><span class="pre">'none'</span></code>, <code class="docutils literal notranslate"><span class="pre">'bernoulli'</span></code>, <code class="docutils literal notranslate"><span class="pre">'normal'</span></code> or
+<code class="docutils literal notranslate"><span class="pre">'gumbel_softmax'</span></code>. Default to <code class="docutils literal notranslate"><span class="pre">'bernoulli'</span></code></p></li>
+<li><p><span class="target" id="tint.attr.models.BayesMaskNet.params.hard"></span><strong>hard</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.BayesMaskNet.params.hard">¶</a> (<em>bool</em>) – Whether to create hard mask values or not. In both
+cases, soft values will be used for back-propagation.
+Default to <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
+<li><p><span class="target" id="tint.attr.models.BayesMaskNet.params.model"></span><strong>model</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.BayesMaskNet.params.model">¶</a> (<em>nnn.Module</em>) – A model used to recreate the original
+predictions, in addition to the mask. Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.attr.models.BayesMaskNet.params.eps"></span><strong>eps</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.BayesMaskNet.params.eps">¶</a> (<em>float</em>) – Optional param for normal distribution.
+Set the target covariance matrix to eps * th.eye().
+Default to 1e-3</p></li>
+<li><p><span class="target" id="tint.attr.models.BayesMaskNet.params.batch_size"></span><strong>batch_size</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.BayesMaskNet.params.batch_size">¶</a> (<em>int</em>) – Batch size of the model. Default to 32</p></li>
+<li><p><span class="target" id="tint.attr.models.BayesMaskNet.params.loss"></span><strong>loss</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.BayesMaskNet.params.loss">¶</a> (<em>str</em><em>, </em><em>callable</em>) – Which loss to use. Default to <code class="docutils literal notranslate"><span class="pre">'mse'</span></code></p></li>
+<li><p><span class="target" id="tint.attr.models.BayesMaskNet.params.optim"></span><strong>optim</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.BayesMaskNet.params.optim">¶</a> (<em>str</em>) – Which optimizer to use. Default to <code class="docutils literal notranslate"><span class="pre">'adam'</span></code></p></li>
+<li><p><span class="target" id="tint.attr.models.BayesMaskNet.params.lr"></span><strong>lr</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.BayesMaskNet.params.lr">¶</a> (<em>float</em>) – Learning rate. Default to 1e-3</p></li>
+<li><p><span class="target" id="tint.attr.models.BayesMaskNet.params.lr_scheduler"></span><strong>lr_scheduler</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.BayesMaskNet.params.lr_scheduler">¶</a> (<em>dict</em><em>, </em><em>str</em>) – Learning rate scheduler. Either a dict
+(custom scheduler) or a string. Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.attr.models.BayesMaskNet.params.lr_scheduler_args"></span><strong>lr_scheduler_args</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.BayesMaskNet.params.lr_scheduler_args">¶</a> (<em>dict</em>) – Additional args for the scheduler.
+Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.attr.models.BayesMaskNet.params.l2"></span><strong>l2</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.BayesMaskNet.params.l2">¶</a> (<em>float</em>) – L2 regularisation. Default to 0.0</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span> <span class="k">as</span> <span class="nn">th</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.attr.models</span> <span class="kn">import</span> <span class="n">BayesMaskNet</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.models</span> <span class="kn">import</span> <span class="n">MLP</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inputs</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mlp</span> <span class="o">=</span> <span class="n">MLP</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mask</span> <span class="o">=</span> <span class="n">BayesMaskNet</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">forward_func</span><span class="o">=</span><span class="n">mlp</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">distribution</span><span class="o">=</span><span class="s2">&quot;normal&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">hard</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">eps</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">optim</span><span class="o">=</span><span class="s2">&quot;adam&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="tint.attr.models.BayesMaskNet.configure_optimizers">
+<span class="sig-name descname"><span class="pre">configure_optimizers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/models/bayes_mask.html#BayesMaskNet.configure_optimizers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.BayesMaskNet.configure_optimizers" title="Permalink to this definition"></a></dt>
+<dd><p>Choose what optimizers and learning-rate schedulers to use in your optimization.
+Normally you’d need one. But in the case of GANs or similar you might have multiple.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><p>Any of these 6 options.</p>
+<ul class="simple">
+<li><p><strong>Single optimizer</strong>.</p></li>
+<li><p><strong>List or Tuple</strong> of optimizers.</p></li>
+<li><p><strong>Two lists</strong> - The first list has multiple optimizers, and the second has multiple LR schedulers
+(or multiple <code class="docutils literal notranslate"><span class="pre">lr_scheduler_config</span></code>).</p></li>
+<li><p><strong>Dictionary</strong>, with an <code class="docutils literal notranslate"><span class="pre">&quot;optimizer&quot;</span></code> key, and (optionally) a <code class="docutils literal notranslate"><span class="pre">&quot;lr_scheduler&quot;</span></code>
+key whose value is a single LR scheduler or <code class="docutils literal notranslate"><span class="pre">lr_scheduler_config</span></code>.</p></li>
+<li><p><strong>Tuple of dictionaries</strong> as described above, with an optional <code class="docutils literal notranslate"><span class="pre">&quot;frequency&quot;</span></code> key.</p></li>
+<li><p><strong>None</strong> - Fit will run without any optimizer.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p>The <code class="docutils literal notranslate"><span class="pre">lr_scheduler_config</span></code> is a dictionary which contains the scheduler and its associated configuration.
+The default configuration is shown below.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">lr_scheduler_config</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1"># REQUIRED: The scheduler instance</span>
+    <span class="s2">&quot;scheduler&quot;</span><span class="p">:</span> <span class="n">lr_scheduler</span><span class="p">,</span>
+    <span class="c1"># The unit of the scheduler&#39;s step size, could also be &#39;step&#39;.</span>
+    <span class="c1"># &#39;epoch&#39; updates the scheduler on epoch end whereas &#39;step&#39;</span>
+    <span class="c1"># updates it after a optimizer update.</span>
+    <span class="s2">&quot;interval&quot;</span><span class="p">:</span> <span class="s2">&quot;epoch&quot;</span><span class="p">,</span>
+    <span class="c1"># How many epochs/steps should pass between calls to</span>
+    <span class="c1"># `scheduler.step()`. 1 corresponds to updating the learning</span>
+    <span class="c1"># rate after every epoch/step.</span>
+    <span class="s2">&quot;frequency&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="c1"># Metric to to monitor for schedulers like `ReduceLROnPlateau`</span>
+    <span class="s2">&quot;monitor&quot;</span><span class="p">:</span> <span class="s2">&quot;val_loss&quot;</span><span class="p">,</span>
+    <span class="c1"># If set to `True`, will enforce that the value specified &#39;monitor&#39;</span>
+    <span class="c1"># is available when the scheduler is updated, thus stopping</span>
+    <span class="c1"># training if not found. If set to `False`, it will only produce a warning</span>
+    <span class="s2">&quot;strict&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="c1"># If using the `LearningRateMonitor` callback to monitor the</span>
+    <span class="c1"># learning rate progress, this keyword can be used to specify</span>
+    <span class="c1"># a custom logged name</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>When there are schedulers in which the <code class="docutils literal notranslate"><span class="pre">.step()</span></code> method is conditioned on a value, such as the
+<code class="xref py py-class docutils literal notranslate"><span class="pre">torch.optim.lr_scheduler.ReduceLROnPlateau</span></code> scheduler, Lightning requires that the
+<code class="docutils literal notranslate"><span class="pre">lr_scheduler_config</span></code> contains the keyword <code class="docutils literal notranslate"><span class="pre">&quot;monitor&quot;</span></code> set to the metric name that the scheduler
+should be conditioned on.</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># The ReduceLROnPlateau scheduler requires a monitor</span>
+<span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;optimizer&quot;</span><span class="p">:</span> <span class="n">optimizer</span><span class="p">,</span>
+        <span class="s2">&quot;lr_scheduler&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;scheduler&quot;</span><span class="p">:</span> <span class="n">ReduceLROnPlateau</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="o">...</span><span class="p">),</span>
+            <span class="s2">&quot;monitor&quot;</span><span class="p">:</span> <span class="s2">&quot;metric_to_track&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;frequency&quot;</span><span class="p">:</span> <span class="s2">&quot;indicates how often the metric is updated&quot;</span>
+            <span class="c1"># If &quot;monitor&quot; references validation metrics, then &quot;frequency&quot; should be set to a</span>
+            <span class="c1"># multiple of &quot;trainer.check_val_every_n_epoch&quot;.</span>
+        <span class="p">},</span>
+    <span class="p">}</span>
+
+
+<span class="c1"># In the case of two optimizers, only one using the ReduceLROnPlateau scheduler</span>
+<span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">optimizer1</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+    <span class="n">optimizer2</span> <span class="o">=</span> <span class="n">SGD</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+    <span class="n">scheduler1</span> <span class="o">=</span> <span class="n">ReduceLROnPlateau</span><span class="p">(</span><span class="n">optimizer1</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+    <span class="n">scheduler2</span> <span class="o">=</span> <span class="n">LambdaLR</span><span class="p">(</span><span class="n">optimizer2</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;optimizer&quot;</span><span class="p">:</span> <span class="n">optimizer1</span><span class="p">,</span>
+            <span class="s2">&quot;lr_scheduler&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;scheduler&quot;</span><span class="p">:</span> <span class="n">scheduler1</span><span class="p">,</span>
+                <span class="s2">&quot;monitor&quot;</span><span class="p">:</span> <span class="s2">&quot;metric_to_track&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;optimizer&quot;</span><span class="p">:</span> <span class="n">optimizer2</span><span class="p">,</span> <span class="s2">&quot;lr_scheduler&quot;</span><span class="p">:</span> <span class="n">scheduler2</span><span class="p">},</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<p>Metrics can be made available to monitor by simply logging it using
+<code class="docutils literal notranslate"><span class="pre">self.log('metric_to_track',</span> <span class="pre">metric_val)</span></code> in your <code class="xref py py-class docutils literal notranslate"><span class="pre">LightningModule</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">frequency</span></code> value specified in a dict along with the <code class="docutils literal notranslate"><span class="pre">optimizer</span></code> key is an int corresponding
+to the number of sequential batches optimized with the specific optimizer.
+It should be given to none or to all of the optimizers.
+There is a difference between passing multiple optimizers in a list,
+and passing multiple optimizers in dictionaries with a frequency of 1:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>In the former case, all optimizers will operate on the given batch in each optimization step.</p></li>
+<li><p>In the latter, only one optimizer will operate on the given batch at every step.</p></li>
+</ul>
+</div></blockquote>
+<p>This is different from the <code class="docutils literal notranslate"><span class="pre">frequency</span></code> value specified in the <code class="docutils literal notranslate"><span class="pre">lr_scheduler_config</span></code> mentioned above.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">optimizer_one</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+    <span class="n">optimizer_two</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s2">&quot;optimizer&quot;</span><span class="p">:</span> <span class="n">optimizer_one</span><span class="p">,</span> <span class="s2">&quot;frequency&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;optimizer&quot;</span><span class="p">:</span> <span class="n">optimizer_two</span><span class="p">,</span> <span class="s2">&quot;frequency&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
+    <span class="p">]</span>
+</pre></div>
+</div>
+<p>In this example, the first optimizer will be used for the first 5 steps,
+the second optimizer for the next 10 steps and that cycle will continue.
+If an LR scheduler is specified for an optimizer using the <code class="docutils literal notranslate"><span class="pre">lr_scheduler</span></code> key in the above dict,
+the scheduler will only be updated when its optimizer is being used.</p>
+</div>
+<p>Examples:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># most cases. no learning rate scheduler</span>
+<span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">Adam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
+
+<span class="c1"># multiple optimizer case (e.g.: GAN)</span>
+<span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">gen_opt</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_gen</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+    <span class="n">dis_opt</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_dis</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.02</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">gen_opt</span><span class="p">,</span> <span class="n">dis_opt</span>
+
+<span class="c1"># example with learning rate schedulers</span>
+<span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">gen_opt</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_gen</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+    <span class="n">dis_opt</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_dis</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.02</span><span class="p">)</span>
+    <span class="n">dis_sch</span> <span class="o">=</span> <span class="n">CosineAnnealing</span><span class="p">(</span><span class="n">dis_opt</span><span class="p">,</span> <span class="n">T_max</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">gen_opt</span><span class="p">,</span> <span class="n">dis_opt</span><span class="p">],</span> <span class="p">[</span><span class="n">dis_sch</span><span class="p">]</span>
+
+<span class="c1"># example with step-based learning rate schedulers</span>
+<span class="c1"># each optimizer has its own scheduler</span>
+<span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">gen_opt</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_gen</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+    <span class="n">dis_opt</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_dis</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.02</span><span class="p">)</span>
+    <span class="n">gen_sch</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;scheduler&#39;</span><span class="p">:</span> <span class="n">ExponentialLR</span><span class="p">(</span><span class="n">gen_opt</span><span class="p">,</span> <span class="mf">0.99</span><span class="p">),</span>
+        <span class="s1">&#39;interval&#39;</span><span class="p">:</span> <span class="s1">&#39;step&#39;</span>  <span class="c1"># called after each training step</span>
+    <span class="p">}</span>
+    <span class="n">dis_sch</span> <span class="o">=</span> <span class="n">CosineAnnealing</span><span class="p">(</span><span class="n">dis_opt</span><span class="p">,</span> <span class="n">T_max</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="c1"># called every epoch</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">gen_opt</span><span class="p">,</span> <span class="n">dis_opt</span><span class="p">],</span> <span class="p">[</span><span class="n">gen_sch</span><span class="p">,</span> <span class="n">dis_sch</span><span class="p">]</span>
+
+<span class="c1"># example with optimizer frequencies</span>
+<span class="c1"># see training procedure in `Improved Training of Wasserstein GANs`, Algorithm 1</span>
+<span class="c1"># https://arxiv.org/abs/1704.00028</span>
+<span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">gen_opt</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_gen</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+    <span class="n">dis_opt</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_dis</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.02</span><span class="p">)</span>
+    <span class="n">n_critic</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="p">{</span><span class="s1">&#39;optimizer&#39;</span><span class="p">:</span> <span class="n">dis_opt</span><span class="p">,</span> <span class="s1">&#39;frequency&#39;</span><span class="p">:</span> <span class="n">n_critic</span><span class="p">},</span>
+        <span class="p">{</span><span class="s1">&#39;optimizer&#39;</span><span class="p">:</span> <span class="n">gen_opt</span><span class="p">,</span> <span class="s1">&#39;frequency&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Some things to know:</p>
+<ul class="simple">
+<li><p>Lightning calls <code class="docutils literal notranslate"><span class="pre">.backward()</span></code> and <code class="docutils literal notranslate"><span class="pre">.step()</span></code> on each optimizer as needed.</p></li>
+<li><p>If learning rate scheduler is specified in <code class="docutils literal notranslate"><span class="pre">configure_optimizers()</span></code> with key
+<code class="docutils literal notranslate"><span class="pre">&quot;interval&quot;</span></code> (default “epoch”) in the scheduler configuration, Lightning will call
+the scheduler’s <code class="docutils literal notranslate"><span class="pre">.step()</span></code> method automatically in case of automatic optimization.</p></li>
+<li><p>If you use 16-bit precision (<code class="docutils literal notranslate"><span class="pre">precision=16</span></code>), Lightning will automatically handle the optimizers.</p></li>
+<li><p>If you use multiple optimizers, <code class="xref py py-meth docutils literal notranslate"><span class="pre">training_step()</span></code> will have an additional <code class="docutils literal notranslate"><span class="pre">optimizer_idx</span></code> parameter.</p></li>
+<li><p>If you use <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.optim.LBFGS</span></code>, Lightning handles the closure function automatically for you.</p></li>
+<li><p>If you use multiple optimizers, gradients will be calculated only for the parameters of current optimizer
+at each training step.</p></li>
+<li><p>If you need to control how often those optimizers step or override the default <code class="docutils literal notranslate"><span class="pre">.step()</span></code> schedule,
+override the <code class="xref py py-meth docutils literal notranslate"><span class="pre">optimizer_step()</span></code> hook.</p></li>
+</ul>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tint.attr.models.BayesMaskNet.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/tint/attr/models/bayes_mask.html#BayesMaskNet.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.BayesMaskNet.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Same as <code class="xref py py-meth docutils literal notranslate"><span class="pre">torch.nn.Module.forward()</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.attr.models.BayesMaskNet.forward.params.*args"></span><strong>*args</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.BayesMaskNet.forward.params.*args">¶</a> – Whatever you decide to pass into the forward method.</p></li>
+<li><p><span class="target" id="tint.attr.models.BayesMaskNet.forward.params.**kwargs"></span><strong>**kwargs</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.BayesMaskNet.forward.params.**kwargs">¶</a> – Keyword arguments are also possible.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Your model’s output</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tint.attr.models.JointFeatureGenerator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tint.attr.models.</span></span><span class="sig-name descname"><span class="pre">JointFeatureGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rnn_hidden_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist_hidden_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latent_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/models/joint_features_generator.html#JointFeatureGenerator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.JointFeatureGenerator" title="Permalink to this definition"></a></dt>
+<dd><p>Conditional generator model to predict future observations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.attr.models.JointFeatureGenerator.params.rnn_hidden_size"></span><strong>rnn_hidden_size</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.JointFeatureGenerator.params.rnn_hidden_size">¶</a> (<em>int</em>) – Size of hidden units for the recurrent
+structure. Default to 100</p></li>
+<li><p><span class="target" id="tint.attr.models.JointFeatureGenerator.params.dist_hidden_size"></span><strong>dist_hidden_size</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.JointFeatureGenerator.params.dist_hidden_size">¶</a> (<em>int</em>) – Size of the distribution hidden units.
+Default to 10</p></li>
+<li><p><span class="target" id="tint.attr.models.JointFeatureGenerator.params.latent_size"></span><strong>latent_size</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.JointFeatureGenerator.params.latent_size">¶</a> – Size of the latent distribution. Default to 100</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p><a class="reference external" href="https://proceedings.neurips.cc/paper/2015/hash/b618c3210e934362ac261db280128c22-Abstract.html">https://proceedings.neurips.cc/paper/2015/hash/b618c3210e934362ac261db280128c22-Abstract.html</a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="tint.attr.models.JointFeatureGenerator.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">past</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/models/joint_features_generator.html#JointFeatureGenerator.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.JointFeatureGenerator.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tint.attr.models.JointFeatureGeneratorNet">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tint.attr.models.</span></span><span class="sig-name descname"><span class="pre">JointFeatureGeneratorNet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rnn_hidden_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist_hidden_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latent_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'adam'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr_scheduler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr_scheduler_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/models/joint_features_generator.html#JointFeatureGeneratorNet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.JointFeatureGeneratorNet" title="Permalink to this definition"></a></dt>
+<dd><p>Conditional generator model to predict future observations as a
+Pytorch Lightning module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.attr.models.JointFeatureGeneratorNet.params.rnn_hidden_size"></span><strong>rnn_hidden_size</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.JointFeatureGeneratorNet.params.rnn_hidden_size">¶</a> (<em>int</em>) – Size of hidden units for the recurrent
+structure. Default to 100</p></li>
+<li><p><span class="target" id="tint.attr.models.JointFeatureGeneratorNet.params.dist_hidden_size"></span><strong>dist_hidden_size</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.JointFeatureGeneratorNet.params.dist_hidden_size">¶</a> (<em>int</em>) – Size of the distribution hidden units.
+Default to 10</p></li>
+<li><p><span class="target" id="tint.attr.models.JointFeatureGeneratorNet.params.latent_size"></span><strong>latent_size</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.JointFeatureGeneratorNet.params.latent_size">¶</a> – Size of the latent distribution. Default to 100</p></li>
+<li><p><span class="target" id="tint.attr.models.JointFeatureGeneratorNet.params.optim"></span><strong>optim</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.JointFeatureGeneratorNet.params.optim">¶</a> (<em>str</em>) – Which optimizer to use. Default to <code class="docutils literal notranslate"><span class="pre">'adam'</span></code></p></li>
+<li><p><span class="target" id="tint.attr.models.JointFeatureGeneratorNet.params.lr"></span><strong>lr</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.JointFeatureGeneratorNet.params.lr">¶</a> (<em>float</em>) – Learning rate. Default to 1e-3</p></li>
+<li><p><span class="target" id="tint.attr.models.JointFeatureGeneratorNet.params.lr_scheduler"></span><strong>lr_scheduler</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.JointFeatureGeneratorNet.params.lr_scheduler">¶</a> (<em>dict</em><em>, </em><em>str</em>) – Learning rate scheduler. Either a dict
+(custom scheduler) or a string. Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.attr.models.JointFeatureGeneratorNet.params.lr_scheduler_args"></span><strong>lr_scheduler_args</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.JointFeatureGeneratorNet.params.lr_scheduler_args">¶</a> (<em>dict</em>) – Additional args for the scheduler.
+Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.attr.models.JointFeatureGeneratorNet.params.l2"></span><strong>l2</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.JointFeatureGeneratorNet.params.l2">¶</a> (<em>float</em>) – L2 regularisation. Default to 0.0</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p><a class="reference external" href="https://proceedings.neurips.cc/paper/2015/hash/b618c3210e934362ac261db280128c22-Abstract.html">https://proceedings.neurips.cc/paper/2015/hash/b618c3210e934362ac261db280128c22-Abstract.html</a></p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.attr.models</span> <span class="kn">import</span> <span class="n">JointFeatureGeneratorNet</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">generator</span> <span class="o">=</span> <span class="n">JointFeatureGeneratorNet</span><span class="p">(</span><span class="n">rnn_hidden_size</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="tint.attr.models.JointFeatureGeneratorNet.test_step">
+<span class="sig-name descname"><span class="pre">test_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/models/joint_features_generator.html#JointFeatureGeneratorNet.test_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.JointFeatureGeneratorNet.test_step" title="Permalink to this definition"></a></dt>
+<dd><p>Operates on a single batch of data from the test set.
+In this step you’d normally generate examples or calculate anything of interest
+such as accuracy.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># the pseudocode for these calls</span>
+<span class="n">test_outs</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">test_batch</span> <span class="ow">in</span> <span class="n">test_data</span><span class="p">:</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">test_step</span><span class="p">(</span><span class="n">test_batch</span><span class="p">)</span>
+    <span class="n">test_outs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+<span class="n">test_epoch_end</span><span class="p">(</span><span class="n">test_outs</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.attr.models.JointFeatureGeneratorNet.test_step.params.batch"></span><strong>batch</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.JointFeatureGeneratorNet.test_step.params.batch">¶</a> – The output of your <code class="xref py py-class docutils literal notranslate"><span class="pre">DataLoader</span></code>.</p></li>
+<li><p><span class="target" id="tint.attr.models.JointFeatureGeneratorNet.test_step.params.batch_idx"></span><strong>batch_idx</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.JointFeatureGeneratorNet.test_step.params.batch_idx">¶</a> – The index of this batch.</p></li>
+<li><p><span class="target" id="tint.attr.models.JointFeatureGeneratorNet.test_step.params.dataloader_id"></span><strong>dataloader_id</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.JointFeatureGeneratorNet.test_step.params.dataloader_id">¶</a> – The index of the dataloader that produced this batch.
+(only if multiple test dataloaders used).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>Any of.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Any object or value</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">None</span></code> - Testing will skip to the next batch</p></li>
+</ul>
+</div></blockquote>
+</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># if you have one test dataloader:</span>
+<span class="k">def</span> <span class="nf">test_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>
+    <span class="o">...</span>
+
+
+<span class="c1"># if you have multiple test dataloaders:</span>
+<span class="k">def</span> <span class="nf">test_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">,</span> <span class="n">dataloader_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+<p>Examples:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># CASE 1: A single test dataset</span>
+<span class="k">def</span> <span class="nf">test_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">batch</span>
+
+    <span class="c1"># implement your own</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+    <span class="c1"># log 6 example images</span>
+    <span class="c1"># or generated text... or whatever</span>
+    <span class="n">sample_imgs</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:</span><span class="mi">6</span><span class="p">]</span>
+    <span class="n">grid</span> <span class="o">=</span> <span class="n">torchvision</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">make_grid</span><span class="p">(</span><span class="n">sample_imgs</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">experiment</span><span class="o">.</span><span class="n">add_image</span><span class="p">(</span><span class="s1">&#39;example_images&#39;</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># calculate acc</span>
+    <span class="n">labels_hat</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">test_acc</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">y</span> <span class="o">==</span> <span class="n">labels_hat</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.0</span><span class="p">)</span>
+
+    <span class="c1"># log the outputs!</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">log_dict</span><span class="p">({</span><span class="s1">&#39;test_loss&#39;</span><span class="p">:</span> <span class="n">loss</span><span class="p">,</span> <span class="s1">&#39;test_acc&#39;</span><span class="p">:</span> <span class="n">test_acc</span><span class="p">})</span>
+</pre></div>
+</div>
+<p>If you pass in multiple test dataloaders, <a class="reference internal" href="#tint.attr.models.JointFeatureGeneratorNet.test_step" title="tint.attr.models.JointFeatureGeneratorNet.test_step"><code class="xref py py-meth docutils literal notranslate"><span class="pre">test_step()</span></code></a> will have an additional argument. We recommend
+setting the default value of 0 so that you can quickly switch between single and multiple dataloaders.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># CASE 2: multiple test dataloaders</span>
+<span class="k">def</span> <span class="nf">test_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">,</span> <span class="n">dataloader_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="c1"># dataloader_idx tells you which dataset this is.</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you don’t need to test you don’t need to implement this method.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When the <a class="reference internal" href="#tint.attr.models.JointFeatureGeneratorNet.test_step" title="tint.attr.models.JointFeatureGeneratorNet.test_step"><code class="xref py py-meth docutils literal notranslate"><span class="pre">test_step()</span></code></a> is called, the model has been put in eval mode and
+PyTorch gradients have been disabled. At the end of the test epoch, the model goes back
+to training mode and gradients are enabled.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tint.attr.models.JointFeatureGeneratorNet.training_step">
+<span class="sig-name descname"><span class="pre">training_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/models/joint_features_generator.html#JointFeatureGeneratorNet.training_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.JointFeatureGeneratorNet.training_step" title="Permalink to this definition"></a></dt>
+<dd><p>Here you compute and return the training loss and some additional metrics for e.g.
+the progress bar or logger.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.attr.models.JointFeatureGeneratorNet.training_step.params.batch"></span><strong>batch</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.JointFeatureGeneratorNet.training_step.params.batch">¶</a> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code> | (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, …) | [<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, …]) – The output of your <code class="xref py py-class docutils literal notranslate"><span class="pre">DataLoader</span></code>. A tensor, tuple or list.</p></li>
+<li><p><span class="target" id="tint.attr.models.JointFeatureGeneratorNet.training_step.params.batch_idx"></span><strong>batch_idx</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.JointFeatureGeneratorNet.training_step.params.batch_idx">¶</a> (<code class="docutils literal notranslate"><span class="pre">int</span></code>) – Integer displaying index of this batch</p></li>
+<li><p><span class="target" id="tint.attr.models.JointFeatureGeneratorNet.training_step.params.optimizer_idx"></span><strong>optimizer_idx</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.JointFeatureGeneratorNet.training_step.params.optimizer_idx">¶</a> (<code class="docutils literal notranslate"><span class="pre">int</span></code>) – When using multiple optimizers, this argument will also be present.</p></li>
+<li><p><span class="target" id="tint.attr.models.JointFeatureGeneratorNet.training_step.params.hiddens"></span><strong>hiddens</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.JointFeatureGeneratorNet.training_step.params.hiddens">¶</a> (<code class="docutils literal notranslate"><span class="pre">Any</span></code>) – Passed in if
+<code class="xref py py-paramref docutils literal notranslate"><span class="pre">truncated_bptt_steps</span></code> &gt; 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>Any of.</p>
+<ul class="simple">
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code> - The loss tensor</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dict</span></code> - A dictionary. Can include any keys, but must include the key <code class="docutils literal notranslate"><span class="pre">'loss'</span></code></p></li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">None</span></code> - Training will skip to the next batch. This is only for automatic optimization.</dt><dd><p>This is not supported for multi-GPU, TPU, IPU, or DeepSpeed.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</p>
+</dd>
+</dl>
+<p>In this step you’d normally do the forward pass and calculate the loss for a batch.
+You can also do fancier things like multiple forward passes or something model specific.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">training_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">batch</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">loss</span>
+</pre></div>
+</div>
+<p>If you define multiple optimizers, this step will be called with an additional
+<code class="docutils literal notranslate"><span class="pre">optimizer_idx</span></code> parameter.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Multiple optimizers (e.g.: GANs)</span>
+<span class="k">def</span> <span class="nf">training_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">,</span> <span class="n">optimizer_idx</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">optimizer_idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># do training_step with encoder</span>
+        <span class="o">...</span>
+    <span class="k">if</span> <span class="n">optimizer_idx</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c1"># do training_step with decoder</span>
+        <span class="o">...</span>
+</pre></div>
+</div>
+<p>If you add truncated back propagation through time you will also get an additional
+argument with the hidden states of the previous step.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Truncated back-propagation through time</span>
+<span class="k">def</span> <span class="nf">training_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">,</span> <span class="n">hiddens</span><span class="p">):</span>
+    <span class="c1"># hiddens are the hidden states from the previous truncated backprop step</span>
+    <span class="n">out</span><span class="p">,</span> <span class="n">hiddens</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lstm</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">hiddens</span><span class="p">)</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="o">...</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="n">loss</span><span class="p">,</span> <span class="s2">&quot;hiddens&quot;</span><span class="p">:</span> <span class="n">hiddens</span><span class="p">}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The loss value shown in the progress bar is smoothed (averaged) over the last values,
+so it differs from the actual loss returned in train/validation step.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tint.attr.models.JointFeatureGeneratorNet.validation_step">
+<span class="sig-name descname"><span class="pre">validation_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/models/joint_features_generator.html#JointFeatureGeneratorNet.validation_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.JointFeatureGeneratorNet.validation_step" title="Permalink to this definition"></a></dt>
+<dd><p>Operates on a single batch of data from the validation set.
+In this step you’d might generate examples or calculate anything of interest like accuracy.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># the pseudocode for these calls</span>
+<span class="n">val_outs</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">val_batch</span> <span class="ow">in</span> <span class="n">val_data</span><span class="p">:</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">validation_step</span><span class="p">(</span><span class="n">val_batch</span><span class="p">)</span>
+    <span class="n">val_outs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+<span class="n">validation_epoch_end</span><span class="p">(</span><span class="n">val_outs</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.attr.models.JointFeatureGeneratorNet.validation_step.params.batch"></span><strong>batch</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.JointFeatureGeneratorNet.validation_step.params.batch">¶</a> – The output of your <code class="xref py py-class docutils literal notranslate"><span class="pre">DataLoader</span></code>.</p></li>
+<li><p><span class="target" id="tint.attr.models.JointFeatureGeneratorNet.validation_step.params.batch_idx"></span><strong>batch_idx</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.JointFeatureGeneratorNet.validation_step.params.batch_idx">¶</a> – The index of this batch.</p></li>
+<li><p><span class="target" id="tint.attr.models.JointFeatureGeneratorNet.validation_step.params.dataloader_idx"></span><strong>dataloader_idx</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.JointFeatureGeneratorNet.validation_step.params.dataloader_idx">¶</a> – The index of the dataloader that produced this batch.
+(only if multiple val dataloaders used)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p>Any object or value</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">None</span></code> - Validation will skip to the next batch</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># pseudocode of order</span>
+<span class="n">val_outs</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">val_batch</span> <span class="ow">in</span> <span class="n">val_data</span><span class="p">:</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">validation_step</span><span class="p">(</span><span class="n">val_batch</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">defined</span><span class="p">(</span><span class="s2">&quot;validation_step_end&quot;</span><span class="p">):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">validation_step_end</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+    <span class="n">val_outs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+<span class="n">val_outs</span> <span class="o">=</span> <span class="n">validation_epoch_end</span><span class="p">(</span><span class="n">val_outs</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># if you have one val dataloader:</span>
+<span class="k">def</span> <span class="nf">validation_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>
+    <span class="o">...</span>
+
+
+<span class="c1"># if you have multiple val dataloaders:</span>
+<span class="k">def</span> <span class="nf">validation_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">,</span> <span class="n">dataloader_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+<p>Examples:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># CASE 1: A single validation dataset</span>
+<span class="k">def</span> <span class="nf">validation_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">batch</span>
+
+    <span class="c1"># implement your own</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+    <span class="c1"># log 6 example images</span>
+    <span class="c1"># or generated text... or whatever</span>
+    <span class="n">sample_imgs</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:</span><span class="mi">6</span><span class="p">]</span>
+    <span class="n">grid</span> <span class="o">=</span> <span class="n">torchvision</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">make_grid</span><span class="p">(</span><span class="n">sample_imgs</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">experiment</span><span class="o">.</span><span class="n">add_image</span><span class="p">(</span><span class="s1">&#39;example_images&#39;</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># calculate acc</span>
+    <span class="n">labels_hat</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">val_acc</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">y</span> <span class="o">==</span> <span class="n">labels_hat</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.0</span><span class="p">)</span>
+
+    <span class="c1"># log the outputs!</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">log_dict</span><span class="p">({</span><span class="s1">&#39;val_loss&#39;</span><span class="p">:</span> <span class="n">loss</span><span class="p">,</span> <span class="s1">&#39;val_acc&#39;</span><span class="p">:</span> <span class="n">val_acc</span><span class="p">})</span>
+</pre></div>
+</div>
+<p>If you pass in multiple val dataloaders, <a class="reference internal" href="#tint.attr.models.JointFeatureGeneratorNet.validation_step" title="tint.attr.models.JointFeatureGeneratorNet.validation_step"><code class="xref py py-meth docutils literal notranslate"><span class="pre">validation_step()</span></code></a> will have an additional argument. We recommend
+setting the default value of 0 so that you can quickly switch between single and multiple dataloaders.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># CASE 2: multiple validation dataloaders</span>
+<span class="k">def</span> <span class="nf">validation_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">,</span> <span class="n">dataloader_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="c1"># dataloader_idx tells you which dataset this is.</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you don’t need to validate you don’t need to implement this method.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When the <a class="reference internal" href="#tint.attr.models.JointFeatureGeneratorNet.validation_step" title="tint.attr.models.JointFeatureGeneratorNet.validation_step"><code class="xref py py-meth docutils literal notranslate"><span class="pre">validation_step()</span></code></a> is called, the model has been put in eval mode
+and PyTorch gradients have been disabled. At the end of validation,
+the model goes back to training mode and gradients are enabled.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tint.attr.models.Mask">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tint.attr.models.</span></span><span class="sig-name descname"><span class="pre">Mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forward_func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perturbation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'fade_moving_average'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deletion_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_mask_coef</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_ratio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size_reg_factor_init</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size_reg_factor_dilation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_reg_factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/models/mask.html#Mask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.Mask" title="Permalink to this definition"></a></dt>
+<dd><p>Mask network for DynaMask method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.attr.models.Mask.params.forward_func"></span><strong>forward_func</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.Mask.params.forward_func">¶</a> (<em>Callable</em>) – The function to get prediction from.</p></li>
+<li><p><span class="target" id="tint.attr.models.Mask.params.perturbation"></span><strong>perturbation</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.Mask.params.perturbation">¶</a> (<em>str</em>) – Which perturbation to apply.
+Default to <code class="docutils literal notranslate"><span class="pre">'fade_moving_average'</span></code></p></li>
+<li><p><span class="target" id="tint.attr.models.Mask.params.deletion_mode"></span><strong>deletion_mode</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.Mask.params.deletion_mode">¶</a> (<em>bool</em>) – <code class="docutils literal notranslate"><span class="pre">True</span></code> if the mask should identify the most
+impactful deletions. Default to <code class="docutils literal notranslate"><span class="pre">False</span></code></p></li>
+<li><p><span class="target" id="tint.attr.models.Mask.params.initial_mask_coef"></span><strong>initial_mask_coef</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.Mask.params.initial_mask_coef">¶</a> (<em>float</em>) – Which value to use to initialise the mask.
+Default to 0.5</p></li>
+<li><p><span class="target" id="tint.attr.models.Mask.params.keep_ratio"></span><strong>keep_ratio</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.Mask.params.keep_ratio">¶</a> (<em>float</em><em>, </em><em>list</em>) – Fraction of elements in x that should be kept by
+the mask. Default to 0.5</p></li>
+<li><p><span class="target" id="tint.attr.models.Mask.params.size_reg_factor_init"></span><strong>size_reg_factor_init</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.Mask.params.size_reg_factor_init">¶</a> (<em>float</em>) – Initial coefficient for the regulator
+part of the total loss. Default to 0.5</p></li>
+<li><p><span class="target" id="tint.attr.models.Mask.params.size_reg_factor_dilation"></span><strong>size_reg_factor_dilation</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.Mask.params.size_reg_factor_dilation">¶</a> (<em>float</em>) – Ratio between the final and the
+initial size regulation factor. Default to 100</p></li>
+<li><p><span class="target" id="tint.attr.models.Mask.params.time_reg_factor"></span><strong>time_reg_factor</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.Mask.params.time_reg_factor">¶</a> (<em>float</em>) – Regulation factor for the variation in time.
+Default to 0.0</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p><a class="reference external" href="https://arxiv.org/pdf/2106.05303">https://arxiv.org/pdf/2106.05303</a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="tint.attr.models.Mask.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_idx</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">additional_forward_args</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/tint/attr/models/mask.html#Mask.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.Mask.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tint.attr.models.MaskNet">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tint.attr.models.</span></span><span class="sig-name descname"><span class="pre">MaskNet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forward_func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perturbation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'fade_moving_average'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deletion_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_mask_coef</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_ratio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size_reg_factor_init</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size_reg_factor_dilation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_reg_factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mse'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'adam'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr_scheduler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr_scheduler_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/models/mask.html#MaskNet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.MaskNet" title="Permalink to this definition"></a></dt>
+<dd><p>Mask network as a Pytorch Lightning module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.attr.models.MaskNet.params.forward_func"></span><strong>forward_func</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.MaskNet.params.forward_func">¶</a> (<em>Callable</em>) – The function to get prediction from.</p></li>
+<li><p><span class="target" id="tint.attr.models.MaskNet.params.perturbation"></span><strong>perturbation</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.MaskNet.params.perturbation">¶</a> (<em>str</em>) – Which perturbation to apply.
+Default to <code class="docutils literal notranslate"><span class="pre">'fade_moving_average'</span></code></p></li>
+<li><p><span class="target" id="tint.attr.models.MaskNet.params.deletion_mode"></span><strong>deletion_mode</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.MaskNet.params.deletion_mode">¶</a> (<em>bool</em>) – <code class="docutils literal notranslate"><span class="pre">True</span></code> if the mask should identify the most
+impactful deletions. Default to <code class="docutils literal notranslate"><span class="pre">False</span></code></p></li>
+<li><p><span class="target" id="tint.attr.models.MaskNet.params.initial_mask_coef"></span><strong>initial_mask_coef</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.MaskNet.params.initial_mask_coef">¶</a> (<em>float</em>) – Which value to use to initialise the mask.
+Default to 0.5</p></li>
+<li><p><span class="target" id="tint.attr.models.MaskNet.params.keep_ratio"></span><strong>keep_ratio</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.MaskNet.params.keep_ratio">¶</a> (<em>float</em><em>, </em><em>list</em>) – Fraction of elements in x that should be kept by
+the mask. Default to 0.5</p></li>
+<li><p><span class="target" id="tint.attr.models.MaskNet.params.size_reg_factor_init"></span><strong>size_reg_factor_init</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.MaskNet.params.size_reg_factor_init">¶</a> (<em>float</em>) – Initial coefficient for the regulator
+part of the total loss. Default to 0.5</p></li>
+<li><p><span class="target" id="tint.attr.models.MaskNet.params.size_reg_factor_dilation"></span><strong>size_reg_factor_dilation</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.MaskNet.params.size_reg_factor_dilation">¶</a> (<em>float</em>) – Ratio between the final and the
+initial size regulation factor. Default to 100</p></li>
+<li><p><span class="target" id="tint.attr.models.MaskNet.params.time_reg_factor"></span><strong>time_reg_factor</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.MaskNet.params.time_reg_factor">¶</a> (<em>float</em>) – Regulation factor for the variation in time.
+Default to 0.0</p></li>
+<li><p><span class="target" id="tint.attr.models.MaskNet.params.loss"></span><strong>loss</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.MaskNet.params.loss">¶</a> (<em>str</em><em>, </em><em>callable</em>) – Which loss to use. Default to <code class="docutils literal notranslate"><span class="pre">'mse'</span></code></p></li>
+<li><p><span class="target" id="tint.attr.models.MaskNet.params.optim"></span><strong>optim</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.MaskNet.params.optim">¶</a> (<em>str</em>) – Which optimizer to use. Default to <code class="docutils literal notranslate"><span class="pre">'adam'</span></code></p></li>
+<li><p><span class="target" id="tint.attr.models.MaskNet.params.lr"></span><strong>lr</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.MaskNet.params.lr">¶</a> (<em>float</em>) – Learning rate. Default to 1e-3</p></li>
+<li><p><span class="target" id="tint.attr.models.MaskNet.params.lr_scheduler"></span><strong>lr_scheduler</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.MaskNet.params.lr_scheduler">¶</a> (<em>dict</em><em>, </em><em>str</em>) – Learning rate scheduler. Either a dict
+(custom scheduler) or a string. Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.attr.models.MaskNet.params.lr_scheduler_args"></span><strong>lr_scheduler_args</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.MaskNet.params.lr_scheduler_args">¶</a> (<em>dict</em>) – Additional args for the scheduler.
+Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.attr.models.MaskNet.params.l2"></span><strong>l2</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.MaskNet.params.l2">¶</a> (<em>float</em>) – L2 regularisation. Default to 0.0</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p><a class="reference external" href="https://arxiv.org/pdf/2106.05303">https://arxiv.org/pdf/2106.05303</a></p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span> <span class="k">as</span> <span class="nn">th</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.attr.models</span> <span class="kn">import</span> <span class="n">MaskNet</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.models</span> <span class="kn">import</span> <span class="n">MLP</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inputs</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mlp</span> <span class="o">=</span> <span class="n">MLP</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mask</span> <span class="o">=</span> <span class="n">MaskNet</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">forward_func</span><span class="o">=</span><span class="n">mlp</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">perturbation</span><span class="o">=</span><span class="s2">&quot;gaussian_blur&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">sigma_max</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">keep_ratio</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.35</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">)),</span>
+<span class="gp">... </span>    <span class="n">size_reg_factor_init</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">size_reg_factor_dilation</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">time_reg_factor</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="tint.attr.models.MaskNet.configure_optimizers">
+<span class="sig-name descname"><span class="pre">configure_optimizers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/models/mask.html#MaskNet.configure_optimizers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.MaskNet.configure_optimizers" title="Permalink to this definition"></a></dt>
+<dd><p>Choose what optimizers and learning-rate schedulers to use in your optimization.
+Normally you’d need one. But in the case of GANs or similar you might have multiple.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><p>Any of these 6 options.</p>
+<ul class="simple">
+<li><p><strong>Single optimizer</strong>.</p></li>
+<li><p><strong>List or Tuple</strong> of optimizers.</p></li>
+<li><p><strong>Two lists</strong> - The first list has multiple optimizers, and the second has multiple LR schedulers
+(or multiple <code class="docutils literal notranslate"><span class="pre">lr_scheduler_config</span></code>).</p></li>
+<li><p><strong>Dictionary</strong>, with an <code class="docutils literal notranslate"><span class="pre">&quot;optimizer&quot;</span></code> key, and (optionally) a <code class="docutils literal notranslate"><span class="pre">&quot;lr_scheduler&quot;</span></code>
+key whose value is a single LR scheduler or <code class="docutils literal notranslate"><span class="pre">lr_scheduler_config</span></code>.</p></li>
+<li><p><strong>Tuple of dictionaries</strong> as described above, with an optional <code class="docutils literal notranslate"><span class="pre">&quot;frequency&quot;</span></code> key.</p></li>
+<li><p><strong>None</strong> - Fit will run without any optimizer.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p>The <code class="docutils literal notranslate"><span class="pre">lr_scheduler_config</span></code> is a dictionary which contains the scheduler and its associated configuration.
+The default configuration is shown below.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">lr_scheduler_config</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1"># REQUIRED: The scheduler instance</span>
+    <span class="s2">&quot;scheduler&quot;</span><span class="p">:</span> <span class="n">lr_scheduler</span><span class="p">,</span>
+    <span class="c1"># The unit of the scheduler&#39;s step size, could also be &#39;step&#39;.</span>
+    <span class="c1"># &#39;epoch&#39; updates the scheduler on epoch end whereas &#39;step&#39;</span>
+    <span class="c1"># updates it after a optimizer update.</span>
+    <span class="s2">&quot;interval&quot;</span><span class="p">:</span> <span class="s2">&quot;epoch&quot;</span><span class="p">,</span>
+    <span class="c1"># How many epochs/steps should pass between calls to</span>
+    <span class="c1"># `scheduler.step()`. 1 corresponds to updating the learning</span>
+    <span class="c1"># rate after every epoch/step.</span>
+    <span class="s2">&quot;frequency&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="c1"># Metric to to monitor for schedulers like `ReduceLROnPlateau`</span>
+    <span class="s2">&quot;monitor&quot;</span><span class="p">:</span> <span class="s2">&quot;val_loss&quot;</span><span class="p">,</span>
+    <span class="c1"># If set to `True`, will enforce that the value specified &#39;monitor&#39;</span>
+    <span class="c1"># is available when the scheduler is updated, thus stopping</span>
+    <span class="c1"># training if not found. If set to `False`, it will only produce a warning</span>
+    <span class="s2">&quot;strict&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="c1"># If using the `LearningRateMonitor` callback to monitor the</span>
+    <span class="c1"># learning rate progress, this keyword can be used to specify</span>
+    <span class="c1"># a custom logged name</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>When there are schedulers in which the <code class="docutils literal notranslate"><span class="pre">.step()</span></code> method is conditioned on a value, such as the
+<code class="xref py py-class docutils literal notranslate"><span class="pre">torch.optim.lr_scheduler.ReduceLROnPlateau</span></code> scheduler, Lightning requires that the
+<code class="docutils literal notranslate"><span class="pre">lr_scheduler_config</span></code> contains the keyword <code class="docutils literal notranslate"><span class="pre">&quot;monitor&quot;</span></code> set to the metric name that the scheduler
+should be conditioned on.</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># The ReduceLROnPlateau scheduler requires a monitor</span>
+<span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;optimizer&quot;</span><span class="p">:</span> <span class="n">optimizer</span><span class="p">,</span>
+        <span class="s2">&quot;lr_scheduler&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;scheduler&quot;</span><span class="p">:</span> <span class="n">ReduceLROnPlateau</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="o">...</span><span class="p">),</span>
+            <span class="s2">&quot;monitor&quot;</span><span class="p">:</span> <span class="s2">&quot;metric_to_track&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;frequency&quot;</span><span class="p">:</span> <span class="s2">&quot;indicates how often the metric is updated&quot;</span>
+            <span class="c1"># If &quot;monitor&quot; references validation metrics, then &quot;frequency&quot; should be set to a</span>
+            <span class="c1"># multiple of &quot;trainer.check_val_every_n_epoch&quot;.</span>
+        <span class="p">},</span>
+    <span class="p">}</span>
+
+
+<span class="c1"># In the case of two optimizers, only one using the ReduceLROnPlateau scheduler</span>
+<span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">optimizer1</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+    <span class="n">optimizer2</span> <span class="o">=</span> <span class="n">SGD</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+    <span class="n">scheduler1</span> <span class="o">=</span> <span class="n">ReduceLROnPlateau</span><span class="p">(</span><span class="n">optimizer1</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+    <span class="n">scheduler2</span> <span class="o">=</span> <span class="n">LambdaLR</span><span class="p">(</span><span class="n">optimizer2</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;optimizer&quot;</span><span class="p">:</span> <span class="n">optimizer1</span><span class="p">,</span>
+            <span class="s2">&quot;lr_scheduler&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;scheduler&quot;</span><span class="p">:</span> <span class="n">scheduler1</span><span class="p">,</span>
+                <span class="s2">&quot;monitor&quot;</span><span class="p">:</span> <span class="s2">&quot;metric_to_track&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;optimizer&quot;</span><span class="p">:</span> <span class="n">optimizer2</span><span class="p">,</span> <span class="s2">&quot;lr_scheduler&quot;</span><span class="p">:</span> <span class="n">scheduler2</span><span class="p">},</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<p>Metrics can be made available to monitor by simply logging it using
+<code class="docutils literal notranslate"><span class="pre">self.log('metric_to_track',</span> <span class="pre">metric_val)</span></code> in your <code class="xref py py-class docutils literal notranslate"><span class="pre">LightningModule</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">frequency</span></code> value specified in a dict along with the <code class="docutils literal notranslate"><span class="pre">optimizer</span></code> key is an int corresponding
+to the number of sequential batches optimized with the specific optimizer.
+It should be given to none or to all of the optimizers.
+There is a difference between passing multiple optimizers in a list,
+and passing multiple optimizers in dictionaries with a frequency of 1:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>In the former case, all optimizers will operate on the given batch in each optimization step.</p></li>
+<li><p>In the latter, only one optimizer will operate on the given batch at every step.</p></li>
+</ul>
+</div></blockquote>
+<p>This is different from the <code class="docutils literal notranslate"><span class="pre">frequency</span></code> value specified in the <code class="docutils literal notranslate"><span class="pre">lr_scheduler_config</span></code> mentioned above.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">optimizer_one</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+    <span class="n">optimizer_two</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s2">&quot;optimizer&quot;</span><span class="p">:</span> <span class="n">optimizer_one</span><span class="p">,</span> <span class="s2">&quot;frequency&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;optimizer&quot;</span><span class="p">:</span> <span class="n">optimizer_two</span><span class="p">,</span> <span class="s2">&quot;frequency&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">},</span>
+    <span class="p">]</span>
+</pre></div>
+</div>
+<p>In this example, the first optimizer will be used for the first 5 steps,
+the second optimizer for the next 10 steps and that cycle will continue.
+If an LR scheduler is specified for an optimizer using the <code class="docutils literal notranslate"><span class="pre">lr_scheduler</span></code> key in the above dict,
+the scheduler will only be updated when its optimizer is being used.</p>
+</div>
+<p>Examples:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># most cases. no learning rate scheduler</span>
+<span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">Adam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
+
+<span class="c1"># multiple optimizer case (e.g.: GAN)</span>
+<span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">gen_opt</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_gen</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+    <span class="n">dis_opt</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_dis</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.02</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">gen_opt</span><span class="p">,</span> <span class="n">dis_opt</span>
+
+<span class="c1"># example with learning rate schedulers</span>
+<span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">gen_opt</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_gen</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+    <span class="n">dis_opt</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_dis</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.02</span><span class="p">)</span>
+    <span class="n">dis_sch</span> <span class="o">=</span> <span class="n">CosineAnnealing</span><span class="p">(</span><span class="n">dis_opt</span><span class="p">,</span> <span class="n">T_max</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">gen_opt</span><span class="p">,</span> <span class="n">dis_opt</span><span class="p">],</span> <span class="p">[</span><span class="n">dis_sch</span><span class="p">]</span>
+
+<span class="c1"># example with step-based learning rate schedulers</span>
+<span class="c1"># each optimizer has its own scheduler</span>
+<span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">gen_opt</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_gen</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+    <span class="n">dis_opt</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_dis</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.02</span><span class="p">)</span>
+    <span class="n">gen_sch</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;scheduler&#39;</span><span class="p">:</span> <span class="n">ExponentialLR</span><span class="p">(</span><span class="n">gen_opt</span><span class="p">,</span> <span class="mf">0.99</span><span class="p">),</span>
+        <span class="s1">&#39;interval&#39;</span><span class="p">:</span> <span class="s1">&#39;step&#39;</span>  <span class="c1"># called after each training step</span>
+    <span class="p">}</span>
+    <span class="n">dis_sch</span> <span class="o">=</span> <span class="n">CosineAnnealing</span><span class="p">(</span><span class="n">dis_opt</span><span class="p">,</span> <span class="n">T_max</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="c1"># called every epoch</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">gen_opt</span><span class="p">,</span> <span class="n">dis_opt</span><span class="p">],</span> <span class="p">[</span><span class="n">gen_sch</span><span class="p">,</span> <span class="n">dis_sch</span><span class="p">]</span>
+
+<span class="c1"># example with optimizer frequencies</span>
+<span class="c1"># see training procedure in `Improved Training of Wasserstein GANs`, Algorithm 1</span>
+<span class="c1"># https://arxiv.org/abs/1704.00028</span>
+<span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">gen_opt</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_gen</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+    <span class="n">dis_opt</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_dis</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.02</span><span class="p">)</span>
+    <span class="n">n_critic</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="p">{</span><span class="s1">&#39;optimizer&#39;</span><span class="p">:</span> <span class="n">dis_opt</span><span class="p">,</span> <span class="s1">&#39;frequency&#39;</span><span class="p">:</span> <span class="n">n_critic</span><span class="p">},</span>
+        <span class="p">{</span><span class="s1">&#39;optimizer&#39;</span><span class="p">:</span> <span class="n">gen_opt</span><span class="p">,</span> <span class="s1">&#39;frequency&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Some things to know:</p>
+<ul class="simple">
+<li><p>Lightning calls <code class="docutils literal notranslate"><span class="pre">.backward()</span></code> and <code class="docutils literal notranslate"><span class="pre">.step()</span></code> on each optimizer as needed.</p></li>
+<li><p>If learning rate scheduler is specified in <code class="docutils literal notranslate"><span class="pre">configure_optimizers()</span></code> with key
+<code class="docutils literal notranslate"><span class="pre">&quot;interval&quot;</span></code> (default “epoch”) in the scheduler configuration, Lightning will call
+the scheduler’s <code class="docutils literal notranslate"><span class="pre">.step()</span></code> method automatically in case of automatic optimization.</p></li>
+<li><p>If you use 16-bit precision (<code class="docutils literal notranslate"><span class="pre">precision=16</span></code>), Lightning will automatically handle the optimizers.</p></li>
+<li><p>If you use multiple optimizers, <code class="xref py py-meth docutils literal notranslate"><span class="pre">training_step()</span></code> will have an additional <code class="docutils literal notranslate"><span class="pre">optimizer_idx</span></code> parameter.</p></li>
+<li><p>If you use <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.optim.LBFGS</span></code>, Lightning handles the closure function automatically for you.</p></li>
+<li><p>If you use multiple optimizers, gradients will be calculated only for the parameters of current optimizer
+at each training step.</p></li>
+<li><p>If you need to control how often those optimizers step or override the default <code class="docutils literal notranslate"><span class="pre">.step()</span></code> schedule,
+override the <code class="xref py py-meth docutils literal notranslate"><span class="pre">optimizer_step()</span></code> hook.</p></li>
+</ul>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tint.attr.models.MaskNet.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/tint/attr/models/mask.html#MaskNet.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.MaskNet.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Same as <code class="xref py py-meth docutils literal notranslate"><span class="pre">torch.nn.Module.forward()</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.attr.models.MaskNet.forward.params.*args"></span><strong>*args</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.MaskNet.forward.params.*args">¶</a> – Whatever you decide to pass into the forward method.</p></li>
+<li><p><span class="target" id="tint.attr.models.MaskNet.forward.params.**kwargs"></span><strong>**kwargs</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.MaskNet.forward.params.**kwargs">¶</a> – Keyword arguments are also possible.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Your model’s output</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tint.attr.models.MaskNet.predict_step">
+<span class="sig-name descname"><span class="pre">predict_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataloader_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/models/mask.html#MaskNet.predict_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.MaskNet.predict_step" title="Permalink to this definition"></a></dt>
+<dd><p>Step function called during <code class="xref py py-meth docutils literal notranslate"><span class="pre">predict()</span></code>. By default, it
+calls <code class="xref py py-meth docutils literal notranslate"><span class="pre">forward()</span></code>. Override to add any processing logic.</p>
+<p>The <code class="xref py py-meth docutils literal notranslate"><span class="pre">predict_step()</span></code> is used
+to scale inference on multi-devices.</p>
+<p>To prevent an OOM error, it is possible to use <code class="xref py py-class docutils literal notranslate"><span class="pre">BasePredictionWriter</span></code>
+callback to write the predictions to disk or database after each batch or on epoch end.</p>
+<p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">BasePredictionWriter</span></code> should be used while using a spawn
+based accelerator. This happens for <code class="docutils literal notranslate"><span class="pre">Trainer(strategy=&quot;ddp_spawn&quot;)</span></code>
+or training on 8 TPU cores with <code class="docutils literal notranslate"><span class="pre">Trainer(accelerator=&quot;tpu&quot;,</span> <span class="pre">devices=8)</span></code> as predictions won’t be returned.</p>
+<p>Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyModel</span><span class="p">(</span><span class="n">LightningModule</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">predict_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">,</span> <span class="n">dataloader_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+
+<span class="n">dm</span> <span class="o">=</span> <span class="o">...</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">MyModel</span><span class="p">()</span>
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">accelerator</span><span class="o">=</span><span class="s2">&quot;gpu&quot;</span><span class="p">,</span> <span class="n">devices</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">predictions</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">dm</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.attr.models.MaskNet.predict_step.params.batch"></span><strong>batch</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.MaskNet.predict_step.params.batch">¶</a> – Current batch.</p></li>
+<li><p><span class="target" id="tint.attr.models.MaskNet.predict_step.params.batch_idx"></span><strong>batch_idx</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.MaskNet.predict_step.params.batch_idx">¶</a> – Index of current batch.</p></li>
+<li><p><span class="target" id="tint.attr.models.MaskNet.predict_step.params.dataloader_idx"></span><strong>dataloader_idx</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.MaskNet.predict_step.params.dataloader_idx">¶</a> – Index of the current dataloader.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Predicted output</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tint.attr.models.MaskNet.training_epoch_end">
+<span class="sig-name descname"><span class="pre">training_epoch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outputs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/tint/attr/models/mask.html#MaskNet.training_epoch_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.MaskNet.training_epoch_end" title="Permalink to this definition"></a></dt>
+<dd><p>Called at the end of the training epoch with the outputs of all training steps. Use this in case you
+need to do something with all the outputs returned by <code class="xref py py-meth docutils literal notranslate"><span class="pre">training_step()</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># the pseudocode for these calls</span>
+<span class="n">train_outs</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">train_batch</span> <span class="ow">in</span> <span class="n">train_data</span><span class="p">:</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">training_step</span><span class="p">(</span><span class="n">train_batch</span><span class="p">)</span>
+    <span class="n">train_outs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+<span class="n">training_epoch_end</span><span class="p">(</span><span class="n">train_outs</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><span class="target" id="tint.attr.models.MaskNet.training_epoch_end.params.outputs"></span><strong>outputs</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.MaskNet.training_epoch_end.params.outputs">¶</a> – List of outputs you defined in <code class="xref py py-meth docutils literal notranslate"><span class="pre">training_step()</span></code>. If there are multiple optimizers or when
+using <code class="docutils literal notranslate"><span class="pre">truncated_bptt_steps</span> <span class="pre">&gt;</span> <span class="pre">0</span></code>, the lists have the dimensions
+(n_batches, tbptt_steps, n_optimizers). Dimensions of length 1 are squeezed.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If this method is not overridden, this won’t be called.</p>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">training_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">training_step_outputs</span><span class="p">):</span>
+    <span class="c1"># do something with all training_step outputs</span>
+    <span class="k">for</span> <span class="n">out</span> <span class="ow">in</span> <span class="n">training_step_outputs</span><span class="p">:</span>
+        <span class="o">...</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tint.attr.models.Retain">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tint.attr.models.</span></span><span class="sig-name descname"><span class="pre">Retain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim_emb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">128</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout_emb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim_alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">128</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim_beta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">128</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout_context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim_output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temporal_labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/models/retain.html#Retain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.Retain" title="Permalink to this definition"></a></dt>
+<dd><p>RETAIN network.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.attr.models.Retain.params.dim_emb"></span><strong>dim_emb</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.Retain.params.dim_emb">¶</a> (<em>int</em>) – Dimension of the embedding. Default to 128</p></li>
+<li><p><span class="target" id="tint.attr.models.Retain.params.dropout_input"></span><strong>dropout_input</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.Retain.params.dropout_input">¶</a> (<em>float</em>) – Dropout rate for the input. Default to 0.8</p></li>
+<li><p><span class="target" id="tint.attr.models.Retain.params.dropout_emb"></span><strong>dropout_emb</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.Retain.params.dropout_emb">¶</a> (<em>float</em>) – Dropout of the embedding. Default to 0.5</p></li>
+<li><p><span class="target" id="tint.attr.models.Retain.params.dim_alpha"></span><strong>dim_alpha</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.Retain.params.dim_alpha">¶</a> (<em>int</em>) – Hidden size of the alpha rnn. Default to 128</p></li>
+<li><p><span class="target" id="tint.attr.models.Retain.params.dim_beta"></span><strong>dim_beta</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.Retain.params.dim_beta">¶</a> (<em>int</em>) – Hidden size of the beta rnn. Default to 128</p></li>
+<li><p><span class="target" id="tint.attr.models.Retain.params.dropout_context"></span><strong>dropout_context</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.Retain.params.dropout_context">¶</a> (<em>float</em>) – Dropout rate of the context vector.
+Default to 0.5</p></li>
+<li><p><span class="target" id="tint.attr.models.Retain.params.dim_output"></span><strong>dim_output</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.Retain.params.dim_output">¶</a> (<em>int</em>) – Size of the output. Default to 2</p></li>
+<li><p><span class="target" id="tint.attr.models.Retain.params.temporal_labels"></span><strong>temporal_labels</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.Retain.params.temporal_labels">¶</a> (<em>bool</em>) – Whether to use temporal labels or
+static labels. Default to <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p><a class="reference external" href="https://arxiv.org/pdf/1608.05745">https://arxiv.org/pdf/1608.05745</a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="tint.attr.models.Retain.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lengths</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/models/retain.html#Retain.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.Retain.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tint.attr.models.RetainNet">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tint.attr.models.</span></span><span class="sig-name descname"><span class="pre">RetainNet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim_emb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">128</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout_emb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim_alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">128</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim_beta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">128</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout_context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim_output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temporal_labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mse'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'adam'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr_scheduler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr_scheduler_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/models/retain.html#RetainNet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.RetainNet" title="Permalink to this definition"></a></dt>
+<dd><p>Retain Network as a Pytorch Lightning module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.attr.models.RetainNet.params.dim_emb"></span><strong>dim_emb</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.RetainNet.params.dim_emb">¶</a> (<em>int</em>) – Dimension of the embedding. Default to 128</p></li>
+<li><p><span class="target" id="tint.attr.models.RetainNet.params.dropout_input"></span><strong>dropout_input</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.RetainNet.params.dropout_input">¶</a> (<em>float</em>) – Dropout rate for the input. Default to 0.8</p></li>
+<li><p><span class="target" id="tint.attr.models.RetainNet.params.dropout_emb"></span><strong>dropout_emb</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.RetainNet.params.dropout_emb">¶</a> (<em>float</em>) – Dropout of the embedding. Default to 0.5</p></li>
+<li><p><span class="target" id="tint.attr.models.RetainNet.params.dim_alpha"></span><strong>dim_alpha</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.RetainNet.params.dim_alpha">¶</a> (<em>int</em>) – Hidden size of the alpha rnn. Default to 128</p></li>
+<li><p><span class="target" id="tint.attr.models.RetainNet.params.dim_beta"></span><strong>dim_beta</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.RetainNet.params.dim_beta">¶</a> (<em>int</em>) – Hidden size of the beta rnn. Default to 128</p></li>
+<li><p><span class="target" id="tint.attr.models.RetainNet.params.dropout_context"></span><strong>dropout_context</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.RetainNet.params.dropout_context">¶</a> (<em>float</em>) – Dropout rate of the context vector.
+Default to 0.5</p></li>
+<li><p><span class="target" id="tint.attr.models.RetainNet.params.dim_output"></span><strong>dim_output</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.RetainNet.params.dim_output">¶</a> (<em>int</em>) – Size of the output. Default to 2</p></li>
+<li><p><span class="target" id="tint.attr.models.RetainNet.params.temporal_labels"></span><strong>temporal_labels</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.RetainNet.params.temporal_labels">¶</a> (<em>bool</em>) – Whether to use temporal labels or
+static labels. Default to <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
+<li><p><span class="target" id="tint.attr.models.RetainNet.params.loss"></span><strong>loss</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.RetainNet.params.loss">¶</a> (<em>str</em><em>, </em><em>callable</em>) – Which loss to use. Default to <code class="docutils literal notranslate"><span class="pre">'mse'</span></code></p></li>
+<li><p><span class="target" id="tint.attr.models.RetainNet.params.optim"></span><strong>optim</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.RetainNet.params.optim">¶</a> (<em>str</em>) – Which optimizer to use. Default to <code class="docutils literal notranslate"><span class="pre">'adam'</span></code></p></li>
+<li><p><span class="target" id="tint.attr.models.RetainNet.params.lr"></span><strong>lr</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.RetainNet.params.lr">¶</a> (<em>float</em>) – Learning rate. Default to 1e-3</p></li>
+<li><p><span class="target" id="tint.attr.models.RetainNet.params.lr_scheduler"></span><strong>lr_scheduler</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.RetainNet.params.lr_scheduler">¶</a> (<em>dict</em><em>, </em><em>str</em>) – Learning rate scheduler. Either a dict
+(custom scheduler) or a string. Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.attr.models.RetainNet.params.lr_scheduler_args"></span><strong>lr_scheduler_args</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.RetainNet.params.lr_scheduler_args">¶</a> (<em>dict</em>) – Additional args for the scheduler.
+Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.attr.models.RetainNet.params.l2"></span><strong>l2</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.RetainNet.params.l2">¶</a> (<em>float</em>) – L2 regularisation. Default to 0.0</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p><a class="reference external" href="https://arxiv.org/pdf/1608.05745">https://arxiv.org/pdf/1608.05745</a></p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.attr.models</span> <span class="kn">import</span> <span class="n">RetainNet</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">retain</span> <span class="o">=</span> <span class="n">RetainNet</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">dim_emb</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">dropout_emb</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">dim_alpha</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">dim_beta</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">dropout_context</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">dim_output</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">loss</span><span class="o">=</span><span class="s2">&quot;cross_entropy&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tint.attr.models.SGDBayesLasso">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tint.attr.models.</span></span><span class="sig-name descname"><span class="pre">SGDBayesLasso</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kl_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/models/bayes_linear.html#SGDBayesLasso"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.SGDBayesLasso" title="Permalink to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="tint.attr.models.SGDBayesLasso.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataLoader</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/models/bayes_linear.html#SGDBayesLasso.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.SGDBayesLasso.fit" title="Permalink to this definition"></a></dt>
+<dd><p>Calls <cite>self.train_fn</cite></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tint.attr.models.SGDBayesLinearModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tint.attr.models.</span></span><span class="sig-name descname"><span class="pre">SGDBayesLinearModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/models/bayes_linear.html#SGDBayesLinearModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.SGDBayesLinearModel" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tint.attr.models.SGDBayesLinearRegression">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tint.attr.models.</span></span><span class="sig-name descname"><span class="pre">SGDBayesLinearRegression</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kl_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/models/bayes_linear.html#SGDBayesLinearRegression"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.SGDBayesLinearRegression" title="Permalink to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="tint.attr.models.SGDBayesLinearRegression.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataLoader</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/models/bayes_linear.html#SGDBayesLinearRegression.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.SGDBayesLinearRegression.fit" title="Permalink to this definition"></a></dt>
+<dd><p>Calls <cite>self.train_fn</cite></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tint.attr.models.SGDBayesRidge">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tint.attr.models.</span></span><span class="sig-name descname"><span class="pre">SGDBayesRidge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kl_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/models/bayes_linear.html#SGDBayesRidge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.SGDBayesRidge" title="Permalink to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="tint.attr.models.SGDBayesRidge.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataLoader</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/models/bayes_linear.html#SGDBayesRidge.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.SGDBayesRidge.fit" title="Permalink to this definition"></a></dt>
+<dd><p>Calls <cite>self.train_fn</cite></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tint.attr.models.SkLearnARDRegression">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tint.attr.models.</span></span><span class="sig-name descname"><span class="pre">SkLearnARDRegression</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/models/bayes_linear.html#SkLearnARDRegression"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.SkLearnARDRegression" title="Permalink to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="tint.attr.models.SkLearnARDRegression.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataLoader</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/models/bayes_linear.html#SkLearnARDRegression.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.SkLearnARDRegression.fit" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.attr.models.SkLearnARDRegression.fit.params.train_data"></span><strong>train_data</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.SkLearnARDRegression.fit.params.train_data">¶</a> – Train data to use</p></li>
+<li><p><span class="target" id="tint.attr.models.SkLearnARDRegression.fit.params.kwargs"></span><strong>kwargs</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.SkLearnARDRegression.fit.params.kwargs">¶</a> – Arguments to feed to <cite>.fit</cite> method for sklearn</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tint.attr.models.SkLearnBayesLinearModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tint.attr.models.</span></span><span class="sig-name descname"><span class="pre">SkLearnBayesLinearModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sklearn_module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/models/bayes_linear.html#SkLearnBayesLinearModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.SkLearnBayesLinearModel" title="Permalink to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="tint.attr.models.SkLearnBayesLinearModel.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataLoader</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/models/bayes_linear.html#SkLearnBayesLinearModel.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.SkLearnBayesLinearModel.fit" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.attr.models.SkLearnBayesLinearModel.fit.params.train_data"></span><strong>train_data</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.SkLearnBayesLinearModel.fit.params.train_data">¶</a> – Train data to use</p></li>
+<li><p><span class="target" id="tint.attr.models.SkLearnBayesLinearModel.fit.params.kwargs"></span><strong>kwargs</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.SkLearnBayesLinearModel.fit.params.kwargs">¶</a> – Arguments to feed to <cite>.fit</cite> method for sklearn</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tint.attr.models.SkLearnBayesianRidge">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tint.attr.models.</span></span><span class="sig-name descname"><span class="pre">SkLearnBayesianRidge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/models/bayes_linear.html#SkLearnBayesianRidge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.SkLearnBayesianRidge" title="Permalink to this definition"></a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="tint.attr.models.SkLearnBayesianRidge.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataLoader</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/models/bayes_linear.html#SkLearnBayesianRidge.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.SkLearnBayesianRidge.fit" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.attr.models.SkLearnBayesianRidge.fit.params.train_data"></span><strong>train_data</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.SkLearnBayesianRidge.fit.params.train_data">¶</a> – Train data to use</p></li>
+<li><p><span class="target" id="tint.attr.models.SkLearnBayesianRidge.fit.params.kwargs"></span><strong>kwargs</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.SkLearnBayesianRidge.fit.params.kwargs">¶</a> – Arguments to feed to <cite>.fit</cite> method for sklearn</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tint.attr.models.scale_inputs">
+<span class="sig-prename descclassname"><span class="pre">tint.attr.models.</span></span><span class="sig-name descname"><span class="pre">scale_inputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_input_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auxiliary_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'greedy'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/models/path_generator.html#scale_inputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.scale_inputs" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a monotonic path between input_ids and ref_input_ids
+(the baseline). This path is only composed of data points, which have been
+‘monotonized’. The strategy used to build the path is either <code class="docutils literal notranslate"><span class="pre">'greedy'</span></code>
+or <code class="docutils literal notranslate"><span class="pre">'maxcount'</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.attr.models.scale_inputs.params.input_ids"></span><strong>input_ids</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.scale_inputs.params.input_ids">¶</a> – The inputs.</p></li>
+<li><p><span class="target" id="tint.attr.models.scale_inputs.params.ref_input_ids"></span><strong>ref_input_ids</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.scale_inputs.params.ref_input_ids">¶</a> – The baseline.</p></li>
+<li><p><span class="target" id="tint.attr.models.scale_inputs.params.device"></span><strong>device</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.scale_inputs.params.device">¶</a> – Which device to use for the path.</p></li>
+<li><p><span class="target" id="tint.attr.models.scale_inputs.params.auxiliary_data"></span><strong>auxiliary_data</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.scale_inputs.params.auxiliary_data">¶</a> – The knns previously computed.</p></li>
+<li><p><span class="target" id="tint.attr.models.scale_inputs.params.steps"></span><strong>steps</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.scale_inputs.params.steps">¶</a> – Number of steps for the path. Default to 30</p></li>
+<li><p><span class="target" id="tint.attr.models.scale_inputs.params.factor"></span><strong>factor</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.scale_inputs.params.factor">¶</a> – Up-scaling of the embeddings. Default to 0</p></li>
+<li><p><span class="target" id="tint.attr.models.scale_inputs.params.strategy"></span><strong>strategy</strong><a class="paramlink headerlink reference internal" href="#tint.attr.models.scale_inputs.params.strategy">¶</a> – Strategy to build the path. Either <code class="docutils literal notranslate"><span class="pre">'greedy'</span></code> or</p></li>
+<li><p><strong>'greedy'</strong> (<em>'maxcount'. _sphinx_paramlinks_tint.attr.models.scale_inputs.Default to</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The monotonic path.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p><a class="reference external" href="https://github.com/INK-USC/DIG">https://github.com/INK-USC/DIG</a></p>
+<p><a class="reference external" href="https://arxiv.org/abs/2108.13654">https://arxiv.org/abs/2108.13654</a></p>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="attr.html" class="btn btn-neutral float-left" title="Attribution Methods" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="datasets.html" class="btn btn-neutral float-right" title="Datasets" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Joseph Enguehard.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
