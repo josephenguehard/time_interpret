@@ -124,13 +124,10 @@
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
             <span class="n">original_inp</span><span class="p">,</span> <span class="n">Tensor</span>
         <span class="p">),</span> <span class="s2">&quot;Only one input is accepted with this method.&quot;</span>
-        <span class="n">score</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lof</span><span class="o">.</span><span class="n">score_samples</span><span class="p">(</span>
+        <span class="n">score</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">lof</span><span class="o">.</span><span class="n">score_samples</span><span class="p">(</span>
             <span class="n">perturbed_inp</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">perturbed_inp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
         <span class="p">)</span>
-        <span class="n">train_scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lof</span><span class="o">.</span><span class="n">negative_outlier_factor_</span>
-        <span class="n">score</span> <span class="o">=</span> <span class="p">(</span><span class="n">train_scores</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">train_scores</span><span class="o">.</span><span class="n">min</span><span class="p">())</span> <span class="o">/</span> <span class="p">(</span>
-            <span class="n">train_scores</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">score</span>
-        <span class="p">)</span>
+        <span class="n">score</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">score</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_similarity_func</span><span class="p">(</span>
             <span class="n">original_inp</span><span class="p">,</span>
             <span class="n">perturbed_inp</span><span class="p">,</span>
@@ -227,6 +224,18 @@
 
 <span class="sd">            kwargs includes baselines, feature_mask, num_interp_features</span>
 <span class="sd">            (integer, determined from feature mask).</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import torch as th</span>
+<span class="sd">        &gt;&gt;&gt; from tint.attr import LofLime</span>
+<span class="sd">        &gt;&gt;&gt; from tint.models import MLP</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+<span class="sd">        &gt;&gt;&gt; inputs = th.rand(8, 7, 5)</span>
+<span class="sd">        &gt;&gt;&gt; data = th.rand(32, 7, 5)</span>
+<span class="sd">        &gt;&gt;&gt; mlp = MLP([5, 3, 1])</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+<span class="sd">        &gt;&gt;&gt; explainer = LofLime(mlp, data, n_neighbors=2)</span>
+<span class="sd">        &gt;&gt;&gt; attr = explainer.attribute(inputs)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -268,6 +277,18 @@
 <span class="sd">        embeddings (Tensor): Tensor of embeddings to compute the LOF.</span>
 <span class="sd">        n_neighbors (int): Number of neighbors to use by default.</span>
 <span class="sd">            Default to 20</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import torch as th</span>
+<span class="sd">        &gt;&gt;&gt; from tint.attr import LofKernelShap</span>
+<span class="sd">        &gt;&gt;&gt; from tint.models import MLP</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+<span class="sd">        &gt;&gt;&gt; inputs = th.rand(8, 7, 5)</span>
+<span class="sd">        &gt;&gt;&gt; data = th.rand(32, 7, 5)</span>
+<span class="sd">        &gt;&gt;&gt; mlp = MLP([5, 3, 1])</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+<span class="sd">        &gt;&gt;&gt; explainer = LofKernelShap(mlp, data, n_neighbors=2)</span>
+<span class="sd">        &gt;&gt;&gt; attr = explainer.attribute(inputs)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
