@@ -145,6 +145,18 @@ class LofLime(Lime, LOF):
 
             kwargs includes baselines, feature_mask, num_interp_features
             (integer, determined from feature mask).
+
+    Examples:
+        >>> import torch as th
+        >>> from tint.attr import LofLime
+        >>> from tint.models import MLP
+        <BLANKLINE>
+        >>> inputs = th.rand(8, 7, 5)
+        >>> data = th.rand(32, 7, 5)
+        >>> mlp = MLP([5, 3, 1])
+        <BLANKLINE>
+        >>> explainer = LofLime(mlp, data, n_neighbors=2)
+        >>> attr = explainer.attribute(inputs, target=0)
     """
 
     def __init__(
@@ -186,6 +198,18 @@ class LofKernelShap(KernelShap, LOF):
         embeddings (Tensor): Tensor of embeddings to compute the LOF.
         n_neighbors (int): Number of neighbors to use by default.
             Default to 20
+
+    Examples:
+        >>> import torch as th
+        >>> from tint.attr import LofKernelShap
+        >>> from tint.models import MLP
+        <BLANKLINE>
+        >>> inputs = th.rand(8, 7, 5)
+        >>> data = th.rand(32, 7, 5)
+        >>> mlp = MLP([5, 3, 1])
+        <BLANKLINE>
+        >>> explainer = LofKernelShap(mlp, data, n_neighbors=2)
+        >>> attr = explainer.attribute(inputs, target=0)
     """
 
     def __init__(
