@@ -45,13 +45,10 @@ class LOF:
         assert isinstance(
             original_inp, Tensor
         ), "Only one input is accepted with this method."
-        score = self.lof.score_samples(
+        score = -self.lof.score_samples(
             perturbed_inp.reshape(-1, perturbed_inp.shape[-1]).cpu().numpy()
         )
-        train_scores = self.lof.negative_outlier_factor_
-        score = (train_scores.max() - train_scores.min()) / (
-            train_scores.max() - score
-        )
+        score = 1 / score.clip(min=1)
         return self._similarity_func(
             original_inp,
             perturbed_inp,
