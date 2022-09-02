@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>tint.attr.time_forward_tunnel &mdash; Time Interpret 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sphinx_paramlinks.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="../../../_static/toggleprompt.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Time Interpret
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../attr.html">Attribution Methods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../attr_models.html">Attribution Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../datasets.html">Datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../metrics.html">Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../white_box_metrics.html">White Box Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../models.html">Models</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Time Interpret</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>tint.attr.time_forward_tunnel</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for tint.attr.time_forward_tunnel</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="kn">from</span> <span class="nn">captum.attr._utils.attribution</span> <span class="kn">import</span> <span class="n">Attribution</span><span class="p">,</span> <span class="n">GradientAttribution</span>
+<span class="kn">from</span> <span class="nn">captum.log</span> <span class="kn">import</span> <span class="n">log_usage</span>
+<span class="kn">from</span> <span class="nn">captum._utils.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_format_input</span><span class="p">,</span>
+    <span class="n">_is_tuple</span><span class="p">,</span>
+    <span class="n">_format_tensor_into_tuples</span><span class="p">,</span>
+    <span class="n">_format_output</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">captum._utils.typing</span> <span class="kn">import</span> <span class="n">TensorOrTupleOfTensorsGeneric</span>
+
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">cast</span>
+
+<span class="kn">from</span> <span class="nn">tint.utils</span> <span class="kn">import</span> <span class="n">get_progress_bars</span><span class="p">,</span> <span class="n">_slice_to_time</span>
+
+
+<div class="viewcode-block" id="TimeForwardTunnel"><a class="viewcode-back" href="../../../attr.html#tint.attr.TimeForwardTunnel">[docs]</a><span class="k">class</span> <span class="nc">TimeForwardTunnel</span><span class="p">(</span><span class="n">Attribution</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Performs interpretation method by iteratively retrieving the input data</span>
+<span class="sd">    up to a time, and computing the predictions using this data and the</span>
+<span class="sd">    forward_func.</span>
+
+<span class="sd">    This method allows to use interpretation methods in a setting which is</span>
+<span class="sd">    not retrospective: the true label is not yet known.</span>
+
+<span class="sd">    The target will be ignored when using this method, as it will be</span>
+<span class="sd">    computed internally.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        attribution_method (Attribution): An instance of any attribution algorithm</span>
+<span class="sd">                    of type `Attribution`. E.g. Integrated Gradients,</span>
+<span class="sd">                    Conductance or Saliency.</span>
+
+<span class="sd">    References:</span>
+<span class="sd">        https://arxiv.org/abs/2003.02821</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import torch as th</span>
+<span class="sd">        &gt;&gt;&gt; from captum.attr import Saliency</span>
+<span class="sd">        &gt;&gt;&gt; from tint.attr import TimeForwardTunnel</span>
+<span class="sd">        &gt;&gt;&gt; from tint.models import MLP</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+<span class="sd">        &gt;&gt;&gt; inputs = th.rand(8, 7, 5)</span>
+<span class="sd">        &gt;&gt;&gt; mlp = MLP([5, 3, 1])</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+<span class="sd">        &gt;&gt;&gt; explainer = TimeForwardTunnel(Saliency(mlp))</span>
+<span class="sd">        &gt;&gt;&gt; attr = explainer.attribute(inputs, target=0)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">attribution_method</span><span class="p">:</span> <span class="n">Attribution</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attribution_method</span> <span class="o">=</span> <span class="n">attribution_method</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_delta_supported</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">attribution_method</span><span class="o">.</span><span class="n">has_convergence_delta</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_multiply_by_inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attribution_method</span><span class="o">.</span><span class="n">multiplies_by_inputs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_gradient_method</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">attribution_method</span><span class="p">,</span> <span class="n">GradientAttribution</span>
+        <span class="p">)</span>
+        <span class="n">Attribution</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">attribution_method</span><span class="o">.</span><span class="n">forward_func</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">multiplies_by_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_multiply_by_inputs</span>
+
+<div class="viewcode-block" id="TimeForwardTunnel.has_convergence_delta"><a class="viewcode-back" href="../../../attr.html#tint.attr.TimeForwardTunnel.has_convergence_delta">[docs]</a>    <span class="k">def</span> <span class="nf">has_convergence_delta</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_delta_supported</span></div>
+
+<div class="viewcode-block" id="TimeForwardTunnel.attribute"><a class="viewcode-back" href="../../../attr.html#tint.attr.TimeForwardTunnel.attribute">[docs]</a>    <span class="nd">@log_usage</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">attribute</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]],</span>
+        <span class="n">task</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;none&quot;</span><span class="p">,</span>
+        <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+        <span class="n">temporal_target</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">temporal_additional_forward_args</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">return_temporal_attributions</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span>
+        <span class="n">Union</span><span class="p">[</span>
+            <span class="n">Tensor</span><span class="p">,</span>
+            <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">],</span>
+            <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+            <span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">Tensor</span><span class="p">],</span>
+        <span class="p">]</span>
+    <span class="p">]:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inputs (tensor or tuple of tensors):  Input for which integrated</span>
+<span class="sd">                gradients are computed. If forward_func takes a single</span>
+<span class="sd">                tensor as input, a single input tensor should be provided.</span>
+<span class="sd">                If forward_func takes multiple tensors as input, a tuple</span>
+<span class="sd">                of the input tensors should be provided. It is assumed</span>
+<span class="sd">                that for all given input tensors, dimension 0 corresponds</span>
+<span class="sd">                to the number of examples, and if multiple input tensors</span>
+<span class="sd">                are provided, the examples must be aligned appropriately.</span>
+<span class="sd">                It is also assumed that for all given input tensors,</span>
+<span class="sd">                dimension 1 corresponds to the time dimension, and if</span>
+<span class="sd">                multiple input tensors are provided, the examples must</span>
+<span class="sd">                be aligned appropriately.</span>
+<span class="sd">            task (str): Type of task done by the model. Either ``&#39;binary&#39;``,</span>
+<span class="sd">                ``&#39;multilabel&#39;``, ``&#39;multiclass&#39;`` or ``&#39;regression&#39;``.</span>
+<span class="sd">                Default to ``&#39;binary&#39;``</span>
+<span class="sd">            threshold (float): Threshold for the multilabel task.</span>
+<span class="sd">                Default to 0.5</span>
+<span class="sd">            temporal_target (bool, optional): Determine if the targe is</span>
+<span class="sd">                temporal and needs to be cut.</span>
+<span class="sd">                Default: False</span>
+<span class="sd">            temporal_additional_forward_args (tuple, optional): For each</span>
+<span class="sd">                additional forward arg, determine if it is temporal</span>
+<span class="sd">                or not.</span>
+<span class="sd">                Default: None</span>
+<span class="sd">            return_temporal_attributions (bool): Whether to return all saliencies</span>
+<span class="sd">                for all time points or only the last one per time point.</span>
+<span class="sd">                Default: False</span>
+<span class="sd">            show_progress (bool, optional): Displays the progress of computation.</span>
+<span class="sd">                It will try to use tqdm if available for advanced features</span>
+<span class="sd">                (e.g. time estimation). Otherwise, it will fallback to</span>
+<span class="sd">                a simple output of progress.</span>
+<span class="sd">                Default: False</span>
+<span class="sd">            **kwargs: (Any, optional): Contains a list of arguments that are</span>
+<span class="sd">                passed  to `attribution_method` attribution algorithm.</span>
+<span class="sd">                Any additional arguments that should be used for the</span>
+<span class="sd">                chosen attribution method should be included here.</span>
+<span class="sd">                For instance, such arguments include</span>
+<span class="sd">                `additional_forward_args` and `baselines`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            **attributions** or 2-element tuple of **attributions**, **delta**:</span>
+<span class="sd">            - **attributions** (*tensor* or tuple of *tensors*):</span>
+<span class="sd">                Attribution with</span>
+<span class="sd">                respect to each input feature. attributions will always be</span>
+<span class="sd">                the same size as the provided inputs, with each value</span>
+<span class="sd">                providing the attribution of the corresponding input index.</span>
+<span class="sd">                If a single tensor is provided as inputs, a single tensor</span>
+<span class="sd">                is returned. If a tuple is provided for inputs, a tuple of</span>
+<span class="sd">                corresponding sized tensors is returned.</span>
+<span class="sd">            - **delta** (*float*, returned if return_convergence_delta=True):</span>
+<span class="sd">                Approximation error computed by the</span>
+<span class="sd">                attribution algorithm. Not all attribution algorithms</span>
+<span class="sd">                return delta value. It is computed only for some</span>
+<span class="sd">                algorithms, e.g. integrated gradients.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Keeps track whether original input is a tuple or not before</span>
+        <span class="c1"># converting it into a tuple.</span>
+        <span class="n">is_inputs_tuple</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span>
+
+        <span class="n">inputs</span> <span class="o">=</span> <span class="n">_format_input</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span>
+            <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">inputs</span>
+        <span class="p">),</span> <span class="s2">&quot;All inputs must have the same time dimension. (dimension 1)&quot;</span>
+
+        <span class="c1"># Check if needs to return convergence delta</span>
+        <span class="n">return_convergence_delta</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;return_convergence_delta&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span>
+            <span class="ow">and</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;return_convergence_delta&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="n">attributions_partial_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">delta_partial_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">is_attrib_tuple</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="n">times</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">show_progress</span><span class="p">:</span>
+            <span class="n">times</span> <span class="o">=</span> <span class="n">get_progress_bars</span><span class="p">()(</span>
+                <span class="n">times</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">attribution_method</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span><span class="si">}</span><span class="s2"> attribution&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Compute attributions over time</span>
+        <span class="k">for</span> <span class="n">time</span> <span class="ow">in</span> <span class="n">times</span><span class="p">:</span>
+            <span class="n">partial_inputs</span><span class="p">,</span> <span class="n">kwargs_copy</span> <span class="o">=</span> <span class="n">_slice_to_time</span><span class="p">(</span>
+                <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span>
+                <span class="n">time</span><span class="o">=</span><span class="n">time</span><span class="p">,</span>
+                <span class="n">forward_func</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">attribution_method</span><span class="o">.</span><span class="n">forward_func</span><span class="p">,</span>
+                <span class="n">task</span><span class="o">=</span><span class="n">task</span><span class="p">,</span>
+                <span class="n">threshold</span><span class="o">=</span><span class="n">threshold</span><span class="p">,</span>
+                <span class="n">temporal_target</span><span class="o">=</span><span class="n">temporal_target</span><span class="p">,</span>
+                <span class="n">temporal_additional_forward_args</span><span class="o">=</span><span class="n">temporal_additional_forward_args</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Get partial targets</span>
+            <span class="n">partial_targets</span> <span class="o">=</span> <span class="n">kwargs_copy</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;target&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">partial_targets</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                <span class="n">partial_targets</span> <span class="o">=</span> <span class="p">(</span><span class="n">partial_targets</span><span class="p">,)</span>
+
+            <span class="c1"># Compute attribution for a specific time</span>
+            <span class="c1"># and for each partial target</span>
+            <span class="n">attributions_partial_sublist</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+            <span class="n">delta_partial_list_sublist</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">partial_target</span> <span class="ow">in</span> <span class="n">partial_targets</span><span class="p">:</span>
+                <span class="p">(</span>
+                    <span class="n">attributions_partial</span><span class="p">,</span>
+                    <span class="n">is_attrib_tuple</span><span class="p">,</span>
+                    <span class="n">delta_partial</span><span class="p">,</span>
+                <span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_partial_attribution</span><span class="p">(</span>
+                    <span class="n">partial_inputs</span><span class="o">=</span><span class="n">partial_inputs</span><span class="p">,</span>
+                    <span class="n">partial_target</span><span class="o">=</span><span class="n">partial_target</span><span class="p">,</span>
+                    <span class="n">is_inputs_tuple</span><span class="o">=</span><span class="n">is_inputs_tuple</span><span class="p">,</span>
+                    <span class="n">return_convergence_delta</span><span class="o">=</span><span class="n">return_convergence_delta</span><span class="p">,</span>
+                    <span class="n">kwargs_partition</span><span class="o">=</span><span class="n">kwargs_copy</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">attributions_partial_sublist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">attributions_partial</span><span class="p">)</span>
+                <span class="n">delta_partial_list_sublist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">delta_partial</span><span class="p">)</span>
+
+            <span class="c1"># Group attributions</span>
+            <span class="n">attributions_partial</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">attributions_partial_sublist</span><span class="p">[</span><span class="mi">0</span><span class="p">])):</span>
+                <span class="n">attributions_partial</span> <span class="o">+=</span> <span class="p">(</span>
+                    <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+                        <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">attributions_partial_sublist</span><span class="p">],</span>
+                        <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                <span class="p">)</span>
+
+            <span class="c1"># Group delta is required</span>
+            <span class="n">delta_partial</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_delta_supported</span> <span class="ow">and</span> <span class="n">return_convergence_delta</span><span class="p">:</span>
+                <span class="n">delta_partial</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+                    <span class="n">delta_partial_list_sublist</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="n">attributions_partial_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">attributions_partial</span><span class="p">)</span>
+            <span class="n">delta_partial_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">delta_partial</span><span class="p">)</span>
+
+        <span class="c1"># If return all saliencies, stack attributions</span>
+        <span class="c1"># else, select the last one in time for each time point</span>
+        <span class="n">attributions</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">return_temporal_attributions</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">attributions_partial_list</span><span class="p">[</span><span class="mi">0</span><span class="p">])):</span>
+                <span class="n">attr</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span>
+                        <span class="n">attributions_partial_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">i</span><span class="p">],</span>
+                        <span class="n">dtype</span><span class="o">=</span><span class="n">attributions_partial_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">attributions_partial_list</span><span class="p">))</span>
+                <span class="p">]</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">attributions_partial_list</span><span class="p">)):</span>
+                    <span class="n">attr</span><span class="p">[</span><span class="n">j</span><span class="p">][:,</span> <span class="p">:</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">attributions_partial_list</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+                <span class="n">attributions</span> <span class="o">+=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">),)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">attributions_partial_list</span><span class="p">[</span><span class="mi">0</span><span class="p">])):</span>
+                <span class="n">attributions</span> <span class="o">+=</span> <span class="p">(</span>
+                    <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+                        <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">][:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">attributions_partial_list</span><span class="p">],</span>
+                        <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                    <span class="p">),</span>
+                <span class="p">)</span>
+
+        <span class="n">delta</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_delta_supported</span> <span class="ow">and</span> <span class="n">return_convergence_delta</span><span class="p">:</span>
+            <span class="n">delta</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">delta_partial_list</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_checks_and_return_attributions</span><span class="p">(</span>
+            <span class="n">attributions</span><span class="p">,</span>
+            <span class="n">is_attrib_tuple</span><span class="p">,</span>
+            <span class="n">return_convergence_delta</span><span class="p">,</span>
+            <span class="n">delta</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">compute_partial_attribution</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">partial_inputs</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+        <span class="n">partial_target</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">is_inputs_tuple</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+        <span class="n">return_convergence_delta</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+        <span class="n">kwargs_partition</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]:</span>
+        <span class="k">if</span> <span class="n">partial_target</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">attributions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attribution_method</span><span class="o">.</span><span class="n">attribute</span><span class="o">.</span><span class="n">__wrapped__</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">attribution_method</span><span class="p">,</span>  <span class="c1"># self</span>
+                <span class="n">partial_inputs</span> <span class="k">if</span> <span class="n">is_inputs_tuple</span> <span class="k">else</span> <span class="n">partial_inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="o">**</span><span class="n">kwargs_partition</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">attributions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attribution_method</span><span class="o">.</span><span class="n">attribute</span><span class="o">.</span><span class="n">__wrapped__</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">attribution_method</span><span class="p">,</span>  <span class="c1"># self</span>
+                <span class="n">partial_inputs</span> <span class="k">if</span> <span class="n">is_inputs_tuple</span> <span class="k">else</span> <span class="n">partial_inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">target</span><span class="o">=</span><span class="n">partial_target</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs_partition</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_delta_supported</span> <span class="ow">and</span> <span class="n">return_convergence_delta</span><span class="p">:</span>
+            <span class="n">attributions</span><span class="p">,</span> <span class="n">delta</span> <span class="o">=</span> <span class="n">attributions</span>
+
+        <span class="n">is_attrib_tuple</span> <span class="o">=</span> <span class="n">_is_tuple</span><span class="p">(</span><span class="n">attributions</span><span class="p">)</span>
+        <span class="n">attributions</span> <span class="o">=</span> <span class="n">_format_tensor_into_tuples</span><span class="p">(</span><span class="n">attributions</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">cast</span><span class="p">(</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">attributions</span><span class="p">),</span>
+            <span class="n">cast</span><span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="n">is_attrib_tuple</span><span class="p">),</span>
+            <span class="n">delta</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_apply_checks_and_return_attributions</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">attributions</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+        <span class="n">is_attrib_tuple</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+        <span class="n">return_convergence_delta</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+        <span class="n">delta</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span>
+        <span class="n">TensorOrTupleOfTensorsGeneric</span><span class="p">,</span>
+        <span class="n">Tuple</span><span class="p">[</span><span class="n">TensorOrTupleOfTensorsGeneric</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">],</span>
+    <span class="p">]:</span>
+        <span class="n">attributions</span> <span class="o">=</span> <span class="n">_format_output</span><span class="p">(</span><span class="n">is_attrib_tuple</span><span class="p">,</span> <span class="n">attributions</span><span class="p">)</span>
+
+        <span class="n">ret</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">(</span><span class="n">attributions</span><span class="p">,</span> <span class="n">cast</span><span class="p">(</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">delta</span><span class="p">))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_delta_supported</span> <span class="ow">and</span> <span class="n">return_convergence_delta</span>
+            <span class="k">else</span> <span class="n">attributions</span>
+        <span class="p">)</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span>
+            <span class="n">Union</span><span class="p">[</span>
+                <span class="n">TensorOrTupleOfTensorsGeneric</span><span class="p">,</span>
+                <span class="n">Tuple</span><span class="p">[</span><span class="n">TensorOrTupleOfTensorsGeneric</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">],</span>
+            <span class="p">],</span>
+            <span class="n">ret</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">ret</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Joseph Enguehard.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

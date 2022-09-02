@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>tint.datasets.mimic3 &mdash; Time Interpret 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sphinx_paramlinks.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="../../../_static/toggleprompt.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Time Interpret
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../attr.html">Attribution Methods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../attr_models.html">Attribution Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../datasets.html">Datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../metrics.html">Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../white_box_metrics.html">White Box Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../models.html">Models</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Time Interpret</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>tint.datasets.mimic3</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for tint.datasets.mimic3</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">pickle</span> <span class="k">as</span> <span class="nn">pkl</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">torch</span> <span class="k">as</span> <span class="nn">th</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">timedelta</span>
+<span class="kn">from</span> <span class="nn">getpass</span> <span class="kn">import</span> <span class="n">getpass</span>
+<span class="kn">from</span> <span class="nn">sklearn.impute</span> <span class="kn">import</span> <span class="n">SimpleImputer</span>
+
+<span class="kn">from</span> <span class="nn">tint.utils</span> <span class="kn">import</span> <span class="n">get_progress_bars</span>
+
+<span class="kn">from</span> <span class="nn">.dataset</span> <span class="kn">import</span> <span class="n">DataModule</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">psycopg2</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">psycopg2</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+
+<span class="n">file_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span>
+
+<span class="n">vital_IDs</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;HeartRate&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SysBP&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DiasBP&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MeanBP&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RespRate&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SpO2&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Glucose&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Temp&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+<span class="n">lab_IDs</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;ANION GAP&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ALBUMIN&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BICARBONATE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BILIRUBIN&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CREATININE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CHLORIDE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GLUCOSE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HEMATOCRIT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;HEMOGLOBIN&quot;</span> <span class="s2">&quot;LACTATE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MAGNESIUM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PHOSPHATE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PLATELET&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;POTASSIUM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PTT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;INR&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PT&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SODIUM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BUN&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;WBC&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+<span class="n">eth_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;white&quot;</span><span class="p">,</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;hispanic&quot;</span><span class="p">,</span> <span class="s2">&quot;asian&quot;</span><span class="p">,</span> <span class="s2">&quot;other&quot;</span><span class="p">]</span>
+
+<span class="n">EPS</span> <span class="o">=</span> <span class="mf">1e-5</span>
+
+
+<div class="viewcode-block" id="Mimic3"><a class="viewcode-back" href="../../../datasets.html#tint.datasets.Mimic3">[docs]</a><span class="k">class</span> <span class="nc">Mimic3</span><span class="p">(</span><span class="n">DataModule</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    MIMIC-III dataset.</span>
+
+<span class="sd">    Download is set up according to this repository:</span>
+<span class="sd">    https://github.com/sanatonek/time_series_explainability.</span>
+
+<span class="sd">    .. warning::</span>
+<span class="sd">        Using this dataset requires to have the MIMIC III data running on a</span>
+<span class="sd">        local server. Please see https://mimic.mit.edu/docs/gettingstarted/local/install-mimic-locally-ubuntu/</span>
+<span class="sd">        for more information.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data_dir (str): Where to download files.</span>
+<span class="sd">        batch_size (int): Batch size. Default to 32</span>
+<span class="sd">        n_folds (int): Number of folds for cross validation. If ``None``,</span>
+<span class="sd">            the dataset is only split once between train and val using</span>
+<span class="sd">            ``prop_val``. Default to ``None``</span>
+<span class="sd">        fold (int): Index of the fold to use with cross-validation.</span>
+<span class="sd">            Ignored if n_folds is None. Default to ``None``</span>
+<span class="sd">        prop_val (float): Proportion of validation. Default to .2</span>
+<span class="sd">        num_workers (int): Number of workers for the loaders. Default to 0</span>
+<span class="sd">        seed (int): For the random split. Default to 42</span>
+
+<span class="sd">    References:</span>
+<span class="sd">        https://github.com/sanatonek/time_series_explainability/blob/master/data_generator/icu_mortality.py</span>
+<span class="sd">        https://physionet.org/content/mimiciii/1.4/</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; from tint.datasets import Mimic3</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+<span class="sd">        &gt;&gt;&gt; mimci3 = Mimic3()</span>
+<span class="sd">        &gt;&gt;&gt; mimci3.download(sqluser=&quot;your_username&quot;, split=&quot;train&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; x_train = mimci3.preprocess(split=&quot;train&quot;)[&quot;x&quot;]</span>
+<span class="sd">        &gt;&gt;&gt; y_train = mimci3.preprocess(split=&quot;train&quot;)[&quot;y&quot;]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">file_dir</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="s2">&quot;data&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;mimic3&quot;</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
+        <span class="n">prop_val</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span>
+        <span class="n">n_folds</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">fold</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">num_workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">42</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">data_dir</span><span class="o">=</span><span class="n">data_dir</span><span class="p">,</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="n">prop_val</span><span class="o">=</span><span class="n">prop_val</span><span class="p">,</span>
+            <span class="n">n_folds</span><span class="o">=</span><span class="n">n_folds</span><span class="p">,</span>
+            <span class="n">fold</span><span class="o">=</span><span class="n">fold</span><span class="p">,</span>
+            <span class="n">num_workers</span><span class="o">=</span><span class="n">num_workers</span><span class="p">,</span>
+            <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Init mean and std</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mean</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_std</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">download</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">sqluser</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mimicuser&quot;</span><span class="p">,</span>
+        <span class="n">prop_train</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.8</span><span class="p">,</span>
+        <span class="n">split</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;train&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">assert</span> <span class="n">psycopg2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;You need to install psycopg2.&quot;</span>
+
+        <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">22891</span><span class="p">)</span>
+
+        <span class="n">sqlpass</span> <span class="o">=</span> <span class="n">getpass</span><span class="p">(</span><span class="n">prompt</span><span class="o">=</span><span class="s2">&quot;sqlpass: &quot;</span><span class="p">)</span>
+
+        <span class="c1"># create a database connection and connect to local postgres</span>
+        <span class="c1"># version of mimic</span>
+        <span class="n">dbname</span> <span class="o">=</span> <span class="s2">&quot;mimic&quot;</span>
+        <span class="n">schema_name</span> <span class="o">=</span> <span class="s2">&quot;mimiciii&quot;</span>
+        <span class="n">con</span> <span class="o">=</span> <span class="n">psycopg2</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span>
+            <span class="n">dbname</span><span class="o">=</span><span class="n">dbname</span><span class="p">,</span>
+            <span class="n">user</span><span class="o">=</span><span class="n">sqluser</span><span class="p">,</span>
+            <span class="n">host</span><span class="o">=</span><span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
+            <span class="n">password</span><span class="o">=</span><span class="n">sqlpass</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">cur</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SET search_path to &quot;</span> <span class="o">+</span> <span class="n">schema_name</span><span class="p">)</span>
+
+        <span class="c1"># ========get the icu details</span>
+
+        <span class="c1"># this query extracts the following:</span>
+        <span class="c1">#   Unique ids for the admission, patient and icu stay</span>
+        <span class="c1">#   Patient gender</span>
+        <span class="c1">#   diagnosis</span>
+        <span class="c1">#   age</span>
+        <span class="c1">#   ethnicity</span>
+        <span class="c1">#   admission type</span>
+        <span class="c1">#   first hospital stay</span>
+        <span class="c1">#   first icu stay?</span>
+        <span class="c1">#   mortality within a week</span>
+
+        <span class="n">denquery</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            --ie is the icustays table </span>
+<span class="s2">            --adm is the admissions table </span>
+<span class="s2">            SELECT ie.subject_id, ie.hadm_id, ie.icustay_id</span>
+<span class="s2">            , pat.gender</span>
+<span class="s2">            , adm.admittime, adm.dischtime, adm.diagnosis</span>
+<span class="s2">            , ROUND( (CAST(adm.dischtime AS DATE) - CAST(adm.admittime AS DATE)) , 4) AS los_hospital</span>
+<span class="s2">            , ROUND( (CAST(adm.admittime AS DATE) - CAST(pat.dob AS DATE))  / 365, 4) AS age</span>
+<span class="s2">            , adm.ethnicity, adm.ADMISSION_TYPE</span>
+<span class="s2">            --, adm.hospital_expire_flag</span>
+<span class="s2">            , CASE when adm.deathtime between ie.intime and ie.outtime THEN 1 ELSE 0 END AS mort_icu</span>
+<span class="s2">            , DENSE_RANK() OVER (PARTITION BY adm.subject_id ORDER BY adm.admittime) AS hospstay_seq</span>
+<span class="s2">            , CASE</span>
+<span class="s2">                WHEN DENSE_RANK() OVER (PARTITION BY adm.subject_id ORDER BY adm.admittime) = 1 THEN 1</span>
+<span class="s2">                ELSE 0 END AS first_hosp_stay</span>
+<span class="s2">            -- icu level factors</span>
+<span class="s2">            , ie.intime, ie.outtime</span>
+<span class="s2">            , ie.FIRST_CAREUNIT</span>
+<span class="s2">            , ROUND( (CAST(ie.outtime AS DATE) - CAST(ie.intime AS DATE)) , 4) AS los_icu</span>
+<span class="s2">            , DENSE_RANK() OVER (PARTITION BY ie.hadm_id ORDER BY ie.intime) AS icustay_seq</span>
+<span class="s2">            , CASE</span>
+<span class="s2">                WHEN adm.deathtime between ie.intime and ie.intime + interval &#39;168&#39; hour THEN 1 ELSE 0 END AS mort_week</span>
+<span class="s2">            -- first ICU stay *for the current hospitalization*</span>
+<span class="s2">            , CASE</span>
+<span class="s2">                WHEN DENSE_RANK() OVER (PARTITION BY ie.hadm_id ORDER BY ie.intime) = 1 THEN 1</span>
+<span class="s2">                ELSE 0 END AS first_icu_stay</span>
+<span class="s2">            FROM icustays ie</span>
+<span class="s2">            INNER JOIN admissions adm</span>
+<span class="s2">                ON ie.hadm_id = adm.hadm_id</span>
+<span class="s2">            INNER JOIN patients pat</span>
+<span class="s2">                ON ie.subject_id = pat.subject_id</span>
+<span class="s2">            WHERE adm.has_chartevents_data = 1</span>
+<span class="s2">            ORDER BY ie.subject_id, adm.admittime, ie.intime;</span>
+<span class="s2">            &quot;&quot;&quot;</span>
+
+        <span class="n">den</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql_query</span><span class="p">(</span><span class="n">denquery</span><span class="p">,</span> <span class="n">con</span><span class="p">)</span>
+
+        <span class="c1"># drop patients with less than 48 hour</span>
+        <span class="n">den</span><span class="p">[</span><span class="s2">&quot;los_icu_hr&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">den</span><span class="o">.</span><span class="n">outtime</span> <span class="o">-</span> <span class="n">den</span><span class="o">.</span><span class="n">intime</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;timedelta64[h]&quot;</span><span class="p">)</span>
+        <span class="n">den</span> <span class="o">=</span> <span class="n">den</span><span class="p">[(</span><span class="n">den</span><span class="o">.</span><span class="n">los_icu_hr</span> <span class="o">&gt;=</span> <span class="mi">48</span><span class="p">)]</span>
+        <span class="n">den</span> <span class="o">=</span> <span class="n">den</span><span class="p">[(</span><span class="n">den</span><span class="o">.</span><span class="n">age</span> <span class="o">&lt;</span> <span class="mi">300</span><span class="p">)]</span>
+        <span class="n">den</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;los_icu_hr&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># clean up</span>
+        <span class="n">den</span><span class="p">[</span><span class="s2">&quot;adult_icu&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+            <span class="n">den</span><span class="p">[</span><span class="s2">&quot;first_careunit&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="s2">&quot;PICU&quot;</span><span class="p">,</span> <span class="s2">&quot;NICU&quot;</span><span class="p">]),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span>
+        <span class="p">)</span>
+        <span class="n">den</span><span class="p">[</span><span class="s2">&quot;gender&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">den</span><span class="p">[</span><span class="s2">&quot;gender&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;M&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">den</span><span class="o">.</span><span class="n">ethnicity</span> <span class="o">=</span> <span class="n">den</span><span class="o">.</span><span class="n">ethnicity</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">den</span><span class="o">.</span><span class="n">ethnicity</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">den</span><span class="o">.</span><span class="n">ethnicity</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="s2">&quot;^white&quot;</span><span class="p">))]</span> <span class="o">=</span> <span class="s2">&quot;white&quot;</span>
+        <span class="n">den</span><span class="o">.</span><span class="n">ethnicity</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">den</span><span class="o">.</span><span class="n">ethnicity</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="s2">&quot;^black&quot;</span><span class="p">))]</span> <span class="o">=</span> <span class="s2">&quot;black&quot;</span>
+        <span class="n">den</span><span class="o">.</span><span class="n">ethnicity</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+            <span class="p">(</span><span class="n">den</span><span class="o">.</span><span class="n">ethnicity</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="s2">&quot;^hisp&quot;</span><span class="p">))</span>
+            <span class="o">|</span> <span class="p">(</span><span class="n">den</span><span class="o">.</span><span class="n">ethnicity</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="s2">&quot;^latin&quot;</span><span class="p">))</span>
+        <span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;hispanic&quot;</span>
+        <span class="n">den</span><span class="o">.</span><span class="n">ethnicity</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">den</span><span class="o">.</span><span class="n">ethnicity</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="s2">&quot;^asia&quot;</span><span class="p">))]</span> <span class="o">=</span> <span class="s2">&quot;asian&quot;</span>
+        <span class="n">den</span><span class="o">.</span><span class="n">ethnicity</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+            <span class="o">~</span><span class="p">(</span>
+                <span class="n">den</span><span class="o">.</span><span class="n">ethnicity</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span>
+                    <span class="s2">&quot;|&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;white&quot;</span><span class="p">,</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;hispanic&quot;</span><span class="p">,</span> <span class="s2">&quot;asian&quot;</span><span class="p">])</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;other&quot;</span>
+
+        <span class="n">den</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="s2">&quot;hospstay_seq&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;los_icu&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;icustay_seq&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;admittime&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;dischtime&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;los_hospital&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;intime&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;outtime&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;first_careunit&quot;</span><span class="p">,</span>
+            <span class="p">],</span>
+            <span class="mi">1</span><span class="p">,</span>
+            <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># ========= 48 hour vitals query</span>
+        <span class="c1"># these are the normal ranges. useful to clean up the data</span>
+
+        <span class="n">vitquery</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            -- This query pivots the vital signs for the first 48 hours of a patient&#39;s stay</span>
+<span class="s2">            -- Vital signs include heart rate, blood pressure, respiration rate, and temperature</span>
+<span class="s2">            -- DROP MATERIALIZED VIEW IF EXISTS vitalsfirstday CASCADE;</span>
+<span class="s2">            -- create materialized view vitalsfirstday as</span>
+<span class="s2">            SELECT pvt.subject_id, pvt.hadm_id, pvt.icustay_id, pvt.VitalID, pvt.VitalValue, pvt.VitalChartTime</span>
+<span class="s2">            FROM  (</span>
+<span class="s2">              select ie.subject_id, ie.hadm_id, ie.icustay_id, ce.charttime as VitalChartTime </span>
+<span class="s2">              , case</span>
+<span class="s2">                when itemid in (211,220045) and valuenum &gt; 0 and valuenum &lt; 300 then &#39;HeartRate&#39;</span>
+<span class="s2">                when itemid in (51,442,455,6701,220179,220050) and valuenum &gt; 0 and valuenum &lt; 400 then &#39;SysBP&#39;</span>
+<span class="s2">                when itemid in (8368,8440,8441,8555,220180,220051) and valuenum &gt; 0 and valuenum &lt; 300 then &#39;DiasBP&#39;</span>
+<span class="s2">                when itemid in (456,52,6702,443,220052,220181,225312) and valuenum &gt; 0 and valuenum &lt; 300 then &#39;MeanBP&#39;</span>
+<span class="s2">                when itemid in (615,618,220210,224690) and valuenum &gt; 0 and valuenum &lt; 70 then &#39;RespRate&#39;</span>
+<span class="s2">                when itemid in (223761,678) and valuenum &gt; 70 and valuenum &lt; 120  then &#39;Temp&#39; -- converted to degC in valuenum call</span>
+<span class="s2">                when itemid in (223762,676) and valuenum &gt; 10 and valuenum &lt; 50  then &#39;Temp&#39;</span>
+<span class="s2">                when itemid in (646,220277) and valuenum &gt; 0 and valuenum &lt;= 100 then &#39;SpO2&#39;</span>
+<span class="s2">                when itemid in (807,811,1529,3745,3744,225664,220621,226537) and valuenum &gt; 0 then &#39;Glucose&#39;</span>
+<span class="s2">                else null end as VitalID</span>
+<span class="s2">                , case</span>
+<span class="s2">                when itemid in (211,220045) and valuenum &gt; 0 and valuenum &lt; 300 then valuenum -- HeartRate</span>
+<span class="s2">                when itemid in (51,442,455,6701,220179,220050) and valuenum &gt; 0 and valuenum &lt; 400 then valuenum -- SysBP</span>
+<span class="s2">                when itemid in (8368,8440,8441,8555,220180,220051) and valuenum &gt; 0 and valuenum &lt; 300 then valuenum -- DiasBP</span>
+<span class="s2">                when itemid in (456,52,6702,443,220052,220181,225312) and valuenum &gt; 0 and valuenum &lt; 300 then valuenum -- MeanBP</span>
+<span class="s2">                when itemid in (615,618,220210,224690) and valuenum &gt; 0 and valuenum &lt; 70 then valuenum -- RespRate</span>
+<span class="s2">                when itemid in (223761,678) and valuenum &gt; 70 and valuenum &lt; 120  then (valuenum-32)/1.8 -- TempF, convert to degC</span>
+<span class="s2">                when itemid in (223762,676) and valuenum &gt; 10 and valuenum &lt; 50  then valuenum -- TempC</span>
+<span class="s2">                when itemid in (646,220277) and valuenum &gt; 0 and valuenum &lt;= 100 then valuenum -- SpO2</span>
+<span class="s2">                when itemid in (807,811,1529,3745,3744,225664,220621,226537) and valuenum &gt; 0 then valuenum -- Glucose</span>
+<span class="s2">                else null end as VitalValue</span>
+<span class="s2">              from icustays ie</span>
+<span class="s2">              left join chartevents ce</span>
+<span class="s2">              on ie.subject_id = ce.subject_id and ie.hadm_id = ce.hadm_id and ie.icustay_id = ce.icustay_id</span>
+<span class="s2">              and ce.charttime between ie.intime and ie.intime + interval &#39;48&#39; hour</span>
+<span class="s2">              -- exclude rows marked as error</span>
+<span class="s2">              and ce.error IS DISTINCT FROM 1 </span>
+<span class="s2">              where ce.itemid in</span>
+<span class="s2">              (</span>
+<span class="s2">              -- HEART RATE</span>
+<span class="s2">              211, --&quot;Heart Rate&quot;</span>
+<span class="s2">              220045, --&quot;Heart Rate&quot;</span>
+<span class="s2">              -- Systolic/diastolic</span>
+<span class="s2">              51, --	Arterial BP [Systolic]</span>
+<span class="s2">              442, --	Manual BP [Systolic]</span>
+<span class="s2">              455, --	NBP [Systolic]</span>
+<span class="s2">              6701, --	Arterial BP #2 [Systolic]</span>
+<span class="s2">              220179, --	Non Invasive Blood Pressure systolic</span>
+<span class="s2">              220050, --	Arterial Blood Pressure systolic</span>
+<span class="s2">              8368, --	Arterial BP [Diastolic]</span>
+<span class="s2">              8440, --	Manual BP [Diastolic]</span>
+<span class="s2">              8441, --	NBP [Diastolic]</span>
+<span class="s2">              8555, --	Arterial BP #2 [Diastolic]</span>
+<span class="s2">              220180, --	Non Invasive Blood Pressure diastolic</span>
+<span class="s2">              220051, --	Arterial Blood Pressure diastolic</span>
+<span class="s2">              -- MEAN ARTERIAL PRESSURE</span>
+<span class="s2">              456, --&quot;NBP Mean&quot;</span>
+<span class="s2">              52, --&quot;Arterial BP Mean&quot;</span>
+<span class="s2">              6702, --	Arterial BP Mean #2</span>
+<span class="s2">              443, --	Manual BP Mean(calc)</span>
+<span class="s2">              220052, --&quot;Arterial Blood Pressure mean&quot;</span>
+<span class="s2">              220181, --&quot;Non Invasive Blood Pressure mean&quot;</span>
+<span class="s2">              225312, --&quot;ART BP mean&quot;</span>
+<span class="s2">              -- RESPIRATORY RATE</span>
+<span class="s2">              618,--	Respiratory Rate</span>
+<span class="s2">              615,--	Resp Rate (Total)</span>
+<span class="s2">              220210,--	Respiratory Rate</span>
+<span class="s2">              224690, --	Respiratory Rate (Total)</span>
+<span class="s2">              -- SPO2, peripheral</span>
+<span class="s2">              646, 220277,</span>
+<span class="s2">              -- GLUCOSE, both lab and fingerstick</span>
+<span class="s2">              807,--	Fingerstick Glucose</span>
+<span class="s2">              811,--	Glucose (70-105)</span>
+<span class="s2">              1529,--	Glucose</span>
+<span class="s2">              3745,--	BloodGlucose</span>
+<span class="s2">              3744,--	Blood Glucose</span>
+<span class="s2">              225664,--	Glucose finger stick</span>
+<span class="s2">              220621,--	Glucose (serum)</span>
+<span class="s2">              226537,--	Glucose (whole blood)</span>
+<span class="s2">              -- TEMPERATURE</span>
+<span class="s2">              223762, -- &quot;Temperature Celsius&quot;</span>
+<span class="s2">              676,	-- &quot;Temperature C&quot;</span>
+<span class="s2">              223761, -- &quot;Temperature Fahrenheit&quot;</span>
+<span class="s2">              678 --	&quot;Temperature F&quot;</span>
+<span class="s2">              ) </span>
+<span class="s2">            ) pvt</span>
+<span class="s2">            where VitalID is not null</span>
+<span class="s2">            order by pvt.subject_id, pvt.hadm_id, pvt.icustay_id, pvt.VitalID, pvt.VitalChartTime;</span>
+<span class="s2">            &quot;&quot;&quot;</span>
+        <span class="n">vit48</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql_query</span><span class="p">(</span><span class="n">vitquery</span><span class="p">,</span> <span class="n">con</span><span class="p">)</span>
+        <span class="n">vit48</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+        <span class="c1"># ===============48 hour labs query</span>
+        <span class="c1"># This query extracts the lab events in the first 48 hours</span>
+        <span class="n">labquery</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            WITH pvt AS (</span>
+<span class="s2">              --- ie is the icu stay </span>
+<span class="s2">              --- ad is the admissions table </span>
+<span class="s2">              --- le is the lab events table </span>
+<span class="s2">              SELECT ie.subject_id, ie.hadm_id, ie.icustay_id, le.charttime as LabChartTime</span>
+<span class="s2">              , CASE</span>
+<span class="s2">                    when le.itemid = 50868 then &#39;ANION GAP&#39;</span>
+<span class="s2">                    when le.itemid = 50862 then &#39;ALBUMIN&#39;</span>
+<span class="s2">                    when le.itemid = 50882 then &#39;BICARBONATE&#39;</span>
+<span class="s2">                    when le.itemid = 50885 then &#39;BILIRUBIN&#39;</span>
+<span class="s2">                    when le.itemid = 50912 then &#39;CREATININE&#39;</span>
+<span class="s2">                    when le.itemid = 50806 then &#39;CHLORIDE&#39;</span>
+<span class="s2">                    when le.itemid = 50902 then &#39;CHLORIDE&#39;</span>
+<span class="s2">                    when le.itemid = 50809 then &#39;GLUCOSE&#39;</span>
+<span class="s2">                    when le.itemid = 50931 then &#39;GLUCOSE&#39;</span>
+<span class="s2">                    when le.itemid = 50810 then &#39;HEMATOCRIT&#39;</span>
+<span class="s2">                    when le.itemid = 51221 then &#39;HEMATOCRIT&#39;</span>
+<span class="s2">                    when le.itemid = 50811 then &#39;HEMOGLOBIN&#39;</span>
+<span class="s2">                    when le.itemid = 51222 then &#39;HEMOGLOBIN&#39;</span>
+<span class="s2">                    when le.itemid = 50813 then &#39;LACTATE&#39;</span>
+<span class="s2">                    when le.itemid = 50960 then &#39;MAGNESIUM&#39;</span>
+<span class="s2">                    when le.itemid = 50970 then &#39;PHOSPHATE&#39;</span>
+<span class="s2">                    when le.itemid = 51265 then &#39;PLATELET&#39;</span>
+<span class="s2">                    when le.itemid = 50822 then &#39;POTASSIUM&#39;</span>
+<span class="s2">                    when le.itemid = 50971 then &#39;POTASSIUM&#39;</span>
+<span class="s2">                    when le.itemid = 51275 then &#39;PTT&#39;</span>
+<span class="s2">                    when le.itemid = 51237 then &#39;INR&#39;</span>
+<span class="s2">                    when le.itemid = 51274 then &#39;PT&#39;</span>
+<span class="s2">                    when le.itemid = 50824 then &#39;SODIUM&#39;</span>
+<span class="s2">                    when le.itemid = 50983 then &#39;SODIUM&#39;</span>
+<span class="s2">                    when le.itemid = 51006 then &#39;BUN&#39;</span>
+<span class="s2">                    when le.itemid = 51300 then &#39;WBC&#39;</span>
+<span class="s2">                    when le.itemid = 51301 then &#39;WBC&#39;</span>
+<span class="s2">                  ELSE null</span>
+<span class="s2">                  END AS label</span>
+<span class="s2">  </span>
+<span class="s2">              , -- add in some sanity checks on the values</span>
+<span class="s2">                CASE</span>
+<span class="s2">                  when le.itemid = 50862 and le.valuenum &gt;    10 then null -- g/dL &#39;ALBUMIN&#39;</span>
+<span class="s2">                  when le.itemid = 50868 and le.valuenum &gt; 10000 then null -- mEq/L &#39;ANION GAP&#39;</span>
+<span class="s2">                  when le.itemid = 50882 and le.valuenum &gt; 10000 then null -- mEq/L &#39;BICARBONATE&#39;</span>
+<span class="s2">                  when le.itemid = 50885 and le.valuenum &gt;   150 then null -- mg/dL &#39;BILIRUBIN&#39;</span>
+<span class="s2">                  when le.itemid = 50806 and le.valuenum &gt; 10000 then null -- mEq/L &#39;CHLORIDE&#39;</span>
+<span class="s2">                  when le.itemid = 50902 and le.valuenum &gt; 10000 then null -- mEq/L &#39;CHLORIDE&#39;</span>
+<span class="s2">                  when le.itemid = 50912 and le.valuenum &gt;   150 then null -- mg/dL &#39;CREATININE&#39;</span>
+<span class="s2">                  when le.itemid = 50809 and le.valuenum &gt; 10000 then null -- mg/dL &#39;GLUCOSE&#39;</span>
+<span class="s2">                  when le.itemid = 50931 and le.valuenum &gt; 10000 then null -- mg/dL &#39;GLUCOSE&#39;</span>
+<span class="s2">                  when le.itemid = 50810 and le.valuenum &gt;   100 then null -- % &#39;HEMATOCRIT&#39;</span>
+<span class="s2">                  when le.itemid = 51221 and le.valuenum &gt;   100 then null -- % &#39;HEMATOCRIT&#39;</span>
+<span class="s2">                  when le.itemid = 50811 and le.valuenum &gt;    50 then null -- g/dL &#39;HEMOGLOBIN&#39;</span>
+<span class="s2">                  when le.itemid = 51222 and le.valuenum &gt;    50 then null -- g/dL &#39;HEMOGLOBIN&#39;</span>
+<span class="s2">                  when le.itemid = 50813 and le.valuenum &gt;    50 then null -- mmol/L &#39;LACTATE&#39;</span>
+<span class="s2">                  when le.itemid = 50960 and le.valuenum &gt;    60 then null -- mmol/L &#39;MAGNESIUM&#39;</span>
+<span class="s2">                  when le.itemid = 50970 and le.valuenum &gt;    60 then null -- mg/dL &#39;PHOSPHATE&#39;</span>
+<span class="s2">                  when le.itemid = 51265 and le.valuenum &gt; 10000 then null -- K/uL &#39;PLATELET&#39;</span>
+<span class="s2">                  when le.itemid = 50822 and le.valuenum &gt;    30 then null -- mEq/L &#39;POTASSIUM&#39;</span>
+<span class="s2">                  when le.itemid = 50971 and le.valuenum &gt;    30 then null -- mEq/L &#39;POTASSIUM&#39;</span>
+<span class="s2">                  when le.itemid = 51275 and le.valuenum &gt;   150 then null -- sec &#39;PTT&#39;</span>
+<span class="s2">                  when le.itemid = 51237 and le.valuenum &gt;    50 then null -- &#39;INR&#39;</span>
+<span class="s2">                  when le.itemid = 51274 and le.valuenum &gt;   150 then null -- sec &#39;PT&#39;</span>
+<span class="s2">                  when le.itemid = 50824 and le.valuenum &gt;   200 then null -- mEq/L == mmol/L &#39;SODIUM&#39;</span>
+<span class="s2">                  when le.itemid = 50983 and le.valuenum &gt;   200 then null -- mEq/L == mmol/L &#39;SODIUM&#39;</span>
+<span class="s2">                  when le.itemid = 51006 and le.valuenum &gt;   300 then null -- &#39;BUN&#39;</span>
+<span class="s2">                  when le.itemid = 51300 and le.valuenum &gt;  1000 then null -- &#39;WBC&#39;</span>
+<span class="s2">                  when le.itemid = 51301 and le.valuenum &gt;  1000 then null -- &#39;WBC&#39;</span>
+<span class="s2">                ELSE le.valuenum</span>
+<span class="s2">                END AS LabValue</span>
+<span class="s2">              FROM icustays ie</span>
+<span class="s2">              LEFT JOIN labevents le</span>
+<span class="s2">                ON le.subject_id = ie.subject_id </span>
+<span class="s2">                AND le.hadm_id = ie.hadm_id</span>
+<span class="s2">                AND le.charttime between (ie.intime) AND (ie.intime + interval &#39;48&#39; hour)</span>
+<span class="s2">                AND le.itemid IN</span>
+<span class="s2">                (</span>
+<span class="s2">                  -- comment is: LABEL | CATEGORY | FLUID | NUMBER OF ROWS IN LABEVENTS</span>
+<span class="s2">                  50868, -- ANION GAP | CHEMISTRY | BLOOD | 769895</span>
+<span class="s2">                  50862, -- ALBUMIN | CHEMISTRY | BLOOD | 146697</span>
+<span class="s2">                  50882, -- BICARBONATE | CHEMISTRY | BLOOD | 780733</span>
+<span class="s2">                  50885, -- BILIRUBIN, TOTAL | CHEMISTRY | BLOOD | 238277</span>
+<span class="s2">                  50912, -- CREATININE | CHEMISTRY | BLOOD | 797476</span>
+<span class="s2">                  50902, -- CHLORIDE | CHEMISTRY | BLOOD | 795568</span>
+<span class="s2">                  50806, -- CHLORIDE, WHOLE BLOOD | BLOOD GAS | BLOOD | 48187</span>
+<span class="s2">                  50931, -- GLUCOSE | CHEMISTRY | BLOOD | 748981</span>
+<span class="s2">                  50809, -- GLUCOSE | BLOOD GAS | BLOOD | 196734</span>
+<span class="s2">                  51221, -- HEMATOCRIT | HEMATOLOGY | BLOOD | 881846</span>
+<span class="s2">                  50810, -- HEMATOCRIT, CALCULATED | BLOOD GAS | BLOOD | 89715</span>
+<span class="s2">                  51222, -- HEMOGLOBIN | HEMATOLOGY | BLOOD | 752523</span>
+<span class="s2">                  50811, -- HEMOGLOBIN | BLOOD GAS | BLOOD | 89712</span>
+<span class="s2">                  50813, -- LACTATE | BLOOD GAS | BLOOD | 187124</span>
+<span class="s2">                  50960, -- MAGNESIUM | CHEMISTRY | BLOOD | 664191</span>
+<span class="s2">                  50970, -- PHOSPHATE | CHEMISTRY | BLOOD | 590524</span>
+<span class="s2">                  51265, -- PLATELET COUNT | HEMATOLOGY | BLOOD | 778444</span>
+<span class="s2">                  50971, -- POTASSIUM | CHEMISTRY | BLOOD | 845825</span>
+<span class="s2">                  50822, -- POTASSIUM, WHOLE BLOOD | BLOOD GAS | BLOOD | 192946</span>
+<span class="s2">                  51275, -- PTT | HEMATOLOGY | BLOOD | 474937</span>
+<span class="s2">                  51237, -- INR(PT) | HEMATOLOGY | BLOOD | 471183</span>
+<span class="s2">                  51274, -- PT | HEMATOLOGY | BLOOD | 469090</span>
+<span class="s2">                  50983, -- SODIUM | CHEMISTRY | BLOOD | 808489</span>
+<span class="s2">                  50824, -- SODIUM, WHOLE BLOOD | BLOOD GAS | BLOOD | 71503</span>
+<span class="s2">                  51006, -- UREA NITROGEN | CHEMISTRY | BLOOD | 791925</span>
+<span class="s2">                  51301, -- WHITE BLOOD CELLS | HEMATOLOGY | BLOOD | 753301</span>
+<span class="s2">                  51300  -- WBC COUNT | HEMATOLOGY | BLOOD | 2371</span>
+<span class="s2">                )</span>
+<span class="s2">                AND le.valuenum IS NOT null </span>
+<span class="s2">                AND le.valuenum &gt; 0 -- lab values cannot be 0 and cannot be negative</span>
+<span class="s2">  </span>
+<span class="s2">                LEFT JOIN admissions ad</span>
+<span class="s2">                ON ie.subject_id = ad.subject_id</span>
+<span class="s2">                AND ie.hadm_id = ad.hadm_id</span>
+<span class="s2">  </span>
+<span class="s2">            )</span>
+<span class="s2">            SELECT pvt.subject_id, pvt.hadm_id, pvt.icustay_id, pvt.LabChartTime, pvt.label, pvt.LabValue </span>
+<span class="s2">            From pvt</span>
+<span class="s2">            where pvt.label is not NULL</span>
+<span class="s2">            ORDER BY pvt.subject_id, pvt.hadm_id, pvt.icustay_id, pvt.label, pvt.LabChartTime;</span>
+<span class="s2">            &quot;&quot;&quot;</span>
+
+        <span class="n">lab48</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql_query</span><span class="p">(</span><span class="n">labquery</span><span class="p">,</span> <span class="n">con</span><span class="p">)</span>
+
+        <span class="c1"># =====combine all variables</span>
+        <span class="n">mort_vital</span> <span class="o">=</span> <span class="n">den</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+            <span class="n">vit48</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;subject_id&quot;</span><span class="p">,</span> <span class="s2">&quot;hadm_id&quot;</span><span class="p">,</span> <span class="s2">&quot;icustay_id&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">mort_lab</span> <span class="o">=</span> <span class="n">den</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+            <span class="n">lab48</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;subject_id&quot;</span><span class="p">,</span> <span class="s2">&quot;hadm_id&quot;</span><span class="p">,</span> <span class="s2">&quot;icustay_id&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="c1"># create means by age group and gender</span>
+        <span class="n">mort_vital</span><span class="p">[</span><span class="s2">&quot;age_group&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span>
+            <span class="n">mort_vital</span><span class="p">[</span><span class="s2">&quot;age&quot;</span><span class="p">],</span>
+            <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">200</span><span class="p">],</span>
+            <span class="n">labels</span><span class="o">=</span><span class="p">[</span>
+                <span class="s2">&quot;l5&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;5_10&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;10_15&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;15_20&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;20_25&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;25_40&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;40_60&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;60_80&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;80p&quot;</span><span class="p">,</span>
+            <span class="p">],</span>
+        <span class="p">)</span>
+        <span class="n">mort_lab</span><span class="p">[</span><span class="s2">&quot;age_group&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span>
+            <span class="n">mort_lab</span><span class="p">[</span><span class="s2">&quot;age&quot;</span><span class="p">],</span>
+            <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">200</span><span class="p">],</span>
+            <span class="n">labels</span><span class="o">=</span><span class="p">[</span>
+                <span class="s2">&quot;l5&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;5_10&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;10_15&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;15_20&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;20_25&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;25_40&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;40_60&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;60_80&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;80p&quot;</span><span class="p">,</span>
+            <span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="c1"># one missing variable</span>
+        <span class="n">adult_vital</span> <span class="o">=</span> <span class="n">mort_vital</span><span class="p">[(</span><span class="n">mort_vital</span><span class="o">.</span><span class="n">adult_icu</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)]</span>
+        <span class="n">adult_lab</span> <span class="o">=</span> <span class="n">mort_lab</span><span class="p">[(</span><span class="n">mort_lab</span><span class="o">.</span><span class="n">adult_icu</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)]</span>
+        <span class="n">adult_vital</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;adult_icu&quot;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">adult_lab</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;adult_icu&quot;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Save files</span>
+        <span class="n">adult_vital</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_dir</span><span class="p">,</span> <span class="s2">&quot;adult_icu_vital.gz&quot;</span><span class="p">),</span>
+            <span class="n">compression</span><span class="o">=</span><span class="s2">&quot;gzip&quot;</span><span class="p">,</span>
+            <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">mort_lab</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_dir</span><span class="p">,</span> <span class="s2">&quot;adult_icu_lab.gz&quot;</span><span class="p">),</span>
+            <span class="n">compression</span><span class="o">=</span><span class="s2">&quot;gzip&quot;</span><span class="p">,</span>
+            <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Drop NAs</span>
+        <span class="n">adult_vital</span> <span class="o">=</span> <span class="n">adult_vital</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;vitalid&quot;</span><span class="p">])</span>
+        <span class="n">mort_lab</span> <span class="o">=</span> <span class="n">mort_lab</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">])</span>
+
+        <span class="c1"># Get unique ids</span>
+        <span class="n">icu_ids</span> <span class="o">=</span> <span class="n">adult_vital</span><span class="o">.</span><span class="n">icustay_id</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+
+        <span class="c1"># Create arrays</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">icu_ids</span><span class="p">),</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">48</span><span class="p">))</span>
+        <span class="n">x_lab</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">icu_ids</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">lab_IDs</span><span class="p">),</span> <span class="mi">48</span><span class="p">))</span>
+        <span class="n">x_impute</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">icu_ids</span><span class="p">),</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">48</span><span class="p">))</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">icu_ids</span><span class="p">),))</span>
+        <span class="n">imp_mean</span> <span class="o">=</span> <span class="n">SimpleImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">)</span>
+
+        <span class="n">missing_ids</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">missing_map</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">icu_ids</span><span class="p">),</span> <span class="mi">12</span><span class="p">))</span>
+        <span class="n">missing_map_lab</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">icu_ids</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">lab_IDs</span><span class="p">)))</span>
+
+        <span class="n">nan_map</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">icu_ids</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">lab_IDs</span><span class="p">)</span> <span class="o">+</span> <span class="mi">12</span><span class="p">))</span>
+
+        <span class="c1"># Create ethnicity encoding</span>
+
+        <span class="c1"># Populate data</span>
+        <span class="n">pbar</span> <span class="o">=</span> <span class="n">get_progress_bars</span><span class="p">()(</span><span class="nb">enumerate</span><span class="p">(</span><span class="n">icu_ids</span><span class="p">),</span> <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">icu_ids</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">icu_id</span> <span class="ow">in</span> <span class="n">pbar</span><span class="p">:</span>
+            <span class="n">patient_data</span> <span class="o">=</span> <span class="n">adult_vital</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">adult_vital</span><span class="p">[</span><span class="s2">&quot;icustay_id&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">icu_id</span><span class="p">]</span>
+            <span class="n">patient_data</span><span class="p">[</span><span class="s2">&quot;vitalcharttime&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">patient_data</span><span class="p">[</span>
+                <span class="s2">&quot;vitalcharttime&quot;</span>
+            <span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;datetime64[s]&quot;</span><span class="p">)</span>
+            <span class="n">patient_lab_data</span> <span class="o">=</span> <span class="n">mort_lab</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">mort_lab</span><span class="p">[</span><span class="s2">&quot;icustay_id&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">icu_id</span><span class="p">]</span>
+            <span class="n">patient_lab_data</span><span class="p">[</span><span class="s2">&quot;labcharttime&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">patient_lab_data</span><span class="p">[</span>
+                <span class="s2">&quot;labcharttime&quot;</span>
+            <span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;datetime64[s]&quot;</span><span class="p">)</span>
+
+            <span class="n">admit_time</span> <span class="o">=</span> <span class="n">patient_data</span><span class="p">[</span><span class="s2">&quot;vitalcharttime&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+            <span class="n">n_missing_vitals</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="c1"># Extract demographics and repeat them over time</span>
+            <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">patient_data</span><span class="p">[</span><span class="s2">&quot;gender&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">patient_data</span><span class="p">[</span><span class="s2">&quot;age&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">ethnicity_encoder</span><span class="p">(</span>
+                <span class="n">patient_data</span><span class="p">[</span><span class="s2">&quot;ethnicity&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">patient_data</span>
+            <span class="p">)</span>
+            <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">patient_data</span><span class="p">[</span><span class="s2">&quot;first_icu_stay&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">patient_data</span><span class="p">[</span><span class="s2">&quot;mort_icu&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+            <span class="c1"># Extract vital measurement information</span>
+            <span class="n">vitals</span> <span class="o">=</span> <span class="n">patient_data</span><span class="o">.</span><span class="n">vitalid</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">vital</span> <span class="ow">in</span> <span class="n">vitals</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">vital_IDs</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">vital</span><span class="p">)</span>
+                    <span class="n">signal</span> <span class="o">=</span> <span class="n">patient_data</span><span class="p">[</span><span class="n">patient_data</span><span class="p">[</span><span class="s2">&quot;vitalid&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">vital</span><span class="p">]</span>
+                    <span class="n">quantized_signal</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">quantize_signal</span><span class="p">(</span>
+                        <span class="n">signal</span><span class="p">,</span>
+                        <span class="n">start</span><span class="o">=</span><span class="n">admit_time</span><span class="p">,</span>
+                        <span class="n">step_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                        <span class="n">n_steps</span><span class="o">=</span><span class="mi">48</span><span class="p">,</span>
+                        <span class="n">value_column</span><span class="o">=</span><span class="s2">&quot;vitalvalue&quot;</span><span class="p">,</span>
+                        <span class="n">charttime_column</span><span class="o">=</span><span class="s2">&quot;vitalcharttime&quot;</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="n">nan_arr</span><span class="p">,</span> <span class="n">nan_count</span> <span class="o">=</span> <span class="n">check_nan</span><span class="p">(</span><span class="n">quantized_signal</span><span class="p">)</span>
+                    <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">vital_IDs</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">vital</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                        <span class="n">quantized_signal</span>
+                    <span class="p">)</span>
+                    <span class="n">nan_map</span><span class="p">[</span>
+                        <span class="n">i</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">lab_IDs</span><span class="p">)</span> <span class="o">+</span> <span class="n">vital_IDs</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">vital</span><span class="p">)</span>
+                    <span class="p">]</span> <span class="o">=</span> <span class="n">nan_count</span>
+                    <span class="k">if</span> <span class="n">nan_count</span> <span class="o">==</span> <span class="mi">48</span><span class="p">:</span>
+                        <span class="n">n_missing_vitals</span> <span class="o">=</span> <span class="o">+</span><span class="mi">1</span>
+                        <span class="n">missing_map</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">vital_IDs</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">vital</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">x_impute</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">imp_mean</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span>
+                            <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span><span class="o">.</span><span class="n">T</span>
+                        <span class="p">)</span><span class="o">.</span><span class="n">T</span>
+                <span class="k">except</span><span class="p">:</span>  <span class="c1"># noqa: E722</span>
+                    <span class="k">pass</span>
+
+            <span class="c1"># Extract lab measurement informations</span>
+            <span class="n">labs</span> <span class="o">=</span> <span class="n">patient_lab_data</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">lab</span> <span class="ow">in</span> <span class="n">labs</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">lab_IDs</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">lab</span><span class="p">)</span>
+                    <span class="n">lab_measures</span> <span class="o">=</span> <span class="n">patient_lab_data</span><span class="p">[</span>
+                        <span class="n">patient_lab_data</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">lab</span>
+                    <span class="p">]</span>
+                    <span class="n">quantized_lab</span><span class="p">,</span> <span class="n">quantized_measures</span> <span class="o">=</span> <span class="n">quantize_signal</span><span class="p">(</span>
+                        <span class="n">lab_measures</span><span class="p">,</span>
+                        <span class="n">start</span><span class="o">=</span><span class="n">admit_time</span><span class="p">,</span>
+                        <span class="n">step_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                        <span class="n">n_steps</span><span class="o">=</span><span class="mi">48</span><span class="p">,</span>
+                        <span class="n">value_column</span><span class="o">=</span><span class="s2">&quot;labvalue&quot;</span><span class="p">,</span>
+                        <span class="n">charttime_column</span><span class="o">=</span><span class="s2">&quot;labcharttime&quot;</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="n">nan_arr</span><span class="p">,</span> <span class="n">nan_count</span> <span class="o">=</span> <span class="n">check_nan</span><span class="p">(</span><span class="n">quantized_lab</span><span class="p">)</span>
+                    <span class="n">x_lab</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">lab_IDs</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">lab</span><span class="p">),</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">quantized_lab</span><span class="p">)</span>
+                    <span class="n">nan_map</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">lab_IDs</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">lab</span><span class="p">)]</span> <span class="o">=</span> <span class="n">nan_count</span>
+                    <span class="k">if</span> <span class="n">nan_count</span> <span class="o">==</span> <span class="mi">48</span><span class="p">:</span>
+                        <span class="n">missing_map_lab</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">lab_IDs</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">lab</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="k">except</span><span class="p">:</span>  <span class="c1"># noqa: E722</span>
+                    <span class="k">pass</span>
+
+            <span class="c1"># Remove a patient that is missing a measurement for the entire 48 hours</span>
+            <span class="k">if</span> <span class="n">n_missing_vitals</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">missing_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+        <span class="c1"># Record statistics of the dataset, remove missing samples and save the signals</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_dir</span><span class="p">,</span> <span class="s2">&quot;stats.txt&quot;</span><span class="p">),</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> ******************* Before removing missing *********************&quot;</span>
+        <span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> Number of patients: &quot;</span>
+            <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+            <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> Number of patients who died within their stay: &quot;</span>
+            <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+        <span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Missingness report for Vital signals&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">vital</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vital_IDs</span><span class="p">):</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Missingness for </span><span class="si">%s</span><span class="s2">: </span><span class="si">%.2f</span><span class="s2">&quot;</span>
+                <span class="o">%</span> <span class="p">(</span><span class="n">vital</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">missing_map</span><span class="p">[:,</span> <span class="n">i</span><span class="p">])</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">icu_ids</span><span class="p">))</span>
+            <span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Missingness report for Vital signals&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">lab</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lab_IDs</span><span class="p">):</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Missingness for </span><span class="si">%s</span><span class="s2">: </span><span class="si">%.2f</span><span class="s2">&quot;</span>
+                <span class="o">%</span> <span class="p">(</span><span class="n">lab</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">missing_map_lab</span><span class="p">[:,</span> <span class="n">i</span><span class="p">])</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">icu_ids</span><span class="p">))</span>
+            <span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">x_lab</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">x_lab</span><span class="p">,</span> <span class="n">missing_ids</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">x_impute</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">x_impute</span><span class="p">,</span> <span class="n">missing_ids</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">missing_ids</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">nan_map</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">nan_map</span><span class="p">,</span> <span class="n">missing_ids</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">x_lab_impute</span> <span class="o">=</span> <span class="n">impute_lab</span><span class="p">(</span><span class="n">x_lab</span><span class="p">)</span>
+        <span class="n">missing_map</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">missing_map</span><span class="p">,</span> <span class="n">missing_ids</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">missing_map_lab</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">missing_map_lab</span><span class="p">,</span> <span class="n">missing_ids</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">all_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">x_lab_impute</span><span class="p">,</span> <span class="n">x_impute</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> ******************* After removing missing *********************&quot;</span>
+        <span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> Final number of patients: &quot;</span>
+            <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+            <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> Number of patients who died within their stay: &quot;</span>
+            <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+        <span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Missingness report for Vital signals&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">vital</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vital_IDs</span><span class="p">):</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Missingness for </span><span class="si">%s</span><span class="s2">: </span><span class="si">%.2f</span><span class="s2">&quot;</span>
+                <span class="o">%</span> <span class="p">(</span><span class="n">vital</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">missing_map</span><span class="p">[:,</span> <span class="n">i</span><span class="p">])</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">icu_ids</span><span class="p">))</span>
+            <span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Missingness report for Vital signals&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">lab</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lab_IDs</span><span class="p">):</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Missingness for </span><span class="si">%s</span><span class="s2">: </span><span class="si">%.2f</span><span class="s2">&quot;</span>
+                <span class="o">%</span> <span class="p">(</span><span class="n">lab</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">missing_map_lab</span><span class="p">[:,</span> <span class="n">i</span><span class="p">])</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">icu_ids</span><span class="p">))</span>
+            <span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="n">samples</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="n">all_data</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:],</span> <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">nan_map</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+        <span class="p">]</span>
+
+        <span class="c1"># Split train and test</span>
+        <span class="n">train_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span> <span class="o">*</span> <span class="n">prop_train</span><span class="p">)</span>
+        <span class="n">train_samples</span> <span class="o">=</span> <span class="n">samples</span><span class="p">[:</span><span class="n">train_size</span><span class="p">]</span>
+        <span class="n">test_samples</span> <span class="o">=</span> <span class="n">samples</span><span class="p">[</span><span class="n">train_size</span><span class="p">:]</span>
+
+        <span class="c1"># Save preprocessed data</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data_dir</span><span class="p">,</span> <span class="s2">&quot;train_patient_vital_preprocessed.pkl&quot;</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;wb&quot;</span><span class="p">,</span>
+        <span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">pkl</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">train_samples</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_dir</span><span class="p">,</span> <span class="s2">&quot;test_patient_vital_preprocessed.pkl&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;wb&quot;</span><span class="p">,</span>
+        <span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">pkl</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">test_samples</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">prepare_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_dir</span><span class="p">,</span> <span class="s2">&quot;train_patient_vital_preprocessed.pkl&quot;</span><span class="p">)</span>
+        <span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_dir</span><span class="p">,</span> <span class="s2">&quot;test_patient_vital_preprocessed.pkl&quot;</span>
+        <span class="p">):</span>
+            <span class="n">sqluser</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;sqluser: &quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">sqluser</span><span class="o">=</span><span class="n">sqluser</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">preprocess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">split</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;train&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="c1"># Load data</span>
+        <span class="n">file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">split</span><span class="si">}</span><span class="s2">_&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file</span> <span class="o">+</span> <span class="s2">&quot;patient_vital_preprocessed.pkl&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">pkl</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
+
+        <span class="n">features</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">Tensor</span><span class="p">([</span><span class="n">x</span> <span class="k">for</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span> <span class="ow">in</span> <span class="n">data</span><span class="p">])</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">Tensor</span><span class="p">([</span><span class="n">y</span> <span class="k">for</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span> <span class="ow">in</span> <span class="n">data</span><span class="p">])</span>
+
+        <span class="c1"># Compute mean and std</span>
+        <span class="k">if</span> <span class="n">split</span> <span class="o">==</span> <span class="s2">&quot;train&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mean</span> <span class="o">=</span> <span class="n">features</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">features</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_std</span> <span class="o">=</span> <span class="n">features</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">features</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">split</span> <span class="o">==</span> <span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="s2">&quot;split must be train or test&quot;</span>
+
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mean</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="p">),</span> <span class="s2">&quot;You must call preprocess(&#39;train&#39;) first&quot;</span>
+
+        <span class="c1"># Normalise</span>
+        <span class="n">mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mean</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">std</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_std</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">features</span> <span class="o">=</span> <span class="p">(</span><span class="n">features</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">std</span> <span class="o">+</span> <span class="n">EPS</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="n">features</span><span class="o">.</span><span class="n">float</span><span class="p">(),</span>
+            <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="n">labels</span><span class="o">.</span><span class="n">long</span><span class="p">(),</span>
+        <span class="p">}</span></div>
+
+
+<span class="k">def</span> <span class="nf">quantize_signal</span><span class="p">(</span>
+    <span class="n">signal</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">step_size</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">,</span> <span class="n">value_column</span><span class="p">,</span> <span class="n">charttime_column</span>
+<span class="p">):</span>
+    <span class="n">quantized_signal</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">quantized_counts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_steps</span><span class="p">,))</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">start</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="n">step_size</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_steps</span><span class="p">):</span>
+        <span class="n">signal_window</span> <span class="o">=</span> <span class="n">signal</span><span class="p">[</span><span class="n">value_column</span><span class="p">][</span>
+            <span class="p">(</span><span class="n">signal</span><span class="p">[</span><span class="n">charttime_column</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">s</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">signal</span><span class="p">[</span><span class="n">charttime_column</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">u</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="n">quantized_signal</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">signal_window</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+        <span class="n">quantized_counts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">signal_window</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">u</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">s</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="n">step_size</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">quantized_signal</span><span class="p">,</span> <span class="n">quantized_counts</span>
+
+
+<span class="k">def</span> <span class="nf">check_nan</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="n">nan_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">nan_count</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">nan_arr</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">nan_arr</span><span class="p">,</span> <span class="n">nan_count</span>
+
+
+<span class="k">def</span> <span class="nf">forward_impute</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">nan_arr</span><span class="p">):</span>
+    <span class="n">x_impute</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">first_value</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">first_value</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="ow">and</span> <span class="n">nan_arr</span><span class="p">[</span><span class="n">first_value</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">first_value</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">last</span> <span class="o">=</span> <span class="n">x_impute</span><span class="p">[</span><span class="n">first_value</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">measurement</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">nan_arr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">x_impute</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">last</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">last</span> <span class="o">=</span> <span class="n">measurement</span>
+    <span class="k">return</span> <span class="n">x_impute</span>
+
+
+<span class="k">def</span> <span class="nf">impute_lab</span><span class="p">(</span><span class="n">lab_data</span><span class="p">):</span>
+    <span class="n">imputer</span> <span class="o">=</span> <span class="n">SimpleImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">)</span>
+    <span class="n">lab_data_impute</span> <span class="o">=</span> <span class="n">lab_data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">imputer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">lab_data</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">lab_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])))</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">patient</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lab_data</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">signal</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">patient</span><span class="p">):</span>
+            <span class="n">nan_arr</span><span class="p">,</span> <span class="n">nan_count</span> <span class="o">=</span> <span class="n">check_nan</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">nan_count</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">signal</span><span class="p">):</span>
+                <span class="n">lab_data_impute</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">forward_impute</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">nan_arr</span><span class="p">)</span>
+    <span class="n">lab_data_impute</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">imputer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">sample</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span> <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">lab_data_impute</span><span class="p">]</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">lab_data_impute</span>
+
+
+<span class="k">def</span> <span class="nf">ethnicity_encoder</span><span class="p">(</span><span class="n">eth</span><span class="p">,</span> <span class="n">patient_data</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">eth</span> <span class="o">==</span> <span class="s2">&quot;0&quot;</span>
+        <span class="k">else</span> <span class="n">eth_list</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">patient_data</span><span class="p">[</span><span class="s2">&quot;ethnicity&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Joseph Enguehard.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

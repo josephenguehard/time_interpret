@@ -1,4 +1,4 @@
-ROM gcr.io/deeplearning-platform-release/pytorch-gpu.1-11
+FROM gcr.io/deeplearning-platform-release/pytorch-gpu.1-12
 
 COPY ./requirements.txt /requirements.txt
 RUN pip install -r /requirements.txt
@@ -11,6 +11,6 @@ RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master
 RUN sed -i 's/robbyrussell/avit/g' ~/.zshrc
 RUN echo "alias lss='ls -rtlh'" >> ~/.zshrc
 
-COPY . /root/tint
-WORKDIR /root/tint
+COPY . /root/time_interpret
+WORKDIR /root/time_interpret
 RUN pip install --no-deps -e .

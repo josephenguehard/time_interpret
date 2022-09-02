@@ -23,4 +23,5 @@ jobs:
       - name: Check format with black
         run: |
           pip install black
-          black --check .  --line-length 79
+          black --check .  --line-length 79 --exclude tests
+          black --check tests  --line-length 120

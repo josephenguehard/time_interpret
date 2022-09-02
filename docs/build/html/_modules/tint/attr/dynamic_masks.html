@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>tint.attr.dynamic_masks &mdash; Time Interpret 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sphinx_paramlinks.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="../../../_static/toggleprompt.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Time Interpret
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../attr.html">Attribution Methods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../attr_models.html">Attribution Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../datasets.html">Datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../metrics.html">Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../white_box_metrics.html">White Box Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../models.html">Models</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Time Interpret</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>tint.attr.dynamic_masks</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for tint.attr.dynamic_masks</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">torch</span> <span class="k">as</span> <span class="nn">th</span>
+
+<span class="kn">from</span> <span class="nn">captum.attr._utils.attribution</span> <span class="kn">import</span> <span class="n">PerturbationAttribution</span>
+<span class="kn">from</span> <span class="nn">captum.log</span> <span class="kn">import</span> <span class="n">log_usage</span>
+<span class="kn">from</span> <span class="nn">captum._utils.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_format_input</span><span class="p">,</span>
+    <span class="n">_format_output</span><span class="p">,</span>
+    <span class="n">_is_tuple</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">captum._utils.typing</span> <span class="kn">import</span> <span class="n">TensorOrTupleOfTensorsGeneric</span>
+
+<span class="kn">from</span> <span class="nn">pytorch_lightning</span> <span class="kn">import</span> <span class="n">Trainer</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">from</span> <span class="nn">tint.utils</span> <span class="kn">import</span> <span class="n">TensorDataset</span><span class="p">,</span> <span class="n">_add_temporal_mask</span><span class="p">,</span> <span class="n">default_collate</span>
+<span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="n">MaskNet</span>
+
+
+<div class="viewcode-block" id="DynaMask"><a class="viewcode-back" href="../../../attr.html#tint.attr.DynaMask">[docs]</a><span class="k">class</span> <span class="nc">DynaMask</span><span class="p">(</span><span class="n">PerturbationAttribution</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Dynamic masks method.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        forward_func (callable): The forward function of the model or any</span>
+<span class="sd">            modification of it.</span>
+
+<span class="sd">    References:</span>
+<span class="sd">        https://arxiv.org/pdf/2106.05303</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import torch as th</span>
+<span class="sd">        &gt;&gt;&gt; from tint.attr import DynaMask</span>
+<span class="sd">        &gt;&gt;&gt; from tint.models import MLP</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+<span class="sd">        &gt;&gt;&gt; inputs = th.rand(8, 7, 5)</span>
+<span class="sd">        &gt;&gt;&gt; data = th.rand(32, 7, 5)</span>
+<span class="sd">        &gt;&gt;&gt; mlp = MLP([5, 3, 1])</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+<span class="sd">        &gt;&gt;&gt; explainer = DynaMask(mlp)</span>
+<span class="sd">        &gt;&gt;&gt; attr = explainer.attribute(inputs)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">forward_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">forward_func</span><span class="o">=</span><span class="n">forward_func</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DynaMask.attribute"><a class="viewcode-back" href="../../../attr.html#tint.attr.DynaMask.attribute">[docs]</a>    <span class="nd">@log_usage</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">attribute</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">TensorOrTupleOfTensorsGeneric</span><span class="p">,</span>
+        <span class="n">additional_forward_args</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">trainer</span><span class="p">:</span> <span class="n">Trainer</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">mask_net</span><span class="p">:</span> <span class="n">MaskNet</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
+        <span class="n">temporal_additional_forward_args</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">return_temporal_attributions</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">return_best_ratio</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TensorOrTupleOfTensorsGeneric</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Attribute method.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inputs (tuple, th.Tensor): Input data.</span>
+<span class="sd">            additional_forward_args (Any): Any additional argument passed</span>
+<span class="sd">                to the model. Default to ``None``</span>
+<span class="sd">            trainer (Trainer): Pytorch Lightning trainer. If ``None``, a</span>
+<span class="sd">                default trainer will be provided. Default to ``None``</span>
+<span class="sd">            mask_net (MaskNet): A Mask model. If ``None``, a default model</span>
+<span class="sd">                will be provided. Default to ``None``</span>
+<span class="sd">            batch_size (int): Batch size for Mask training. Default to 32</span>
+<span class="sd">            temporal_additional_forward_args (tuple): Set each</span>
+<span class="sd">                additional forward arg which is temporal.</span>
+<span class="sd">                Only used with return_temporal_attributions.</span>
+<span class="sd">                Default to ``None``</span>
+<span class="sd">            return_temporal_attributions (bool): Whether to return</span>
+<span class="sd">                attributions for all times or not. Default to ``False``</span>
+<span class="sd">            return_best_ratio (bool): Whether to return the best keep_ratio</span>
+<span class="sd">                or not. Default to ``False``</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (th.Tensor, tuple): Attributions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Keeps track whether original input is a tuple or not before</span>
+        <span class="c1"># converting it into a tuple.</span>
+        <span class="n">is_inputs_tuple</span> <span class="o">=</span> <span class="n">_is_tuple</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="n">inputs</span> <span class="o">=</span> <span class="n">_format_input</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+
+        <span class="c1"># Init trainer if not provided</span>
+        <span class="k">if</span> <span class="n">trainer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">max_epochs</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">trainer</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">trainer</span><span class="p">)</span>
+
+        <span class="c1"># Assert only one input, as the Retain only accepts one</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="p">),</span> <span class="s2">&quot;Multiple inputs are not accepted for this method&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># If return temporal attr, we expand the input data</span>
+        <span class="c1"># and multiply it with a lower triangular mask</span>
+        <span class="k">if</span> <span class="n">return_temporal_attributions</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">,</span> <span class="n">additional_forward_args</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_add_temporal_mask</span><span class="p">(</span>
+                <span class="n">inputs</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+                <span class="n">additional_forward_args</span><span class="o">=</span><span class="n">additional_forward_args</span><span class="p">,</span>
+                <span class="n">temporal_additional_forward_args</span><span class="o">=</span><span class="n">temporal_additional_forward_args</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Init MaskNet if not provided</span>
+        <span class="k">if</span> <span class="n">mask_net</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mask_net</span> <span class="o">=</span> <span class="n">MaskNet</span><span class="p">(</span><span class="n">forward_func</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">forward_func</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mask_net</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">mask_net</span><span class="p">)</span>
+
+        <span class="c1"># Init model</span>
+        <span class="n">mask_net</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">init</span><span class="p">(</span>
+            <span class="n">shape</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+            <span class="n">n_epochs</span><span class="o">=</span><span class="n">trainer</span><span class="o">.</span><span class="n">max_epochs</span> <span class="ow">or</span> <span class="n">trainer</span><span class="o">.</span><span class="n">max_steps</span><span class="p">,</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Prepare data</span>
+        <span class="n">dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+            <span class="n">TensorDataset</span><span class="p">(</span>
+                <span class="o">*</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="o">*</span><span class="n">additional_forward_args</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">additional_forward_args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="k">else</span> <span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="p">),</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="n">collate_fn</span><span class="o">=</span><span class="n">default_collate</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Fit model</span>
+        <span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">mask_net</span><span class="p">,</span> <span class="n">train_dataloaders</span><span class="o">=</span><span class="n">dataloader</span><span class="p">)</span>
+
+        <span class="c1"># Set model to eval mode</span>
+        <span class="n">mask_net</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+        <span class="c1"># Get attributions as mask representation</span>
+        <span class="n">attributions</span><span class="p">,</span> <span class="n">best_ratio</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">representation</span><span class="p">(</span>
+            <span class="n">mask_net</span><span class="o">=</span><span class="n">mask_net</span><span class="p">,</span>
+            <span class="n">trainer</span><span class="o">=</span><span class="n">trainer</span><span class="p">,</span>
+            <span class="n">dataloader</span><span class="o">=</span><span class="n">dataloader</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Reshape representation if temporal attributions</span>
+        <span class="k">if</span> <span class="n">return_temporal_attributions</span><span class="p">:</span>
+            <span class="n">attributions</span> <span class="o">=</span> <span class="n">attributions</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Reshape as a tuple</span>
+        <span class="n">attributions</span> <span class="o">=</span> <span class="p">(</span><span class="n">attributions</span><span class="p">,)</span>
+
+        <span class="c1"># Format attributions and return</span>
+        <span class="k">if</span> <span class="n">return_best_ratio</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_format_output</span><span class="p">(</span><span class="n">is_inputs_tuple</span><span class="p">,</span> <span class="n">attributions</span><span class="p">),</span> <span class="n">best_ratio</span>
+        <span class="k">return</span> <span class="n">_format_output</span><span class="p">(</span><span class="n">is_inputs_tuple</span><span class="p">,</span> <span class="n">attributions</span><span class="p">)</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">representation</span><span class="p">(</span>
+        <span class="n">mask_net</span><span class="p">:</span> <span class="n">MaskNet</span><span class="p">,</span> <span class="n">trainer</span><span class="p">:</span> <span class="n">Trainer</span><span class="p">,</span> <span class="n">dataloader</span><span class="p">:</span> <span class="n">DataLoader</span>
+    <span class="p">):</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="mf">1.0</span> <span class="o">-</span> <span class="n">mask_net</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">mask</span>
+            <span class="k">if</span> <span class="n">mask_net</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">deletion_mode</span>
+            <span class="k">else</span> <span class="n">mask_net</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">mask</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Get the loss without reduction</span>
+        <span class="n">pred</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">mask_net</span><span class="p">,</span> <span class="n">dataloaders</span><span class="o">=</span><span class="n">dataloader</span><span class="p">)</span>
+        <span class="n">_loss</span> <span class="o">=</span> <span class="n">mask_net</span><span class="o">.</span><span class="n">_loss</span>
+        <span class="n">_loss</span><span class="o">.</span><span class="n">reduction</span> <span class="o">=</span> <span class="s2">&quot;none&quot;</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">_loss</span><span class="p">(</span>
+            <span class="n">th</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pred</span><span class="p">]),</span> <span class="n">th</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pred</span><span class="p">])</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Average the loss over each keep_ratio subset</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">loss</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">loss</span><span class="o">.</span><span class="n">shape</span><span class="p">))))</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">mask_net</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">keep_ratio</span><span class="p">),</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span> <span class="o">//</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask_net</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">keep_ratio</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Get the minimum loss</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">loss</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span> <span class="o">//</span> <span class="nb">len</span><span class="p">(</span><span class="n">mask_net</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">keep_ratio</span><span class="p">)</span>
+
+        <span class="c1"># Return the mask subset given the minimum loss</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">mask</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()[</span><span class="n">i</span> <span class="o">*</span> <span class="n">length</span> <span class="p">:</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">length</span><span class="p">],</span>
+            <span class="n">mask_net</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">keep_ratio</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+        <span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Joseph Enguehard.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

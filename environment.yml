@@ -3,18 +3,25 @@ channels:
   - defaults
   - pytorch
   - conda-forge
+  - huggingface
   - nvidia
 dependencies:
   - python==3.9.7
   - cudatoolkit==11.6
-  - pytorch==1.12.0
+  - pytorch==1.12.1
+  - captum
+  - datasets
   - git
+  - jupyter
   - numpy
   - optuna
   - pandas
   - pip
   - scikit-learn
   - pytorch-lightning
+  - torchmetrics
+  - torchvision
+  - transformers
   - pip:
       - black
       - flake8

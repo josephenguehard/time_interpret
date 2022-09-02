@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>tint.attr.retain &mdash; Time Interpret 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sphinx_paramlinks.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="../../../_static/toggleprompt.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Time Interpret
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../attr.html">Attribution Methods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../attr_models.html">Attribution Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../datasets.html">Datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../metrics.html">Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../white_box_metrics.html">White Box Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../models.html">Models</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Time Interpret</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>tint.attr.retain</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for tint.attr.retain</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">copy</span>
+
+<span class="kn">import</span> <span class="nn">torch</span> <span class="k">as</span> <span class="nn">th</span>
+
+<span class="kn">from</span> <span class="nn">captum.attr._utils.attribution</span> <span class="kn">import</span> <span class="n">PerturbationAttribution</span>
+<span class="kn">from</span> <span class="nn">captum.log</span> <span class="kn">import</span> <span class="n">log_usage</span>
+<span class="kn">from</span> <span class="nn">captum._utils.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_format_input</span><span class="p">,</span>
+    <span class="n">_format_output</span><span class="p">,</span>
+    <span class="n">_is_tuple</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">captum._utils.typing</span> <span class="kn">import</span> <span class="n">TensorOrTupleOfTensorsGeneric</span><span class="p">,</span> <span class="n">TargetType</span>
+
+<span class="kn">from</span> <span class="nn">pytorch_lightning</span> <span class="kn">import</span> <span class="n">LightningDataModule</span><span class="p">,</span> <span class="n">Trainer</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span><span class="p">,</span> <span class="n">TensorDataset</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">tint.utils</span> <span class="kn">import</span> <span class="n">_add_temporal_mask</span>
+<span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="n">Retain</span> <span class="k">as</span> <span class="n">RetainModel</span><span class="p">,</span> <span class="n">RetainNet</span>
+
+
+<div class="viewcode-block" id="Retain"><a class="viewcode-back" href="../../../attr.html#tint.attr.Retain">[docs]</a><span class="k">class</span> <span class="nc">Retain</span><span class="p">(</span><span class="n">PerturbationAttribution</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retain explainer method.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        forward_func (Callable): The forward function of the model or any</span>
+<span class="sd">            modification of it.</span>
+<span class="sd">        retain (RetainNet): A Retain network as a Pytorch Lightning</span>
+<span class="sd">            module. If ``None``, a default Retain Net will be created.</span>
+<span class="sd">            Default to ``None``</span>
+<span class="sd">        datamodule (LightningDataModule): A Pytorch Lightning data</span>
+<span class="sd">            module which will be used to train the RetainNet.</span>
+<span class="sd">            Either a datamodule or features must be provided, they cannot be</span>
+<span class="sd">            None together. Default to ``None``</span>
+<span class="sd">        features (Tensor): A tensor of features which will be used to train</span>
+<span class="sd">            the RetainNet. Either a datamodule or features must be provided,</span>
+<span class="sd">            they cannot be None together. If both are provided, features is</span>
+<span class="sd">            ignored. Default to ``None``</span>
+
+<span class="sd">    References:</span>
+<span class="sd">        https://arxiv.org/pdf/1608.05745</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import torch as th</span>
+<span class="sd">        &gt;&gt;&gt; from tint.attr import Retain</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+<span class="sd">        &gt;&gt;&gt; inputs = th.rand(8, 7, 5)</span>
+<span class="sd">        &gt;&gt;&gt; data = th.rand(32, 7, 5)</span>
+<span class="sd">        &gt;&gt;&gt; labels = th.randint(2, (32, 7))</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+<span class="sd">        &gt;&gt;&gt; explainer = Retain(features=data, labels=labels)</span>
+<span class="sd">        &gt;&gt;&gt; attr = explainer.attribute(inputs, target=th.randint(2, (8, 7))))</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">forward_func</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">retain</span><span class="p">:</span> <span class="n">RetainNet</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">datamodule</span><span class="p">:</span> <span class="n">LightningDataModule</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">features</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">labels</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">trainer</span><span class="p">:</span> <span class="n">Trainer</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># If forward_func is not provided,</span>
+        <span class="c1"># train retain model</span>
+        <span class="k">if</span> <span class="n">forward_func</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+
+            <span class="c1"># Create dataloader if not provided</span>
+            <span class="n">dataloader</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">datamodule</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="p">(</span>
+                    <span class="n">features</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="p">),</span> <span class="s2">&quot;You must provide either a datamodule or features&quot;</span>
+                <span class="k">assert</span> <span class="p">(</span>
+                    <span class="n">labels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="p">),</span> <span class="s2">&quot;You must provide either a datamodule or labels&quot;</span>
+
+                <span class="n">dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+                    <span class="n">TensorDataset</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">labels</span><span class="p">),</span>
+                    <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+                <span class="p">)</span>
+
+            <span class="c1"># Init trainer if not provided</span>
+            <span class="k">if</span> <span class="n">trainer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">max_epochs</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">trainer</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">trainer</span><span class="p">)</span>
+
+            <span class="c1"># Create retain if not provided</span>
+            <span class="k">if</span> <span class="n">retain</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">retain</span> <span class="o">=</span> <span class="n">RetainNet</span><span class="p">(</span><span class="n">loss</span><span class="o">=</span><span class="s2">&quot;cross_entropy&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># LazyLinear cannot be deep copied</span>
+                <span class="k">pass</span>
+
+            <span class="c1"># Train retain</span>
+            <span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+                <span class="n">retain</span><span class="p">,</span> <span class="n">train_dataloaders</span><span class="o">=</span><span class="n">dataloader</span><span class="p">,</span> <span class="n">datamodule</span><span class="o">=</span><span class="n">datamodule</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Set to eval mode</span>
+            <span class="n">retain</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+            <span class="c1"># Extract forward_func from model</span>
+            <span class="n">forward_func</span> <span class="o">=</span> <span class="n">retain</span><span class="o">.</span><span class="n">net</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">forward_func</span><span class="o">=</span><span class="n">forward_func</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
+            <span class="n">forward_func</span><span class="p">,</span> <span class="n">RetainModel</span>
+        <span class="p">),</span> <span class="s2">&quot;Only a Retain model can be used here.&quot;</span>
+
+<div class="viewcode-block" id="Retain.attribute"><a class="viewcode-back" href="../../../attr.html#tint.attr.Retain.attribute">[docs]</a>    <span class="nd">@log_usage</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">attribute</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">TensorOrTupleOfTensorsGeneric</span><span class="p">,</span>
+        <span class="n">target</span><span class="p">:</span> <span class="n">TargetType</span><span class="p">,</span>
+        <span class="n">return_temporal_attributions</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TensorOrTupleOfTensorsGeneric</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        attribute method.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inputs (tuple, th.Tensor): Input data.</span>
+<span class="sd">            target (int, tuple, tensor, list): Output indices. Default to</span>
+<span class="sd">                ``None``</span>
+<span class="sd">            return_temporal_attributions (bool): Whether to return</span>
+<span class="sd">                attributions for all times or not. Default to ``False``</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (th.Tensor, tuple): Attributions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Keeps track whether original input is a tuple or not before</span>
+        <span class="c1"># converting it into a tuple.</span>
+        <span class="n">is_inputs_tuple</span> <span class="o">=</span> <span class="n">_is_tuple</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="n">inputs</span> <span class="o">=</span> <span class="n">_format_input</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+
+        <span class="c1"># Assert only one input, as the Retain only accepts one</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="p">),</span> <span class="s2">&quot;Multiple inputs are not accepted for this method&quot;</span>
+
+        <span class="c1"># Make target a tensor</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_target</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+
+        <span class="c1"># Get data as only value in inputs</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Set generator to device</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forward_func</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+        <span class="c1"># If return temporal attr, we expand the input data</span>
+        <span class="c1"># and multiply it with a lower triangular mask</span>
+        <span class="k">if</span> <span class="n">return_temporal_attributions</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="n">_add_temporal_mask</span><span class="p">(</span>
+                <span class="n">inputs</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+                <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
+                <span class="n">temporal_target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">forward_func</span><span class="o">.</span><span class="n">temporal_labels</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Get attributions</span>
+        <span class="n">attributions</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">representation</span><span class="p">(</span>
+                <span class="n">inputs</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+                <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Reshape attributions if temporal attributions</span>
+        <span class="k">if</span> <span class="n">return_temporal_attributions</span><span class="p">:</span>
+            <span class="n">attributions</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">attributions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]),</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">_format_output</span><span class="p">(</span><span class="n">is_inputs_tuple</span><span class="p">,</span> <span class="n">attributions</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Retain.representation"><a class="viewcode-back" href="../../../attr.html#tint.attr.Retain.representation">[docs]</a>    <span class="k">def</span> <span class="nf">representation</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">target</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get representations based on a model, inputs and potentially targets.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inputs (th.Tensor): Input data.</span>
+<span class="sd">            target (th.Tensor): Targets. Default to ``None``</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            th.Tensor: attributions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">score</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+        <span class="n">logit</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">forward_func</span><span class="p">(</span>
+            <span class="n">inputs</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">th</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">inputs</span><span class="p">),))</span> <span class="o">*</span> <span class="n">inputs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">int</span><span class="p">(),</span>
+        <span class="p">)</span>
+        <span class="n">w_emb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">forward_func</span><span class="o">.</span><span class="n">embedding</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">weight</span>
+
+        <span class="k">if</span> <span class="n">target</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">forward_func</span><span class="o">.</span><span class="n">temporal_labels</span><span class="p">:</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="n">target</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]):</span>
+            <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+                <span class="n">imp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">forward_func</span><span class="o">.</span><span class="n">output</span><span class="p">(</span>
+                    <span class="n">beta</span><span class="p">[:,</span> <span class="n">t</span><span class="p">,</span> <span class="p">:]</span> <span class="o">*</span> <span class="n">w_emb</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">beta</span><span class="p">[:,</span> <span class="n">t</span><span class="p">,</span> <span class="p">:])</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">target</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">score</span><span class="p">[:,</span> <span class="n">t</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">alpha</span><span class="p">[:,</span> <span class="n">t</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">imp</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">inputs</span><span class="p">[:,</span> <span class="n">t</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">score</span><span class="p">[:,</span> <span class="n">t</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">alpha</span><span class="p">[:,</span> <span class="n">t</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+                        <span class="o">*</span> <span class="n">imp</span><span class="p">[</span>
+                            <span class="n">th</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">imp</span><span class="p">))</span><span class="o">.</span><span class="n">long</span><span class="p">(),</span>
+                            <span class="n">target</span><span class="p">,</span>
+                        <span class="p">]</span>
+                        <span class="o">*</span> <span class="n">inputs</span><span class="p">[:,</span> <span class="n">t</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span>
+                    <span class="p">)</span>
+        <span class="k">return</span> <span class="n">score</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_format_target</span><span class="p">(</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">TargetType</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">th</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert target into a Tensor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inputs (tuple): Input data.</span>
+<span class="sd">            target (TargetType): The target.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            th.Tensor: Converted target.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">target</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">Tensor</span><span class="p">([</span><span class="n">target</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">th</span><span class="o">.</span><span class="n">Tensor</span><span class="p">),</span> <span class="s2">&quot;Unsupported target.&quot;</span>
+
+        <span class="k">return</span> <span class="n">target</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Joseph Enguehard.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
