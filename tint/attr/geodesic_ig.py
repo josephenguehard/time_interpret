@@ -86,7 +86,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
             self.n_neighbors = n_neighbors
             self.nn = tuple(
                 NearestNeighbors(n_neighbors=n, **kwargs).fit(
-                    X=x.reshape(-1, x.shape[-1]).cpu()
+                    X=x.reshape(len(x), -1).cpu()
                 )
                 for x, n in zip(data, n_neighbors)
             )
@@ -313,10 +313,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
         nn = self.nn
         if nn is None:
             nn = tuple(
-                NearestNeighbors(**kwargs).fit(
-                    X=x.reshape(-1, x.shape[-1]).cpu()
-                )
-                for x in inputs
+                NearestNeighbors(**kwargs).fit(X=x.cpu()) for x in inputs
             )
 
             n_components = tuple(
@@ -331,9 +328,11 @@ class GeodesicIntegratedGradients(GradientAttribution):
         # Get knns
         knns = tuple(
             torch.from_numpy(
-                nn_.kneighbors(x, return_distance=False, n_neighbors=n + 1)[
-                    :, 1:
-                ].reshape(-1)
+                nn_.kneighbors(
+                    x.reshape(len(x), -1).cpu(),
+                    return_distance=False,
+                    n_neighbors=n + 1,
+                )[:, 1:].reshape(-1)
             )
             for nn_, x, n in zip(nn, inputs, n_neighbors)
         )
@@ -346,7 +345,9 @@ class GeodesicIntegratedGradients(GradientAttribution):
         knns_baselines = tuple(
             torch.from_numpy(
                 nn_.kneighbors(
-                    x, return_distance=False, n_neighbors=n
+                    x.reshape(len(x), -1).cpu(),
+                    return_distance=False,
+                    n_neighbors=n,
                 ).reshape(-1)
             )
             for nn_, x, n in zip(nn, baselines, n_neighbors)
@@ -400,7 +401,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
         # total_grads has the same dimensionality as inputs
         grads_norm = tuple(
             torch.linalg.norm(
-                grad,
+                grad.reshape(grad.shape[:2] + (-1,)),
                 dim=2,
             ).sum(0)
             for grad in grads
@@ -408,7 +409,10 @@ class GeodesicIntegratedGradients(GradientAttribution):
 
         # Multiply by inputs - baselines
         attributions_norm = tuple(
-            grad_norm * torch.linalg.norm(input[knn] - input[id], dim=1)
+            grad_norm
+            * torch.linalg.norm(
+                (input[knn] - input[id]).reshape(len(input[knn]), -1), dim=1
+            )
             for grad_norm, input, knn, id in zip(
                 grads_norm, inputs_and_baselines, knns, idx
             )
