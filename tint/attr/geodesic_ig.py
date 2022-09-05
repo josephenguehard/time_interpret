@@ -47,6 +47,19 @@ class GeodesicIntegratedGradients(GradientAttribution):
         n_neighbors (int, tuple): Number of neighbors to use by default.
             Can be an integer (same for every inputs) or a tuple.
             Default: None
+        multiply_by_inputs (bool, optional): Indicates whether to factor
+            model inputs' multiplier in the final attribution scores.
+            In the literature this is also known as local vs global
+            attribution. If inputs' multiplier isn't factored in,
+            then that type of attribution method is also called local
+            attribution. If it is, then that type of attribution
+            method is called global.
+            More detailed can be found here:
+            https://arxiv.org/abs/1711.06104
+
+            In case of integrated gradients, if `multiply_by_inputs`
+            is set to True, final sensitivity scores are being multiplied by
+            (inputs - baselines).
     """
 
     def __init__(
@@ -54,9 +67,11 @@ class GeodesicIntegratedGradients(GradientAttribution):
         forward_func: Callable,
         data: TensorOrTupleOfTensorsGeneric = None,
         n_neighbors: Union[int, Tuple[int]] = None,
+        multiply_by_inputs: bool = True,
         **kwargs,
     ):
         super().__init__(forward_func=forward_func)
+        self._multiply_by_inputs = multiply_by_inputs
 
         # Fit NearestNeighbors if data is provided
         self.n_neighbors = None
@@ -99,6 +114,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
         n_neighbors: Union[int, Tuple[int]] = None,
         n_steps: int = 50,
         method: str = "gausslegendre",
+        n_steiner: int = None,
         internal_batch_size: Union[None, int] = None,
         return_convergence_delta: Literal[False] = False,
         **kwargs,
@@ -115,6 +131,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
         n_neighbors: Union[int, Tuple[int]] = None,
         n_steps: int = 50,
         method: str = "gausslegendre",
+        n_steiner: int = None,
         internal_batch_size: Union[None, int] = None,
         *,
         return_convergence_delta: Literal[True],
@@ -132,6 +149,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
         n_neighbors: Union[int, Tuple[int]] = None,
         n_steps: int = 50,
         method: str = "gausslegendre",
+        n_steiner: int = None,
         internal_batch_size: Union[None, int] = None,
         return_convergence_delta: bool = False,
         **kwargs,
@@ -234,6 +252,9 @@ class GeodesicIntegratedGradients(GradientAttribution):
                 one of `riemann_right`, `riemann_left`, `riemann_middle`,
                 `riemann_trapezoid` or `gausslegendre`.
                 Default: `gausslegendre` if no method is provided.
+            n_steiner (int, optional): If provided, creates a number of steiner
+                points to improve the geodesic path.
+                Default: None
             internal_batch_size (int, optional): Divides total #steps * #examples
                 data points into chunks of size at most internal_batch_size,
                 which are computed (forward / backward passes)
@@ -322,7 +343,6 @@ class GeodesicIntegratedGradients(GradientAttribution):
         )
 
         # Get baselines knns
-        # We only store the closest input from each baseline.
         knns_baselines = tuple(
             torch.from_numpy(
                 nn_.kneighbors(
@@ -540,3 +560,10 @@ class GeodesicIntegratedGradients(GradientAttribution):
         )
 
         return scaled_grads
+
+    def has_convergence_delta(self) -> bool:
+        return True
+
+    @property
+    def multiplies_by_inputs(self):
+        return self._multiply_by_inputs
