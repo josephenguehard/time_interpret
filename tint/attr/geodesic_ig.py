@@ -1,12 +1,13 @@
 import torch
 import typing
+import warnings
 
 from captum.attr._utils.approximation_methods import approximation_parameters
 from captum.attr._utils.attribution import GradientAttribution
+from captum.attr._utils.batching import _batch_attribution
 from captum.attr._utils.common import (
     _format_input,
     _format_input_baseline,
-    _reshape_and_sum,
     _validate_input,
 )
 from captum.log import log_usage
@@ -24,6 +25,7 @@ from captum._utils.typing import (
     TensorOrTupleOfTensorsGeneric,
 )
 
+from scipy import sparse
 from sklearn.neighbors import NearestNeighbors
 from torch import Tensor
 from typing import Any, Callable, List, Tuple, Union
@@ -73,6 +75,15 @@ class GeodesicIntegratedGradients(GradientAttribution):
                 )
                 for x, n in zip(data, n_neighbors)
             )
+
+            n_components = tuple(
+                sparse.csgraph.connected_components(nn.kneighbors_graph())[0]
+                for nn in self.nn
+            )
+            if any(n > 1 for n in n_components):
+                warnings.warn(
+                    "The knn graph is disconnected. You should increase n_neighbors"
+                )
 
     # The following overloaded method signatures correspond to the case where
     # return_convergence_delta is False, then only attributions are returned,
@@ -287,6 +298,15 @@ class GeodesicIntegratedGradients(GradientAttribution):
                 for x in inputs
             )
 
+            n_components = tuple(
+                sparse.csgraph.connected_components(nn_.kneighbors_graph())[0]
+                for nn_ in nn
+            )
+            if any(n > 1 for n in n_components):
+                warnings.warn(
+                    "The knn graph is disconnected. You should increase n_neighbors"
+                )
+
         # Get knns
         knns = tuple(
             torch.from_numpy(
@@ -306,14 +326,14 @@ class GeodesicIntegratedGradients(GradientAttribution):
         knns_baselines = tuple(
             torch.from_numpy(
                 nn_.kneighbors(
-                    x, n_neighbors=1, return_distance=False
+                    x, return_distance=False, n_neighbors=n
                 ).reshape(-1)
             )
-            for nn_, x in zip(nn, baselines)
+            for nn_, x, n in zip(nn, baselines, n_neighbors)
         )
         idx_baselines = tuple(
-            torch.arange(len(y), len(x) + len(y))
-            for x, y in zip(inputs, baselines)
+            torch.arange(len(y), len(x) + len(y)).repeat_interleave(n)
+            for x, y, n in zip(inputs, baselines, n_neighbors)
         )
 
         # Concat inputs and baselines
@@ -324,14 +344,36 @@ class GeodesicIntegratedGradients(GradientAttribution):
         idx = tuple(torch.cat([x, y]) for x, y in zip(idx, idx_baselines))
 
         # Compute grads for inputs and baselines
-        grads = self._attribute(
-            inputs=tuple(x[knn] for x, knn in zip(inputs_and_baselines, knns)),
-            baselines=tuple(x[id] for x, id in zip(inputs_and_baselines, idx)),
-            target=target,
-            additional_forward_args=additional_forward_args,
-            n_steps=n_steps,
-            method=method,
-        )
+        if internal_batch_size is not None:
+            num_examples = inputs_and_baselines[0][knns[0]].shape[0]
+            grads = _batch_attribution(
+                self,
+                num_examples,
+                internal_batch_size,
+                n_steps,
+                inputs=tuple(
+                    x[knn] for x, knn in zip(inputs_and_baselines, knns)
+                ),
+                baselines=tuple(
+                    x[id] for x, id in zip(inputs_and_baselines, idx)
+                ),
+                target=target,
+                additional_forward_args=additional_forward_args,
+                method=method,
+            )
+        else:
+            grads = self._attribute(
+                inputs=tuple(
+                    x[knn] for x, knn in zip(inputs_and_baselines, knns)
+                ),
+                baselines=tuple(
+                    x[id] for x, id in zip(inputs_and_baselines, idx)
+                ),
+                target=target,
+                additional_forward_args=additional_forward_args,
+                n_steps=n_steps,
+                method=method,
+            )
 
         # Compute norm of grads
         # aggregates across all steps for each tensor in the input tuple
@@ -366,6 +408,67 @@ class GeodesicIntegratedGradients(GradientAttribution):
             ]
             for graph, x in zip(graphs, inputs)
         )
+
+        # Get paths lengths
+        paths_len = tuple([len(x) - 1 for x in path] for path in paths)
+
+        # Make them pairwise
+        paths = tuple(
+            torch.cat([torch.Tensor(list(zip(x, x[1:]))).long() for x in path])
+            for path in paths
+        )
+
+        # Get grad indexes
+        grads_idx = tuple(
+            [
+                torch.where((id == i) * (knn == j))[0][0].item()
+                for i, j in zip(path[:, 0], path[:, 1])
+            ]
+            for id, knn, path in zip(idx, knns, paths)
+        )
+
+        # Get grads of each path
+        total_grads = tuple(
+            grad[:, grad_idx] for grad, grad_idx in zip(grads, grads_idx)
+        )
+
+        # Split for each path
+        total_grads = tuple(
+            torch.split(grad, split_size_or_sections=path_len, dim=1)
+            for grad, path_len in zip(total_grads, paths_len)
+        )
+
+        # Sum over points and paths
+        # and stack result
+        total_grads = tuple(
+            tuple(x.sum(0).sum(0) for x in grad) for grad in total_grads
+        )
+        total_grads = tuple(torch.stack(grad) for grad in total_grads)
+
+        # computes attribution for each tensor in input tuple
+        # attributions has the same dimensionality as inputs
+        if not self.multiplies_by_inputs:
+            attributions = total_grads
+        else:
+            attributions = tuple(
+                total_grad * (input - baseline)
+                for total_grad, input, baseline in zip(
+                    total_grads, inputs, baselines
+                )
+            )
+
+        if return_convergence_delta:
+            start_point, end_point = baselines, inputs
+            # computes approximation error based on the completeness axiom
+            delta = self.compute_convergence_delta(
+                attributions,
+                start_point,
+                end_point,
+                additional_forward_args=additional_forward_args,
+                target=target,
+            )
+            return _format_output(is_inputs_tuple, attributions), delta
+        return _format_output(is_inputs_tuple, attributions)
 
     def _attribute(
         self,
