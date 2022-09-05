@@ -10,4 +10,5 @@ optuna
 pandas
 pytorch-lightning
 scikit-learn
+scipy
 transformers
