@@ -326,40 +326,73 @@ class GeodesicIntegratedGradients(GradientAttribution):
                 )
 
         # Get knns
-        knns = tuple(
-            torch.from_numpy(
-                nn_.kneighbors(
-                    x.reshape(len(x), -1).cpu(),
-                    return_distance=False,
-                    n_neighbors=n + 1,
-                )[:, 1:].reshape(-1)
-            )
-            for nn_, x, n in zip(nn, inputs, n_neighbors)
-        )
-        idx = tuple(
-            torch.arange(len(x)).repeat_interleave(n)
-            for x, n in zip(inputs, n_neighbors)
+        knns, idx = self._get_knns(
+            nn=nn,
+            inputs=inputs,
+            n_neighbors=n_neighbors,
         )
 
-        # Get baselines knns
-        knns_baselines = tuple(
-            torch.from_numpy(
-                nn_.kneighbors(
-                    x.reshape(len(x), -1).cpu(),
-                    return_distance=False,
-                    n_neighbors=n,
-                ).reshape(-1)
+        # If steiner is provided, augment inputs
+        inputs_aug = inputs
+        if n_steiner is not None:
+            # Get distances
+            dists = self._get_knns(
+                nn=nn,
+                inputs=inputs,
+                n_neighbors=n_neighbors,
+                return_dist=True,
             )
-            for nn_, x, n in zip(nn, baselines, n_neighbors)
-        )
-        idx_baselines = tuple(
-            torch.arange(len(y), len(x) + len(y)).repeat_interleave(n)
-            for x, y, n in zip(inputs, baselines, n_neighbors)
+
+            # Get number of points to add
+            max_dists = tuple(d.max() for d in dists)
+            n_points = tuple(
+                torch.div(d, m / n_steiner, rounding_mode="floor").long() + 1
+                for d, m in zip(dists, max_dists)
+            )
+
+            # Augment inputs
+            inputs_aug = tuple(
+                torch.cat(
+                    [input]
+                    + [
+                        torch.stack(
+                            [
+                                input[id][i]
+                                + (k / n) * (input[knn][i] - input[id][i])
+                                for k in range(1, n)
+                            ]
+                        )
+                        for i, n in enumerate(n_point)
+                        if n > 1
+                    ],
+                    dim=0,
+                )
+                for input, input_aug, knn, id, n_point in zip(
+                    inputs, inputs_aug, knns, idx, n_points
+                )
+            )
+
+            # Get knns
+            knns, idx = self._get_knns(
+                nn=nn,
+                inputs=inputs_aug,
+                n_neighbors=n_neighbors,
+                ignore_first=True,
+            )
+
+        # Get baselines knns
+        knns_baselines, idx_baselines = self._get_knns(
+            nn=nn,
+            inputs=baselines,
+            n_neighbors=n_neighbors,
+            ignore_first=False,
+            start_idx=len(inputs_aug[0]),
+            end_idx=len(baselines[0]) + len(inputs_aug[0]),
         )
 
         # Concat inputs and baselines
         inputs_and_baselines = tuple(
-            torch.cat([x, y]) for x, y in zip(inputs, baselines)
+            torch.cat([x, y]) for x, y in zip(inputs_aug, baselines)
         )
         knns = tuple(torch.cat([x, y]) for x, y in zip(knns, knns_baselines))
         idx = tuple(torch.cat([x, y]) for x, y in zip(idx, idx_baselines))
@@ -419,7 +452,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
         )
 
         # Create graph for the A* algorithm
-        graphs = tuple(dict() for _ in inputs)
+        graphs = tuple(dict() for _ in inputs_aug)
         for graph, id, knn, attr in zip(graphs, idx, knns, attributions_norm):
             for i, k, a in zip(id.tolist(), knn.tolist(), attr.tolist()):
                 graph[i] = graph.get(i, list()) + [(k, a)]
@@ -564,6 +597,75 @@ class GeodesicIntegratedGradients(GradientAttribution):
         )
 
         return scaled_grads
+
+    @staticmethod
+    def _get_knns(
+        nn: Tuple[NearestNeighbors, ...],
+        inputs: Tuple[Tensor, ...],
+        n_neighbors: Tuple[int, ...],
+        ignore_first: bool = True,
+        start_idx: int = 0,
+        end_idx: int = None,
+        return_dist: bool = False,
+    ) -> Union[
+        Tuple[Tensor, ...], Tuple[Tuple[Tensor, ...], Tuple[Tensor, ...]]
+    ]:
+        """
+        Get k nearest neighbors.
+
+        Args:
+            nn (tuple): A tuple of NN methods.
+            inputs (tuple): Input data.
+            n_neighbors (tuple): Number of neighbors for each method.
+            ignore_first (bool): Whether to ignore the first index or not.
+                The first index is the same as the input if it is part of
+                the training data. Default to ``True``
+            start_idx (int): Starting index. Default to 0
+            end_idx (int): Ending index. Default to ``None``
+            return_dist (bool): Whether to return knns and indexes,
+                or distances. Default to ``False``
+        """
+        # Return distance if set to True
+        if return_dist:
+            dists = tuple(
+                torch.from_numpy(
+                    nn_.kneighbors(
+                        x.reshape(len(x), -1).cpu(),
+                        return_distance=True,
+                        n_neighbors=n + 1,
+                    )[0]
+                )
+                for nn_, x, n in zip(nn, inputs, n_neighbors)
+            )
+
+            if ignore_first:
+                dists = tuple(d[:, 1:] for d in dists)
+            return tuple(d.reshape(-1) for d in dists)
+
+        # Get knns
+        knns = tuple(
+            torch.from_numpy(
+                nn_.kneighbors(
+                    x.reshape(len(x), -1).cpu(),
+                    return_distance=False,
+                    n_neighbors=n + 1 if ignore_first else n,
+                )
+            )
+            for nn_, x, n in zip(nn, inputs, n_neighbors)
+        )
+
+        if ignore_first:
+            knns = tuple(knn[:, 1:] for knn in knns)
+        knns = tuple(knn.reshape(-1) for knn in knns)
+
+        # Get indexes
+        end_idx = end_idx or len(inputs[0])
+        idx = tuple(
+            torch.arange(start_idx, end_idx).repeat_interleave(n)
+            for x, n in zip(inputs, n_neighbors)
+        )
+
+        return knns, idx
 
     def has_convergence_delta(self) -> bool:
         return True
