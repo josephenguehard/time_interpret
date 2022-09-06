@@ -39,9 +39,13 @@ class GeodesicIntegratedGradients(GradientAttribution):
 
     Args:
         forward_func (callable):  The forward function of the model or any
-            modification of it
-        data (Tensor): Data to fit the knn algorithm. If not provided, the
-            knn will be fitted when calling attribute using the provided
+            modification of it.
+        nn (NearestNeighbors, tuple): Nearest neighbors method.
+            If not provided, will be created when calling __init__ or
+            attribute.
+            Default: None
+        data (Tensor, tuple): Data to fit the knn algorithm. If not provided,
+            the knn will be fitted when calling attribute using the provided
             inputs data.
             Default: None
         n_neighbors (int, tuple): Number of neighbors to use by default.
@@ -65,6 +69,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
     def __init__(
         self,
         forward_func: Callable,
+        nn: Union[NearestNeighbors, Tuple[NearestNeighbors, ...]] = None,
         data: TensorOrTupleOfTensorsGeneric = None,
         n_neighbors: Union[int, Tuple[int]] = None,
         multiply_by_inputs: bool = True,
@@ -73,9 +78,18 @@ class GeodesicIntegratedGradients(GradientAttribution):
         super().__init__(forward_func=forward_func)
         self._multiply_by_inputs = multiply_by_inputs
 
-        # Fit NearestNeighbors if data is provided
         self.n_neighbors = None
         self.nn = None
+        self.data = None
+
+        # Register nn if provided
+        if nn is not None:
+            if not isinstance(nn, tuple):
+                nn = (nn,)
+            self.nn = nn
+            self.n_neighbors = tuple(nn_.n_neighbors for nn_ in self.nn)
+
+        # Fit NearestNeighbors if data is provided
         if data is not None:
             data = _format_input(data)
 
@@ -86,10 +100,11 @@ class GeodesicIntegratedGradients(GradientAttribution):
             self.n_neighbors = n_neighbors
             self.nn = tuple(
                 NearestNeighbors(n_neighbors=n, **kwargs).fit(
-                    X=x.reshape(len(x), -1).cpu()
+                    X=x.reshape(-1, x.shape[-1]).cpu()
                 )
                 for x, n in zip(data, n_neighbors)
             )
+            self.data = data
 
             n_components = tuple(
                 sparse.csgraph.connected_components(nn.kneighbors_graph())[0]
@@ -312,8 +327,12 @@ class GeodesicIntegratedGradients(GradientAttribution):
         assert n_neighbors is not None, "You must provide n_neighbors"
         nn = self.nn
         if nn is None:
+            if isinstance(n_neighbors, int):
+                n_neighbors = tuple(n_neighbors for _ in inputs)
+
             nn = tuple(
-                NearestNeighbors(**kwargs).fit(X=x.cpu()) for x in inputs
+                NearestNeighbors(n_neighbors=n, **kwargs).fit(X=x.cpu())
+                for x, n in zip(inputs, n_neighbors)
             )
 
             n_components = tuple(
@@ -325,24 +344,24 @@ class GeodesicIntegratedGradients(GradientAttribution):
                     "The knn graph is disconnected. You should increase n_neighbors"
                 )
 
+        # Concat data, inputs and baselines
+        if self.data is None:
+            data = tuple(torch.cat([x, y]) for x, y in zip(inputs, baselines))
+        else:
+            data = tuple(
+                torch.cat([x, y, z])
+                for x, y, z in zip(self.data, inputs, baselines)
+            )
+
         # Get knns
-        knns, idx = self._get_knns(
+        idx, knns, dists = self._get_knns(
             nn=nn,
-            inputs=inputs,
+            inputs=data,
             n_neighbors=n_neighbors,
         )
 
         # If steiner is provided, augment inputs
-        inputs_aug = inputs
         if n_steiner is not None:
-            # Get distances
-            dists = self._get_knns(
-                nn=nn,
-                inputs=inputs,
-                n_neighbors=n_neighbors,
-                return_dist=True,
-            )
-
             # Get number of points to add
             max_dists = tuple(d.max() for d in dists)
             n_points = tuple(
@@ -351,14 +370,13 @@ class GeodesicIntegratedGradients(GradientAttribution):
             )
 
             # Augment inputs
-            inputs_aug = tuple(
+            data = tuple(
                 torch.cat(
-                    [input]
+                    [x]
                     + [
                         torch.stack(
                             [
-                                input[id][i]
-                                + (k / n) * (input[knn][i] - input[id][i])
+                                x[id][i] + (k / n) * (x[knn][i] - x[id][i])
                                 for k in range(1, n)
                             ]
                         )
@@ -367,62 +385,34 @@ class GeodesicIntegratedGradients(GradientAttribution):
                     ],
                     dim=0,
                 )
-                for input, input_aug, knn, id, n_point in zip(
-                    inputs, inputs_aug, knns, idx, n_points
-                )
+                for x, knn, id, n_point in zip(data, knns, idx, n_points)
             )
 
             # Get knns
-            knns, idx = self._get_knns(
+            knns, idx, _ = self._get_knns(
                 nn=nn,
-                inputs=inputs_aug,
+                inputs=data,
                 n_neighbors=n_neighbors,
-                ignore_first=True,
             )
-
-        # Get baselines knns
-        knns_baselines, idx_baselines = self._get_knns(
-            nn=nn,
-            inputs=baselines,
-            n_neighbors=n_neighbors,
-            ignore_first=False,
-            start_idx=len(inputs_aug[0]),
-            end_idx=len(baselines[0]) + len(inputs_aug[0]),
-        )
-
-        # Concat inputs and baselines
-        inputs_and_baselines = tuple(
-            torch.cat([x, y]) for x, y in zip(inputs_aug, baselines)
-        )
-        knns = tuple(torch.cat([x, y]) for x, y in zip(knns, knns_baselines))
-        idx = tuple(torch.cat([x, y]) for x, y in zip(idx, idx_baselines))
 
         # Compute grads for inputs and baselines
         if internal_batch_size is not None:
-            num_examples = inputs_and_baselines[0][knns[0]].shape[0]
+            num_examples = data[0][knns[0]].shape[0]
             grads = _batch_attribution(
                 self,
                 num_examples,
                 internal_batch_size,
                 n_steps,
-                inputs=tuple(
-                    x[knn] for x, knn in zip(inputs_and_baselines, knns)
-                ),
-                baselines=tuple(
-                    x[id] for x, id in zip(inputs_and_baselines, idx)
-                ),
+                inputs=tuple(x[knn] for x, knn in zip(data, knns)),
+                baselines=tuple(x[id] for x, id in zip(data, idx)),
                 target=target,
                 additional_forward_args=additional_forward_args,
                 method=method,
             )
         else:
             grads = self._attribute(
-                inputs=tuple(
-                    x[knn] for x, knn in zip(inputs_and_baselines, knns)
-                ),
-                baselines=tuple(
-                    x[id] for x, id in zip(inputs_and_baselines, idx)
-                ),
+                inputs=tuple(x[knn] for x, knn in zip(data, knns)),
+                baselines=tuple(x[id] for x, id in zip(data, idx)),
                 target=target,
                 additional_forward_args=additional_forward_args,
                 n_steps=n_steps,
@@ -444,26 +434,31 @@ class GeodesicIntegratedGradients(GradientAttribution):
         attributions_norm = tuple(
             grad_norm
             * torch.linalg.norm(
-                (input[knn] - input[id]).reshape(len(input[knn]), -1), dim=1
+                (x[knn] - x[id]).reshape(len(x[knn]), -1), dim=1
             )
-            for grad_norm, input, knn, id in zip(
-                grads_norm, inputs_and_baselines, knns, idx
-            )
+            for grad_norm, x, knn, id in zip(grads_norm, data, knns, idx)
         )
 
-        # Create graph for the A* algorithm
-        graphs = tuple(dict() for _ in inputs_aug)
+        # Create undirected graph for the A* algorithm
+        graphs = tuple(dict() for _ in data)
         for graph, id, knn, attr in zip(graphs, idx, knns, attributions_norm):
             for i, k, a in zip(id.tolist(), knn.tolist(), attr.tolist()):
+                graph[k] = graph.get(k, list()) + [(i, a)]
                 graph[i] = graph.get(i, list()) + [(k, a)]
 
         # Compute A* paths
+        inputs_idx = tuple(
+            range(len(x), len(x) + len(y)) for x, y in zip(self.data, inputs)
+        )
+        baselines_idx = tuple(
+            range(len(x) + len(y), len(x) + 2 * len(y))
+            for x, y in zip(self.data, inputs)
+        )
         paths = tuple(
-            [
-                astar_path(graph, i, j)
-                for i, j in zip(range(len(x), 2 * len(x)), range(len(x)))
-            ]
-            for graph, x in zip(graphs, inputs)
+            [astar_path(graph, i, j) for i, j in zip(input_idx, baseline_idx)]
+            for graph, input_idx, baseline_idx in zip(
+                graphs, inputs_idx, baselines_idx
+            )
         )
 
         # Get paths lengths
@@ -478,7 +473,9 @@ class GeodesicIntegratedGradients(GradientAttribution):
         # Get grad indexes
         grads_idx = tuple(
             [
-                torch.where((id == i) * (knn == j))[0][0].item()
+                torch.where((id == i) * (knn == j) + (id == j) * (knn == i))[
+                    0
+                ][0].item()
                 for i, j in zip(path[:, 0], path[:, 1])
             ]
             for id, knn, path in zip(idx, knns, paths)
@@ -603,13 +600,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
         nn: Tuple[NearestNeighbors, ...],
         inputs: Tuple[Tensor, ...],
         n_neighbors: Tuple[int, ...],
-        ignore_first: bool = True,
-        start_idx: int = 0,
-        end_idx: int = None,
-        return_dist: bool = False,
-    ) -> Union[
-        Tuple[Tensor, ...], Tuple[Tuple[Tensor, ...], Tuple[Tensor, ...]]
-    ]:
+    ) -> Tuple[Tuple[Tensor, ...], Tuple[Tensor, ...], Tuple[Tensor, ...]]:
         """
         Get k nearest neighbors.
 
@@ -617,55 +608,33 @@ class GeodesicIntegratedGradients(GradientAttribution):
             nn (tuple): A tuple of NN methods.
             inputs (tuple): Input data.
             n_neighbors (tuple): Number of neighbors for each method.
-            ignore_first (bool): Whether to ignore the first index or not.
-                The first index is the same as the input if it is part of
-                the training data. Default to ``True``
-            start_idx (int): Starting index. Default to 0
-            end_idx (int): Ending index. Default to ``None``
-            return_dist (bool): Whether to return knns and indexes,
-                or distances. Default to ``False``
         """
-        # Return distance if set to True
-        if return_dist:
-            dists = tuple(
-                torch.from_numpy(
-                    nn_.kneighbors(
-                        x.reshape(len(x), -1).cpu(),
-                        return_distance=True,
-                        n_neighbors=n + 1,
-                    )[0]
-                )
-                for nn_, x, n in zip(nn, inputs, n_neighbors)
-            )
-
-            if ignore_first:
-                dists = tuple(d[:, 1:] for d in dists)
-            return tuple(d.reshape(-1) for d in dists)
-
-        # Get knns
-        knns = tuple(
-            torch.from_numpy(
-                nn_.kneighbors(
-                    x.reshape(len(x), -1).cpu(),
-                    return_distance=False,
-                    n_neighbors=n + 1 if ignore_first else n,
-                )
+        # Get kneighbors_graph
+        graphs = tuple(
+            nn_.kneighbors_graph(
+                x.reshape(-1, x.shape[-1]).detach().cpu(),
+                n_neighbors=n,
+                mode="distance",
             )
             for nn_, x, n in zip(nn, inputs, n_neighbors)
         )
 
-        if ignore_first:
-            knns = tuple(knn[:, 1:] for knn in knns)
-        knns = tuple(knn.reshape(-1) for knn in knns)
+        # Get dists
+        dists = tuple(torch.from_numpy(graph.data) for graph in graphs)
+        dists = tuple(d[d != 0.0] for d in dists)
 
-        # Get indexes
-        end_idx = end_idx or len(inputs[0])
+        # Get nonzeros
+        nonzeros = tuple(graph.nonzero() for graph in graphs)
+
+        # Get idx and knns
         idx = tuple(
-            torch.arange(start_idx, end_idx).repeat_interleave(n)
-            for x, n in zip(inputs, n_neighbors)
+            torch.from_numpy(nonzero[0]).long() for nonzero in nonzeros
+        )
+        knns = tuple(
+            torch.from_numpy(nonzero[1]).long() for nonzero in nonzeros
         )
 
-        return knns, idx
+        return idx, knns, dists
 
     def has_convergence_delta(self) -> bool:
         return True
