@@ -11,6 +11,7 @@ from typing import List
 
 from tint.attr import (
     DiscretetizedIntegratedGradients,
+    GeodesicIntegratedGradients,
 )
 from tint.attr.models import scale_inputs
 from tint.models import Bert
@@ -147,6 +148,24 @@ def main(
             _attr = summarize_attributions(_attr)
             attr["discretized_integrated_gradients"].append(_attr)
 
+        if "geodesic_integrated_gradients" in explainers:
+            explainer = GeodesicIntegratedGradients(
+                nn_forward_func,
+                data=torch.from_numpy(auxiliary_data[1]),
+                n_neighbors=5,
+            )
+            _attr = explainer.attribute(
+                input_embed[0],
+                additional_forward_args=(
+                    attention_mask,
+                    position_embed,
+                    type_embed,
+                ),
+                internal_batch_size=1000,
+            )
+            _attr = summarize_attributions(_attr)
+            attr["geodesic_integrated_gradients"].append(_attr)
+
         if "gradient_shap" in explainers:
             explainer = GradientShap(nn_forward_func)
             _attr = explainer.attribute(
@@ -254,6 +273,7 @@ def parse_args():
         default=[
             "deep_lift",
             "discretized_integrated_gradients",
+            "geodesic_integrated_gradients",
             "gradient_shap",
             "input_x_gradient",
             "integrated_gradients",
