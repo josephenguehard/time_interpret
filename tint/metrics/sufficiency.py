@@ -7,7 +7,7 @@ from captum._utils.typing import (
 )
 
 from torch import Tensor
-from typing import Any, Callable
+from typing import Any, Callable, Tuple
 
 from .base import _base_metric
 
@@ -29,7 +29,10 @@ def sufficiency(
     additional_forward_args: Any = None,
     target: TargetType = None,
     topk: float = 0.2,
-) -> Tensor:
+    weight_fn: Callable[
+        [Tuple[Tensor, ...], Tuple[Tensor, ...]], Tensor
+    ] = None,
+) -> float:
     """
     Sufficiency metric.
 
@@ -130,9 +133,12 @@ def sufficiency(
             Default: None
         topk: Proportion of input to be dropped. Must be between 0 and 1.
             Default: 0.2
+        weight_fn (Callable): Function to compute metrics weighting using
+            original inputs and pertubed inputs. None if note provided.
+            Default: None
 
     Returns:
-        (float or tuple of floats): The sufficiency metric.
+        (float): The sufficiency metric.
 
     References:
         https://arxiv.org/abs/1911.03429
@@ -164,4 +170,5 @@ def sufficiency(
         target=target,
         topk=topk,
         largest=False,
+        weight_fn=weight_fn,
     )

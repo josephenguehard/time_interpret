@@ -7,7 +7,7 @@ from captum._utils.typing import (
 )
 
 from torch import Tensor
-from typing import Any, Callable
+from typing import Any, Callable, Tuple
 
 from .base import _base_metric
 
@@ -31,8 +31,11 @@ def accuracy(
     additional_forward_args: Any = None,
     target: TargetType = None,
     topk: float = 0.2,
+    weight_fn: Callable[
+        [Tuple[Tensor, ...], Tuple[Tensor, ...]], Tensor
+    ] = None,
     threshold: float = 0.5,
-) -> Tensor:
+) -> float:
     """
     Accuracy metric.
 
@@ -132,12 +135,15 @@ def accuracy(
             Default: None
         topk: Proportion of input to be dropped. Must be between 0 and 1.
             Default: 0.2
+        weight_fn (Callable): Function to compute metrics weighting using
+            original inputs and pertubed inputs. None if note provided.
+            Default: None
         threshold: Threshold for the accuracy. Data higher than the threshold
             is considered as positive, and lower (strictly) negative.
             Default: 0.5
 
     Returns:
-        (float or tuple of floats): The accuracy metric.
+        (float): The accuracy metric.
 
     References:
         https://arxiv.org/pdf/2106.05303
@@ -166,5 +172,6 @@ def accuracy(
         target=target,
         topk=topk,
         largest=True,
+        weight_fn=weight_fn,
         threshold=threshold,
     )

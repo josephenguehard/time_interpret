@@ -6,6 +6,7 @@ from captum._utils.common import (
     _format_baseline,
     _format_tensor_into_tuples,
     _run_forward,
+    _select_targets,
     _validate_input,
 )
 from captum._utils.typing import (
@@ -29,8 +30,11 @@ def _base_metric(
     target: TargetType = None,
     topk: float = 0.2,
     largest: bool = True,
+    weight_fn: Callable[
+        [Tuple[Tensor, ...], Tuple[Tensor, ...]], Tensor
+    ] = None,
     **kwargs,
-) -> Tensor:
+) -> float:
     # perform argument formatting
     inputs = _format_tensor_into_tuples(inputs)  # type: ignore
     if baselines is not None:
@@ -88,6 +92,11 @@ def _base_metric(
             )
         )
 
+    # Get weights if provided
+    weights = None
+    if weight_fn:
+        weights = weight_fn(inputs, inputs_pert)
+
     # Get original predictions
     logits_original = _run_forward(
         forward_func=forward_func,
@@ -106,7 +115,14 @@ def _base_metric(
     )
     prob_pert = logits_pert.softmax(-1)
 
+    # Get target as original predictions if not provided
     if target is None:
         target = logits_original.argmax(-1)
 
-    return metric(prob_original, prob_pert, target, **kwargs)
+    if weight_fn:
+        weights = _select_targets(weights, target)
+        return (
+            metric(prob_original, prob_pert, target, **kwargs) * weights
+        ).sum().item() / weights.sum().item()
+
+    return metric(prob_original, prob_pert, target, **kwargs).mean().item()
