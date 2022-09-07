@@ -6,6 +6,7 @@ from captum.attr import Saliency
 from contextlib import nullcontext
 
 from tint.metrics import accuracy
+from tint.metrics.weights import lime_weights, lof_weights
 
 from tests.basic_models import BasicModel, BasicModel5_MultiArgs
 
@@ -18,11 +19,12 @@ from tests.basic_models import BasicModel, BasicModel5_MultiArgs
         "additional_forward_args",
         "target",
         "topk",
+        "weight_fn",
         "threshold",
         "fails",
     ],
     [
-        (BasicModel(), th.rand(8, 5, 3), None, None, None, 0.2, 0.5, False),
+        (BasicModel(), th.rand(8, 5, 3), None, None, None, 0.2, None, 0.5, False),
         (
             BasicModel5_MultiArgs(),
             th.rand(8, 5, 3),
@@ -30,16 +32,20 @@ from tests.basic_models import BasicModel, BasicModel5_MultiArgs
             (th.rand(8, 5, 3), th.rand(8, 5, 3)),
             None,
             0.2,
+            None,
             0.5,
             False,
         ),
-        (BasicModel(), th.rand(8, 5, 3), 0, None, None, 0.2, 0.5, False),
-        (BasicModel(), th.rand(8, 5, 3), th.rand(8, 5, 3), None, None, 0.2, 0.5, False),
-        (BasicModel(), th.rand(8, 5, 3), None, None, 0, 0.2, 0.5, False),
-        (BasicModel(), th.rand(8, 5, 3), None, None, None, 0.6, 0.5, False),
-        (BasicModel(), th.rand(8, 5, 3), None, None, None, 1.2, 0.5, True),
-        (BasicModel(), th.rand(8, 5, 3), None, None, None, 0.2, 0.2, False),
-        (BasicModel(), th.rand(8, 5, 3), None, None, None, 0.2, 1.5, True),
+        (BasicModel(), th.rand(8, 5, 3), 0, None, None, 0.2, None, 0.5, False),
+        (BasicModel(), th.rand(8, 5, 3), th.rand(8, 5, 3), None, None, 0.2, None, 0.5, False),
+        (BasicModel(), th.rand(8, 5, 3), None, None, 0, 0.2, None, 0.5, False),
+        (BasicModel(), th.rand(8, 5, 3), None, None, None, 0.6, None, 0.5, False),
+        (BasicModel(), th.rand(8, 5, 3), None, None, None, 1.2, None, 0.5, True),
+        (BasicModel(), th.rand(8, 5, 3), None, None, None, 0.2, None, 0.2, False),
+        (BasicModel(), th.rand(8, 5, 3), None, None, None, 0.2, None, 1.5, True),
+        (BasicModel(), th.rand(8, 5, 3), None, None, None, 0.2, lime_weights(), 0.5, False),
+        (BasicModel(), th.rand(8, 5, 3), None, None, None, 0.2, lime_weights("euclidean"), 0.5, False),
+        (BasicModel(), th.rand(8, 5, 3), None, None, None, 0.2, lof_weights(th.rand(20, 5, 3), 5), 0.5, False),
     ],
 )
 def test_accuracy(
@@ -49,6 +55,7 @@ def test_accuracy(
     additional_forward_args,
     target,
     topk,
+    weight_fn,
     threshold,
     fails,
 ):
@@ -68,10 +75,8 @@ def test_accuracy(
             additional_forward_args=additional_forward_args,
             target=target,
             topk=topk,
+            weight_fn=weight_fn,
             threshold=threshold,
         )
 
-        if target == 0:
-            assert tuple(acc.shape) == (8,)
-        else:
-            assert tuple(acc.shape) == (8, 1)
+        assert isinstance(acc, float)
