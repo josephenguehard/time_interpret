@@ -23,10 +23,6 @@ def lime_weights(
     """
 
     def default_exp_kernel(inputs, inputs_pert):
-        import pdb
-
-        pdb.set_trace()
-
         score_tpl = tuple()
         for original_inp, perturbed_inp in zip(inputs, inputs_pert):
             if distance_mode == "cosine":

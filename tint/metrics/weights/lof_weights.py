@@ -47,7 +47,7 @@ def lof_weights(
             )
             score = th.from_numpy(score).float()
             score = 1 / score.clip(min=1)
-            score = score.reshape(len(score), -1).mean(-1)
+            score = score.reshape(len(input_pert), -1).mean(-1)
             score_tpl += (score,)
 
         # Stack score_tpl and average
