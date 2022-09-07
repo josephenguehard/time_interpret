@@ -1,4 +1,4 @@
-Experiment,Fold,Seed,Explainer,AUP,AUR,Information,Entropy
+Experiment,Seed,Fold,Explainer,AUP,AUR,Information,Entropy
 rare-feature,42,0,bayes_mask,0.9999,0.7158,1.385e+04,8.108
 rare-feature,42,0,dyna_mask,0.984,0.5506,1.613e+03,1.155e+03
 rare-feature,42,0,integrated_gradients,1.0,0.1193,419.2,447.4

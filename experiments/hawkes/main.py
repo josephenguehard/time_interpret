@@ -1,27 +1,15 @@
-import numpy as np
 import torch as th
 
 from argparse import ArgumentParser
-from captum.attr import DeepLift, GradientShap, IntegratedGradients, Lime
+from captum.attr import DeepLift, GradientShap, IntegratedGradients
 from pytorch_lightning import Trainer
 from typing import List
 
 from tint.attr import (
-    BayesMask,
-    DynaMask,
-    Fit,
-    LofLime,
-    Retain,
     TemporalAugmentedOcclusion,
     TemporalIntegratedGradients,
     TemporalOcclusion,
     TimeForwardTunnel,
-)
-from tint.attr.models import (
-    BayesMaskNet,
-    JointFeatureGeneratorNet,
-    MaskNet,
-    RetainNet,
 )
 from tint.datasets import Hawkes
 from tint.metrics.white_box import (
@@ -66,125 +54,75 @@ def main(
     x_test = hawkes.preprocess(split="test")["x"].to(accelerator)
     y_test = hawkes.preprocess(split="test")["y"].to(accelerator)
 
+    # Reshape y_test
+    y_test = (
+        y_test.unsqueeze(-1).unsqueeze(-1).repeat(1, 1, y_test.shape[-1], 1)
+    )
+
     # Switch to eval
     classifier.eval()
 
     # Set model to accelerator
     classifier.to(accelerator)
 
+    # Disable cudnn if using cuda accelerator.
+    # Please see https://captum.ai/docs/faq#how-can-i-resolve-cudnn-rnn-backward-error-for-rnn-or-lstm-network
+    # for more information.
+    if accelerator == "cuda":
+        th.backends.cudnn.enabled = False
+
     # Create dict of attributions
     attr = dict()
 
-    if "bayes_mask" in explainers:
-        trainer = Trainer(max_epochs=500, accelerator=accelerator, devices=1)
-        mask = BayesMaskNet(
-            forward_func=classifier,
-            distribution="normal",
-            eps=1e-1,
-            optim="adam",
-            lr=0.01,
-        )
-        explainer = BayesMask(classifier)
-        _attr = explainer.attribute(
-            x_test,
-            trainer=trainer,
-            mask_net=mask,
-            batch_size=50,
-            return_temporal_attributions=True,
-        )
-        attr["dyna_mask"] = _attr
-
     if "deep_lift" in explainers:
         explainer = TimeForwardTunnel(DeepLift(classifier))
-        attr["deep_lift"] = explainer.attribute(
-            x_test,
-            baselines=x_test * 0,
-            task="binary",
-            return_temporal_attributions=True,
-            show_progress=True,
-        ).abs()
-
-    if "dyna_mask" in explainers:
-        trainer = Trainer(max_epochs=1000, accelerator=accelerator, devices=1)
-        mask = MaskNet(
-            forward_func=classifier,
-            perturbation="gaussian_blur",
-            keep_ratio=list(np.arange(0.25, 0.35, 0.01)),
-            size_reg_factor_init=0.1,
-            size_reg_factor_dilation=100,
-            time_reg_factor=1.0,
-        )
-        explainer = DynaMask(classifier)
-        _attr = explainer.attribute(
-            x_test,
-            additional_forward_args=(True,),
-            trainer=trainer,
-            mask_net=mask,
-            batch_size=100,
-            return_temporal_attributions=True,
-            return_best_ratio=True,
-        )
-        print(f"Best keep ratio is {_attr[1]}")
-        attr["dyna_mask"] = _attr[0]
-
-    if "fit" in explainers:
-        generator = JointFeatureGeneratorNet(rnn_hidden_size=6)
-        trainer = Trainer(
-            max_epochs=1000,
-            accelerator=accelerator,
-            log_every_n_steps=10,
-        )
-        explainer = Fit(
-            classifier,
-            generator=generator,
-            datamodule=hawkes,
-            trainer=trainer,
-        )
-        attr["fit"] = explainer.attribute(
-            x_test,
-            return_temporal_attributions=True,
-            show_progress=True,
-        )
+        _attr = list()
+        for target in [0, 1]:
+            _attr.append(
+                explainer.attribute(
+                    x_test,
+                    baselines=x_test * 0,
+                    target=target,
+                    task="binary",
+                    return_temporal_attributions=True,
+                    show_progress=True,
+                ).abs()
+            )
+        attr["deep_lift"] = th.cat(_attr, dim=-1).gather(-1, y_test)
 
     if "gradient_shap" in explainers:
         explainer = TimeForwardTunnel(GradientShap(classifier))
-        attr["gradient_shap"] = explainer.attribute(
-            x_test,
-            baselines=th.cat([x_test * 0, x_test]),
-            n_samples=50,
-            stdevs=0.0001,
-            task="binary",
-            return_temporal_attributions=True,
-            show_progress=True,
-        ).abs()
+        _attr = list()
+        for target in [0, 1]:
+            _attr.append(
+                explainer.attribute(
+                    x_test,
+                    baselines=th.cat([x_test * 0, x_test]),
+                    target=target,
+                    n_samples=50,
+                    stdevs=0.0001,
+                    task="binary",
+                    return_temporal_attributions=True,
+                    show_progress=True,
+                ).abs()
+            )
+        attr["gradient_shap"] = th.cat(_attr, dim=-1).gather(-1, y_test)
 
     if "integrated_gradients" in explainers:
         explainer = TimeForwardTunnel(IntegratedGradients(classifier))
-        attr["integrated_gradients"] = explainer.attribute(
-            x_test,
-            baselines=x_test * 0,
-            task="binary",
-            return_temporal_attributions=True,
-            show_progress=True,
-        ).abs()
-
-    if "lime" in explainers:
-        explainer = TimeForwardTunnel(Lime(classifier))
-        attr["lime"] = explainer.attribute(
-            x_test,
-            task="binary",
-            return_temporal_attributions=True,
-            show_progress=True,
-        ).abs()
-
-    if "lof_lime" in explainers:
-        explainer = TimeForwardTunnel(LofLime(classifier, embeddings=x_train))
-        attr["lof_lime"] = explainer.attribute(
-            x_test,
-            task="binary",
-            return_temporal_attributions=True,
-            show_progress=True,
-        ).abs()
+        _attr = list()
+        for target in [0, 1]:
+            _attr.append(
+                explainer.attribute(
+                    x_test,
+                    baselines=x_test * 0,
+                    target=target,
+                    task="binary",
+                    return_temporal_attributions=True,
+                    show_progress=True,
+                ).abs()
+            )
+        attr["integrated_gradients"] = th.cat(_attr, dim=-1).gather(-1, y_test)
 
     if "augmented_occlusion" in explainers:
         explainer = TimeForwardTunnel(
@@ -192,57 +130,56 @@ def main(
                 classifier, data=x_train, n_sampling=10, is_temporal=True
             )
         )
-        attr["augmented_occlusion"] = explainer.attribute(
-            x_test,
-            sliding_window_shapes=(1,),
-            attributions_fn=abs,
-            task="binary",
-            return_temporal_attributions=True,
-            show_progress=True,
-        ).abs()
+        _attr = list()
+        for target in [0, 1]:
+            _attr.append(
+                explainer.attribute(
+                    x_test,
+                    sliding_window_shapes=(1,),
+                    attributions_fn=abs,
+                    target=target,
+                    task="binary",
+                    return_temporal_attributions=True,
+                    show_progress=True,
+                ).abs()
+            )
+        attr["augmented_occlusion"] = th.cat(_attr, dim=-1).gather(-1, y_test)
 
     if "occlusion" in explainers:
         explainer = TimeForwardTunnel(TemporalOcclusion(classifier))
-        attr["occlusion"] = explainer.attribute(
-            x_test,
-            sliding_window_shapes=(1,),
-            baselines=x_train.mean(0, keepdim=True),
-            attributions_fn=abs,
-            task="binary",
-            return_temporal_attributions=True,
-            show_progress=True,
-        ).abs()
-
-    if "retain" in explainers:
-        retain = RetainNet(
-            dim_emb=128,
-            dropout_emb=0.4,
-            dim_alpha=8,
-            dim_beta=8,
-            dropout_context=0.4,
-            dim_output=2,
-            loss="cross_entropy",
-        )
-        explainer = Retain(
-            datamodule=hawkes,
-            retain=retain,
-            trainer=Trainer(max_epochs=50, accelerator=accelerator),
-        )
-        attr["retain"] = explainer.attribute(
-            x_test,
-            target=y_test,
-            return_temporal_attributions=True,
-        ).abs()
+        _attr = list()
+        for target in [0, 1]:
+            _attr.append(
+                explainer.attribute(
+                    x_test,
+                    sliding_window_shapes=(1,),
+                    baselines=x_train.mean(0, keepdim=True),
+                    attributions_fn=abs,
+                    target=target,
+                    task="binary",
+                    return_temporal_attributions=True,
+                    show_progress=True,
+                ).abs()
+            )
+        attr["occlusion"] = th.cat(_attr, dim=-1).gather(-1, y_test)
 
     if "temporal_integrated_gradients" in explainers:
         explainer = TemporalIntegratedGradients(classifier)
-        attr["temporal_integrated_gradients"] = explainer.attribute(
-            x_test,
-            baselines=x_test * 0,
-            n_steps=2,
-            return_temporal_attributions=True,
-            show_progress=True,
-        ).abs()
+        _attr = list()
+        for target in [0, 1]:
+            _attr.append(
+                explainer.attribute(
+                    x_test,
+                    baselines=x_test * 0,
+                    target=target,
+                    n_steps=2,
+                    return_temporal_attributions=True,
+                    show_progress=True,
+                ).abs()
+            )
+        attr["temporal_integrated_gradients"] = th.cat(_attr, dim=-1).gather(
+            -1, y_test
+        )
 
     # Get true saliency
     true_saliency = hawkes.true_saliency(split="test").to(accelerator)
@@ -267,17 +204,11 @@ def parse_args():
         "--explainers",
         type=str,
         default=[
-            "bayes_mask",
             "deep_lift",
-            "dyna_mask",
-            "fit",
             "gradient_shap",
             "integrated_gradients",
-            "lime",
-            "lof_lime",
             "augmented_occlusion",
             "occlusion",
-            "retain",
             "temporal_integrated_gradients",
         ],
         nargs="+",
