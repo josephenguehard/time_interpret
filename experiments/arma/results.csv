@@ -5,11 +5,9 @@ rare-feature,42,0,integrated_gradients,1.0,0.1193,419.2,447.4
 rare-feature,42,0,occlusion,1.0,0.1186,417.8,443.9
 rare-feature,42,0,permutation,1.0,0.1569,531.9,559.2
 rare-feature,42,0,shapley_values_sampling,1.0,0.1186,417.8,443.9
-rare-feature,42,0,temporal_integrated_gradients,1.0,0.1193,419.2,447.4
 rare-time,42,0,bayes_mask,0.9792,0.462,8.638e+03,6.409
 rare-time,42,0,dyna_mask,0.9548,0.6955,2.59e+03,986.9
 rare-time,42,0,integrated_gradients,1.0,0.1502,521.9,516.3
 rare-time,42,0,occlusion,1.0,0.1493,518.8,512.1
 rare-time,42,0,permutation,1.0,0.1771,583.5,605.0
 rare-time,42,0,shapley_values_sampling,1.0,0.1493,518.8,512.1
-rare-time,42,0,temporal_integrated_gradients,1.0,0.1502,521.9,516.3

@@ -14,7 +14,6 @@ from tint.attr import (
     BayesMask,
     DynaMask,
     Occlusion,
-    TemporalIntegratedGradients,
 )
 from tint.attr.models import BayesMaskNet, MaskNet
 from tint.datasets import Arma
@@ -140,20 +139,6 @@ def main(
                 additional_forward_args=(saliency,),
             ).abs()
 
-    if "temporal_integrated_gradients" in explainers:
-        attr["temporal_integrated_gradients"] = th.zeros_like(x)
-        for i, (inputs, saliency) in enumerate(zip(x, true_saliency)):
-            explainer = TemporalIntegratedGradients(
-                forward_func=arma.get_white_box
-            )
-            baseline = inputs * 0
-            attr["temporal_integrated_gradients"][i] = explainer.attribute(
-                inputs,
-                baselines=baseline,
-                additional_forward_args=(saliency,),
-                temporal_additional_forward_args=(True,),
-            ).abs()
-
     with open("results.csv", "a") as fp:
         for k, v in attr.items():
             fp.write("rare-feature" if rare_dim == 1 else "rare-time")
@@ -185,7 +170,6 @@ def parse_args():
             "occlusion",
             "permutation",
             "shapley_values_sampling",
-            "temporal_integrated_gradients",
         ],
         nargs="+",
         metavar="N",

@@ -10,10 +10,8 @@ from tint.attr import (
     BayesMask,
     DynaMask,
     Fit,
-    LofLime,
     Retain,
     TemporalAugmentedOcclusion,
-    TemporalIntegratedGradients,
     TemporalOcclusion,
     TimeForwardTunnel,
 )
@@ -198,14 +196,6 @@ def main(
             show_progress=True,
         ).abs()
 
-    if "lof_lime" in explainers:
-        explainer = TimeForwardTunnel(LofLime(classifier, embeddings=x_train))
-        attr["lof_lime"] = explainer.attribute(
-            x_test,
-            task="binary",
-            show_progress=True,
-        ).abs()
-
     if "augmented_occlusion" in explainers:
         explainer = TimeForwardTunnel(
             TemporalAugmentedOcclusion(
@@ -254,17 +244,6 @@ def main(
             explainer.attribute(x_test, target=y_test).abs().to(accelerator)
         )
 
-    if "temporal_integrated_gradients" in explainers:
-        explainer = TimeForwardTunnel(TemporalIntegratedGradients(classifier))
-        attr["temporal_integrated_gradients"] = explainer.attribute(
-            x_test,
-            baselines=x_test * 0,
-            internal_batch_size=200,
-            n_steps=2,
-            task="binary",
-            show_progress=True,
-        ).abs()
-
     # Get true saliency
     true_saliency = hmm.true_saliency(split="test").to(accelerator)
 
@@ -295,11 +274,9 @@ def parse_args():
             "gradient_shap",
             "integrated_gradients",
             "lime",
-            "lof_lime",
             "augmented_occlusion",
             "occlusion",
             "retain",
-            "temporal_integrated_gradients",
         ],
         nargs="+",
         metavar="N",
