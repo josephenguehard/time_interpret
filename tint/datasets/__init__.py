@@ -1,5 +1,3 @@
-from torchvision.datasets import MNIST
-
 from .arma import Arma
 from .biobank import BioBank
 from .hawkes import Hawkes
@@ -12,5 +10,4 @@ __all__ = [
     "Hawkes",
     "HMM",
     "Mimic3",
-    "MNIST",
 ]
