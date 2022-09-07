@@ -95,6 +95,8 @@ Some of these attributions use specific models which are listed here:
 .. autosummary::
 
     tint.attr.models.BayesMaskNet
+    tint.attr.models.BLRRegression
+    tint.attr.models.BLRRidge
     tint.attr.models.JointFeatureGeneratorNet
     tint.attr.models.MaskNet
     tint.attr.models.RetainNet

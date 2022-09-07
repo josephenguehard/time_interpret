@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; Time Interpret 0.0.1 documentation</title>
+  <title>Index &mdash; Time Interpret 0.1.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
@@ -166,6 +166,8 @@
 </li>
         <li><a href="attr.html#tint.attr.Fit.representation.params.additional_forward_args">(tint.attr.Fit.representation parameter)</a>
 </li>
+        <li><a href="attr.html#tint.attr.GeodesicIntegratedGradients.attribute.params.additional_forward_args">(tint.attr.GeodesicIntegratedGradients.attribute parameter)</a>
+</li>
         <li><a href="attr.html#tint.attr.Occlusion.attribute.params.additional_forward_args">(tint.attr.Occlusion.attribute parameter)</a>
 </li>
         <li><a href="attr.html#tint.attr.TemporalAugmentedOcclusion.attribute.params.additional_forward_args">(tint.attr.TemporalAugmentedOcclusion.attribute parameter)</a>
@@ -209,6 +211,8 @@
         <li><a href="attr.html#tint.attr.DynaMask.attribute">(tint.attr.DynaMask method)</a>
 </li>
         <li><a href="attr.html#tint.attr.Fit.attribute">(tint.attr.Fit method)</a>
+</li>
+        <li><a href="attr.html#tint.attr.GeodesicIntegratedGradients.attribute">(tint.attr.GeodesicIntegratedGradients method)</a>
 </li>
         <li><a href="attr.html#tint.attr.Occlusion.attribute">(tint.attr.Occlusion method)</a>
 </li>
@@ -277,9 +281,11 @@
 <h2 id="B">B</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="attr.html#tint.attr.Occlusion.attribute.params.baselines">baselines (tint.attr.Occlusion.attribute parameter)</a>
+      <li><a href="attr.html#tint.attr.GeodesicIntegratedGradients.attribute.params.baselines">baselines (tint.attr.GeodesicIntegratedGradients.attribute parameter)</a>
 
       <ul>
+        <li><a href="attr.html#tint.attr.Occlusion.attribute.params.baselines">(tint.attr.Occlusion.attribute parameter)</a>
+</li>
         <li><a href="attr.html#tint.attr.TemporalIntegratedGradients.attribute.params.baselines">(tint.attr.TemporalIntegratedGradients.attribute parameter)</a>
 </li>
         <li><a href="attr.html#tint.attr.TemporalOcclusion.attribute.params.baselines">(tint.attr.TemporalOcclusion.attribute parameter)</a>
@@ -357,8 +363,6 @@
       </ul></li>
       <li><a href="attr.html#tint.attr.BayesLime">BayesLime (class in tint.attr)</a>
 </li>
-      <li><a href="attr_models.html#tint.attr.models.BayesLinearModel">BayesLinearModel (class in tint.attr.models)</a>
-</li>
       <li><a href="attr.html#tint.attr.BayesMask">BayesMask (class in tint.attr)</a>
 
       <ul>
@@ -380,6 +384,10 @@
       <li><a href="index.html#tint.models.RNN.params.bidirectional">bidirectional (tint.models.RNN parameter)</a>, <a href="models.html#tint.models.RNN.params.bidirectional">[1]</a>, <a href="models.html#tint.models.RNN.params.bidirectional">[2]</a>
 </li>
       <li><a href="datasets.html#tint.datasets.BioBank">BioBank (class in tint.datasets)</a>
+</li>
+      <li><a href="attr_models.html#tint.attr.models.BLRRegression">BLRRegression (class in tint.attr.models)</a>
+</li>
+      <li><a href="attr_models.html#tint.attr.models.BLRRidge">BLRRidge (class in tint.attr.models)</a>
 </li>
       <li><a href="datasets.html#tint.datasets.BioBank.build_discretized_features">build_discretized_features() (tint.datasets.BioBank method)</a>
 </li>
@@ -454,6 +462,8 @@
       <li><a href="attr.html#tint.attr.AugmentedOcclusion.params.data">data (tint.attr.AugmentedOcclusion parameter)</a>, <a href="attr.html#tint.attr.AugmentedOcclusion.params.data">[1]</a>, <a href="index.html#tint.attr.AugmentedOcclusion.params.data">[2]</a>
 
       <ul>
+        <li><a href="attr.html#tint.attr.GeodesicIntegratedGradients.params.data">(tint.attr.GeodesicIntegratedGradients parameter)</a>
+</li>
         <li><a href="attr.html#tint.attr.TemporalAugmentedOcclusion.params.data">(tint.attr.TemporalAugmentedOcclusion parameter)</a>, <a href="attr.html#tint.attr.TemporalAugmentedOcclusion.params.data">[1]</a>, <a href="index.html#tint.attr.TemporalAugmentedOcclusion.params.data">[2]</a>
 </li>
       </ul></li>
@@ -653,20 +663,6 @@
       </ul></li>
       <li><a href="attr.html#tint.attr.Fit">Fit (class in tint.attr)</a>
 </li>
-      <li><a href="attr_models.html#tint.attr.models.SGDBayesLasso.fit">fit() (tint.attr.models.SGDBayesLasso method)</a>
-
-      <ul>
-        <li><a href="attr_models.html#tint.attr.models.SGDBayesLinearRegression.fit">(tint.attr.models.SGDBayesLinearRegression method)</a>
-</li>
-        <li><a href="attr_models.html#tint.attr.models.SGDBayesRidge.fit">(tint.attr.models.SGDBayesRidge method)</a>
-</li>
-        <li><a href="attr_models.html#tint.attr.models.SkLearnARDRegression.fit">(tint.attr.models.SkLearnARDRegression method)</a>
-</li>
-        <li><a href="attr_models.html#tint.attr.models.SkLearnBayesianRidge.fit">(tint.attr.models.SkLearnBayesianRidge method)</a>
-</li>
-        <li><a href="attr_models.html#tint.attr.models.SkLearnBayesLinearModel.fit">(tint.attr.models.SkLearnBayesLinearModel method)</a>
-</li>
-      </ul></li>
       <li><a href="datasets.html#tint.datasets.Arma.params.fold">fold (tint.datasets.Arma parameter)</a>, <a href="datasets.html#tint.datasets.Arma.params.fold">[1]</a>, <a href="index.html#tint.datasets.Arma.params.fold">[2]</a>
 
       <ul>
@@ -679,11 +675,9 @@
         <li><a href="datasets.html#tint.datasets.Mimic3.params.fold">(tint.datasets.Mimic3 parameter)</a>, <a href="datasets.html#tint.datasets.Mimic3.params.fold">[1]</a>, <a href="index.html#tint.datasets.Mimic3.params.fold">[2]</a>
 </li>
       </ul></li>
-      <li><a href="attr_models.html#tint.attr.models.BayesLinearModel.forward">forward() (tint.attr.models.BayesLinearModel method)</a>
+      <li><a href="attr_models.html#tint.attr.models.BayesMask.forward">forward() (tint.attr.models.BayesMask method)</a>
 
       <ul>
-        <li><a href="attr_models.html#tint.attr.models.BayesMask.forward">(tint.attr.models.BayesMask method)</a>
-</li>
         <li><a href="attr_models.html#tint.attr.models.BayesMaskNet.forward">(tint.attr.models.BayesMaskNet method)</a>
 </li>
         <li><a href="attr_models.html#tint.attr.models.JointFeatureGenerator.forward">(tint.attr.models.JointFeatureGenerator method)</a>
@@ -705,8 +699,6 @@
         <li><a href="models.html#tint.models.TransformerEncoder.forward">(tint.models.TransformerEncoder method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="attr.html#tint.attr.AugmentedOcclusion.params.forward_func">forward_func (tint.attr.AugmentedOcclusion parameter)</a>, <a href="attr.html#tint.attr.AugmentedOcclusion.params.forward_func">[1]</a>, <a href="index.html#tint.attr.AugmentedOcclusion.params.forward_func">[2]</a>
 
       <ul>
@@ -721,6 +713,8 @@
         <li><a href="attr.html#tint.attr.DynaMask.params.forward_func">(tint.attr.DynaMask parameter)</a>, <a href="attr.html#tint.attr.DynaMask.params.forward_func">[1]</a>, <a href="index.html#tint.attr.DynaMask.params.forward_func">[2]</a>
 </li>
         <li><a href="attr.html#tint.attr.Fit.params.forward_func">(tint.attr.Fit parameter)</a>, <a href="attr.html#tint.attr.Fit.params.forward_func">[1]</a>, <a href="index.html#tint.attr.Fit.params.forward_func">[2]</a>
+</li>
+        <li><a href="attr.html#tint.attr.GeodesicIntegratedGradients.params.forward_func">(tint.attr.GeodesicIntegratedGradients parameter)</a>
 </li>
         <li><a href="attr.html#tint.attr.LofKernelShap.params.forward_func">(tint.attr.LofKernelShap parameter)</a>, <a href="attr.html#tint.attr.LofKernelShap.params.forward_func">[1]</a>, <a href="index.html#tint.attr.LofKernelShap.params.forward_func">[2]</a>
 </li>
@@ -767,10 +761,12 @@
 </li>
       <li><a href="attr.html#tint.attr.Fit.params.generator">generator (tint.attr.Fit parameter)</a>, <a href="attr.html#tint.attr.Fit.params.generator">[1]</a>, <a href="index.html#tint.attr.Fit.params.generator">[2]</a>
 </li>
-      <li><a href="datasets.html#tint.datasets.Hawkes.get_features">get_features() (tint.datasets.Hawkes static method)</a>
+      <li><a href="attr.html#tint.attr.GeodesicIntegratedGradients">GeodesicIntegratedGradients (class in tint.attr)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="datasets.html#tint.datasets.Hawkes.get_features">get_features() (tint.datasets.Hawkes static method)</a>
+</li>
       <li><a href="datasets.html#tint.datasets.Hawkes.get_labels">get_labels() (tint.datasets.Hawkes static method)</a>
 </li>
       <li><a href="datasets.html#tint.datasets.Arma.get_white_box">get_white_box() (tint.datasets.Arma static method)</a>
@@ -789,12 +785,16 @@
         <li><a href="attr_models.html#tint.attr.models.BayesMaskNet.params.hard">(tint.attr.models.BayesMaskNet parameter)</a>, <a href="attr_models.html#tint.attr.models.BayesMaskNet.params.hard">[1]</a>, <a href="index.html#tint.attr.models.BayesMaskNet.params.hard">[2]</a>
 </li>
       </ul></li>
-      <li><a href="attr.html#tint.attr.TimeForwardTunnel.has_convergence_delta">has_convergence_delta() (tint.attr.TimeForwardTunnel method)</a>
+      <li><a href="attr.html#tint.attr.GeodesicIntegratedGradients.has_convergence_delta">has_convergence_delta() (tint.attr.GeodesicIntegratedGradients method)</a>
+
+      <ul>
+        <li><a href="attr.html#tint.attr.TimeForwardTunnel.has_convergence_delta">(tint.attr.TimeForwardTunnel method)</a>
 </li>
-      <li><a href="datasets.html#tint.datasets.Hawkes">Hawkes (class in tint.datasets)</a>
-</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="datasets.html#tint.datasets.Hawkes">Hawkes (class in tint.datasets)</a>
+</li>
       <li><a href="index.html#tint.models.RNN.params.hidden_size">hidden_size (tint.models.RNN parameter)</a>, <a href="models.html#tint.models.RNN.params.hidden_size">[1]</a>, <a href="models.html#tint.models.RNN.params.hidden_size">[2]</a>
 </li>
       <li><a href="attr_models.html#tint.attr.models.JointFeatureGeneratorNet.training_step.params.hiddens">hiddens (tint.attr.models.JointFeatureGeneratorNet.training_step parameter)</a>
@@ -836,6 +836,8 @@
 </li>
         <li><a href="attr.html#tint.attr.Fit.representation.params.inputs">(tint.attr.Fit.representation parameter)</a>
 </li>
+        <li><a href="attr.html#tint.attr.GeodesicIntegratedGradients.attribute.params.inputs">(tint.attr.GeodesicIntegratedGradients.attribute parameter)</a>
+</li>
         <li><a href="attr.html#tint.attr.Occlusion.attribute.params.inputs">(tint.attr.Occlusion.attribute parameter)</a>
 </li>
         <li><a href="attr.html#tint.attr.Retain.attribute.params.inputs">(tint.attr.Retain.attribute parameter)</a>
@@ -869,8 +871,12 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="datasets.html#tint.datasets.Hawkes.intensity">intensity() (tint.datasets.Hawkes static method)</a>
 </li>
-      <li><a href="attr.html#tint.attr.TemporalIntegratedGradients.attribute.params.internal_batch_size">internal_batch_size (tint.attr.TemporalIntegratedGradients.attribute parameter)</a>
+      <li><a href="attr.html#tint.attr.GeodesicIntegratedGradients.attribute.params.internal_batch_size">internal_batch_size (tint.attr.GeodesicIntegratedGradients.attribute parameter)</a>
+
+      <ul>
+        <li><a href="attr.html#tint.attr.TemporalIntegratedGradients.attribute.params.internal_batch_size">(tint.attr.TemporalIntegratedGradients.attribute parameter)</a>
 </li>
+      </ul></li>
       <li><a href="attr.html#tint.attr.BayesLime.params.interpretable_model">interpretable_model (tint.attr.BayesLime parameter)</a>, <a href="attr.html#tint.attr.BayesLime.params.interpretable_model">[1]</a>, <a href="index.html#tint.attr.BayesLime.params.interpretable_model">[2]</a>
 
       <ul>
@@ -909,20 +915,10 @@
         <li><a href="attr_models.html#tint.attr.models.MaskNet.params.keep_ratio">(tint.attr.models.MaskNet parameter)</a>, <a href="attr_models.html#tint.attr.models.MaskNet.params.keep_ratio">[1]</a>, <a href="index.html#tint.attr.models.MaskNet.params.keep_ratio">[2]</a>
 </li>
       </ul></li>
-      <li><a href="attr_models.html#tint.attr.models.BayesLinearModel.kl_loss">kl_loss() (tint.attr.models.BayesLinearModel method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="attr_models.html#tint.attr.models.SkLearnARDRegression.fit.params.kwargs">kwargs (tint.attr.models.SkLearnARDRegression.fit parameter)</a>
-
-      <ul>
-        <li><a href="attr_models.html#tint.attr.models.SkLearnBayesianRidge.fit.params.kwargs">(tint.attr.models.SkLearnBayesianRidge.fit parameter)</a>
+      <li><a href="index.html#tint.models.Bert.params.kwargs">kwargs (tint.models.Bert parameter)</a>, <a href="models.html#tint.models.Bert.params.kwargs">[1]</a>, <a href="models.html#tint.models.Bert.params.kwargs">[2]</a>
 </li>
-        <li><a href="attr_models.html#tint.attr.models.SkLearnBayesLinearModel.fit.params.kwargs">(tint.attr.models.SkLearnBayesLinearModel.fit parameter)</a>
-</li>
-        <li><a href="index.html#tint.models.Bert.params.kwargs">(tint.models.Bert parameter)</a>, <a href="models.html#tint.models.Bert.params.kwargs">[1]</a>, <a href="models.html#tint.models.Bert.params.kwargs">[2]</a>
-</li>
-      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -1035,8 +1031,12 @@
 </li>
       <li><a href="datasets.html#tint.datasets.BioBank.params.maximum_time">maximum_time (tint.datasets.BioBank parameter)</a>, <a href="datasets.html#tint.datasets.BioBank.params.maximum_time">[1]</a>, <a href="index.html#tint.datasets.BioBank.params.maximum_time">[2]</a>
 </li>
-      <li><a href="attr.html#tint.attr.TemporalIntegratedGradients.attribute.params.method">method (tint.attr.TemporalIntegratedGradients.attribute parameter)</a>
+      <li><a href="attr.html#tint.attr.GeodesicIntegratedGradients.attribute.params.method">method (tint.attr.GeodesicIntegratedGradients.attribute parameter)</a>
+
+      <ul>
+        <li><a href="attr.html#tint.attr.TemporalIntegratedGradients.attribute.params.method">(tint.attr.TemporalIntegratedGradients.attribute parameter)</a>
 </li>
+      </ul></li>
       <li><a href="datasets.html#tint.datasets.Mimic3">Mimic3 (class in tint.datasets)</a>
 </li>
       <li><a href="models.html#tint.models.MLP">MLP (class in tint.models)</a>
@@ -1087,6 +1087,8 @@
       <li><a href="attr.html#tint.attr.DiscretetizedIntegratedGradients.params.multiply_by_inputs">multiply_by_inputs (tint.attr.DiscretetizedIntegratedGradients parameter)</a>, <a href="attr.html#tint.attr.DiscretetizedIntegratedGradients.params.multiply_by_inputs">[1]</a>, <a href="index.html#tint.attr.DiscretetizedIntegratedGradients.params.multiply_by_inputs">[2]</a>
 
       <ul>
+        <li><a href="attr.html#tint.attr.GeodesicIntegratedGradients.params.multiply_by_inputs">(tint.attr.GeodesicIntegratedGradients parameter)</a>
+</li>
         <li><a href="attr.html#tint.attr.TemporalIntegratedGradients.params.multiply_by_inputs">(tint.attr.TemporalIntegratedGradients parameter)</a>, <a href="attr.html#tint.attr.TemporalIntegratedGradients.params.multiply_by_inputs">[1]</a>, <a href="index.html#tint.attr.TemporalIntegratedGradients.params.multiply_by_inputs">[2]</a>
 </li>
       </ul></li>
@@ -1108,9 +1110,11 @@
         <li><a href="datasets.html#tint.datasets.Mimic3.params.n_folds">(tint.datasets.Mimic3 parameter)</a>, <a href="datasets.html#tint.datasets.Mimic3.params.n_folds">[1]</a>, <a href="index.html#tint.datasets.Mimic3.params.n_folds">[2]</a>
 </li>
       </ul></li>
-      <li><a href="attr.html#tint.attr.LofKernelShap.params.n_neighbors">n_neighbors (tint.attr.LofKernelShap parameter)</a>, <a href="attr.html#tint.attr.LofKernelShap.params.n_neighbors">[1]</a>, <a href="index.html#tint.attr.LofKernelShap.params.n_neighbors">[2]</a>
+      <li><a href="attr.html#tint.attr.GeodesicIntegratedGradients.params.n_neighbors">n_neighbors (tint.attr.GeodesicIntegratedGradients parameter)</a>
 
       <ul>
+        <li><a href="attr.html#tint.attr.LofKernelShap.params.n_neighbors">(tint.attr.LofKernelShap parameter)</a>, <a href="attr.html#tint.attr.LofKernelShap.params.n_neighbors">[1]</a>, <a href="index.html#tint.attr.LofKernelShap.params.n_neighbors">[2]</a>
+</li>
         <li><a href="attr.html#tint.attr.LofLime.params.n_neighbors">(tint.attr.LofLime parameter)</a>, <a href="attr.html#tint.attr.LofLime.params.n_neighbors">[1]</a>, <a href="index.html#tint.attr.LofLime.params.n_neighbors">[2]</a>
 </li>
       </ul></li>
@@ -1132,17 +1136,23 @@
 </li>
       <li><a href="datasets.html#tint.datasets.HMM.params.n_state">n_state (tint.datasets.HMM parameter)</a>, <a href="datasets.html#tint.datasets.HMM.params.n_state">[1]</a>, <a href="index.html#tint.datasets.HMM.params.n_state">[2]</a>
 </li>
+      <li><a href="attr.html#tint.attr.GeodesicIntegratedGradients.attribute.params.n_steiner">n_steiner (tint.attr.GeodesicIntegratedGradients.attribute parameter)</a>
+</li>
       <li><a href="attr.html#tint.attr.DiscretetizedIntegratedGradients.attribute.params.n_steps">n_steps (tint.attr.DiscretetizedIntegratedGradients.attribute parameter)</a>
 
       <ul>
+        <li><a href="attr.html#tint.attr.GeodesicIntegratedGradients.attribute.params.n_steps">(tint.attr.GeodesicIntegratedGradients.attribute parameter)</a>
+</li>
         <li><a href="attr.html#tint.attr.TemporalIntegratedGradients.attribute.params.n_steps">(tint.attr.TemporalIntegratedGradients.attribute parameter)</a>
 </li>
       </ul></li>
-      <li><a href="models.html#tint.models.Net">Net (class in tint.models)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="models.html#tint.models.Net">Net (class in tint.models)</a>
+</li>
       <li><a href="index.html#tint.models.TransformerEncoder.params.nhead">nhead (tint.models.TransformerEncoder parameter)</a>, <a href="models.html#tint.models.TransformerEncoder.params.nhead">[1]</a>, <a href="models.html#tint.models.TransformerEncoder.params.nhead">[2]</a>
+</li>
+      <li><a href="attr.html#tint.attr.GeodesicIntegratedGradients.params.nn">nn (tint.attr.GeodesicIntegratedGradients parameter)</a>
 </li>
       <li><a href="index.html#tint.models.CNN.params.norm">norm (tint.models.CNN parameter)</a>, <a href="models.html#tint.models.CNN.params.norm">[1]</a>, <a href="models.html#tint.models.CNN.params.norm">[2]</a>
 
@@ -1284,8 +1294,6 @@
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="attr_models.html#tint.attr.models.BayesLinearModel.kl_loss.params.reduction">reduction (tint.attr.models.BayesLinearModel.kl_loss parameter)</a>
-</li>
       <li><a href="attr_models.html#tint.attr.models.scale_inputs.params.ref_input_ids">ref_input_ids (tint.attr.models.scale_inputs parameter)</a>, <a href="attr_models.html#tint.attr.models.scale_inputs.params.ref_input_ids">[1]</a>, <a href="index.html#tint.attr.models.scale_inputs.params.ref_input_ids">[2]</a>
 </li>
       <li><a href="attr.html#tint.attr.Fit.representation">representation() (tint.attr.Fit method)</a>
@@ -1309,6 +1317,8 @@
       <li><a href="attr.html#tint.attr.DiscretetizedIntegratedGradients.attribute.params.return_convergence_delta">return_convergence_delta (tint.attr.DiscretetizedIntegratedGradients.attribute parameter)</a>
 
       <ul>
+        <li><a href="attr.html#tint.attr.GeodesicIntegratedGradients.attribute.params.return_convergence_delta">(tint.attr.GeodesicIntegratedGradients.attribute parameter)</a>
+</li>
         <li><a href="attr.html#tint.attr.TemporalIntegratedGradients.attribute.params.return_convergence_delta">(tint.attr.TemporalIntegratedGradients.attribute parameter)</a>
 </li>
       </ul></li>
@@ -1370,14 +1380,6 @@
         <li><a href="datasets.html#tint.datasets.Mimic3.params.seed">(tint.datasets.Mimic3 parameter)</a>, <a href="datasets.html#tint.datasets.Mimic3.params.seed">[1]</a>, <a href="index.html#tint.datasets.Mimic3.params.seed">[2]</a>
 </li>
       </ul></li>
-      <li><a href="attr_models.html#tint.attr.models.SGDBayesLasso">SGDBayesLasso (class in tint.attr.models)</a>
-</li>
-      <li><a href="attr_models.html#tint.attr.models.SGDBayesLinearModel">SGDBayesLinearModel (class in tint.attr.models)</a>
-</li>
-      <li><a href="attr_models.html#tint.attr.models.SGDBayesLinearRegression">SGDBayesLinearRegression (class in tint.attr.models)</a>
-</li>
-      <li><a href="attr_models.html#tint.attr.models.SGDBayesRidge">SGDBayesRidge (class in tint.attr.models)</a>
-</li>
       <li><a href="attr.html#tint.attr.AugmentedOcclusion.attribute.params.show_progress">show_progress (tint.attr.AugmentedOcclusion.attribute parameter)</a>
 
       <ul>
@@ -1398,26 +1400,20 @@
       </ul></li>
       <li><a href="attr.html#tint.attr.LofLime.params.similarity_func">similarity_func (tint.attr.LofLime parameter)</a>, <a href="attr.html#tint.attr.LofLime.params.similarity_func">[1]</a>, <a href="index.html#tint.attr.LofLime.params.similarity_func">[2]</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="attr_models.html#tint.attr.models.Mask.params.size_reg_factor_dilation">size_reg_factor_dilation (tint.attr.models.Mask parameter)</a>
 
       <ul>
         <li><a href="attr_models.html#tint.attr.models.MaskNet.params.size_reg_factor_dilation">(tint.attr.models.MaskNet parameter)</a>, <a href="attr_models.html#tint.attr.models.MaskNet.params.size_reg_factor_dilation">[1]</a>, <a href="index.html#tint.attr.models.MaskNet.params.size_reg_factor_dilation">[2]</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="attr_models.html#tint.attr.models.Mask.params.size_reg_factor_init">size_reg_factor_init (tint.attr.models.Mask parameter)</a>
 
       <ul>
         <li><a href="attr_models.html#tint.attr.models.MaskNet.params.size_reg_factor_init">(tint.attr.models.MaskNet parameter)</a>, <a href="attr_models.html#tint.attr.models.MaskNet.params.size_reg_factor_init">[1]</a>, <a href="index.html#tint.attr.models.MaskNet.params.size_reg_factor_init">[2]</a>
 </li>
       </ul></li>
-      <li><a href="attr_models.html#tint.attr.models.SkLearnARDRegression">SkLearnARDRegression (class in tint.attr.models)</a>
-</li>
-      <li><a href="attr_models.html#tint.attr.models.SkLearnBayesianRidge">SkLearnBayesianRidge (class in tint.attr.models)</a>
-</li>
-      <li><a href="attr_models.html#tint.attr.models.SkLearnBayesLinearModel">SkLearnBayesLinearModel (class in tint.attr.models)</a>
-</li>
       <li><a href="attr.html#tint.attr.AugmentedOcclusion.attribute.params.sliding_window_shapes">sliding_window_shapes (tint.attr.AugmentedOcclusion.attribute parameter)</a>
 
       <ul>
@@ -1443,7 +1439,11 @@
       <li><a href="attr_models.html#tint.attr.models.scale_inputs.params.steps">steps (tint.attr.models.scale_inputs parameter)</a>, <a href="attr_models.html#tint.attr.models.scale_inputs.params.steps">[1]</a>, <a href="index.html#tint.attr.models.scale_inputs.params.steps">[2]</a>
 </li>
       <li><a href="attr_models.html#tint.attr.models.scale_inputs.params.strategy">strategy (tint.attr.models.scale_inputs parameter)</a>, <a href="attr_models.html#tint.attr.models.scale_inputs.params.strategy">[1]</a>, <a href="index.html#tint.attr.models.scale_inputs.params.strategy">[2]</a>
+
+      <ul>
+        <li><a href="attr.html#tint.attr.TemporalIntegratedGradients.attribute.params.strategy">(tint.attr.TemporalIntegratedGradients.attribute parameter)</a>
 </li>
+      </ul></li>
       <li><a href="attr.html#tint.attr.AugmentedOcclusion.attribute.params.strides">strides (tint.attr.AugmentedOcclusion.attribute parameter)</a>
 
       <ul>
@@ -1472,6 +1472,8 @@
 
       <ul>
         <li><a href="attr.html#tint.attr.DiscretetizedIntegratedGradients.attribute.params.target">(tint.attr.DiscretetizedIntegratedGradients.attribute parameter)</a>
+</li>
+        <li><a href="attr.html#tint.attr.GeodesicIntegratedGradients.attribute.params.target">(tint.attr.GeodesicIntegratedGradients.attribute parameter)</a>
 </li>
         <li><a href="attr.html#tint.attr.Occlusion.attribute.params.target">(tint.attr.Occlusion.attribute parameter)</a>
 </li>
@@ -1554,9 +1556,11 @@
 </li>
       <li><a href="attr.html#tint.attr.TimeForwardTunnel">TimeForwardTunnel (class in tint.attr)</a>
 </li>
-      <li><a href="datasets.html#tint.datasets.Arma.params.times">times (tint.datasets.Arma parameter)</a>, <a href="datasets.html#tint.datasets.Arma.params.times">[1]</a>, <a href="index.html#tint.datasets.Arma.params.times">[2]</a>
+      <li><a href="attr.html#tint.attr.TemporalIntegratedGradients.attribute.params.times">times (tint.attr.TemporalIntegratedGradients.attribute parameter)</a>
 
       <ul>
+        <li><a href="datasets.html#tint.datasets.Arma.params.times">(tint.datasets.Arma parameter)</a>, <a href="datasets.html#tint.datasets.Arma.params.times">[1]</a>, <a href="index.html#tint.datasets.Arma.params.times">[2]</a>
+</li>
         <li><a href="datasets.html#tint.datasets.BioBank.build_discretized_features.params.times">(tint.datasets.BioBank.build_discretized_features parameter)</a>
 </li>
         <li><a href="datasets.html#tint.datasets.BioBank.build_discretized_labels.params.times">(tint.datasets.BioBank.build_discretized_labels parameter)</a>
@@ -1627,16 +1631,6 @@
 </li>
       </ul></li>
       <li><a href="datasets.html#tint.datasets.MNIST.params.train">train (tint.datasets.MNIST parameter)</a>
-</li>
-      <li><a href="attr_models.html#tint.attr.models.SkLearnARDRegression.fit.params.train_data">train_data (tint.attr.models.SkLearnARDRegression.fit parameter)</a>
-
-      <ul>
-        <li><a href="attr_models.html#tint.attr.models.SkLearnBayesianRidge.fit.params.train_data">(tint.attr.models.SkLearnBayesianRidge.fit parameter)</a>
-</li>
-        <li><a href="attr_models.html#tint.attr.models.SkLearnBayesLinearModel.fit.params.train_data">(tint.attr.models.SkLearnBayesLinearModel.fit parameter)</a>
-</li>
-      </ul></li>
-      <li><a href="attr_models.html#tint.attr.models.BayesLinearModel.params.train_fn">train_fn (tint.attr.models.BayesLinearModel parameter)</a>
 </li>
       <li><a href="attr.html#tint.attr.BayesMask.attribute.params.trainer">trainer (tint.attr.BayesMask.attribute parameter)</a>
 
@@ -1717,6 +1711,20 @@
 
 <h2 id="W">W</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="index.html#tint.metrics.accuracy.params.weight_fn">weight_fn (tint.metrics.accuracy parameter)</a>, <a href="metrics.html#tint.metrics.accuracy.params.weight_fn">[1]</a>, <a href="metrics.html#tint.metrics.accuracy.params.weight_fn">[2]</a>
+
+      <ul>
+        <li><a href="index.html#tint.metrics.comprehensiveness.params.weight_fn">(tint.metrics.comprehensiveness parameter)</a>, <a href="metrics.html#tint.metrics.comprehensiveness.params.weight_fn">[1]</a>, <a href="metrics.html#tint.metrics.comprehensiveness.params.weight_fn">[2]</a>
+</li>
+        <li><a href="index.html#tint.metrics.cross_entropy.params.weight_fn">(tint.metrics.cross_entropy parameter)</a>, <a href="metrics.html#tint.metrics.cross_entropy.params.weight_fn">[1]</a>, <a href="metrics.html#tint.metrics.cross_entropy.params.weight_fn">[2]</a>
+</li>
+        <li><a href="index.html#tint.metrics.log_odds.params.weight_fn">(tint.metrics.log_odds parameter)</a>, <a href="metrics.html#tint.metrics.log_odds.params.weight_fn">[1]</a>, <a href="metrics.html#tint.metrics.log_odds.params.weight_fn">[2]</a>
+</li>
+        <li><a href="index.html#tint.metrics.sufficiency.params.weight_fn">(tint.metrics.sufficiency parameter)</a>, <a href="metrics.html#tint.metrics.sufficiency.params.weight_fn">[1]</a>, <a href="metrics.html#tint.metrics.sufficiency.params.weight_fn">[2]</a>
+</li>
+      </ul></li>
+  </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="datasets.html#tint.datasets.Hawkes.params.window">window (tint.datasets.Hawkes parameter)</a>, <a href="datasets.html#tint.datasets.Hawkes.params.window">[1]</a>, <a href="index.html#tint.datasets.Hawkes.params.window">[2]</a>
 
