@@ -83,7 +83,6 @@ def main(
                     x_test,
                     baselines=x_test * 0,
                     target=target,
-                    task="binary",
                     return_temporal_attributions=True,
                     show_progress=True,
                 ).abs()
@@ -101,7 +100,6 @@ def main(
                     target=target,
                     n_samples=50,
                     stdevs=0.0001,
-                    task="binary",
                     return_temporal_attributions=True,
                     show_progress=True,
                 ).abs()
@@ -117,7 +115,6 @@ def main(
                     x_test,
                     baselines=x_test * 0,
                     target=target,
-                    task="binary",
                     return_temporal_attributions=True,
                     show_progress=True,
                 ).abs()
@@ -138,7 +135,6 @@ def main(
                     sliding_window_shapes=(1,),
                     attributions_fn=abs,
                     target=target,
-                    task="binary",
                     return_temporal_attributions=True,
                     show_progress=True,
                 ).abs()
@@ -156,7 +152,6 @@ def main(
                     baselines=x_train.mean(0, keepdim=True),
                     attributions_fn=abs,
                     target=target,
-                    task="binary",
                     return_temporal_attributions=True,
                     show_progress=True,
                 ).abs()
@@ -172,7 +167,6 @@ def main(
                     x_test,
                     baselines=x_test * 0,
                     target=target,
-                    n_steps=2,
                     return_temporal_attributions=True,
                     show_progress=True,
                 ).abs()
