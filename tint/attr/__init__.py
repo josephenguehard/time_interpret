@@ -1,5 +1,5 @@
 from .augmented_occlusion import AugmentedOcclusion
-from .bayes import BayesLime, BayesShap
+from .bayes import BayesLime, BayesKernelShap
 from .bayes_mask import BayesMask
 from .discretised_ig import DiscretetizedIntegratedGradients
 from .dynamic_masks import DynaMask
@@ -16,9 +16,9 @@ from .time_forward_tunnel import TimeForwardTunnel
 
 __all__ = [
     "AugmentedOcclusion",
+    "BayesKernelShap",
     "BayesLime",
     "BayesMask",
-    "BayesShap",
     "DiscretetizedIntegratedGradients",
     "DynaMask",
     "Fit",

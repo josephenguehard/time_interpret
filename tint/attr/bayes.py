@@ -68,7 +68,7 @@ class BayesLime(Lime):
         )
 
 
-class BayesShap(KernelShap):
+class BayesKernelShap(KernelShap):
     """
     Bayesian version of KernelShap.
 
@@ -108,13 +108,13 @@ class BayesShap(KernelShap):
 
     Examples:
         >>> import torch as th
-        >>> from tint.attr import BayesShap
+        >>> from tint.attr import BayesKernelShap
         >>> from tint.models import MLP
         <BLANKLINE>
         >>> inputs = th.rand(8, 5)
         >>> mlp = MLP([5, 3, 1])
         <BLANKLINE>
-        >>> explainer = BayesShap(mlp)
+        >>> explainer = BayesKernelShap(mlp)
         >>> attr = explainer.attribute(inputs)
     """
 

@@ -3,7 +3,7 @@ import torch as th
 
 from contextlib import nullcontext
 
-from tint.attr import BayesLime, BayesShap
+from tint.attr import BayesLime, BayesKernelShap
 from tint.attr.models import BLRRegression, BLRRidge
 from tests.basic_models import BasicModel, BasicModel5_MultiArgs
 
@@ -25,11 +25,11 @@ def test_init(forward_func, interpretable_model, fails):
         assert isinstance(explainer, BayesLime)
 
     with pytest.raises(Exception) if fails else nullcontext():
-        explainer = BayesShap(
+        explainer = BayesKernelShap(
             forward_func=forward_func,
             interpretable_model=interpretable_model,
         )
-        assert isinstance(explainer, BayesShap)
+        assert isinstance(explainer, BayesKernelShap)
 
 
 @pytest.mark.parametrize(
@@ -101,7 +101,7 @@ def test_bayes(
             assert tuple(attr.shape) == (1, 15)
 
     with pytest.raises(Exception) if fails else nullcontext():
-        explainer = BayesShap(forward_func=forward_func, interpretable_model=interpretable_model)
+        explainer = BayesKernelShap(forward_func=forward_func, interpretable_model=interpretable_model)
 
         attr = explainer.attribute(
             inputs=inputs,
