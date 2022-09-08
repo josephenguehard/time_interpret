@@ -89,7 +89,7 @@ def main(
 
     # Train classifier
     trainer = Trainer(
-        max_steps=10, accelerator=accelerator, deterministic=deterministic
+        max_epochs=100, accelerator=accelerator, deterministic=deterministic
     )
     trainer.fit(
         classifier,
@@ -117,7 +117,7 @@ def main(
     y_test = list()
     seg_test = list()
     for i, (x, y) in enumerate(mnist_test_loader):
-        if i == 5:
+        if i == 1000:
             break
 
         sample = np.squeeze(x.numpy().astype("double"), axis=0)
@@ -139,7 +139,7 @@ def main(
     x_train = list()
     for data, _ in mnist_train_loader:
         x_train.append(data)
-    x_train = th.cat(x_train)[:10]
+    x_train = th.cat(x_train)
 
     # Create dict of attributions
     attr = dict()
@@ -314,6 +314,12 @@ def parse_args():
         help="List of areas to use.",
     )
     parser.add_argument(
+        "--n-segments",
+        type=int,
+        default=20,
+        help="Number of segmentations.",
+    )
+    parser.add_argument(
         "--accelerator",
         type=str,
         default="cpu",
@@ -338,6 +344,7 @@ if __name__ == "__main__":
     main(
         explainers=args.explainers,
         areas=args.areas,
+        n_segments=args.n_segments,
         accelerator=args.accelerator,
         seed=args.seed,
         deterministic=args.deterministic,
