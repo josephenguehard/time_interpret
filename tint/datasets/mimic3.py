@@ -756,7 +756,7 @@ class Mimic3(DataModule):
 
         return {
             "x": features.float(),
-            "y": labels.long(),
+            "y": labels.long() if self.task == "mortality" else labels.float(),
         }
 
 

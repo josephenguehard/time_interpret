@@ -1,13 +1,12 @@
 import torch as th
 
-from torchmetrics import Accuracy, Precision, Recall, AUROC
 from typing import Callable, Union
 
 from experiments.hmm.classifier import StateClassifier
 from tint.models import Net
 
 
-class MimicClassifierNet(Net):
+class MimicRegressorNet(Net):
     def __init__(
         self,
         feature_size: int,
@@ -44,22 +43,21 @@ class MimicClassifierNet(Net):
             l2=l2,
         )
 
-        for stage in ["train", "val", "test"]:
-            setattr(self, stage + "_acc", Accuracy())
-            setattr(self, stage + "_pre", Precision())
-            setattr(self, stage + "_rec", Recall())
-            setattr(self, stage + "_auroc", AUROC())
-
     def forward(self, *args, **kwargs) -> th.Tensor:
         return self.net(*args, **kwargs)
 
     def step(self, batch, batch_idx, stage):
+        t = th.randint(batch[1].shape[-1], (1,)).item()
         x, y = batch
+        x = x[:, : t + 1]
+        y = y[:, t]
         y_hat = self(x)
         loss = self.loss(y_hat, y)
 
-        for metric in ["acc", "pre", "rec", "auroc"]:
-            getattr(self, stage + "_" + metric)(y_hat[:, 1], y.long())
-            self.log(stage + "_" + metric, getattr(self, stage + "_" + metric))
-
         return loss
+
+    def predict_step(self, batch, batch_idx, dataloader_idx=0):
+        t = batch[1].shape[-1] - 1
+        x, y = batch
+        x = x[:, : t + 1]
+        return self(x)
