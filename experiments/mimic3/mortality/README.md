@@ -1,6 +1,6 @@
-# Mimic III Experiments
+# Mimic III Mortality Experiments
 
-This is the Mimic III experiments section. You can use this
+This is the Mimic III mortality experiments section. You can use this
 section to reproduce the results from the 
 [DynaMask paper](https://arxiv.org/pdf/2106.05303.pdf).
 
