@@ -47,7 +47,7 @@ optional arguments:
 ```
 
 ```
-usage : experiemnts/main.sh [--processes] [--accelerator] [--seed]
+usage : experiemnts/hmm/main.sh [--processes] [--accelerator] [--seed]
 
 optional arguments:
   --processes           Number of runners in parallel. Default to 5
@@ -56,7 +56,7 @@ optional arguments:
 ```
 
 ```
-usage: experiments/h_params_search.py [-h] [-p] [--metric] [--accelerator] [--seed] [--n-trials] [--timeout] [--n-jobs]
+usage: experiments/hmm/h_params_search.py [-h] [-p] [--metric] [--accelerator] [--seed] [--n-trials] [--timeout] [--n-jobs]
 
 optional arguments:
   -h, --help            Show this help message and exit.
@@ -70,7 +70,7 @@ optional arguments:
 ```
 
 ```
-usage: experiments/arma/reset.py [-h] [-e]
+usage: experiments/hmm/reset.py [-h] [-e]
 
 optional arguments:
   -h, --help            Show this help message and exit.

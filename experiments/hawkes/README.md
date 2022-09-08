@@ -37,7 +37,7 @@ optional arguments:
 ```
 
 ```
-usage : experiemnts/main.sh [--processes] [--accelerator] [--seed]
+usage : experiemnts/hawkes/main.sh [--processes] [--accelerator] [--seed]
 
 optional arguments:
   --processes           Number of runners in parallel. Default to 5
@@ -46,7 +46,7 @@ optional arguments:
 ```
 
 ```
-usage: experiments/arma/reset.py [-h]
+usage: experiments/hawkes/reset.py [-h]
 
 optional arguments:
   -h, --help            Show this help message and exit.

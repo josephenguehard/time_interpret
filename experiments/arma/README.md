@@ -54,7 +54,7 @@ optional arguments:
 ```
 
 ```
-usage : experiemnts/main.sh [--processes] [--accelerator] [--seed]
+usage : experiemnts/arma/main.sh [--processes] [--accelerator] [--seed]
 
 optional arguments:
   --processes           Number of runners in parallel. Default to 10
@@ -63,7 +63,7 @@ optional arguments:
 ```
 
 ```
-usage: experiments/h_params_search.py [-h] [-p] [--rare-dim] [--metric] [--accelerator] [--seed] [--n-trials] [--timeout] [--n-jobs]
+usage: experiments/arma/h_params_search.py [-h] [-p] [--rare-dim] [--metric] [--accelerator] [--seed] [--n-trials] [--timeout] [--n-jobs]
 
 optional arguments:
   -h, --help            Show this help message and exit.

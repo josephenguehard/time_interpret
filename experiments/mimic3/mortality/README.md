@@ -36,7 +36,7 @@ python bayes_mask_params.py -p
 ## Usage
 
 ```
-usage: experiments/mimci3/main.py [-h] [--explainers] [--accelerator] [--seed] [--deterministic]
+usage: experiments/mimci3/mortality/main.py [-h] [--explainers] [--accelerator] [--seed] [--deterministic]
 
 optional arguments:
   -h, --help            Show this help message and exit.
@@ -47,7 +47,7 @@ optional arguments:
 ```
 
 ```
-usage : experiemnts/main.sh [--processes] [--accelerator] [--seed]
+usage : experiemnts/mimci3/mortality/main.sh [--processes] [--accelerator] [--seed]
 
 optional arguments:
   --processes           Number of runners in parallel. Default to 5
@@ -56,7 +56,7 @@ optional arguments:
 ```
 
 ```
-usage: experiments/h_params_search.py [-h] [-p] [--metric] [--accelerator] [--seed] [--n-trials] [--timeout] [--n-jobs]
+usage: experiments/mimci3/mortality/h_params_search.py [-h] [-p] [--metric] [--accelerator] [--seed] [--n-trials] [--timeout] [--n-jobs]
 
 optional arguments:
   -h, --help            Show this help message and exit.
@@ -71,7 +71,7 @@ optional arguments:
 ```
 
 ```
-usage: experiments/arma/reset.py [-h] [-e]
+usage: experiments/mimci3/mortality/reset.py [-h] [-e]
 
 optional arguments:
   -h, --help            Show this help message and exit.
