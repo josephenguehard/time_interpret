@@ -8,6 +8,7 @@ from captum.attr._utils.batching import _batch_attribution
 from captum.attr._utils.common import (
     _format_input,
     _format_input_baseline,
+    _reshape_and_sum,
     _validate_input,
 )
 from captum.log import log_usage
@@ -398,7 +399,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
         # Compute grads for inputs and baselines
         if internal_batch_size is not None:
             num_examples = data[0][knns[0]].shape[0]
-            grads = _batch_attribution(
+            grads_norm, total_grads = _batch_attribution(
                 self,
                 num_examples,
                 internal_batch_size,
@@ -410,7 +411,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
                 method=method,
             )
         else:
-            grads = self._attribute(
+            grads_norm, total_grads = self._attribute(
                 inputs=tuple(x[knn] for x, knn in zip(data, knns)),
                 baselines=tuple(x[id] for x, id in zip(data, idx)),
                 target=target,
@@ -418,17 +419,6 @@ class GeodesicIntegratedGradients(GradientAttribution):
                 n_steps=n_steps,
                 method=method,
             )
-
-        # Compute norm of grads
-        # aggregates across all steps for each tensor in the input tuple
-        # total_grads has the same dimensionality as inputs
-        grads_norm = tuple(
-            torch.linalg.norm(
-                grad.reshape(grad.shape[:2] + (-1,)),
-                dim=2,
-            ).sum(0)
-            for grad in grads
-        )
 
         # Multiply by inputs - baselines
         attributions_norm = tuple(
@@ -446,6 +436,10 @@ class GeodesicIntegratedGradients(GradientAttribution):
                 graph[k] = graph.get(k, list()) + [(i, a)]
                 graph[i] = graph.get(i, list()) + [(k, a)]
 
+        # Def heuristic for A* algorithm: euclidean distance to target
+        def heuristic(u, v):
+            return torch.linalg.norm(data[u] - data[v]).item()
+
         # Compute A* paths
         inputs_idx = tuple(
             range(len(x), len(x) + len(y)) for x, y in zip(self.data, inputs)
@@ -455,7 +449,10 @@ class GeodesicIntegratedGradients(GradientAttribution):
             for x, y in zip(self.data, inputs)
         )
         paths = tuple(
-            [astar_path(graph, i, j) for i, j in zip(input_idx, baseline_idx)]
+            [
+                astar_path(graph, i, j, heuristic=heuristic)
+                for i, j in zip(input_idx, baseline_idx)
+            ]
             for graph, input_idx, baseline_idx in zip(
                 graphs, inputs_idx, baselines_idx
             )
@@ -483,7 +480,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
 
         # Get grads of each path
         total_grads = tuple(
-            grad[:, grad_idx] for grad, grad_idx in zip(grads, grads_idx)
+            grad[:, grad_idx] for grad, grad_idx in zip(total_grads, grads_idx)
         )
 
         # Split for each path
@@ -495,7 +492,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
         # Sum over points and paths
         # and stack result
         total_grads = tuple(
-            tuple(x.sum(0).sum(0) for x in grad) for grad in total_grads
+            tuple(x.sum(0) for x in grad) for grad in total_grads
         )
         total_grads = tuple(torch.stack(grad) for grad in total_grads)
 
@@ -535,7 +532,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
         step_sizes_and_alphas: Union[
             None, Tuple[List[float], List[float]]
         ] = None,
-    ) -> Tuple[Tensor, ...]:
+    ) -> (Tuple[Tensor, ...], Tuple[Tensor, ...]):
         if step_sizes_and_alphas is None:
             # retrieve step size and scaling factor for specified
             # approximation method
@@ -593,7 +590,25 @@ class GeodesicIntegratedGradients(GradientAttribution):
             for scaled_grad, grad in zip(scaled_grads, grads)
         )
 
-        return scaled_grads
+        # Compute norm of grads
+        grads_norm = tuple(
+            torch.linalg.norm(
+                grad.reshape(grad.shape[:2] + (-1,)),
+                dim=2,
+            ).sum(0)
+            for grad in scaled_grads
+        )
+
+        # aggregates across all steps for each tensor in the input tuple
+        # total_grads has the same dimensionality as inputs
+        total_grads = tuple(
+            _reshape_and_sum(
+                scaled_grad, n_steps, grad.shape[0] // n_steps, grad.shape[1:]
+            )
+            for (scaled_grad, grad) in zip(scaled_grads, grads)
+        )
+
+        return grads_norm, total_grads
 
     @staticmethod
     def _get_knns(
