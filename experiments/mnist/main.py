@@ -159,7 +159,7 @@ def main(
 
     if "bayes_kernel_shap" in explainers:
         explainer = BayesKernelShap(classifier)
-        attr["bayes_lime"] = explainer.attribute(
+        attr["bayes_kernel_shap"] = explainer.attribute(
             x_test,
             baselines=baselines,
             target=y_test,
