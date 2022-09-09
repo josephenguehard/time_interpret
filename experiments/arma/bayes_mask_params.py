@@ -98,9 +98,9 @@ def main(
     arma = Arma(n_folds=5, fold=0, seed=seed)
     arma.download()
 
-    # Only use the first 10 data points
-    x = arma.preprocess()["x"][:10].to(accelerator)
-    true_saliency = arma.true_saliency(dim=rare_dim)[:10].to(accelerator)
+    # Only use the first 10 to 20 data points
+    x = arma.preprocess()["x"][10:20].to(accelerator)
+    true_saliency = arma.true_saliency(dim=rare_dim)[10:20].to(accelerator)
 
     # Set pruner
     pruner: optuna.pruners.BasePruner = (

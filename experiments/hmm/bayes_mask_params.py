@@ -16,14 +16,14 @@ from experiments.hmm.classifier import StateClassifierNet
 
 def objective(
     trial: optuna.trial.Trial,
-    x_test: th.Tensor,
+    x_val: th.Tensor,
     true_saliency: th.Tensor,
     classifier: StateClassifierNet,
     metric: str,
     accelerator: str,
 ):
     # Create several models
-    input_shape = x_test.shape[-1]
+    input_shape = x_val.shape[-1]
     model1 = MLP([input_shape, input_shape])
     model2 = MLP([input_shape, input_shape, input_shape])
     model_dict = {"none": None, "model1": model1, "model2": model2}
@@ -67,7 +67,7 @@ def objective(
     # Get attributions given the hyperparameters
     explainer = BayesMask(classifier)
     attr = explainer.attribute(
-        x_test,
+        x_val,
         additional_forward_args=(True,),
         trainer=trainer,
         mask_net=mask,
@@ -114,10 +114,13 @@ def main(
     trainer.fit(classifier, datamodule=hmm)
 
     # Get data for explainers
-    x_test = hmm.preprocess(split="test")["x"].to(accelerator)
+    x = hmm.preprocess(split="train")["x"].to(accelerator)
+    hmm.setup()
+    idx = hmm.val_dataloader().dataset.indices
+    x_val = x[idx]
 
     # Get true saliency
-    true_saliency = hmm.true_saliency(split="test").to(accelerator)
+    true_saliency = hmm.true_saliency(split="train").to(accelerator)[idx]
 
     # Switch to eval
     classifier.eval()
@@ -146,7 +149,7 @@ def main(
     study.optimize(
         lambda t: objective(
             trial=t,
-            x_test=x_test,
+            x_val=x_val,
             true_saliency=true_saliency,
             classifier=classifier,
             metric=metric,

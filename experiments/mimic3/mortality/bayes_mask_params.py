@@ -22,14 +22,14 @@ from experiments.mimic3.mortality.classifier import MimicClassifierNet
 
 def objective(
     trial: optuna.trial.Trial,
-    x_test: th.Tensor,
+    x_val: th.Tensor,
     classifier: MimicClassifierNet,
     metric: str,
     topk: float,
     accelerator: str,
 ):
     # Create several models
-    input_shape = x_test.shape[-1]
+    input_shape = x_val.shape[-1]
     model1 = MLP([input_shape, input_shape])
     model2 = MLP([input_shape, input_shape // 4, input_shape])
     model_dict = {"none": None, "model1": model1, "model2": model2}
@@ -74,7 +74,7 @@ def objective(
     # Get attributions given the hyperparameters
     explainer = BayesMask(classifier)
     attr = explainer.attribute(
-        x_test,
+        x_val,
         additional_forward_args=(True,),
         trainer=trainer,
         mask_net=mask,
@@ -82,13 +82,13 @@ def objective(
     ).to(accelerator)
 
     # Compute x_avg for the baseline
-    x_avg = x_test.mean(1, keepdim=True).repeat(1, x_test.shape[1], 1)
+    x_avg = x_val.mean(1, keepdim=True).repeat(1, x_val.shape[1], 1)
 
     # Compute the metric
     if metric == "accuracy":
         return accuracy(
             classifier,
-            x_test,
+            x_val,
             attributions=attr,
             baselines=x_avg,
             topk=topk,
@@ -96,7 +96,7 @@ def objective(
     if metric == "comprehensiveness":
         return comprehensiveness(
             classifier,
-            x_test,
+            x_val,
             attributions=attr,
             baselines=x_avg,
             topk=topk,
@@ -104,7 +104,7 @@ def objective(
     if metric == "cross_entropy":
         return cross_entropy(
             classifier,
-            x_test,
+            x_val,
             attributions=attr,
             baselines=x_avg,
             topk=topk,
@@ -112,7 +112,7 @@ def objective(
     if metric == "logg_odds":
         return log_odds(
             classifier,
-            x_test,
+            x_val,
             attributions=attr,
             baselines=x_avg,
             topk=topk,
@@ -120,7 +120,7 @@ def objective(
     if metric == "sufficiency":
         return sufficiency(
             classifier,
-            x_test,
+            x_val,
             attributions=attr,
             baselines=x_avg,
             topk=topk,
@@ -157,7 +157,10 @@ def main(
     trainer.fit(classifier, datamodule=mimic3)
 
     # Get data for explainers
-    x_test = mimic3.preprocess(split="test")["x"].to(accelerator)
+    x = mimic3.preprocess(split="train")["x"].to(accelerator)
+    mimic3.setup()
+    idx = mimic3.val_dataloader().dataset.indices
+    x_val = x[idx]
 
     # Switch to eval
     classifier.eval()
@@ -191,7 +194,7 @@ def main(
     study.optimize(
         lambda t: objective(
             trial=t,
-            x_test=x_test,
+            x_val=x_val,
             classifier=classifier,
             metric=metric,
             topk=topk,
