@@ -112,22 +112,28 @@ class BayesMask(nn.Module):
         # Clamp mask
         self.clamp()
 
+        mean = self.mean
+        # We forward model if provided
+        if self.model is not None:
+            mean = self.model(mean)
+            mean = mean.clamp(0, 1)
+
         # Sample from distribution
         if self.distribution == "none":
-            samples = self.mean
+            samples = mean
 
         elif self.distribution == "bernoulli":
-            dist = ContinuousBernoulli(probs=self.mean)
+            dist = ContinuousBernoulli(probs=mean)
             samples = dist.rsample()
 
         elif self.distribution == "normal":
             dist = MultivariateNormal(
-                loc=self.mean, scale_tril=self.get_cov(self.tril)
+                loc=mean, scale_tril=self.get_cov(self.tril)
             )
             samples = dist.rsample()
 
         elif self.distribution == "gumbel_softmax":
-            samples = self.mean
+            samples = mean
 
             # The threshold we use is 0.5, so we set 1 - s as
             # the opposite logit
@@ -165,10 +171,6 @@ class BayesMask(nn.Module):
         # We eventually cut samples up to x time dimension
         x *= samples[:, : x.shape[1], ...]
 
-        # We forward model if provided
-        if self.model is not None:
-            x = self.model(x)
-
         # Return f(perturbed x)
         return _run_forward(
             forward_func=self.forward_func,
@@ -189,19 +191,25 @@ class BayesMask(nn.Module):
             ] = self.eps
 
         # Return loss + regularisation
-        loss += (self.mean - mean).abs().mean()
+        mean_ = self.mean
+        if self.model is not None:
+            mean_ = self.model(mean_)
+        loss += (mean_ - mean).abs().mean()
         if self.distribution == "normal":
             loss += (self.tril - tril).abs().mean()
 
         return loss
 
     def clamp(self):
-        self.mean.data.clamp_(0, 1)
+        if self.model is None:
+            self.mean.data.clamp_(0, 1)
         if self.distribution == "normal":
             self.tril.data.clamp_(self.eps, 1)
 
     def representation(self):
-        return self.mean.detach().cpu().clamp(0, 1)
+        if self.model is None:
+            return self.mean.detach().cpu().clamp(0, 1)
+        return self.model(self.mean).detach().cpu().clamp(0, 1)
 
     def covariance(self):
         assert self.distribution == "normal"
