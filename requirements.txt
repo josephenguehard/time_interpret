@@ -9,7 +9,7 @@ numpy
 optuna
 pandas
 pytorch-lightning
+scikit-image
 scikit-learn
-skimage
 scipy
 transformers
