@@ -30,6 +30,8 @@ from tint.metrics import (
 )
 from tint.metrics.weights import lime_weights, lof_weights
 
+from experiments.mnist.main import compute_metric
+
 
 file_dir = os.path.dirname(__file__)
 
@@ -115,8 +117,9 @@ def main(
     # Target is the model prediction
     y_test = resnet(x_test).argmax(-1)
 
-    # Create dict of attributions
+    # Create dict of attributions and explainers
     attr = dict()
+    expl = dict()
 
     if "bayes_lime" in explainers:
         explainer = BayesLime(resnet)
@@ -126,15 +129,17 @@ def main(
             feature_mask=seg_test,
             show_progress=True,
         )
+        expl["bayes_lime"] = explainer
 
     if "bayes_kernel_shap" in explainers:
         explainer = BayesKernelShap(resnet)
-        attr["bayes_lime"] = explainer.attribute(
+        attr["bayes_kernel_shap"] = explainer.attribute(
             x_test,
             target=y_test,
             feature_mask=seg_test,
             show_progress=True,
         )
+        expl["bayes_kernel_shap"] = explainer
 
     if "lime" in explainers:
         explainer = Lime(resnet)
@@ -144,6 +149,7 @@ def main(
             feature_mask=seg_test,
             show_progress=True,
         )
+        expl["lime"] = explainer
 
     if "kernel_shap" in explainers:
         explainer = KernelShap(resnet)
@@ -153,6 +159,7 @@ def main(
             feature_mask=seg_test,
             show_progress=True,
         )
+        expl["kernel_shap"] = explainer
 
     if "lof_lime" in explainers:
         explainer = LofLime(resnet, embeddings=x_test)
@@ -162,6 +169,7 @@ def main(
             feature_mask=seg_test,
             show_progress=True,
         )
+        expl["lof_lime"] = explainer
 
     if "lof_kernel_shap" in explainers:
         explainer = LofKernelShap(resnet, embeddings=x_test)
@@ -171,6 +179,7 @@ def main(
             feature_mask=seg_test,
             show_progress=True,
         )
+        expl["lof_kernel_shap"] = explainer
 
     if "augmented_occlusion" in explainers:
         explainer = AugmentedOcclusion(resnet, data=x_test)
@@ -181,6 +190,7 @@ def main(
             attributions_fn=abs,
             show_progress=True,
         )
+        expl["augmented_occlusion"] = explainer
 
     if "occlusion" in explainers:
         explainer = Occlusion(resnet)
@@ -191,51 +201,101 @@ def main(
             attributions_fn=abs,
             show_progress=True,
         )
+        expl["occlusion"] = explainer
 
     with open("results.csv", "a") as fp:
         for topk in areas:
             for k, v in attr.items():
+                for i, weight_fn in enumerate(
+                    [
+                        None,
+                        lime_weights(
+                            distance_mode="euclidean", kernel_width=1000
+                        ),
+                        lof_weights(data=x_test, n_neighbors=20),
+                    ]
+                ):
 
-                acc = accuracy(
-                    resnet,
-                    x_test,
-                    attributions=v.cpu(),
-                    topk=topk,
-                )
-                comp = comprehensiveness(
-                    resnet,
-                    x_test,
-                    attributions=v.cpu(),
-                    topk=topk,
-                )
-                ce = cross_entropy(
-                    resnet,
-                    x_test,
-                    attributions=v.cpu(),
-                    topk=topk,
-                )
-                l_odds = log_odds(
-                    resnet,
-                    x_test,
-                    attributions=v.cpu(),
-                    topk=topk,
-                )
-                suff = sufficiency(
-                    resnet,
-                    x_test,
-                    attributions=v.cpu(),
-                    topk=topk,
-                )
+                    acc = accuracy(
+                        resnet,
+                        x_test,
+                        attributions=v.cpu(),
+                        topk=topk,
+                    )
+                    comp = comprehensiveness(
+                        resnet,
+                        x_test,
+                        attributions=v.cpu(),
+                        topk=topk,
+                    )
+                    ce = cross_entropy(
+                        resnet,
+                        x_test,
+                        attributions=v.cpu(),
+                        topk=topk,
+                    )
+                    l_odds = log_odds(
+                        resnet,
+                        x_test,
+                        attributions=v.cpu(),
+                        topk=topk,
+                    )
+                    suff = sufficiency(
+                        resnet,
+                        x_test,
+                        attributions=v.cpu(),
+                        topk=topk,
+                    )
 
-                fp.write(str(seed) + ",")
-                fp.write(str(topk) + ",")
-                fp.write(k + ",")
-                fp.write(f"{acc:.4},")
-                fp.write(f"{comp:.4},")
-                fp.write(f"{ce:.4},")
-                fp.write(f"{l_odds:.4},")
-                fp.write(f"{suff:.4},")
-                fp.write("\n")
+                    fp.write(str(seed) + ",")
+                    fp.write(str(topk) + ",")
+                    if i == 0:
+                        fp.write("None,")
+                    elif i == 1:
+                        fp.write("lime_weights,")
+                    else:
+                        fp.write("lof_weights,")
+                    fp.write(k + ",")
+                    fp.write(f"{acc:.4},")
+                    fp.write(f"{comp:.4},")
+                    fp.write(f"{ce:.4},")
+                    fp.write(f"{l_odds:.4},")
+                    fp.write(f"{suff:.4},")
+
+                    for metric in [
+                        accuracy,
+                        comprehensiveness,
+                        cross_entropy,
+                        log_odds,
+                        sufficiency,
+                    ]:
+                        sens_max = sensitivity_max(
+                            compute_metric,
+                            x_test[:10],
+                            explainer=expl[k],
+                            metric=metric,
+                            forward_func=resnet,
+                            baselines=None,
+                            topk=topk,
+                            target=y_test[:10],
+                            feature_mask=seg_test[:10],
+                        )
+                        lip_max = lipschitz_max(
+                            compute_metric,
+                            x_test[:10],
+                            explainer=expl[k],
+                            metric=metric,
+                            forward_func=resnet,
+                            baselines=None,
+                            topk=topk,
+                            target=y_test[:10],
+                            feature_mask=seg_test[:10],
+                        )
+
+                        fp.write(f"{sens_max.mean().item():4f},")
+                        fp.write(f"{lip_max.mean().item():4f},")
+
+                    fp.write("\n")
 
 
 def parse_args():

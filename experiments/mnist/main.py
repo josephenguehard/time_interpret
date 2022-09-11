@@ -3,15 +3,21 @@ import os
 import torch as th
 import torchvision.transforms as T
 
-from argparse import ArgumentParser
 from captum.attr import KernelShap, Lime
 from captum.metrics import sensitivity_max
+from captum._utils.typing import (
+    BaselineType,
+    TargetType,
+    TensorOrTupleOfTensorsGeneric,
+)
 
+from argparse import ArgumentParser
 from pytorch_lightning import Trainer, seed_everything
 from skimage.segmentation import slic
+from torch import Tensor
 from torch.utils.data import DataLoader
 from torchvision.datasets import MNIST
-from typing import List
+from typing import Callable, List, Tuple, Union
 
 from tint.attr import (
     AugmentedOcclusion,
@@ -36,6 +42,42 @@ from experiments.mnist.classifier import MnistClassifierNet
 
 
 file_dir = os.path.dirname(__file__)
+
+
+def compute_metric(
+    inputs: TensorOrTupleOfTensorsGeneric,
+    explainer,
+    metric: Callable,
+    forward_func: Callable,
+    baselines: BaselineType,
+    topk: float,
+    target: TargetType,
+    feature_mask: Union[None, Tensor, Tuple[Tensor, ...]],
+):
+    if isinstance(explainer, Occlusion):
+        attr = explainer.attribute(
+            inputs,
+            sliding_window_shapes=(1, 1, 1),
+            target=target,
+            attributions_fn=abs,
+        )
+    else:
+        attr = explainer.attribute(
+            inputs,
+            baselines=baselines,
+            target=target,
+            feature_mask=feature_mask,
+        )
+
+    metric_ = metric(
+        forward_func,
+        inputs,
+        attributions=attr.cpu(),
+        baselines=baselines,
+        topk=topk,
+    )
+
+    return tuple(th.ones_like(i) * metric_ for i in inputs)
 
 
 def main(
@@ -141,8 +183,9 @@ def main(
         x_train.append(data)
     x_train = th.cat(x_train)
 
-    # Create dict of attributions
+    # Create dict of attributions and explainers
     attr = dict()
+    expl = dict()
 
     # Baselines is the normalised background
     baselines = -0.4242
@@ -156,6 +199,7 @@ def main(
             feature_mask=seg_test,
             show_progress=True,
         )
+        expl["bayes_lime"] = explainer
 
     if "bayes_kernel_shap" in explainers:
         explainer = BayesKernelShap(classifier)
@@ -166,6 +210,7 @@ def main(
             feature_mask=seg_test,
             show_progress=True,
         )
+        expl["bayes_kernel_shap"] = explainer
 
     if "lime" in explainers:
         explainer = Lime(classifier)
@@ -176,6 +221,7 @@ def main(
             feature_mask=seg_test,
             show_progress=True,
         )
+        expl["lime"] = explainer
 
     if "kernel_shap" in explainers:
         explainer = KernelShap(classifier)
@@ -186,6 +232,7 @@ def main(
             feature_mask=seg_test,
             show_progress=True,
         )
+        expl["kernel_shap"] = explainer
 
     if "lof_lime" in explainers:
         explainer = LofLime(classifier, embeddings=x_train)
@@ -196,6 +243,7 @@ def main(
             feature_mask=seg_test,
             show_progress=True,
         )
+        expl["lof_lime"] = explainer
 
     if "lof_kernel_shap" in explainers:
         explainer = LofKernelShap(classifier, embeddings=x_train)
@@ -206,6 +254,7 @@ def main(
             feature_mask=seg_test,
             show_progress=True,
         )
+        expl["lof_kernel_shap"] = explainer
 
     if "augmented_occlusion" in explainers:
         explainer = AugmentedOcclusion(classifier, data=x_train)
@@ -216,6 +265,7 @@ def main(
             attributions_fn=abs,
             show_progress=True,
         )
+        expl["augmented_occlusion"] = explainer
 
     if "occlusion" in explainers:
         explainer = Occlusion(classifier)
@@ -227,56 +277,111 @@ def main(
             attributions_fn=abs,
             show_progress=True,
         )
+        expl["occlusion"] = explainer
 
     with open("results.csv", "a") as fp:
         for topk in areas:
             for k, v in attr.items():
+                for i, weight_fn in enumerate(
+                    [
+                        None,
+                        lime_weights(
+                            distance_mode="euclidean", kernel_width=1000
+                        ),
+                        lof_weights(data=x_train, n_neighbors=20),
+                    ]
+                ):
 
-                acc = accuracy(
-                    classifier,
-                    x_test,
-                    attributions=v.cpu(),
-                    baselines=baselines,
-                    topk=topk,
-                )
-                comp = comprehensiveness(
-                    classifier,
-                    x_test,
-                    attributions=v.cpu(),
-                    baselines=baselines,
-                    topk=topk,
-                )
-                ce = cross_entropy(
-                    classifier,
-                    x_test,
-                    attributions=v.cpu(),
-                    baselines=baselines,
-                    topk=topk,
-                )
-                l_odds = log_odds(
-                    classifier,
-                    x_test,
-                    attributions=v.cpu(),
-                    baselines=baselines,
-                    topk=topk,
-                )
-                suff = sufficiency(
-                    classifier,
-                    x_test,
-                    attributions=v.cpu(),
-                    baselines=baselines,
-                    topk=topk,
-                )
+                    acc = accuracy(
+                        classifier,
+                        x_test,
+                        attributions=v.cpu(),
+                        baselines=baselines,
+                        topk=topk,
+                        weight_fn=weight_fn,
+                    )
+                    comp = comprehensiveness(
+                        classifier,
+                        x_test,
+                        attributions=v.cpu(),
+                        baselines=baselines,
+                        topk=topk,
+                        weight_fn=weight_fn,
+                    )
+                    ce = cross_entropy(
+                        classifier,
+                        x_test,
+                        attributions=v.cpu(),
+                        baselines=baselines,
+                        topk=topk,
+                        weight_fn=weight_fn,
+                    )
+                    l_odds = log_odds(
+                        classifier,
+                        x_test,
+                        attributions=v.cpu(),
+                        baselines=baselines,
+                        topk=topk,
+                        weight_fn=weight_fn,
+                    )
+                    suff = sufficiency(
+                        classifier,
+                        x_test,
+                        attributions=v.cpu(),
+                        baselines=baselines,
+                        topk=topk,
+                        weight_fn=weight_fn,
+                    )
 
-                fp.write(str(seed) + ",")
-                fp.write(str(topk) + ",")
-                fp.write(k + ",")
-                fp.write(f"{acc:.4},")
-                fp.write(f"{comp:.4},")
-                fp.write(f"{ce:.4},")
-                fp.write(f"{l_odds:.4},")
-                fp.write(f"{suff:.4},")
-                fp.write("\n")
+                    fp.write(str(seed) + ",")
+                    fp.write(str(topk) + ",")
+                    if i == 0:
+                        fp.write("None,")
+                    elif i == 1:
+                        fp.write("lime_weights,")
+                    else:
+                        fp.write("lof_weights,")
+                    fp.write(k + ",")
+                    fp.write(f"{acc:.4},")
+                    fp.write(f"{comp:.4},")
+                    fp.write(f"{ce:.4},")
+                    fp.write(f"{l_odds:.4},")
+                    fp.write(f"{suff:.4},")
+
+                    for metric in [
+                        accuracy,
+                        comprehensiveness,
+                        cross_entropy,
+                        log_odds,
+                        sufficiency,
+                    ]:
+                        sens_max = sensitivity_max(
+                            compute_metric,
+                            x_test[:10],
+                            explainer=expl[k],
+                            metric=metric,
+                            forward_func=classifier,
+                            baselines=baselines,
+                            topk=topk,
+                            target=y_test[:10],
+                            feature_mask=seg_test[:10],
+                        )
+                        lip_max = lipschitz_max(
+                            compute_metric,
+                            x_test[:10],
+                            explainer=expl[k],
+                            metric=metric,
+                            forward_func=classifier,
+                            baselines=baselines,
+                            topk=topk,
+                            target=y_test[:10],
+                            feature_mask=seg_test[:10],
+                        )
+
+                        fp.write(f"{sens_max.mean().item():4f},")
+                        fp.write(f"{lip_max.mean().item():4f},")
+
+                    fp.write("\n")
 
 
 def parse_args():
