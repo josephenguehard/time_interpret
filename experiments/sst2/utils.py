@@ -24,9 +24,10 @@ class ForwardModel(nn.Module):
         embeds = self.model.bert.embeddings.dropout(
             self.model.bert.embeddings.LayerNorm(embeds)
         )
-        pred = self.model(inputs_embeds=embeds, attention_mask=attention_mask)[
-            0
-        ]
+        pred = self.model(
+            inputs_embeds=embeds,
+            attention_mask=attention_mask,
+        )[0]
 
         # Return all logits or just maximum class
         if return_all_logits:
