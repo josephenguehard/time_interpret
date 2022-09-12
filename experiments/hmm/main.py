@@ -1,9 +1,12 @@
+import multiprocessing as mp
 import numpy as np
+import random
 import torch as th
 
 from argparse import ArgumentParser
 from captum.attr import DeepLift, GradientShap, IntegratedGradients, Lime
 from pytorch_lightning import Trainer, seed_everything
+from pytorch_lightning.loggers import TensorBoardLogger
 from typing import List
 
 from tint.attr import (
@@ -62,14 +65,22 @@ def main(
 
     # Train classifier
     trainer = Trainer(
-        max_epochs=50, accelerator=accelerator, deterministic=deterministic
+        max_epochs=50,
+        accelerator=accelerator,
+        deterministic=deterministic,
+        logger=TensorBoardLogger(
+            save_dir=".",
+            version=random.randint(0, int(1e9)),
+        ),
     )
     trainer.fit(classifier, datamodule=hmm)
 
     # Get data for explainers
-    x_train = hmm.preprocess(split="train")["x"].to(accelerator)
-    x_test = hmm.preprocess(split="test")["x"].to(accelerator)
-    y_test = hmm.preprocess(split="test")["y"].to(accelerator)
+    with mp.Lock():
+        x_train = hmm.preprocess(split="train")["x"].to(accelerator)
+        x_test = hmm.preprocess(split="test")["x"].to(accelerator)
+        y_test = hmm.preprocess(split="test")["y"].to(accelerator)
+        true_saliency = hmm.true_saliency(split="test").to(accelerator)
 
     # Switch to eval
     classifier.eval()
@@ -93,6 +104,10 @@ def main(
             devices=1,
             log_every_n_steps=2,
             deterministic=deterministic,
+            logger=TensorBoardLogger(
+                save_dir=".",
+                version=random.randint(0, int(1e9)),
+            ),
         )
         mask = BayesMaskNet(
             forward_func=classifier,
@@ -128,6 +143,10 @@ def main(
             devices=1,
             log_every_n_steps=2,
             deterministic=deterministic,
+            logger=TensorBoardLogger(
+                save_dir=".",
+                version=random.randint(0, int(1e9)),
+            ),
         )
         mask = MaskNet(
             forward_func=classifier,
@@ -157,6 +176,10 @@ def main(
             accelerator=accelerator,
             log_every_n_steps=10,
             deterministic=deterministic,
+            logger=TensorBoardLogger(
+                save_dir=".",
+                version=random.randint(0, int(1e9)),
+            ),
         )
         explainer = Fit(
             classifier,
@@ -238,16 +261,17 @@ def main(
                 max_epochs=50,
                 accelerator=accelerator,
                 deterministic=deterministic,
+                logger=TensorBoardLogger(
+                    save_dir=".",
+                    version=random.randint(0, int(1e9)),
+                ),
             ),
         )
         attr["retain"] = (
             explainer.attribute(x_test, target=y_test).abs().to(accelerator)
         )
 
-    # Get true saliency
-    true_saliency = hmm.true_saliency(split="test").to(accelerator)
-
-    with open("results.csv", "a") as fp:
+    with open("results.csv", "a") as fp, mp.Lock():
         for k, v in attr.items():
             fp.write(str(seed) + ",")
             fp.write(str(fold) + ",")

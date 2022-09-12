@@ -1,8 +1,11 @@
+import multiprocessing as mp
+import random
 import torch as th
 
 from argparse import ArgumentParser
 from captum.attr import DeepLift, GradientShap, IntegratedGradients
 from pytorch_lightning import Trainer, seed_everything
+from pytorch_lightning.loggers import TensorBoardLogger
 from typing import List
 
 from tint.attr import (
@@ -52,14 +55,22 @@ def main(
 
     # Train classifier
     trainer = Trainer(
-        max_epochs=50, accelerator=accelerator, deterministic=deterministic
+        max_epochs=50,
+        accelerator=accelerator,
+        deterministic=deterministic,
+        logger=TensorBoardLogger(
+            save_dir=".",
+            version=random.randint(0, int(1e9)),
+        ),
     )
     trainer.fit(classifier, datamodule=hawkes)
 
     # Get data for explainers
-    x_train = hawkes.preprocess(split="train")["x"].to(accelerator)
-    x_test = hawkes.preprocess(split="test")["x"].to(accelerator)
-    y_test = hawkes.preprocess(split="test")["y"].to(accelerator)
+    with mp.Lock():
+        x_train = hawkes.preprocess(split="train")["x"].to(accelerator)
+        x_test = hawkes.preprocess(split="test")["x"].to(accelerator)
+        y_test = hawkes.preprocess(split="test")["y"].to(accelerator)
+        true_saliency = hawkes.true_saliency(split="test").to(accelerator)
 
     # Reshape y_test
     y_test = (
@@ -182,10 +193,7 @@ def main(
             -1, y_test
         )
 
-    # Get true saliency
-    true_saliency = hawkes.true_saliency(split="test").to(accelerator)
-
-    with open("results.csv", "a") as fp:
+    with open("results.csv", "a") as fp, mp.Lock():
         for k, v in attr.items():
             fp.write(str(seed) + ",")
             fp.write(str(fold) + ",")

@@ -1,9 +1,12 @@
+import multiprocessing as mp
 import statistics
+import random
 import torch as th
 
 from argparse import ArgumentParser
 from captum.attr import DeepLift, GradientShap, IntegratedGradients
 from pytorch_lightning import Trainer, seed_everything
+from pytorch_lightning.loggers import TensorBoardLogger
 from typing import List
 
 from tint.attr import (
@@ -54,14 +57,20 @@ def main(
 
     # Train classifier
     trainer = Trainer(
-        max_epochs=100, accelerator=accelerator, deterministic=deterministic
+        max_epochs=100,
+        accelerator=accelerator,
+        deterministic=deterministic,
+        logger=TensorBoardLogger(
+            save_dir=".",
+            version=random.randint(0, int(1e9)),
+        ),
     )
     trainer.fit(regressor, datamodule=mimic3)
 
     # Get data for explainers
-    x_train = mimic3.preprocess(split="train")["x"].to(accelerator)
-    x_test = mimic3.preprocess(split="test")["x"].to(accelerator)
-    y_test = mimic3.preprocess(split="test")["y"].to(accelerator)
+    with mp.Lock():
+        x_train = mimic3.preprocess(split="train")["x"].to(accelerator)
+        x_test = mimic3.preprocess(split="test")["x"].to(accelerator)
 
     # Switch to eval
     regressor.eval()
@@ -150,7 +159,7 @@ def main(
 
     # Compute metrics for each topk in areas.
     # We also get metrics for data up to each tim and average.
-    with open("results.csv", "a") as fp:
+    with open("results.csv", "a") as fp, mp.Lock():
         for topk in areas:
             for k, v in attr.items():
 

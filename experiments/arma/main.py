@@ -1,4 +1,6 @@
+import multiprocessing as mp
 import numpy as np
+import random
 import torch as th
 
 from argparse import ArgumentParser
@@ -8,6 +10,7 @@ from captum.attr import (
     ShapleyValueSampling,
 )
 from pytorch_lightning import Trainer, seed_everything
+from pytorch_lightning.loggers import TensorBoardLogger
 from typing import List
 
 from tint.attr import (
@@ -18,6 +21,7 @@ from tint.attr import (
 from tint.attr.models import BayesMaskNet, MaskNet
 from tint.datasets import Arma
 from tint.metrics.white_box import aup, aur, information, entropy
+from tint.models import MLP
 
 
 def main(
@@ -37,8 +41,9 @@ def main(
     arma.download()
 
     # Only use the first 10 data points
-    x = arma.preprocess()["x"][:10].to(accelerator)
-    true_saliency = arma.true_saliency(dim=rare_dim)[:10].to(accelerator)
+    with mp.Lock():
+        x = arma.preprocess()["x"][:10].to(accelerator)
+        true_saliency = arma.true_saliency(dim=rare_dim)[:10].to(accelerator)
 
     # Create dict of attributions
     attr = dict()
@@ -50,11 +55,16 @@ def main(
             devices=1,
             log_every_n_steps=2,
             deterministic=deterministic,
+            logger=TensorBoardLogger(
+                save_dir=".",
+                version=random.randint(0, int(1e9)),
+            ),
         )
         mask = BayesMaskNet(
             forward_func=arma.get_white_box,
             distribution="normal",
-            eps=1e-5,
+            model=MLP([x.shape[-1], x.shape[-1]]),
+            eps=1e-7,
             optim="adam",
             lr=0.01,
         )
@@ -74,6 +84,10 @@ def main(
             accelerator=accelerator,
             devices=1,
             deterministic=deterministic,
+            logger=TensorBoardLogger(
+                save_dir=".",
+                version=random.randint(0, int(1e9)),
+            ),
         )
         mask = MaskNet(
             forward_func=arma.get_white_box,
@@ -139,7 +153,7 @@ def main(
                 additional_forward_args=(saliency,),
             ).abs()
 
-    with open("results.csv", "a") as fp:
+    with open("results.csv", "a") as fp, mp.Lock():
         for k, v in attr.items():
             fp.write("rare-feature" if rare_dim == 1 else "rare-time")
             fp.write("," + str(seed) + ",")
