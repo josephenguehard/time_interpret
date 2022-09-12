@@ -128,15 +128,14 @@ def main(
         n_jobs=n_jobs,
     )
 
-    trial = study.best_trial
-
-    # Write best hyperparameters
+    # Write results
     with open("bayes_mask_params.csv", "a") as fp:
-        fp.write(str(rare_dim) + ",")
-        fp.write(str(trial.value) + ",")
-        for value in trial.params.values():
-            fp.write(str(value) + ",")
-        fp.write("\n")
+        for trial in study.trials:
+            fp.write(str(rare_dim) + ",")
+            fp.write(str(trial.value) + ",")
+            for value in trial.params.values():
+                fp.write(str(value) + ",")
+            fp.write("\n")
 
 
 def parse_args():
