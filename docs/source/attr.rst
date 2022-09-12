@@ -22,6 +22,7 @@ Summary
     tint.attr.LofLime
     tint.attr.Occlusion
     tint.attr.Retain
+    tint.attr.SequentialIntegratedGradients
     tint.attr.SmoothGrad
     tint.attr.TemporalAugmentedOcclusion
     tint.attr.TemporalIntegratedGradients

@@ -8,6 +8,7 @@ from .geodesic_ig import GeodesicIntegratedGradients
 from .lof import LofKernelShap, LofLime
 from .occlusion import Occlusion
 from .retain import Retain
+from .seq_ig import SequentialIntegratedGradients
 from .smooth_grad import SmoothGrad
 from .temporal_augmented_occlusion import TemporalAugmentedOcclusion
 from .temporal_ig import TemporalIntegratedGradients
@@ -27,6 +28,7 @@ __all__ = [
     "LofLime",
     "Occlusion",
     "Retain",
+    "SequentialIntegratedGradients",
     "SmoothGrad",
     "TemporalAugmentedOcclusion",
     "TemporalIntegratedGradients",

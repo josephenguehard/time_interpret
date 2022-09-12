@@ -359,6 +359,12 @@ class SequentialIntegratedGradients(GradientAttribution):
         else:
             step_sizes, alphas = step_sizes_and_alphas
 
+        # Keep only idx index if baselines is a tensor
+        baselines_ = tuple(
+            baseline[:, idx, ...] if isinstance(baseline, Tensor) else baseline
+            for baseline in baselines
+        )
+
         # scale features and compute gradients. (batch size is abbreviated as bsz)
         # scaled_features' dim -> (bsz * #steps x inputs[0].shape[1:], ...)
         # Only scale features on the idx index.
@@ -371,13 +377,13 @@ class SequentialIntegratedGradients(GradientAttribution):
                     ).requires_grad_(),
                     torch.cat(
                         [
-                            baseline
-                            + alpha
-                            * (input[:, idx, ...].unsqueeze(1) - baseline)
+                            baseline + alpha * (input[:, idx, ...] - baseline)
                             for alpha in alphas
                         ],
                         dim=0,
-                    ).requires_grad_(),
+                    )
+                    .unsqueeze(1)
+                    .requires_grad_(),
                     torch.cat(
                         [input[:, idx + 1 :, ...] for _ in alphas],
                         dim=0,
@@ -385,7 +391,7 @@ class SequentialIntegratedGradients(GradientAttribution):
                 ],
                 dim=1,
             )
-            for input, baseline in zip(inputs, baselines)
+            for input, baseline in zip(inputs, baselines_)
         )
 
         additional_forward_args = _format_additional_forward_args(
