@@ -33,6 +33,7 @@ from tint.metrics.white_box import (
     roc_auc,
     auprc,
 )
+from tint.models import MLP
 
 
 from experiments.hmm.classifier import StateClassifierNet
@@ -113,6 +114,7 @@ def main(
             forward_func=classifier,
             distribution="normal",
             hard=False,
+            model=MLP([x_test.shape[-1], x_test.shape[-1]]),
             eps=1e-5,
             optim="adam",
             lr=0.01,
