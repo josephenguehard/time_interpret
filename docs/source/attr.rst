@@ -12,9 +12,9 @@ Summary
 .. autosummary::
 
     tint.attr.AugmentedOcclusion
+    tint.attr.BayesKernelShap
     tint.attr.BayesLime
     tint.attr.BayesMask
-    tint.attr.BayesShap
     tint.attr.DiscretetizedIntegratedGradients
     tint.attr.DynaMask
     tint.attr.Fit
