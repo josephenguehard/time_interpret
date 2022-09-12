@@ -25,7 +25,7 @@ for rare_dim in $(seq 1 2)
 do
   for fold in $(seq 0 4)
   do
-    python main.py --rare-dim "$rare_dim" --accelerator "$accelerator" --fold "$fold" --seed "$seed"
+    python main.py --rare-dim "$rare_dim" --accelerator "$accelerator" --fold "$fold" --seed "$seed" &
 
     # allow to execute up to $processes jobs in parallel
     if [[ $(jobs -r -p | wc -l) -ge $processes ]]

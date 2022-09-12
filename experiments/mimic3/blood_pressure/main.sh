@@ -23,7 +23,7 @@ function ctrl_c() {
 
 for fold in $(seq 0 4)
 do
-  python main.py --accelerator "$accelerator" --fold "$fold" --seed "$seed"
+  python main.py --accelerator "$accelerator" --fold "$fold" --seed "$seed" &
 
   # allow to execute up to $processes jobs in parallel
   if [[ $(jobs -r -p | wc -l) -ge $processes ]]
