@@ -3,10 +3,30 @@ import torch
 import torch.nn as nn
 
 
+model_dict = {
+    "sst2": {
+        "bert": "textattack/bert-base-uncased-SST-2",
+        "distilbert": "distilbert-base-uncased-finetuned-sst-2-english",
+        "roberta": "textattack/roberta-base-SST-2",
+    },
+    "imdb": {
+        "bert": "textattack/bert-base-uncased-imdb",
+        "distilbert": "textattack/distilbert-base-uncased-imdb",
+        "roberta": "textattack/roberta-base-imdb",
+    },
+    "rotten": {
+        "bert": "textattack/bert-base-uncased-rotten-tomatoes",
+        "distilbert": "textattack/distilbert-base-uncased-rotten-tomatoes",
+        "roberta": "textattack/roberta-base-rotten-tomatoes",
+    },
+}
+
+
 class ForwardModel(nn.Module):
-    def __init__(self, model):
+    def __init__(self, model, model_name):
         super().__init__()
         self.model = model
+        self.model_name = model_name
 
     def forward(
         self,
@@ -21,7 +41,7 @@ class ForwardModel(nn.Module):
             embeds += type_embed
 
         # Get predictions
-        embeds = self.model.bert.embeddings.dropout(
+        embeds = getattr(self.model, self.model_name).embeddings.dropout(
             self.model.bert.embeddings.LayerNorm(embeds)
         )
         pred = self.model(
@@ -65,14 +85,26 @@ def construct_input_ref_pair(
     )
 
 
-def construct_input_ref_pos_id_pair(model, input_ids, device):
+def construct_input_ref_pos_id_pair(model, model_name, input_ids, device):
     seq_length = input_ids.size(1)
-    position_ids = model.bert.embeddings.position_ids[:, 0:seq_length].to(
-        device
-    )
-    ref_position_ids = model.bert.embeddings.position_ids[:, 0:seq_length].to(
-        device
-    )
+
+    if model_name == "distilbert":
+        position_ids = torch.arange(
+            seq_length, dtype=torch.long, device=device
+        )
+        ref_position_ids = torch.zeros(
+            seq_length, dtype=torch.long, device=device
+        )
+        position_ids = position_ids.unsqueeze(0).expand_as(input_ids)
+        ref_position_ids = ref_position_ids.unsqueeze(0).expand_as(input_ids)
+
+    else:
+        position_ids = model.bert.embeddings.position_ids[:, 0:seq_length].to(
+            device
+        )
+        ref_position_ids = model.bert.embeddings.position_ids[
+            :, 0:seq_length
+        ].to(device)
 
     return position_ids, ref_position_ids
 
@@ -92,24 +124,29 @@ def construct_attention_mask(input_ids):
     return torch.ones_like(input_ids)
 
 
-def get_word_embeddings(model):
-    return model.bert.embeddings.word_embeddings.weight
+def get_word_embeddings(model, model_name):
+    return getattr(model, model_name).embeddings.word_embeddings.weight
 
 
-def construct_word_embedding(model, input_ids):
-    return model.bert.embeddings.word_embeddings(input_ids)
+def construct_word_embedding(model, model_name, input_ids):
+    return getattr(model, model_name).embeddings.word_embeddings(input_ids)
 
 
-def construct_position_embedding(model, position_ids):
-    return model.bert.embeddings.position_embeddings(position_ids)
+def construct_position_embedding(model, model_name, position_ids):
+    return getattr(model, model_name).embeddings.position_embeddings(
+        position_ids
+    )
 
 
-def construct_type_embedding(model, type_ids):
-    return model.bert.embeddings.token_type_embeddings(type_ids)
+def construct_type_embedding(model, model_name, type_ids):
+    return getattr(model, model_name).embeddings.token_type_embeddings(
+        type_ids
+    )
 
 
 def construct_sub_embedding(
     model,
+    model_name,
     input_ids,
     ref_input_ids,
     position_ids,
@@ -117,22 +154,26 @@ def construct_sub_embedding(
     type_ids,
     ref_type_ids,
 ):
-    input_embeddings = construct_word_embedding(model, input_ids)
-    ref_input_embeddings = construct_word_embedding(model, ref_input_ids)
+    input_embeddings = construct_word_embedding(model, model_name, input_ids)
+    ref_input_embeddings = construct_word_embedding(
+        model, model_name, ref_input_ids
+    )
     input_position_embeddings = construct_position_embedding(
-        model, position_ids
+        model, model_name, position_ids
     )
     ref_input_position_embeddings = construct_position_embedding(
-        model, ref_position_ids
+        model, model_name, ref_position_ids
     )
 
     if type_ids is not None:
-        input_type_embeddings = construct_type_embedding(model, type_ids)
+        input_type_embeddings = construct_type_embedding(
+            model, model_name, type_ids
+        )
     else:
         input_type_embeddings = None
     if ref_type_ids is not None:
         ref_input_type_embeddings = construct_type_embedding(
-            model, ref_type_ids
+            model, model_name, ref_type_ids
         )
     else:
         ref_input_type_embeddings = None
@@ -144,9 +185,11 @@ def construct_sub_embedding(
     )
 
 
-def get_base_token_emb(tokenizer, model, device):
+def get_base_token_emb(tokenizer, model, model_name, device):
     return construct_word_embedding(
-        model, torch.tensor([tokenizer.pad_token_id], device=device)
+        model,
+        model_name,
+        torch.tensor([tokenizer.pad_token_id], device=device),
     )
 
 
@@ -154,7 +197,7 @@ def get_tokens(tokenizer, text_ids):
     return tokenizer.convert_ids_to_tokens(text_ids.squeeze())
 
 
-def get_inputs(tokenizer, model, text, device):
+def get_inputs(tokenizer, model, model_name, text, device):
     ref_token_id = tokenizer.pad_token_id
     sep_token_id = tokenizer.sep_token_id
     cls_token_id = tokenizer.cls_token_id
@@ -163,11 +206,14 @@ def get_inputs(tokenizer, model, text, device):
         tokenizer, text, ref_token_id, sep_token_id, cls_token_id, device
     )
     position_ids, ref_position_ids = construct_input_ref_pos_id_pair(
-        model, input_ids, device
+        model, model_name, input_ids, device
     )
-    type_ids, ref_type_ids = construct_input_ref_token_type_pair(
-        input_ids, device
-    )
+    if model_name == "distilbert":
+        type_ids, ref_type_ids = None, None
+    else:
+        type_ids, ref_type_ids = construct_input_ref_token_type_pair(
+            input_ids, device
+        )
     attention_mask = construct_attention_mask(input_ids)
 
     (
@@ -176,6 +222,7 @@ def get_inputs(tokenizer, model, text, device):
         (type_embed, ref_type_embed),
     ) = construct_sub_embedding(
         model,
+        model_name,
         input_ids,
         ref_input_ids,
         position_ids,

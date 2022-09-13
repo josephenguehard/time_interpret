@@ -15,7 +15,7 @@ from tint.attr import (
     SequentialIntegratedGradients,
 )
 from tint.attr.models import scale_inputs
-from tint.models import Bert
+from tint.models import Bert, DistilBert, Roberta
 from tint.utils import get_progress_bars
 
 from experiments.sst2.knn import knn
@@ -29,6 +29,7 @@ from experiments.sst2.utils import (
     get_base_token_emb,
     get_inputs,
     load_mappings,
+    model_dict,
 )
 
 try:
@@ -44,6 +45,8 @@ def summarize_attributions(attributions):
 
 
 def main(
+    dataset_name: str,
+    model_name: str,
     explainers: List[str],
     device: str,
     steps: int,
@@ -57,33 +60,56 @@ def main(
 ):
     # Load data
     assert load_dataset is not None, "datasets is not installed."
-    dataset = load_dataset("glue", "sst2")["test"]
-    data = list(zip(dataset["sentence"], dataset["label"], dataset["idx"]))
+    if dataset_name == "sst2":
+        dataset = load_dataset("glue", "sst2")["test"]
+        data = list(zip(dataset["sentence"], dataset["label"], dataset["idx"]))
+    elif dataset_name == "imdb":
+        dataset = load_dataset("imdb")["test"]
+        data = list(zip(dataset["text"], dataset["label"]))
+    elif dataset_name == "rotten":
+        dataset = load_dataset("rotten_tomatoes")["test"]
+        data = list(zip(dataset["text"], dataset["label"]))
+    else:
+        raise NotImplementedError
 
     # Load model and tokenizer
     # This can be replaced with another hugingface model
-    tokenizer, model = Bert(
-        pretrained_model_name_or_path="textattack/bert-base-uncased-SST-2",
-    )
+    pretrained_model_name_or_path = model_dict[dataset_name][model_name]
+    if model_name == "bert":
+        tokenizer, model = Bert(
+            pretrained_model_name_or_path=pretrained_model_name_or_path,
+        )
+    elif model_name == "distilbert":
+        tokenizer, model = DistilBert(
+            pretrained_model_name_or_path=pretrained_model_name_or_path,
+        )
+    elif model_name == "roberta":
+        tokenizer, model = Roberta(
+            pretrained_model_name_or_path=pretrained_model_name_or_path,
+        )
+    else:
+        raise NotImplementedError
 
     # Load knn mapping
     if knns_path is not None:
         auxiliary_data = load_mappings(knns_path)
     else:
         auxiliary_data = knn(
-            tokenizer=tokenizer,
-            model=model,
+            dataset_name=dataset_name,
+            model_name=model_name,
             n_neighbors=n_neighbors,
             n_jobs=n_jobs,
+            tokenizer=tokenizer,
+            model=model,
         )
 
     # Get ref token embedding
     base_token_emb = get_base_token_emb(
-        tokenizer=tokenizer, model=model, device=device
+        tokenizer=tokenizer, model=model, model_name=model_name, device=device
     )
 
     # Prepare forward model
-    nn_forward_func = ForwardModel(model=model)
+    nn_forward_func = ForwardModel(model=model, model_name=model_name)
 
     # Prepare attributions and metrics
     attr = dict()
@@ -109,7 +135,11 @@ def main(
             ref_type_embed,
             attention_mask,
         ) = get_inputs(
-            tokenizer=tokenizer, model=model, text=row[0], device=device
+            tokenizer=tokenizer,
+            model=model,
+            model_name=model_name,
+            text=row[0],
+            device=device,
         )
 
         if "deep_lift" in explainers:
@@ -282,6 +312,18 @@ def main(
 def parse_args():
     parser = ArgumentParser()
     parser.add_argument(
+        "--dataset",
+        type=str,
+        default="sst2",
+        help="Dataset name. Must be either 'sst2', 'imdb' or 'rotten'.",
+    )
+    parser.add_argument(
+        "--model",
+        type=str,
+        default="bert",
+        help="Model name. Must be either 'bert', 'distilbert' or 'roberta'.",
+    )
+    parser.add_argument(
         "--explainers",
         type=str,
         default=[
@@ -325,7 +367,7 @@ def parse_args():
     parser.add_argument(
         "--knns-path",
         type=str,
-        default="knns/bert_sst2.pkl",
+        default="knns/sst2_bert.pkl",
         help="Where the knns are stored. If not provided, compute them.",
     )
     parser.add_argument(
@@ -358,6 +400,8 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
     main(
+        dataset_name=args.dataset,
+        model_name=args.model,
         explainers=args.explainers,
         device=args.device,
         steps=args.steps,
