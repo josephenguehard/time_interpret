@@ -12,6 +12,7 @@ from typing import List
 from tint.attr import (
     DiscretetizedIntegratedGradients,
     GeodesicIntegratedGradients,
+    SequentialIntegratedGradients,
 )
 from tint.attr.models import scale_inputs
 from tint.models import Bert
@@ -206,6 +207,19 @@ def main(
             _attr = summarize_attributions(_attr)
             attr["integrated_gradients"].append(_attr)
 
+        if "sequential_integrated_gradients" in explainers:
+            explainer = SequentialIntegratedGradients(nn_forward_func)
+            _attr = explainer.attribute(
+                input_embed,
+                additional_forward_args=(
+                    attention_mask,
+                    position_embed,
+                    type_embed,
+                ),
+            )
+            _attr = summarize_attributions(_attr)
+            attr["sequential_integrated_gradients"].append(_attr)
+
         # Append metrics
         for explainer, _attr in attr.items():
             _log_odds[explainer].append(
@@ -277,6 +291,7 @@ def parse_args():
             "gradient_shap",
             "input_x_gradient",
             "integrated_gradients",
+            "sequential_integrated_gradients",
         ],
         nargs="+",
         metavar="N",
