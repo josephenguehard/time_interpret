@@ -87,6 +87,7 @@
 <span class="kn">from</span> <span class="nn">captum.attr._utils.common</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">_format_input</span><span class="p">,</span>
     <span class="n">_format_input_baseline</span><span class="p">,</span>
+    <span class="n">_reshape_and_sum</span><span class="p">,</span>
     <span class="n">_validate_input</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">captum.log</span> <span class="kn">import</span> <span class="n">log_usage</span>
@@ -401,6 +402,13 @@
 
         <span class="n">_validate_input</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">baselines</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">,</span> <span class="n">method</span><span class="p">)</span>
 
+        <span class="c1"># If additional_forward_args has a tensor, assert inputs</span>
+        <span class="c1"># consists of one sample</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">additional_forward_args</span><span class="p">):</span>
+            <span class="k">assert</span> <span class="p">(</span>
+                <span class="nb">len</span><span class="p">(</span><span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span>
+            <span class="p">),</span> <span class="s2">&quot;Only one sample must be passed when additional_forward_args has a tensor.&quot;</span>
+
         <span class="c1"># Fit NearestNeighbors if not provided</span>
         <span class="n">n_neighbors</span> <span class="o">=</span> <span class="n">n_neighbors</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_neighbors</span>
         <span class="k">assert</span> <span class="n">n_neighbors</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;You must provide n_neighbors&quot;</span>
@@ -477,7 +485,7 @@
         <span class="c1"># Compute grads for inputs and baselines</span>
         <span class="k">if</span> <span class="n">internal_batch_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">num_examples</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">knns</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">grads</span> <span class="o">=</span> <span class="n">_batch_attribution</span><span class="p">(</span>
+            <span class="n">grads_norm</span><span class="p">,</span> <span class="n">total_grads</span> <span class="o">=</span> <span class="n">_batch_attribution</span><span class="p">(</span>
                 <span class="bp">self</span><span class="p">,</span>
                 <span class="n">num_examples</span><span class="p">,</span>
                 <span class="n">internal_batch_size</span><span class="p">,</span>
@@ -489,7 +497,7 @@
                 <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">grads</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attribute</span><span class="p">(</span>
+            <span class="n">grads_norm</span><span class="p">,</span> <span class="n">total_grads</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attribute</span><span class="p">(</span>
                 <span class="n">inputs</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">knn</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">knn</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">knns</span><span class="p">)),</span>
                 <span class="n">baselines</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="nb">id</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="nb">id</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">idx</span><span class="p">)),</span>
                 <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
@@ -497,17 +505,6 @@
                 <span class="n">n_steps</span><span class="o">=</span><span class="n">n_steps</span><span class="p">,</span>
                 <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
             <span class="p">)</span>
-
-        <span class="c1"># Compute norm of grads</span>
-        <span class="c1"># aggregates across all steps for each tensor in the input tuple</span>
-        <span class="c1"># total_grads has the same dimensionality as inputs</span>
-        <span class="n">grads_norm</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
-            <span class="n">torch</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span>
-                <span class="n">grad</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">grad</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,)),</span>
-                <span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-            <span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">grad</span> <span class="ow">in</span> <span class="n">grads</span>
-        <span class="p">)</span>
 
         <span class="c1"># Multiply by inputs - baselines</span>
         <span class="n">attributions_norm</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
@@ -525,6 +522,10 @@
                 <span class="n">graph</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">list</span><span class="p">())</span> <span class="o">+</span> <span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">a</span><span class="p">)]</span>
                 <span class="n">graph</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">list</span><span class="p">())</span> <span class="o">+</span> <span class="p">[(</span><span class="n">k</span><span class="p">,</span> <span class="n">a</span><span class="p">)]</span>
 
+        <span class="c1"># Def heuristic for A* algorithm: euclidean distance to target</span>
+        <span class="k">def</span> <span class="nf">heuristic</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">u</span><span class="p">]</span> <span class="o">-</span> <span class="n">data</span><span class="p">[</span><span class="n">v</span><span class="p">])</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
         <span class="c1"># Compute A* paths</span>
         <span class="n">inputs_idx</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
             <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">))</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>
@@ -534,7 +535,10 @@
             <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>
         <span class="p">)</span>
         <span class="n">paths</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
-            <span class="p">[</span><span class="n">astar_path</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">input_idx</span><span class="p">,</span> <span class="n">baseline_idx</span><span class="p">)]</span>
+            <span class="p">[</span>
+                <span class="n">astar_path</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">heuristic</span><span class="o">=</span><span class="n">heuristic</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">input_idx</span><span class="p">,</span> <span class="n">baseline_idx</span><span class="p">)</span>
+            <span class="p">]</span>
             <span class="k">for</span> <span class="n">graph</span><span class="p">,</span> <span class="n">input_idx</span><span class="p">,</span> <span class="n">baseline_idx</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
                 <span class="n">graphs</span><span class="p">,</span> <span class="n">inputs_idx</span><span class="p">,</span> <span class="n">baselines_idx</span>
             <span class="p">)</span>
@@ -562,7 +566,7 @@
 
         <span class="c1"># Get grads of each path</span>
         <span class="n">total_grads</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
-            <span class="n">grad</span><span class="p">[:,</span> <span class="n">grad_idx</span><span class="p">]</span> <span class="k">for</span> <span class="n">grad</span><span class="p">,</span> <span class="n">grad_idx</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">grads</span><span class="p">,</span> <span class="n">grads_idx</span><span class="p">)</span>
+            <span class="n">grad</span><span class="p">[:,</span> <span class="n">grad_idx</span><span class="p">]</span> <span class="k">for</span> <span class="n">grad</span><span class="p">,</span> <span class="n">grad_idx</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">total_grads</span><span class="p">,</span> <span class="n">grads_idx</span><span class="p">)</span>
         <span class="p">)</span>
 
         <span class="c1"># Split for each path</span>
@@ -574,7 +578,7 @@
         <span class="c1"># Sum over points and paths</span>
         <span class="c1"># and stack result</span>
         <span class="n">total_grads</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
-            <span class="nb">tuple</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">grad</span><span class="p">)</span> <span class="k">for</span> <span class="n">grad</span> <span class="ow">in</span> <span class="n">total_grads</span>
+            <span class="nb">tuple</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">grad</span><span class="p">)</span> <span class="k">for</span> <span class="n">grad</span> <span class="ow">in</span> <span class="n">total_grads</span>
         <span class="p">)</span>
         <span class="n">total_grads</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">grad</span><span class="p">)</span> <span class="k">for</span> <span class="n">grad</span> <span class="ow">in</span> <span class="n">total_grads</span><span class="p">)</span>
 
@@ -614,7 +618,7 @@
         <span class="n">step_sizes_and_alphas</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span>
             <span class="kc">None</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span>
         <span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]):</span>
         <span class="k">if</span> <span class="n">step_sizes_and_alphas</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># retrieve step size and scaling factor for specified</span>
             <span class="c1"># approximation method</span>
@@ -672,7 +676,25 @@
             <span class="k">for</span> <span class="n">scaled_grad</span><span class="p">,</span> <span class="n">grad</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">scaled_grads</span><span class="p">,</span> <span class="n">grads</span><span class="p">)</span>
         <span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">scaled_grads</span>
+        <span class="c1"># Compute norm of grads</span>
+        <span class="n">grads_norm</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span>
+                <span class="n">grad</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">grad</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,)),</span>
+                <span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">grad</span> <span class="ow">in</span> <span class="n">scaled_grads</span>
+        <span class="p">)</span>
+
+        <span class="c1"># aggregates across all steps for each tensor in the input tuple</span>
+        <span class="c1"># total_grads has the same dimensionality as inputs</span>
+        <span class="n">total_grads</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">_reshape_and_sum</span><span class="p">(</span>
+                <span class="n">scaled_grad</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">,</span> <span class="n">grad</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="n">n_steps</span><span class="p">,</span> <span class="n">grad</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">scaled_grad</span><span class="p">,</span> <span class="n">grad</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">scaled_grads</span><span class="p">,</span> <span class="n">grads</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">grads_norm</span><span class="p">,</span> <span class="n">total_grads</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_get_knns</span><span class="p">(</span>

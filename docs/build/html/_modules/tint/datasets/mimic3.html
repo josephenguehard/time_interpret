@@ -152,6 +152,8 @@
 <span class="sd">        for more information.</span>
 
 <span class="sd">    Args:</span>
+<span class="sd">        task (str): Name of the task to perform. Either ``&#39;mortality&#39;`` or</span>
+<span class="sd">            ``&#39;blood_pressure&#39;``. Default to ``&#39;mortality&#39;``</span>
 <span class="sd">        data_dir (str): Where to download files.</span>
 <span class="sd">        batch_size (int): Batch size. Default to 32</span>
 <span class="sd">        n_folds (int): Number of folds for cross validation. If ``None``,</span>
@@ -178,6 +180,7 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
+        <span class="n">task</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mortality&quot;</span><span class="p">,</span>
         <span class="n">data_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
             <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">file_dir</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
             <span class="s2">&quot;data&quot;</span><span class="p">,</span>
@@ -199,6 +202,12 @@
             <span class="n">num_workers</span><span class="o">=</span><span class="n">num_workers</span><span class="p">,</span>
             <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
         <span class="p">)</span>
+
+        <span class="k">assert</span> <span class="n">task</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="s2">&quot;mortality&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;blood_pressure&quot;</span><span class="p">,</span>
+        <span class="p">],</span> <span class="sa">f</span><span class="s2">&quot;task must be either mortality or blood_pressure, got </span><span class="si">{</span><span class="n">task</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task</span> <span class="o">=</span> <span class="n">task</span>
 
         <span class="c1"># Init mean and std</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_mean</span> <span class="o">=</span> <span class="kc">None</span>
@@ -801,7 +810,12 @@
             <span class="n">data</span> <span class="o">=</span> <span class="n">pkl</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
 
         <span class="n">features</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">Tensor</span><span class="p">([</span><span class="n">x</span> <span class="k">for</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span> <span class="ow">in</span> <span class="n">data</span><span class="p">])</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-        <span class="n">labels</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">Tensor</span><span class="p">([</span><span class="n">y</span> <span class="k">for</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span> <span class="ow">in</span> <span class="n">data</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">task</span> <span class="o">==</span> <span class="s2">&quot;mortality&quot;</span><span class="p">:</span>
+            <span class="n">labels</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">Tensor</span><span class="p">([</span><span class="n">y</span> <span class="k">for</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span> <span class="ow">in</span> <span class="n">data</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">labels</span> <span class="o">=</span> <span class="n">features</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">22</span><span class="p">]</span>
+            <span class="n">features</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">features</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">20</span><span class="p">],</span> <span class="n">features</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">23</span><span class="p">:]],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
 
         <span class="c1"># Compute mean and std</span>
         <span class="k">if</span> <span class="n">split</span> <span class="o">==</span> <span class="s2">&quot;train&quot;</span><span class="p">:</span>
@@ -821,7 +835,7 @@
 
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="n">features</span><span class="o">.</span><span class="n">float</span><span class="p">(),</span>
-            <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="n">labels</span><span class="o">.</span><span class="n">long</span><span class="p">(),</span>
+            <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="n">labels</span><span class="o">.</span><span class="n">long</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">task</span> <span class="o">==</span> <span class="s2">&quot;mortality&quot;</span> <span class="k">else</span> <span class="n">labels</span><span class="o">.</span><span class="n">float</span><span class="p">(),</span>
         <span class="p">}</span></div>
 
 

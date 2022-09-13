@@ -147,7 +147,7 @@
         <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="BayesShap"><a class="viewcode-back" href="../../../attr.html#tint.attr.BayesShap">[docs]</a><span class="k">class</span> <span class="nc">BayesShap</span><span class="p">(</span><span class="n">KernelShap</span><span class="p">):</span>
+<div class="viewcode-block" id="BayesKernelShap"><a class="viewcode-back" href="../../../attr.html#tint.attr.BayesKernelShap">[docs]</a><span class="k">class</span> <span class="nc">BayesKernelShap</span><span class="p">(</span><span class="n">KernelShap</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Bayesian version of KernelShap.</span>
 
@@ -187,13 +187,13 @@
 
 <span class="sd">    Examples:</span>
 <span class="sd">        &gt;&gt;&gt; import torch as th</span>
-<span class="sd">        &gt;&gt;&gt; from tint.attr import BayesShap</span>
+<span class="sd">        &gt;&gt;&gt; from tint.attr import BayesKernelShap</span>
 <span class="sd">        &gt;&gt;&gt; from tint.models import MLP</span>
 <span class="sd">        &lt;BLANKLINE&gt;</span>
 <span class="sd">        &gt;&gt;&gt; inputs = th.rand(8, 5)</span>
 <span class="sd">        &gt;&gt;&gt; mlp = MLP([5, 3, 1])</span>
 <span class="sd">        &lt;BLANKLINE&gt;</span>
-<span class="sd">        &gt;&gt;&gt; explainer = BayesShap(mlp)</span>
+<span class="sd">        &gt;&gt;&gt; explainer = BayesKernelShap(mlp)</span>
 <span class="sd">        &gt;&gt;&gt; attr = explainer.attribute(inputs)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
