@@ -14,9 +14,11 @@ Summary
 
     tint.models.Bert
     tint.models.CNN
+    tint.models.DistilBert
     tint.models.MLP
     tint.models.Net
     tint.models.RNN
+    tint.models.Roberta
     tint.models.TransformerEncoder
 
 

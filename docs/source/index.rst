@@ -145,10 +145,12 @@ These models can easily be used and trained with this framework.
 .. autosummary::
 
     tint.models.Bert
+    tint.models.DistilBert
     tint.models.CNN
     tint.models.MLP
     tint.models.Net
     tint.models.RNN
+    tint.models.Roberta
     tint.models.TransformerEncoder
 
 
