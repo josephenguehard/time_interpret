@@ -6,11 +6,11 @@ from sklearn.neighbors import kneighbors_graph
 
 from tint.models import Bert, DistilBert, Roberta
 
-from experiments.sst2.utils import get_word_embeddings, model_dict
+from experiments.nlp.utils import get_word_embeddings, model_dict
 
 
 def knn(
-    dataset_name: str = "sst2",
+    dataset_name: str = "nlp",
     model_name: str = "bert",
     n_neighbors: int = 500,
     n_jobs: int = None,
@@ -60,8 +60,8 @@ def parse_args():
     parser.add_argument(
         "--dataset",
         type=str,
-        default="sst2",
-        help="Dataset name. Must be either 'sst2', 'imdb' or 'rotten'.",
+        default="nlp",
+        help="Dataset name. Must be either 'nlp', 'imdb' or 'rotten'.",
     )
     parser.add_argument(
         "--model",

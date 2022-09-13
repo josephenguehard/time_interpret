@@ -4,7 +4,7 @@ import torch.nn as nn
 
 
 model_dict = {
-    "sst2": {
+    "nlp": {
         "bert": "textattack/bert-base-uncased-SST-2",
         "distilbert": "distilbert-base-uncased-finetuned-sst-2-english",
         "roberta": "textattack/roberta-base-SST-2",

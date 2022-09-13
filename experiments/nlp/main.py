@@ -18,13 +18,13 @@ from tint.attr.models import scale_inputs
 from tint.models import Bert, DistilBert, Roberta
 from tint.utils import get_progress_bars
 
-from experiments.sst2.knn import knn
-from experiments.sst2.metrics import (
+from experiments.nlp.knn import knn
+from experiments.nlp.metrics import (
     eval_comprehensiveness,
     eval_log_odds,
     eval_sufficiency,
 )
-from experiments.sst2.utils import (
+from experiments.nlp.utils import (
     ForwardModel,
     get_base_token_emb,
     get_inputs,
@@ -60,8 +60,8 @@ def main(
 ):
     # Load data
     assert load_dataset is not None, "datasets is not installed."
-    if dataset_name == "sst2":
-        dataset = load_dataset("glue", "sst2")["test"]
+    if dataset_name == "nlp":
+        dataset = load_dataset("glue", "nlp")["test"]
         data = list(zip(dataset["sentence"], dataset["label"], dataset["idx"]))
     elif dataset_name == "imdb":
         dataset = load_dataset("imdb")["test"]
@@ -314,8 +314,8 @@ def parse_args():
     parser.add_argument(
         "--dataset",
         type=str,
-        default="sst2",
-        help="Dataset name. Must be either 'sst2', 'imdb' or 'rotten'.",
+        default="nlp",
+        help="Dataset name. Must be either 'nlp', 'imdb' or 'rotten'.",
     )
     parser.add_argument(
         "--model",
