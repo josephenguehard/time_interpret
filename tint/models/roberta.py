@@ -14,6 +14,7 @@ def Roberta(
     pretrained_model_name_or_path: str = None,
     config=None,
     vocab_file=None,
+    cache_dir=None,
     **kwargs
 ):
     r"""
@@ -28,6 +29,7 @@ def Roberta(
             pre-trained model, otherwise unused. Default to ``None``
         vocab_file: Path to a vocab file for the tokenizer.
             Default to ``None``
+        cache_dir: Where to save pretrained model. Default to ``None``
         kwargs: Additional arguments for the tokenizer if not pretrained.
 
     Returns:
@@ -58,9 +60,13 @@ def Roberta(
 
     # Otherwise return untrained roberta model
     return (
-        RobertaTokenizer.from_pretrained(pretrained_model_name_or_path),
+        RobertaTokenizer.from_pretrained(
+            pretrained_model_name_or_path,
+            cache_dir=cache_dir,
+        ),
         RobertaForSequenceClassification.from_pretrained(
             pretrained_model_name_or_path,
+            cache_dir=cache_dir,
             return_dict=False,
         ),
     )

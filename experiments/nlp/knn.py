@@ -10,7 +10,7 @@ from experiments.nlp.utils import get_word_embeddings, model_dict
 
 
 def knn(
-    dataset_name: str = "nlp",
+    dataset_name: str = "sst2",
     model_name: str = "bert",
     n_neighbors: int = 500,
     n_jobs: int = None,
@@ -24,14 +24,17 @@ def knn(
         if model_name == "bert":
             tokenizer, model = Bert(
                 pretrained_model_name_or_path=pretrained_model_name_or_path,
+                cache_dir="models",
             )
         elif model_name == "distilbert":
             tokenizer, model = DistilBert(
                 pretrained_model_name_or_path=pretrained_model_name_or_path,
+                cache_dir="models",
             )
         elif model_name == "roberta":
             tokenizer, model = Roberta(
                 pretrained_model_name_or_path=pretrained_model_name_or_path,
+                cache_dir="models",
             )
         else:
             raise NotImplementedError
@@ -60,8 +63,8 @@ def parse_args():
     parser.add_argument(
         "--dataset",
         type=str,
-        default="nlp",
-        help="Dataset name. Must be either 'nlp', 'imdb' or 'rotten'.",
+        default="sst2",
+        help="Dataset name. Must be either 'sst2', 'imdb' or 'rotten'.",
     )
     parser.add_argument(
         "--model",

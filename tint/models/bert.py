@@ -14,6 +14,7 @@ def Bert(
     pretrained_model_name_or_path: str = None,
     config=None,
     vocab_file=None,
+    cache_dir=None,
     **kwargs
 ):
     r"""
@@ -27,6 +28,7 @@ def Bert(
             model, otherwise unused. Default to ``None``
         vocab_file: Path to a vocab file for the tokenizer.
             Default to ``None``
+        cache_dir: Where to save pretrained model. Default to ``None``
         kwargs: Additional arguments for the tokenizer if not pretrained.
 
     Returns:
@@ -57,9 +59,13 @@ def Bert(
 
     # Otherwise return untrained bert model
     return (
-        BertTokenizer.from_pretrained(pretrained_model_name_or_path),
+        BertTokenizer.from_pretrained(
+            pretrained_model_name_or_path,
+            cache_dir=cache_dir,
+        ),
         BertForSequenceClassification.from_pretrained(
             pretrained_model_name_or_path,
+            cache_dir=cache_dir,
             return_dict=False,
         ),
     )

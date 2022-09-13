@@ -11,7 +11,6 @@ from typing import List
 
 from tint.attr import (
     DiscretetizedIntegratedGradients,
-    GeodesicIntegratedGradients,
     SequentialIntegratedGradients,
 )
 from tint.attr.models import scale_inputs
@@ -60,14 +59,14 @@ def main(
 ):
     # Load data
     assert load_dataset is not None, "datasets is not installed."
-    if dataset_name == "nlp":
-        dataset = load_dataset("glue", "nlp")["test"]
+    if dataset_name == "sst2":
+        dataset = load_dataset("glue", "sst2", cache_dir="datasets")["test"]
         data = list(zip(dataset["sentence"], dataset["label"], dataset["idx"]))
     elif dataset_name == "imdb":
-        dataset = load_dataset("imdb")["test"]
+        dataset = load_dataset("imdb", cache_dir="datasets")["test"]
         data = list(zip(dataset["text"], dataset["label"]))
     elif dataset_name == "rotten":
-        dataset = load_dataset("rotten_tomatoes")["test"]
+        dataset = load_dataset("rotten_tomatoes", cache_dir="datasets")["test"]
         data = list(zip(dataset["text"], dataset["label"]))
     else:
         raise NotImplementedError
@@ -78,14 +77,17 @@ def main(
     if model_name == "bert":
         tokenizer, model = Bert(
             pretrained_model_name_or_path=pretrained_model_name_or_path,
+            cache_dir="models",
         )
     elif model_name == "distilbert":
         tokenizer, model = DistilBert(
             pretrained_model_name_or_path=pretrained_model_name_or_path,
+            cache_dir="models",
         )
     elif model_name == "roberta":
         tokenizer, model = Roberta(
             pretrained_model_name_or_path=pretrained_model_name_or_path,
+            cache_dir="models",
         )
     else:
         raise NotImplementedError
@@ -178,24 +180,6 @@ def main(
             )
             _attr = summarize_attributions(_attr)
             attr["discretized_integrated_gradients"].append(_attr)
-
-        if "geodesic_integrated_gradients" in explainers:
-            explainer = GeodesicIntegratedGradients(
-                nn_forward_func,
-                data=torch.from_numpy(auxiliary_data[1]),
-                n_neighbors=5,
-            )
-            _attr = explainer.attribute(
-                input_embed[0],
-                additional_forward_args=(
-                    attention_mask,
-                    position_embed,
-                    type_embed,
-                ),
-                internal_batch_size=1000,
-            )
-            _attr = summarize_attributions(_attr)
-            attr["geodesic_integrated_gradients"].append(_attr)
 
         if "gradient_shap" in explainers:
             explainer = GradientShap(nn_forward_func)
@@ -314,8 +298,8 @@ def parse_args():
     parser.add_argument(
         "--dataset",
         type=str,
-        default="nlp",
-        help="Dataset name. Must be either 'nlp', 'imdb' or 'rotten'.",
+        default="sst2",
+        help="Dataset name. Must be either 'sst2', 'imdb' or 'rotten'.",
     )
     parser.add_argument(
         "--model",
@@ -329,7 +313,6 @@ def parse_args():
         default=[
             "deep_lift",
             "discretized_integrated_gradients",
-            "geodesic_integrated_gradients",
             "gradient_shap",
             "input_x_gradient",
             "integrated_gradients",

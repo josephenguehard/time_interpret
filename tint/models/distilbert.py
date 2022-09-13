@@ -14,6 +14,7 @@ def DistilBert(
     pretrained_model_name_or_path: str = None,
     config=None,
     vocab_file=None,
+    cache_dir=None,
     **kwargs
 ):
     r"""
@@ -28,6 +29,7 @@ def DistilBert(
             pre-trained model, otherwise unused. Default to ``None``
         vocab_file: Path to a vocab file for the tokenizer.
             Default to ``None``
+        cache_dir: Where to save pretrained model. Default to ``None``
         kwargs: Additional arguments for the tokenizer if not pretrained.
 
     Returns:
@@ -58,9 +60,13 @@ def DistilBert(
 
     # Otherwise return untrained distilbert model
     return (
-        DistilBertTokenizer.from_pretrained(pretrained_model_name_or_path),
+        DistilBertTokenizer.from_pretrained(
+            pretrained_model_name_or_path,
+            cache_dir=cache_dir,
+        ),
         DistilBertForSequenceClassification.from_pretrained(
             pretrained_model_name_or_path,
+            cache_dir=cache_dir,
             return_dict=False,
         ),
     )
