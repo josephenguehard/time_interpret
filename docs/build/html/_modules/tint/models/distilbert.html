@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>tint.models.bert &mdash; Time Interpret 0.1.0 documentation</title>
+  <title>tint.models.distilbert &mdash; Time Interpret 0.1.0 documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
@@ -67,7 +67,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
           <li><a href="../../index.html">Module code</a> &raquo;</li>
-      <li>tint.models.bert</li>
+      <li>tint.models.distilbert</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -76,68 +76,69 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <h1>Source code for tint.models.bert</h1><div class="highlight"><pre>
+  <h1>Source code for tint.models.distilbert</h1><div class="highlight"><pre>
 <span></span><span class="k">try</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">transformers.models.bert</span> <span class="kn">import</span> <span class="p">(</span>
-        <span class="n">BertConfig</span><span class="p">,</span>
-        <span class="n">BertTokenizer</span><span class="p">,</span>
-        <span class="n">BertForSequenceClassification</span><span class="p">,</span>
+    <span class="kn">from</span> <span class="nn">transformers.models.distilbert</span> <span class="kn">import</span> <span class="p">(</span>
+        <span class="n">DistilBertConfig</span><span class="p">,</span>
+        <span class="n">DistilBertTokenizer</span><span class="p">,</span>
+        <span class="n">DistilBertForSequenceClassification</span><span class="p">,</span>
     <span class="p">)</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-    <span class="n">BertConfig</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">BertTokenizer</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">BertForSequenceClassification</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">DistilBertConfig</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">DistilBertTokenizer</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">DistilBertForSequenceClassification</span> <span class="o">=</span> <span class="kc">None</span>
 
 
-<div class="viewcode-block" id="Bert"><a class="viewcode-back" href="../../../models.html#tint.models.Bert">[docs]</a><span class="k">def</span> <span class="nf">Bert</span><span class="p">(</span>
+<div class="viewcode-block" id="DistilBert"><a class="viewcode-back" href="../../../models.html#tint.models.DistilBert">[docs]</a><span class="k">def</span> <span class="nf">DistilBert</span><span class="p">(</span>
     <span class="n">pretrained_model_name_or_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">config</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">vocab_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span>
 <span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Get Bert model for sentence classification, either as a pre-trained model</span>
-<span class="sd">    or from scratch.</span>
+<span class="sd">    Get DistilBert model for sentence classification, either as a pre-trained</span>
+<span class="sd">    model or from scratch.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        pretrained_model_name_or_path: Path of the pre-trained model.</span>
-<span class="sd">            If ``None``, return an untrained Bert model. Default to ``None``</span>
-<span class="sd">        config: Config of the Bert. Required when not loading a pre-trained</span>
-<span class="sd">            model, otherwise unused. Default to ``None``</span>
+<span class="sd">            If ``None``, return an untrained DistilBert model.</span>
+<span class="sd">            Default to ``None``</span>
+<span class="sd">        config: Config of the DistilBert. Required when not loading a</span>
+<span class="sd">            pre-trained model, otherwise unused. Default to ``None``</span>
 <span class="sd">        vocab_file: Path to a vocab file for the tokenizer.</span>
 <span class="sd">            Default to ``None``</span>
 <span class="sd">        kwargs: Additional arguments for the tokenizer if not pretrained.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        2-element tuple of **Bert Tokenizer**, **Bert Model**:</span>
-<span class="sd">        - **Bert Tokenizer** (*BertTokenizer*):</span>
-<span class="sd">            Bert Tokenizer.</span>
-<span class="sd">        - **Bert Model** (*BertForSequenceClassification*):</span>
-<span class="sd">            Bert model for sentence classification.</span>
+<span class="sd">        2-element tuple of **DistilBert Tokenizer**, **DistilBert Model**:</span>
+<span class="sd">        - **DistilBert Tokenizer** (*DistilBertTokenizer*):</span>
+<span class="sd">            DistilBert Tokenizer.</span>
+<span class="sd">        - **DistilBert Model** (*DistilBertForSequenceClassification*):</span>
+<span class="sd">            DistilBert model for sentence classification.</span>
 
 <span class="sd">    References:</span>
-<span class="sd">        https://huggingface.co/docs/transformers/main/en/model_doc/bert</span>
+<span class="sd">        https://huggingface.co/docs/transformers/main/en/model_doc/distilbert</span>
 
 <span class="sd">    Examples:</span>
-<span class="sd">        &gt;&gt;&gt; from tint.models import Bert</span>
+<span class="sd">        &gt;&gt;&gt; from tint.models import DistilBert</span>
 <span class="sd">         &lt;BLANKLINE&gt;</span>
-<span class="sd">         &gt;&gt;&gt; tokenizer, model = Bert(&quot;bert-base-uncased&quot;)</span>
+<span class="sd">         &gt;&gt;&gt; tokenizer, model = DistilBert(&quot;distilbert-base-uncased&quot;)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">assert</span> <span class="n">BertConfig</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;transformers is not installed.&quot;</span>
+    <span class="k">assert</span> <span class="n">DistilBertConfig</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;transformers is not installed.&quot;</span>
 
     <span class="c1"># Load pretrained model if path provided</span>
     <span class="k">if</span> <span class="n">pretrained_model_name_or_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="n">config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Bert config must be provided.&quot;</span>
+        <span class="k">assert</span> <span class="n">config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;DistilBert config must be provided.&quot;</span>
         <span class="k">assert</span> <span class="n">vocab_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;vocab file must be provided.&quot;</span>
         <span class="k">return</span> <span class="p">(</span>
-            <span class="n">BertTokenizer</span><span class="p">(</span><span class="n">vocab_file</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span>
-            <span class="n">BertForSequenceClassification</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">),</span>
+            <span class="n">DistilBertTokenizer</span><span class="p">(</span><span class="n">vocab_file</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">),</span>
+            <span class="n">DistilBertForSequenceClassification</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">),</span>
         <span class="p">)</span>
 
-    <span class="c1"># Otherwise return untrained bert model</span>
+    <span class="c1"># Otherwise return untrained distilbert model</span>
     <span class="k">return</span> <span class="p">(</span>
-        <span class="n">BertTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">pretrained_model_name_or_path</span><span class="p">),</span>
-        <span class="n">BertForSequenceClassification</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span>
+        <span class="n">DistilBertTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">pretrained_model_name_or_path</span><span class="p">),</span>
+        <span class="n">DistilBertForSequenceClassification</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span>
             <span class="n">pretrained_model_name_or_path</span><span class="p">,</span>
             <span class="n">return_dict</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="p">),</span>
