@@ -60,7 +60,7 @@ def main(
         deterministic=deterministic,
         logger=TensorBoardLogger(
             save_dir=".",
-            version=random.randint(0, int(1e9)),
+            version=random.getrandbits(128),
         ),
     )
     trainer.fit(classifier, datamodule=hawkes)

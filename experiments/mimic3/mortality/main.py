@@ -32,6 +32,7 @@ from tint.metrics import (
     log_odds,
     sufficiency,
 )
+from tint.models import MLP
 
 from experiments.mimic3.mortality.classifier import MimicClassifierNet
 
@@ -69,7 +70,7 @@ def main(
         deterministic=deterministic,
         logger=TensorBoardLogger(
             save_dir=".",
-            version=random.randint(0, int(1e9)),
+            version=random.getrandbits(128),
         ),
     )
     trainer.fit(classifier, datamodule=mimic3)
@@ -104,13 +105,14 @@ def main(
             deterministic=deterministic,
             logger=TensorBoardLogger(
                 save_dir=".",
-                version=random.randint(0, int(1e9)),
+                version=random.getrandbits(128),
             ),
         )
         mask = BayesMaskNet(
             forward_func=classifier,
             distribution="normal",
             hard=False,
+            model=MLP([x_test.shape[-1], x_test.shape[-1]]),
             eps=1e-5,
             loss="cross_entropy",
             optim="adam",
@@ -143,7 +145,7 @@ def main(
             deterministic=deterministic,
             logger=TensorBoardLogger(
                 save_dir=".",
-                version=random.randint(0, int(1e9)),
+                version=random.getrandbits(128),
             ),
         )
         mask = MaskNet(
@@ -176,7 +178,7 @@ def main(
             deterministic=deterministic,
             logger=TensorBoardLogger(
                 save_dir=".",
-                version=random.randint(0, int(1e9)),
+                version=random.getrandbits(128),
             ),
         )
         explainer = Fit(
@@ -262,7 +264,7 @@ def main(
                 deterministic=deterministic,
                 logger=TensorBoardLogger(
                     save_dir=".",
-                    version=random.randint(0, int(1e9)),
+                    version=random.getrandbits(128),
                 ),
             ),
         )
