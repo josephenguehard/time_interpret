@@ -30,6 +30,7 @@ def Bert(
         kwargs: Additional arguments for the tokenizer if not pretrained.
 
     Returns:
+        2-element tuple of **Bert Tokenizer**, **Bert Model**:
         - **Bert Tokenizer** (*BertTokenizer*):
             Bert Tokenizer.
         - **Bert Model** (*BertForSequenceClassification*):

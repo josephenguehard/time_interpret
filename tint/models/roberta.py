@@ -31,6 +31,7 @@ def Roberta(
         kwargs: Additional arguments for the tokenizer if not pretrained.
 
     Returns:
+        2-element tuple of **Roberta Tokenizer**, **Roberta Model**:
         - **Roberta Tokenizer** (*RobertaTokenizer*):
             Roberta Tokenizer.
         - **Roberta Model** (*RobertaForSequenceClassification*):

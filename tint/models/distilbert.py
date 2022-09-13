@@ -31,6 +31,7 @@ def DistilBert(
         kwargs: Additional arguments for the tokenizer if not pretrained.
 
     Returns:
+        2-element tuple of **DistilBert Tokenizer**, **DistilBert Model**:
         - **DistilBert Tokenizer** (*DistilBertTokenizer*):
             DistilBert Tokenizer.
         - **DistilBert Model** (*DistilBertForSequenceClassification*):
