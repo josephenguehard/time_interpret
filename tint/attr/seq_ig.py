@@ -51,6 +51,17 @@ class SequentialIntegratedGradients(GradientAttribution):
             In case of integrated gradients, if `multiply_by_inputs`
             is set to True, final sensitivity scores are being multiplied by
             (inputs - baselines).
+
+    Examples:
+        >>> import torch as th
+        >>> from tint.attr import SequentialIntegratedGradients
+        >>> from tint.models import MLP
+        <BLANKLINE>
+        >>> inputs = th.rand(8, 7, 5)
+        >>> mlp = MLP([5, 3, 1])
+        <BLANKLINE>
+        >>> explainer = SequentialIntegratedGradients(mlp)
+        >>> attr = explainer.attribute(inputs, target=0)
     """
 
     def __init__(
