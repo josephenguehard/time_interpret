@@ -64,7 +64,9 @@ class HawkesClassifierNet(Net):
         window = self.window * th.ones_like(x, device=x.device)
         t = th.randint(1, idx.min().item(), (1,)).item()
 
-        x = th.cat([x, th.zeros_like(x[:, 0, :].unsqueeze(1), device=x.device)], dim=1)
+        x = th.cat(
+            [x, th.zeros_like(x[:, 0, :].unsqueeze(1), device=x.device)], dim=1
+        )
         x.scatter_(1, idx, window)
         x = th.cat([x[:, :t], x[:, 1 : t + 1], y[:, :t].unsqueeze(-1)], dim=-1)
         y = y[:, t]
@@ -83,7 +85,9 @@ class HawkesClassifierNet(Net):
         idx = (x > 0).sum(1, keepdim=True)
         window = self.window * th.ones_like(x, device=x.device)
 
-        x = th.cat([x, th.zeros_like(x[:, 0, :].unsqueeze(1), device=x.device)], dim=1)
+        x = th.cat(
+            [x, th.zeros_like(x[:, 0, :].unsqueeze(1), device=x.device)], dim=1
+        )
         x.scatter_(1, idx, window)
         x = th.cat([x[:, :-1], x[:, 1:], y[:, :-1].unsqueeze(-1)], dim=-1)
         return self(x)
