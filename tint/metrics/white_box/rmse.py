@@ -4,7 +4,7 @@ from captum.log import log_usage
 from captum._utils.typing import TensorOrTupleOfTensorsGeneric
 
 from sklearn.metrics import mean_squared_error
-from typing import Tuple, cast
+from typing import Tuple
 
 from .base import _base_white_box_metric
 
@@ -18,7 +18,7 @@ def _rmse(
         mean_squared_error(true_attr, attr, squared=False)
         for true_attr, attr in zip(true_attributions, attributions)
     )
-    return cast(Tuple[float], rmse_tpl)
+    return tuple(float(x) for x in rmse_tpl)
 
 
 @log_usage()

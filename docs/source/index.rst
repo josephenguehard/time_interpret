@@ -135,6 +135,9 @@ These metrics differ depending on if the true saliency is known:
     tint.metrics.white_box.aur
     tint.metrics.white_box.entropy
     tint.metrics.white_box.information
+    tint.metrics.white_box.mae
+    tint.metrics.white_box.mse
+    tint.metrics.white_box.rmse
     tint.metrics.white_box.roc_auc
 
 
