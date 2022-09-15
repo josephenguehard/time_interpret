@@ -1,1 +1,1 @@
-Seed,Fold,Explainer,AUP,AUR,Information,Entropy,AUROC,AUPRC
+Seed,Fold,Explainer,MAE,MSE,RMSE

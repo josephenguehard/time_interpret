@@ -83,9 +83,9 @@ class Hawkes(DataModule):
         )
 
         self.mu = mu or [0.05, 0.05]
-        self.alpha = alpha or [[0.05, 0.2], [0.3, 0.1]]
-        self.decay = decay or [[1.0, 1.0], [2.0, 1.0]]
-        self.window = window or 1000
+        self.alpha = alpha or [[0.5, 0.05], [0.02, 0.3]]
+        self.decay = decay or [[1.0, 0.0], [0.0, 1.0]]
+        self.window = window or 100
 
     def download(
         self,
@@ -169,7 +169,7 @@ class Hawkes(DataModule):
                     i=i,
                     j=j,
                     kernel=HawkesKernelExp(
-                        intensity=alpha[i][j] / decay[i][j], decay=decay[i][j]
+                        intensity=alpha[i][j], decay=decay[i][j]
                     ),
                 )
             hawkes.set_baseline(i, mu[i])

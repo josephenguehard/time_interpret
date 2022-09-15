@@ -9,20 +9,11 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from typing import List
 
 from tint.attr import (
-    TemporalAugmentedOcclusion,
     TemporalIntegratedGradients,
-    TemporalOcclusion,
     TimeForwardTunnel,
 )
 from tint.datasets import Hawkes
-from tint.metrics.white_box import (
-    aup,
-    aur,
-    information,
-    entropy,
-    roc_auc,
-    auprc,
-)
+from tint.metrics.white_box import mae, mse, rmse
 
 
 from experiments.hawkes.classifier import HawkesClassifierNet
@@ -44,7 +35,7 @@ def main(
 
     # Create classifier
     classifier = HawkesClassifierNet(
-        feature_size=1,
+        feature_size=3,
         n_state=2,
         hidden_size=200,
         regres=True,
@@ -55,8 +46,9 @@ def main(
 
     # Train classifier
     trainer = Trainer(
-        max_epochs=50,
+        max_epochs=250,
         accelerator=accelerator,
+        devices=1,
         deterministic=deterministic,
         logger=TensorBoardLogger(
             save_dir=".",
@@ -105,7 +97,8 @@ def main(
                     show_progress=True,
                 ).abs()
             )
-        attr["deep_lift"] = th.cat(_attr, dim=-1).gather(-1, y_test)
+        _attr = th.cat(_attr, dim=-1).gather(-1, y_test).abs()
+        attr["deep_lift"] = _attr / _attr.sum(2, keepdim=True)
 
     if "gradient_shap" in explainers:
         explainer = TimeForwardTunnel(GradientShap(classifier))
@@ -122,7 +115,8 @@ def main(
                     show_progress=True,
                 ).abs()
             )
-        attr["gradient_shap"] = th.cat(_attr, dim=-1).gather(-1, y_test)
+        _attr = th.cat(_attr, dim=-1).gather(-1, y_test).abs()
+        attr["gradient_shap"] = _attr / _attr.sum(2, keepdim=True)
 
     if "integrated_gradients" in explainers:
         explainer = TimeForwardTunnel(IntegratedGradients(classifier))
@@ -137,44 +131,8 @@ def main(
                     show_progress=True,
                 ).abs()
             )
-        attr["integrated_gradients"] = th.cat(_attr, dim=-1).gather(-1, y_test)
-
-    if "augmented_occlusion" in explainers:
-        explainer = TimeForwardTunnel(
-            TemporalAugmentedOcclusion(
-                classifier, data=x_train, n_sampling=10, is_temporal=True
-            )
-        )
-        _attr = list()
-        for target in [0, 1]:
-            _attr.append(
-                explainer.attribute(
-                    x_test,
-                    sliding_window_shapes=(1,),
-                    attributions_fn=abs,
-                    target=target,
-                    return_temporal_attributions=True,
-                    show_progress=True,
-                ).abs()
-            )
-        attr["augmented_occlusion"] = th.cat(_attr, dim=-1).gather(-1, y_test)
-
-    if "occlusion" in explainers:
-        explainer = TimeForwardTunnel(TemporalOcclusion(classifier))
-        _attr = list()
-        for target in [0, 1]:
-            _attr.append(
-                explainer.attribute(
-                    x_test,
-                    sliding_window_shapes=(1,),
-                    baselines=x_train.mean(0, keepdim=True),
-                    attributions_fn=abs,
-                    target=target,
-                    return_temporal_attributions=True,
-                    show_progress=True,
-                ).abs()
-            )
-        attr["occlusion"] = th.cat(_attr, dim=-1).gather(-1, y_test)
+        _attr = th.cat(_attr, dim=-1).gather(-1, y_test).abs()
+        attr["integrated_gradients"] = _attr / _attr.sum(2, keepdim=True)
 
     if "temporal_integrated_gradients" in explainers:
         explainer = TemporalIntegratedGradients(classifier)
@@ -189,8 +147,9 @@ def main(
                     show_progress=True,
                 ).abs()
             )
-        attr["temporal_integrated_gradients"] = th.cat(_attr, dim=-1).gather(
-            -1, y_test
+        _attr = th.cat(_attr, dim=-1).gather(-1, y_test).abs()
+        attr["temporal_integrated_gradients"] = _attr / _attr.sum(
+            2, keepdim=True
         )
 
     with open("results.csv", "a") as fp, mp.Lock():
@@ -198,12 +157,9 @@ def main(
             fp.write(str(seed) + ",")
             fp.write(str(fold) + ",")
             fp.write(k + ",")
-            fp.write(f"{aup(v, true_saliency):.4},")
-            fp.write(f"{aur(v, true_saliency):.4},")
-            fp.write(f"{information(v, true_saliency):.4},")
-            fp.write(f"{entropy(v, true_saliency):.4}")
-            fp.write(f"{roc_auc(v, true_saliency):.4},")
-            fp.write(f"{auprc(v, true_saliency):.4},")
+            fp.write(f"{mae(v, true_saliency, normalize=False):.4},")
+            fp.write(f"{mse(v, true_saliency, normalize=False):.4},")
+            fp.write(f"{rmse(v, true_saliency, normalize=False):.4}")
             fp.write("\n")
 
 
@@ -216,8 +172,6 @@ def parse_args():
             "deep_lift",
             "gradient_shap",
             "integrated_gradients",
-            "augmented_occlusion",
-            "occlusion",
             "temporal_integrated_gradients",
         ],
         nargs="+",
