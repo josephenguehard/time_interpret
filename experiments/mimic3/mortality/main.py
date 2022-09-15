@@ -329,7 +329,7 @@ def main(
                 fp.write(f"{comp:.4},")
                 fp.write(f"{ce:.4},")
                 fp.write(f"{l_odds:.4},")
-                fp.write(f"{suff:.4},")
+                fp.write(f"{suff:.4}")
                 fp.write("\n")
 
 
