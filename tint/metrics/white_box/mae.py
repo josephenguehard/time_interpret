@@ -3,37 +3,34 @@ import numpy as np
 from captum.log import log_usage
 from captum._utils.typing import TensorOrTupleOfTensorsGeneric
 
-from sklearn.metrics import precision_recall_curve, auc
-from typing import Tuple
+from sklearn.metrics import mean_absolute_error
+from typing import Tuple, cast
 
 from .base import _base_white_box_metric
 
 
-def _aur(
+def _mae(
     attributions: Tuple[np.ndarray],
     true_attributions: Tuple[np.ndarray],
     attributions_subset: Tuple[np.ndarray],
 ) -> Tuple[float]:
-    pre_rec_tpl = tuple(
-        precision_recall_curve(true_attr, attr)
+    mae_tpl = tuple(
+        mean_absolute_error(true_attr, attr)
         for true_attr, attr in zip(true_attributions, attributions)
     )
-    return tuple(
-        auc(pre_rec[2], pre_rec[1][:-1]) if len(pre_rec[2]) > 1 else 0.0
-        for pre_rec in pre_rec_tpl
-    )
+    return cast(Tuple[float], mae_tpl)
 
 
 @log_usage()
-def aur(
+def mae(
     attributions: TensorOrTupleOfTensorsGeneric,
     true_attributions: TensorOrTupleOfTensorsGeneric,
     normalize: bool = True,
 ) -> Tuple[float]:
     """
-    Area under recall.
+    Mean absolute error.
 
-    This is the standard area under the recall curve. Higher is better.
+    This is the standard mean absolute error. Lower is better.
 
     Args:
         attributions (tensor or tuple of tensors):
@@ -51,21 +48,21 @@ def aur(
             computing the metric or not. Default: True
 
     Returns:
-        (float or tuple or floats): The aur metric.
+        (float or tuple or floats): The aup metric.
 
     Examples:
         >>> import torch as th
-        >>> from tint.metrics.white_box import aur
+        >>> from tint.metrics.white_box import aup
         <BLANKLINE>
         >>> attr = th.rand(8, 7, 5)
         >>> true_attr = th.randint(2, (8, 7, 5))
         <BLANKLINE>
-        >>> aur_ = aur(attr, true_attr)
+        >>> aup_ = aup(attr, true_attr)
     """
     return _base_white_box_metric(
-        metric=_aur,
+        metric=_mae,
         attributions=attributions,
         true_attributions=true_attributions,
         normalize=normalize,
-        hard_labels=True,
+        hard_labels=False,
     )
