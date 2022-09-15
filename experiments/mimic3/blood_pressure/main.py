@@ -59,6 +59,7 @@ def main(
     trainer = Trainer(
         max_epochs=100,
         accelerator=accelerator,
+        devices=1,
         deterministic=deterministic,
         logger=TensorBoardLogger(
             save_dir=".",

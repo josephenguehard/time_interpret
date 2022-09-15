@@ -125,7 +125,5 @@ class StateClassifierNet(Net):
         return loss
 
     def predict_step(self, batch, batch_idx, dataloader_idx=0):
-        t = batch[1].shape[-1] - 1
         x, y = batch
-        x = x[:, : t + 1]
         return self(x)

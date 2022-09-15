@@ -110,7 +110,7 @@ def main(
     )
 
     # Train classifier
-    trainer = Trainer(max_epochs=50, accelerator=accelerator)
+    trainer = Trainer(max_epochs=50, accelerator=accelerator, devices=1)
     trainer.fit(classifier, datamodule=hmm)
 
     # Get data for explainers

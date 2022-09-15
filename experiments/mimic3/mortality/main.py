@@ -67,6 +67,7 @@ def main(
     trainer = Trainer(
         max_epochs=100,
         accelerator=accelerator,
+        devices=1,
         deterministic=deterministic,
         logger=TensorBoardLogger(
             save_dir=".",
@@ -174,6 +175,7 @@ def main(
         trainer = Trainer(
             max_epochs=300,
             accelerator=accelerator,
+            devices=1,
             log_every_n_steps=10,
             deterministic=deterministic,
             logger=TensorBoardLogger(
@@ -261,6 +263,7 @@ def main(
             trainer=Trainer(
                 max_epochs=50,
                 accelerator=accelerator,
+                devices=1,
                 deterministic=deterministic,
                 logger=TensorBoardLogger(
                     save_dir=".",

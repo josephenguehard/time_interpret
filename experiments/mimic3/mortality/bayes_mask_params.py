@@ -153,7 +153,7 @@ def main(
     )
 
     # Train classifier
-    trainer = Trainer(max_epochs=100, accelerator=accelerator)
+    trainer = Trainer(max_epochs=100, accelerator=accelerator, devices=1)
     trainer.fit(classifier, datamodule=mimic3)
 
     # Get data for explainers
