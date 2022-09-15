@@ -64,6 +64,20 @@ def main(
         y_test = hawkes.preprocess(split="test")["y"].to(accelerator)
         true_saliency = hawkes.true_saliency(split="test").to(accelerator)
 
+    # Create x out of x_test and y_test
+    idx = (x_test > 0).sum(1, keepdim=True)
+    window = hawkes.window * th.ones_like(x_test, device=x_test.device)
+
+    x = th.cat(
+        [
+            x_test,
+            th.zeros_like(x_test[:, 0, :].unsqueeze(1), device=x_test.device),
+        ],
+        dim=1,
+    )
+    x.scatter_(1, idx, window)
+    x = th.cat([x[:, :-1], x[:, 1:], y_test.unsqueeze(-1)], dim=-1)
+
     # Reshape y_test
     y_test = (
         y_test.unsqueeze(-1).unsqueeze(-1).repeat(1, 1, y_test.shape[-1], 1)
@@ -90,15 +104,16 @@ def main(
         for target in [0, 1]:
             _attr.append(
                 explainer.attribute(
-                    x_test,
-                    baselines=x_test * 0,
+                    x,
+                    baselines=x * 0,
                     target=target,
                     return_temporal_attributions=True,
                     show_progress=True,
                 ).abs()
             )
         _attr = th.cat(_attr, dim=-1).gather(-1, y_test).abs()
-        attr["deep_lift"] = _attr / _attr.sum(2, keepdim=True)
+        _attr /= _attr.sum(2, keepdim=True)
+        attr["deep_lift"] = _attr * (true_saliency.sum(2, keepdim=True) > 0)
 
     if "gradient_shap" in explainers:
         explainer = TimeForwardTunnel(GradientShap(classifier))
@@ -106,8 +121,8 @@ def main(
         for target in [0, 1]:
             _attr.append(
                 explainer.attribute(
-                    x_test,
-                    baselines=th.cat([x_test * 0, x_test]),
+                    x,
+                    baselines=th.cat([x * 0, x]),
                     target=target,
                     n_samples=50,
                     stdevs=0.0001,
@@ -116,7 +131,10 @@ def main(
                 ).abs()
             )
         _attr = th.cat(_attr, dim=-1).gather(-1, y_test).abs()
-        attr["gradient_shap"] = _attr / _attr.sum(2, keepdim=True)
+        _attr /= _attr.sum(2, keepdim=True)
+        attr["gradient_shap"] = _attr * (
+            true_saliency.sum(2, keepdim=True) > 0
+        )
 
     if "integrated_gradients" in explainers:
         explainer = TimeForwardTunnel(IntegratedGradients(classifier))
@@ -124,15 +142,18 @@ def main(
         for target in [0, 1]:
             _attr.append(
                 explainer.attribute(
-                    x_test,
-                    baselines=x_test * 0,
+                    x,
+                    baselines=x * 0,
                     target=target,
                     return_temporal_attributions=True,
                     show_progress=True,
                 ).abs()
             )
         _attr = th.cat(_attr, dim=-1).gather(-1, y_test).abs()
-        attr["integrated_gradients"] = _attr / _attr.sum(2, keepdim=True)
+        _attr /= _attr.sum(2, keepdim=True)
+        attr["integrated_gradients"] = _attr * (
+            true_saliency.sum(2, keepdim=True) > 0
+        )
 
     if "temporal_integrated_gradients" in explainers:
         explainer = TemporalIntegratedGradients(classifier)
@@ -140,16 +161,17 @@ def main(
         for target in [0, 1]:
             _attr.append(
                 explainer.attribute(
-                    x_test,
-                    baselines=x_test * 0,
+                    x,
+                    baselines=x * 0,
                     target=target,
                     return_temporal_attributions=True,
                     show_progress=True,
                 ).abs()
             )
         _attr = th.cat(_attr, dim=-1).gather(-1, y_test).abs()
-        attr["temporal_integrated_gradients"] = _attr / _attr.sum(
-            2, keepdim=True
+        _attr /= _attr.sum(2, keepdim=True)
+        attr["temporal_integrated_gradients"] = _attr * (
+            true_saliency.sum(2, keepdim=True) > 0
         )
 
     with open("results.csv", "a") as fp, mp.Lock():

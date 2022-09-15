@@ -89,5 +89,5 @@ class HawkesClassifierNet(Net):
             [x, th.zeros_like(x[:, 0, :].unsqueeze(1), device=x.device)], dim=1
         )
         x.scatter_(1, idx, window)
-        x = th.cat([x[:, :-1], x[:, 1:], y[:, :-1].unsqueeze(-1)], dim=-1)
+        x = th.cat([x[:, :-1], x[:, 1:], y.unsqueeze(-1)], dim=-1)
         return self(x)
