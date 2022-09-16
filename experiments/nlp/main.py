@@ -1,3 +1,5 @@
+import multiprocessing as mp
+import random
 import torch
 
 from argparse import ArgumentParser
@@ -65,6 +67,8 @@ def main(
     elif dataset_name == "imdb":
         dataset = load_dataset("imdb", cache_dir="datasets")["test"]
         data = list(zip(dataset["text"], dataset["label"]))
+        data = [x for x in data if len(x[0]) < 2000]
+        data = random.sample(data, 2000)
     elif dataset_name == "rotten":
         dataset = load_dataset("rotten_tomatoes", cache_dir="datasets")["test"]
         data = list(zip(dataset["text"], dataset["label"]))
@@ -91,6 +95,9 @@ def main(
         )
     else:
         raise NotImplementedError
+
+    # Set model to device
+    model.to(device)
 
     # Load knn mapping
     if knns_path is not None:
@@ -154,7 +161,7 @@ def main(
                     type_embed,
                 ),
             )
-            _attr = summarize_attributions(_attr)
+            _attr = summarize_attributions(_attr).cpu()
             attr["deep_lift"].append(_attr)
 
         if "discretized_integrated_gradients" in explainers:
@@ -178,7 +185,7 @@ def main(
                 ),
                 n_steps=(2**factor) * (steps + 1) + 1,
             )
-            _attr = summarize_attributions(_attr)
+            _attr = summarize_attributions(_attr).cpu()
             attr["discretized_integrated_gradients"].append(_attr)
 
         if "gradient_shap" in explainers:
@@ -192,7 +199,7 @@ def main(
                     type_embed,
                 ),
             )
-            _attr = summarize_attributions(_attr)
+            _attr = summarize_attributions(_attr).cpu()
             attr["gradient_shap"].append(_attr)
 
         if "input_x_gradient" in explainers:
@@ -205,7 +212,7 @@ def main(
                     type_embed,
                 ),
             )
-            _attr = summarize_attributions(_attr)
+            _attr = summarize_attributions(_attr).cpu()
             attr["input_x_gradient"].append(_attr)
 
         if "integrated_gradients" in explainers:
@@ -218,7 +225,7 @@ def main(
                     type_embed,
                 ),
             )
-            _attr = summarize_attributions(_attr)
+            _attr = summarize_attributions(_attr).cpu()
             attr["integrated_gradients"].append(_attr)
 
         if "sequential_integrated_gradients" in explainers:
@@ -231,7 +238,7 @@ def main(
                     type_embed,
                 ),
             )
-            _attr = summarize_attributions(_attr)
+            _attr = summarize_attributions(_attr).cpu()
             attr["sequential_integrated_gradients"].append(_attr)
 
         # Append metrics
@@ -271,6 +278,9 @@ def main(
                 )
             )
 
+        # Clear cuda cache
+        torch.cuda.empty_cache()
+
         # Print metrics
         if i % log_n_steps == 0:
             for explainer in explainers:
@@ -284,12 +294,14 @@ def main(
                     f"{explainer}, sufficiency: {torch.Tensor(_sufficiency[explainer]).mean():.4}"
                 )
 
-    with open("results.csv", "a") as fp:
+    with open("results.csv", "a") as fp, mp.Lock():
         for k in attr:
+            fp.write(dataset_name + ",")
+            fp.write(model_name + ",")
             fp.write(k + ",")
             fp.write(f"{torch.Tensor(_log_odds[k]).mean():.4},")
             fp.write(f"{torch.Tensor(_comprehensiveness[k]).mean():.4},")
-            fp.write(f"{torch.Tensor(_sufficiency[k]).mean():.4},")
+            fp.write(f"{torch.Tensor(_sufficiency[k]).mean():.4}")
             fp.write("\n")
 
 

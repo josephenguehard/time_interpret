@@ -1,1 +1,13 @@
-Explainer,LogOdds,Comprehensiveness,Sufficiency
+Dataset,Model,Explainer,LogOdds,Comprehensiveness,Sufficiency
+rotten,roberta,deep_lift,-0.2108,0.06174,0.3625
+rotten,roberta,discretized_integrated_gradients,-0.3461,0.1532,0.3098
+rotten,roberta,gradient_shap,-0.2777,0.1091,0.34
+rotten,distilbert,deep_lift,-0.1524,0.06814,0.3147
+rotten,distilbert,discretized_integrated_gradients,-0.5012,0.257,0.1835
+rotten,distilbert,gradient_shap,-0.2744,0.1355,0.2741
+sst2,roberta,deep_lift,-0.2876,0.07602,0.4263
+sst2,roberta,discretized_integrated_gradients,-0.8122,0.2494,0.2869
+sst2,roberta,gradient_shap,-0.4966,0.1477,0.3739
+sst2,bert,deep_lift,-0.4405,0.09191,0.4426
+sst2,bert,discretized_integrated_gradients,-0.8801,0.2925,0.3746
+sst2,bert,gradient_shap,-0.7808,0.1903,0.3989

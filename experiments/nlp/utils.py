@@ -42,7 +42,7 @@ class ForwardModel(nn.Module):
 
         # Get predictions
         embeds = getattr(self.model, self.model_name).embeddings.dropout(
-            self.model.bert.embeddings.LayerNorm(embeds)
+            getattr(self.model, self.model_name).embeddings.LayerNorm(embeds)
         )
         pred = self.model(
             inputs_embeds=embeds,
@@ -99,12 +99,16 @@ def construct_input_ref_pos_id_pair(model, model_name, input_ids, device):
         ref_position_ids = ref_position_ids.unsqueeze(0).expand_as(input_ids)
 
     else:
-        position_ids = model.bert.embeddings.position_ids[:, 0:seq_length].to(
-            device
+        position_ids = (
+            getattr(model, model_name)
+            .embeddings.position_ids[:, 0:seq_length]
+            .to(device)
         )
-        ref_position_ids = model.bert.embeddings.position_ids[
-            :, 0:seq_length
-        ].to(device)
+        ref_position_ids = (
+            getattr(model, model_name)
+            .embeddings.position_ids[:, 0:seq_length]
+            .to(device)
+        )
 
     return position_ids, ref_position_ids
 
