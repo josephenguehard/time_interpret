@@ -34,12 +34,8 @@ def _geodesic_batch_attribution(
         )
 
     for i in steps:
-        partial_knns = tuple(
-            knn[i : i + internal_batch_size] for knn in knns
-        )
-        partial_idx = tuple(
-            id[i : i + internal_batch_size] for id in idx
-        )
+        partial_knns = tuple(knn[i : i + internal_batch_size] for knn in knns)
+        partial_idx = tuple(id[i : i + internal_batch_size] for id in idx)
 
         partial_grads_norm, partial_grads = attr_method._attribute(
             inputs=tuple(x[knn] for x, knn in zip(inputs, partial_knns)),

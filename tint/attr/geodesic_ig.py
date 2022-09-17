@@ -499,7 +499,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
 
         # Get sign for each path
         # and multipy with total_grads
-        '''
+        """
         signs = tuple(
             2 * (id[grad_idx] == path[:, 1]).float() - 1
             for id, grad_idx, path in zip(idx, grads_idx, paths)
@@ -508,7 +508,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
             grad * sign.unsqueeze(-1)
             for grad, sign in zip(total_grads, signs)
         )
-        '''
+        """
 
         # Split for each path
         total_grads = tuple(
