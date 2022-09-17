@@ -4,7 +4,6 @@ import warnings
 
 from captum.attr._utils.approximation_methods import approximation_parameters
 from captum.attr._utils.attribution import GradientAttribution
-from captum.attr._utils.batching import _batch_attribution
 from captum.attr._utils.common import (
     _format_input,
     _format_input_baseline,
@@ -31,7 +30,7 @@ from sklearn.neighbors import NearestNeighbors
 from torch import Tensor
 from typing import Any, Callable, List, Tuple, Union
 
-from tint.utils import astar_path
+from tint.utils import astar_path, _geodesic_batch_attribution
 
 
 class GeodesicIntegratedGradients(GradientAttribution):
@@ -133,6 +132,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
         n_steiner: int = None,
         internal_batch_size: Union[None, int] = None,
         return_convergence_delta: Literal[False] = False,
+        show_progress: bool = False,
         **kwargs,
     ) -> TensorOrTupleOfTensorsGeneric:
         ...
@@ -151,6 +151,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
         internal_batch_size: Union[None, int] = None,
         *,
         return_convergence_delta: Literal[True],
+        show_progress: bool = False,
         **kwargs,
     ) -> Tuple[TensorOrTupleOfTensorsGeneric, Tensor]:
         ...
@@ -168,6 +169,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
         n_steiner: int = None,
         internal_batch_size: Union[None, int] = None,
         return_convergence_delta: bool = False,
+        show_progress: bool = False,
         **kwargs,
     ) -> Union[
         TensorOrTupleOfTensorsGeneric,
@@ -287,6 +289,11 @@ class GeodesicIntegratedGradients(GradientAttribution):
                 is set to True convergence delta will be returned in
                 a tuple following attributions.
                 Default: False
+            show_progress (bool, optional): Displays the progress of computation.
+                It will try to use tqdm if available for advanced features
+                (e.g. time estimation). Otherwise, it will fallback to
+                a simple output of progress.
+                Default: False
         Returns:
             **attributions** or 2-element tuple of **attributions**, **delta**:
             - **attributions** (*tensor* or tuple of *tensors*):
@@ -322,6 +329,14 @@ class GeodesicIntegratedGradients(GradientAttribution):
         )
 
         _validate_input(inputs, baselines, n_steps, method)
+
+        # If additional_forward_args has a tensor, assert inputs
+        # consists of one sample
+        if additional_forward_args is not None:
+            if any(isinstance(x, Tensor) for x in additional_forward_args):
+                assert (
+                    len(inputs[0]) == 1
+                ), "Only one sample must be passed when additional_forward_args has a tensor."
 
         # Fit NearestNeighbors if not provided
         n_neighbors = n_neighbors or self.n_neighbors
@@ -398,14 +413,13 @@ class GeodesicIntegratedGradients(GradientAttribution):
 
         # Compute grads for inputs and baselines
         if internal_batch_size is not None:
-            num_examples = data[0][knns[0]].shape[0]
-            grads_norm, total_grads = _batch_attribution(
-                self,
-                num_examples,
-                internal_batch_size,
-                n_steps,
-                inputs=tuple(x[knn] for x, knn in zip(data, knns)),
-                baselines=tuple(x[id] for x, id in zip(data, idx)),
+            grads_norm, total_grads = _geodesic_batch_attribution(
+                attr_method=self,
+                inputs=data,
+                idx=idx,
+                knns=knns,
+                internal_batch_size=internal_batch_size,
+                show_progress=show_progress,
                 target=target,
                 additional_forward_args=additional_forward_args,
                 method=method,
@@ -437,8 +451,8 @@ class GeodesicIntegratedGradients(GradientAttribution):
                 graph[i] = graph.get(i, list()) + [(k, a)]
 
         # Def heuristic for A* algorithm: euclidean distance to target
-        def heuristic(u, v):
-            return torch.linalg.norm(data[u] - data[v]).item()
+        def heuristic(u, v, d):
+            return torch.linalg.norm(d[u] - d[v]).item()
 
         # Compute A* paths
         inputs_idx = tuple(
@@ -450,11 +464,11 @@ class GeodesicIntegratedGradients(GradientAttribution):
         )
         paths = tuple(
             [
-                astar_path(graph, i, j, heuristic=heuristic)
+                astar_path(graph, i, j, heuristic=heuristic, d=d)
                 for i, j in zip(input_idx, baseline_idx)
             ]
-            for graph, input_idx, baseline_idx in zip(
-                graphs, inputs_idx, baselines_idx
+            for graph, input_idx, baseline_idx, d in zip(
+                graphs, inputs_idx, baselines_idx, data
             )
         )
 
@@ -480,12 +494,25 @@ class GeodesicIntegratedGradients(GradientAttribution):
 
         # Get grads of each path
         total_grads = tuple(
-            grad[:, grad_idx] for grad, grad_idx in zip(total_grads, grads_idx)
+            grad[grad_idx] for grad, grad_idx in zip(total_grads, grads_idx)
         )
+
+        # Get sign for each path
+        # and multipy with total_grads
+        '''
+        signs = tuple(
+            2 * (id[grad_idx] == path[:, 1]).float() - 1
+            for id, grad_idx, path in zip(idx, grads_idx, paths)
+        )
+        total_grads = tuple(
+            grad * sign.unsqueeze(-1)
+            for grad, sign in zip(total_grads, signs)
+        )
+        '''
 
         # Split for each path
         total_grads = tuple(
-            torch.split(grad, split_size_or_sections=path_len, dim=1)
+            torch.split(grad, split_size_or_sections=path_len, dim=0)
             for grad, path_len in zip(total_grads, paths_len)
         )
 

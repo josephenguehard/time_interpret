@@ -2,7 +2,7 @@ from heapq import heappush, heappop
 from itertools import count
 
 
-def astar_path(graph, source, target, heuristic=None):
+def astar_path(graph, source, target, heuristic=None, **kwargs):
     """
     A* algorithm.
 
@@ -37,7 +37,7 @@ def astar_path(graph, source, target, heuristic=None):
 
     if heuristic is None:
         # The default heuristic is h=0 - same as Dijkstra's algorithm
-        def heuristic(u, v):
+        def heuristic(u, v, **kwargs):
             return 0
 
     push = heappush
@@ -94,7 +94,7 @@ def astar_path(graph, source, target, heuristic=None):
                 if qcost <= ncost:
                     continue
             else:
-                h = heuristic(neighbor, target)
+                h = heuristic(neighbor, target, **kwargs)
             enqueued[neighbor] = ncost, h
             push(queue, (ncost + h, next(c), neighbor, ncost, curnode))
 
