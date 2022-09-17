@@ -170,4 +170,5 @@ def log_odds(
         topk=topk,
         largest=True,
         weight_fn=weight_fn,
+        classification=True,
     )

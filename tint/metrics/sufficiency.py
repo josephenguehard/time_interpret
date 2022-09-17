@@ -157,9 +157,6 @@ def sufficiency(
         <BLANKLINE>
         >>> suff = sufficiency(mlp, inputs, attr, target=0)
     """
-    # Inverse topk to select the non topk
-    topk = 1.0 - topk
-
     return _base_metric(
         metric=_sufficiency,
         forward_func=forward_func,
@@ -171,4 +168,5 @@ def sufficiency(
         topk=topk,
         largest=False,
         weight_fn=weight_fn,
+        classification=True,
     )

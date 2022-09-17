@@ -29,6 +29,7 @@ def cross_entropy(
     additional_forward_args: Any = None,
     target: TargetType = None,
     topk: float = 0.2,
+    mask_largest: bool = True,
     weight_fn: Callable[
         [Tuple[Tensor, ...], Tuple[Tensor, ...]], Tensor
     ] = None,
@@ -37,8 +38,8 @@ def cross_entropy(
     Cross-entropy metric.
 
     This metric measures the cross-entropy between the outputs of the model
-    using the original inputs and perturbed inputs by removing the topk most
-    important features. Higher is better.
+    using the original inputs and perturbed inputs by removing or only
+    keeping the topk most important features. Higher is better.
 
     Args:
         forward_func (callable): The forward function of the model or any
@@ -133,6 +134,9 @@ def cross_entropy(
             Default: None
         topk: Proportion of input to be dropped. Must be between 0 and 1.
             Default: 0.2
+        mask_largest: Whether to mask the topk attribution or to only keep
+            the topk attribution.
+            Default: True
         weight_fn (Callable): Function to compute metrics weighting using
             original inputs and pertubed inputs. None if note provided.
             Default: None
@@ -166,6 +170,7 @@ def cross_entropy(
         additional_forward_args=additional_forward_args,
         target=target,
         topk=topk,
-        largest=True,
+        largest=mask_largest,
         weight_fn=weight_fn,
+        classification=True,
     )

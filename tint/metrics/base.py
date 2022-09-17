@@ -33,6 +33,7 @@ def _base_metric(
     weight_fn: Callable[
         [Tuple[Tensor, ...], Tuple[Tensor, ...]], Tensor
     ] = None,
+    classification: bool = True,
     **kwargs,
 ) -> float:
     # perform argument formatting
@@ -52,6 +53,10 @@ def _base_metric(
 
     # Validate topk
     assert 0 < topk < 1, "topk must be a float between 0 and 1"
+
+    # Reverse topk is not largest to select the non topk
+    if not largest:
+        topk = 1.0 - topk
 
     # Clone inputs
     inputs_pert = tuple(inp.detach().clone() for inp in inputs)
@@ -116,13 +121,16 @@ def _base_metric(
     prob_pert = logits_pert.softmax(-1)
 
     # Get target as original predictions if not provided
-    if target is None:
+    if target is None and classification:
         target = logits_original.argmax(-1)
+
+    if classification:
+        out = metric(prob_original, prob_pert, target, **kwargs)
+    else:
+        out = metric(logits_original, logits_pert, target, **kwargs)
 
     if weight_fn:
         weights = _select_targets(weights, target)
-        return (
-            metric(prob_original, prob_pert, target, **kwargs) * weights
-        ).sum().item() / weights.sum().item()
+        return (out * weights).sum().item() / weights.sum().item()
 
-    return metric(prob_original, prob_pert, target, **kwargs).mean().item()
+    return out.mean().item()
