@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>tint.metrics.sufficiency &mdash; Time Interpret 0.1.0 documentation</title>
+  <title>tint.metrics.mse &mdash; Time Interpret 0.1.0 documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
@@ -67,7 +67,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
           <li><a href="../../index.html">Module code</a> &raquo;</li>
-      <li>tint.metrics.sufficiency</li>
+      <li>tint.metrics.mse</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -76,7 +76,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <h1>Source code for tint.metrics.sufficiency</h1><div class="highlight"><pre>
+  <h1>Source code for tint.metrics.mse</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">captum.log</span> <span class="kn">import</span> <span class="n">log_usage</span>
 <span class="kn">from</span> <span class="nn">captum._utils.common</span> <span class="kn">import</span> <span class="n">_select_targets</span>
 <span class="kn">from</span> <span class="nn">captum._utils.typing</span> <span class="kn">import</span> <span class="p">(</span>
@@ -91,16 +91,24 @@
 <span class="kn">from</span> <span class="nn">.base</span> <span class="kn">import</span> <span class="n">_base_metric</span>
 
 
-<span class="k">def</span> <span class="nf">_sufficiency</span><span class="p">(</span>
-    <span class="n">prob_original</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">prob_pert</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Tensor</span>
+<span class="k">def</span> <span class="nf">_mse</span><span class="p">(</span>
+    <span class="n">logits_original</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">logits_pert</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Tensor</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-    <span class="k">return</span> <span class="n">_select_targets</span><span class="p">(</span><span class="n">prob_original</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span> <span class="o">-</span> <span class="n">_select_targets</span><span class="p">(</span>
-        <span class="n">prob_pert</span><span class="p">,</span> <span class="n">target</span>
-    <span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="p">(</span>
+            <span class="n">_select_targets</span><span class="p">(</span><span class="n">logits_original</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                <span class="nb">len</span><span class="p">(</span><span class="n">logits_original</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="p">)</span>
+            <span class="o">-</span> <span class="n">_select_targets</span><span class="p">(</span><span class="n">logits_pert</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                <span class="nb">len</span><span class="p">(</span><span class="n">logits_pert</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="o">**</span> <span class="mi">2</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="sufficiency"><a class="viewcode-back" href="../../../metrics.html#tint.metrics.sufficiency">[docs]</a><span class="nd">@log_usage</span><span class="p">()</span>
-<span class="k">def</span> <span class="nf">sufficiency</span><span class="p">(</span>
+<div class="viewcode-block" id="mse"><a class="viewcode-back" href="../../../metrics.html#tint.metrics.mse">[docs]</a><span class="nd">@log_usage</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">mse</span><span class="p">(</span>
     <span class="n">forward_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
     <span class="n">inputs</span><span class="p">:</span> <span class="n">TensorOrTupleOfTensorsGeneric</span><span class="p">,</span>
     <span class="n">attributions</span><span class="p">:</span> <span class="n">TensorOrTupleOfTensorsGeneric</span><span class="p">,</span>
@@ -108,16 +116,17 @@
     <span class="n">additional_forward_args</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">target</span><span class="p">:</span> <span class="n">TargetType</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">topk</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span>
+    <span class="n">mask_largest</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">weight_fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span>
         <span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]],</span> <span class="n">Tensor</span>
     <span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Sufficiency metric.</span>
+<span class="sd">    Mean square error.</span>
 
-<span class="sd">    This sufficiency measures by how much the predicted class</span>
-<span class="sd">    probability changes when keeping only the topk most important features.</span>
-<span class="sd">    Lower is better.</span>
+<span class="sd">    This metric measures the mean square error between the outputs of</span>
+<span class="sd">    the model using the original inputs and perturbed inputs by removing</span>
+<span class="sd">    or only keeping the topk most important features. Lower is better.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        forward_func (callable): The forward function of the model or any</span>
@@ -212,20 +221,20 @@
 <span class="sd">            Default: None</span>
 <span class="sd">        topk: Proportion of input to be dropped. Must be between 0 and 1.</span>
 <span class="sd">            Default: 0.2</span>
+<span class="sd">        mask_largest: Whether to mask the topk attribution or to only keep</span>
+<span class="sd">            the topk attribution.</span>
+<span class="sd">            Default: True</span>
 <span class="sd">        weight_fn (Callable): Function to compute metrics weighting using</span>
 <span class="sd">            original inputs and pertubed inputs. None if note provided.</span>
 <span class="sd">            Default: None</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        (float): The sufficiency metric.</span>
-
-<span class="sd">    References:</span>
-<span class="sd">        https://arxiv.org/abs/1911.03429</span>
+<span class="sd">        (float): The mean square error metric.</span>
 
 <span class="sd">    Examples:</span>
 <span class="sd">        &gt;&gt;&gt; import torch as th</span>
 <span class="sd">        &gt;&gt;&gt; from captum.attr import Saliency</span>
-<span class="sd">        &gt;&gt;&gt; from tint.metrics import sufficiency</span>
+<span class="sd">        &gt;&gt;&gt; from tint.metrics import mse</span>
 <span class="sd">        &gt;&gt;&gt; from tint.models import MLP</span>
 <span class="sd">        &lt;BLANKLINE&gt;</span>
 <span class="sd">        &gt;&gt;&gt; inputs = th.rand(8, 7, 5)</span>
@@ -234,10 +243,10 @@
 <span class="sd">        &gt;&gt;&gt; explainer = Saliency(mlp)</span>
 <span class="sd">        &gt;&gt;&gt; attr = explainer.attribute(inputs, target=0)</span>
 <span class="sd">        &lt;BLANKLINE&gt;</span>
-<span class="sd">        &gt;&gt;&gt; suff = sufficiency(mlp, inputs, attr, target=0)</span>
+<span class="sd">        &gt;&gt;&gt; mae_ = mse(mlp, inputs, attr, target=0)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_base_metric</span><span class="p">(</span>
-        <span class="n">metric</span><span class="o">=</span><span class="n">_sufficiency</span><span class="p">,</span>
+        <span class="n">metric</span><span class="o">=</span><span class="n">_mse</span><span class="p">,</span>
         <span class="n">forward_func</span><span class="o">=</span><span class="n">forward_func</span><span class="p">,</span>
         <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span>
         <span class="n">attributions</span><span class="o">=</span><span class="n">attributions</span><span class="p">,</span>
@@ -245,9 +254,9 @@
         <span class="n">additional_forward_args</span><span class="o">=</span><span class="n">additional_forward_args</span><span class="p">,</span>
         <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
         <span class="n">topk</span><span class="o">=</span><span class="n">topk</span><span class="p">,</span>
-        <span class="n">largest</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">largest</span><span class="o">=</span><span class="n">mask_largest</span><span class="p">,</span>
         <span class="n">weight_fn</span><span class="o">=</span><span class="n">weight_fn</span><span class="p">,</span>
-        <span class="n">classification</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">classification</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span></div>
 </pre></div>
 

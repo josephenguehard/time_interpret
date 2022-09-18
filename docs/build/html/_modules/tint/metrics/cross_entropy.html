@@ -108,6 +108,7 @@
     <span class="n">additional_forward_args</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">target</span><span class="p">:</span> <span class="n">TargetType</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">topk</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span>
+    <span class="n">mask_largest</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">weight_fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span>
         <span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]],</span> <span class="n">Tensor</span>
     <span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -116,8 +117,8 @@
 <span class="sd">    Cross-entropy metric.</span>
 
 <span class="sd">    This metric measures the cross-entropy between the outputs of the model</span>
-<span class="sd">    using the original inputs and perturbed inputs by removing the topk most</span>
-<span class="sd">    important features. Higher is better.</span>
+<span class="sd">    using the original inputs and perturbed inputs by removing or only</span>
+<span class="sd">    keeping the topk most important features. Higher is better.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        forward_func (callable): The forward function of the model or any</span>
@@ -212,6 +213,9 @@
 <span class="sd">            Default: None</span>
 <span class="sd">        topk: Proportion of input to be dropped. Must be between 0 and 1.</span>
 <span class="sd">            Default: 0.2</span>
+<span class="sd">        mask_largest: Whether to mask the topk attribution or to only keep</span>
+<span class="sd">            the topk attribution.</span>
+<span class="sd">            Default: True</span>
 <span class="sd">        weight_fn (Callable): Function to compute metrics weighting using</span>
 <span class="sd">            original inputs and pertubed inputs. None if note provided.</span>
 <span class="sd">            Default: None</span>
@@ -245,8 +249,9 @@
         <span class="n">additional_forward_args</span><span class="o">=</span><span class="n">additional_forward_args</span><span class="p">,</span>
         <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
         <span class="n">topk</span><span class="o">=</span><span class="n">topk</span><span class="p">,</span>
-        <span class="n">largest</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">largest</span><span class="o">=</span><span class="n">mask_largest</span><span class="p">,</span>
         <span class="n">weight_fn</span><span class="o">=</span><span class="n">weight_fn</span><span class="p">,</span>
+        <span class="n">classification</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span></div>
 </pre></div>
 
