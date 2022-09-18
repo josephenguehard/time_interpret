@@ -125,6 +125,8 @@ These metrics differ depending on if the true saliency is known:
     tint.metrics.cross_entropy
     tint.metrics.lipschitz_max
     tint.metrics.log_odds
+    tint.metrics.mae
+    tint.metrics.mse
     tint.metrics.sufficiency
 
 

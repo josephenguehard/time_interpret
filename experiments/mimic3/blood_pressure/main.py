@@ -16,13 +16,7 @@ from tint.attr import (
     TimeForwardTunnel,
 )
 from tint.datasets import Mimic3
-from tint.metrics import (
-    accuracy,
-    comprehensiveness,
-    cross_entropy,
-    log_odds,
-    sufficiency,
-)
+from tint.metrics import mae, mse
 
 
 from experiments.mimic3.blood_pressure.regressor import MimicRegressorNet
@@ -90,32 +84,46 @@ def main(
 
     if "deep_lift" in explainers:
         explainer = TimeForwardTunnel(DeepLift(regressor))
-        attr["deep_lift"] = explainer.attribute(
-            x_test,
-            baselines=x_test * 0,
-            return_temporal_attributions=True,
-            show_progress=True,
-        ).abs()
+        attr["deep_lift"] = (
+            explainer.attribute(
+                x_test,
+                baselines=x_test * 0,
+                return_temporal_attributions=True,
+                show_progress=True,
+            )
+            .abs()
+            .cpu()
+        )
 
     if "gradient_shap" in explainers:
-        explainer = TimeForwardTunnel(GradientShap(regressor))
-        attr["gradient_shap"] = explainer.attribute(
-            x_test,
-            baselines=th.cat([x_test * 0, x_test]),
-            n_samples=50,
-            stdevs=0.0001,
-            return_temporal_attributions=True,
-            show_progress=True,
-        ).abs()
+        explainer = TimeForwardTunnel(GradientShap(regressor.cpu()))
+        attr["gradient_shap"] = (
+            explainer.attribute(
+                x_test.cpu(),
+                baselines=th.cat([x_test.cpu() * 0, x_test.cpu()]),
+                n_samples=50,
+                stdevs=0.0001,
+                return_temporal_attributions=True,
+                show_progress=True,
+            )
+            .abs()
+            .cpu()
+        )
+        regressor.to(accelerator)
 
     if "integrated_gradients" in explainers:
         explainer = TimeForwardTunnel(IntegratedGradients(regressor))
-        attr["integrated_gradients"] = explainer.attribute(
-            x_test,
-            baselines=x_test * 0,
-            return_temporal_attributions=True,
-            show_progress=True,
-        ).abs()
+        attr["integrated_gradients"] = (
+            explainer.attribute(
+                x_test,
+                baselines=x_test * 0,
+                internal_batch_size=200,
+                return_temporal_attributions=True,
+                show_progress=True,
+            )
+            .abs()
+            .cpu()
+        )
 
     if "augmented_occlusion" in explainers:
         explainer = TimeForwardTunnel(
@@ -123,33 +131,46 @@ def main(
                 regressor, data=x_train, n_sampling=10, is_temporal=True
             )
         )
-        attr["augmented_occlusion"] = explainer.attribute(
-            x_test,
-            sliding_window_shapes=(1,),
-            attributions_fn=abs,
-            return_temporal_attributions=True,
-            show_progress=True,
-        ).abs()
+        attr["augmented_occlusion"] = (
+            explainer.attribute(
+                x_test,
+                sliding_window_shapes=(1,),
+                attributions_fn=abs,
+                return_temporal_attributions=True,
+                show_progress=True,
+            )
+            .abs()
+            .cpu()
+        )
 
     if "occlusion" in explainers:
         explainer = TimeForwardTunnel(TemporalOcclusion(regressor))
-        attr["occlusion"] = explainer.attribute(
-            x_test,
-            sliding_window_shapes=(1,),
-            baselines=x_train.mean(0, keepdim=True),
-            attributions_fn=abs,
-            return_temporal_attributions=True,
-            show_progress=True,
-        ).abs()
+        attr["occlusion"] = (
+            explainer.attribute(
+                x_test,
+                sliding_window_shapes=(1,),
+                baselines=x_train.mean(0, keepdim=True),
+                attributions_fn=abs,
+                return_temporal_attributions=True,
+                show_progress=True,
+            )
+            .abs()
+            .cpu()
+        )
 
     if "temporal_integrated_gradients" in explainers:
         explainer = TemporalIntegratedGradients(regressor)
-        attr["temporal_integrated_gradients"] = explainer.attribute(
-            x_test,
-            baselines=x_test * 0,
-            return_temporal_attributions=True,
-            show_progress=True,
-        ).abs()
+        attr["temporal_integrated_gradients"] = (
+            explainer.attribute(
+                x_test,
+                baselines=x_test * 0,
+                internal_batch_size=200,
+                return_temporal_attributions=True,
+                show_progress=True,
+            )
+            .abs()
+            .cpu()
+        )
 
     # Regressor and x_test to cpu
     regressor.to("cpu")
@@ -164,78 +185,70 @@ def main(
         for topk in areas:
             for k, v in attr.items():
 
-                acc = list()
-                comp = list()
-                ce = list()
-                l_odds = list()
-                suff = list()
+                mae_comp = list()
+                mae_suff = list()
+                mse_comp = list()
+                mse_suff = list()
 
                 for time in range(x_test.shape[1]):
                     partial_x = x_test[:, : time + 1]
                     partial_x_avg = x_avg[:, : time + 1]
-                    partial_attr = v[:, : time + 1]
+                    partial_attr = v[:, time, : time + 1]
 
-                    acc.append(
-                        accuracy(
+                    mae_comp.append(
+                        mae(
                             regressor,
                             partial_x,
-                            attributions=partial_attr.cpu(),
+                            attributions=partial_attr,
                             baselines=partial_x_avg,
                             topk=topk,
+                            mask_largest=True,
                         )
                     )
-                    comp.append(
-                        comprehensiveness(
+                    mae_suff.append(
+                        mae(
                             regressor,
                             partial_x,
-                            attributions=partial_attr.cpu(),
+                            attributions=partial_attr,
                             baselines=partial_x_avg,
                             topk=topk,
+                            mask_largest=False,
                         )
                     )
-                    ce.append(
-                        cross_entropy(
+                    mse_comp.append(
+                        mse(
                             regressor,
                             partial_x,
-                            attributions=partial_attr.cpu(),
+                            attributions=partial_attr,
                             baselines=partial_x_avg,
                             topk=topk,
+                            mask_largest=True,
                         )
                     )
-                    l_odds.append(
-                        log_odds(
+                    mse_suff.append(
+                        mse(
                             regressor,
                             partial_x,
-                            attributions=partial_attr.cpu(),
+                            attributions=partial_attr,
                             baselines=partial_x_avg,
                             topk=topk,
-                        )
-                    )
-                    suff.append(
-                        sufficiency(
-                            regressor,
-                            partial_x,
-                            attributions=partial_attr.cpu(),
-                            baselines=partial_x_avg,
-                            topk=topk,
+                            mask_largest=False,
                         )
                     )
 
-                acc = statistics.fmean(acc)
-                comp = statistics.fmean(comp)
-                ce = statistics.fmean(ce)
-                l_odds = statistics.fmean(l_odds)
-                suff = statistics.fmean(suff)
+                mae_comp = statistics.mean(mae_comp)
+                mae_suff = statistics.mean(mae_suff)
+                mse_comp = statistics.mean(mse_comp)
+                mse_suff = statistics.mean(mse_suff)
 
                 fp.write(str(seed) + ",")
                 fp.write(str(fold) + ",")
                 fp.write(str(topk) + ",")
                 fp.write(k + ",")
-                fp.write(f"{acc:.4},")
-                fp.write(f"{comp:.4},")
-                fp.write(f"{ce:.4},")
-                fp.write(f"{l_odds:.4},")
-                fp.write(f"{suff:.4},")
+                fp.write(f"{mae_comp:.4},")
+                fp.write(f"{mae_suff:.4},")
+                fp.write(f"{mse_comp:.4},")
+                fp.write(f"{mse_suff:.4}")
                 fp.write("\n")
 
 

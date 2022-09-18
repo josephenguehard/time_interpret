@@ -20,10 +20,11 @@ from tests.basic_models import BasicModel, BasicModel5_MultiArgs
         "target",
         "topk",
         "weight_fn",
+        "mask_largest",
         "fails",
     ],
     [
-        (BasicModel(), th.rand(8, 5, 3), None, None, None, 0.2, None, False),
+        (BasicModel(), th.rand(8, 5, 3), None, None, None, 0.2, None, True, False),
         (
             BasicModel5_MultiArgs(),
             th.rand(8, 5, 3),
@@ -32,16 +33,18 @@ from tests.basic_models import BasicModel, BasicModel5_MultiArgs
             None,
             0.2,
             None,
+            True,
             False,
         ),
-        (BasicModel(), th.rand(8, 5, 3), 0, None, None, 0.2, None, False),
-        (BasicModel(), th.rand(8, 5, 3), th.rand(8, 5, 3), None, None, 0.2, None, False),
-        (BasicModel(), th.rand(8, 5, 3), None, None, 0, 0.2, None, False),
-        (BasicModel(), th.rand(8, 5, 3), None, None, None, 0.6, None, False),
-        (BasicModel(), th.rand(8, 5, 3), None, None, None, 1.2, None, True),
-        (BasicModel(), th.rand(8, 5, 3), None, None, None, 0.2, lime_weights(), False),
-        (BasicModel(), th.rand(8, 5, 3), None, None, None, 0.2, lime_weights("euclidean"), False),
-        (BasicModel(), th.rand(8, 5, 3), None, None, None, 0.2, lof_weights(th.rand(20, 5, 3), 5), False),
+        (BasicModel(), th.rand(8, 5, 3), 0, None, None, 0.2, None, True, False),
+        (BasicModel(), th.rand(8, 5, 3), th.rand(8, 5, 3), None, None, 0.2, None, True, False),
+        (BasicModel(), th.rand(8, 5, 3), None, None, 0, 0.2, None, True, False),
+        (BasicModel(), th.rand(8, 5, 3), None, None, None, 0.6, None, True, False),
+        (BasicModel(), th.rand(8, 5, 3), None, None, None, 1.2, None, True, True),
+        (BasicModel(), th.rand(8, 5, 3), None, None, None, 0.2, lime_weights(), True, False),
+        (BasicModel(), th.rand(8, 5, 3), None, None, None, 0.2, lime_weights("euclidean"), True, False),
+        (BasicModel(), th.rand(8, 5, 3), None, None, None, 0.2, lof_weights(th.rand(20, 5, 3), 5), True, False),
+        (BasicModel(), th.rand(8, 5, 3), None, None, None, 0.2, None, False, False),
     ],
 )
 def test_cross_entropy(
@@ -52,6 +55,7 @@ def test_cross_entropy(
     target,
     topk,
     weight_fn,
+    mask_largest,
     fails,
 ):
     with pytest.raises(Exception) if fails else nullcontext():
@@ -71,6 +75,7 @@ def test_cross_entropy(
             target=target,
             topk=topk,
             weight_fn=weight_fn,
+            mask_largest=mask_largest,
         )
 
         assert isinstance(ce, float)
