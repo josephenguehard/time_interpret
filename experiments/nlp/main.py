@@ -126,7 +126,6 @@ def main(
     _comprehensiveness = dict()
     _sufficiency = dict()
     for explainer in explainers:
-        attr[explainer] = list()
         _log_odds[explainer] = list()
         _comprehensiveness[explainer] = list()
         _sufficiency[explainer] = list()
@@ -161,8 +160,8 @@ def main(
                     type_embed,
                 ),
             )
-            _attr = summarize_attributions(_attr).cpu()
-            attr["deep_lift"].append(_attr)
+            _attr = summarize_attributions(_attr)
+            attr["deep_lift"] = _attr
 
         if "discretized_integrated_gradients" in explainers:
             scaled_features = scale_inputs(
@@ -185,8 +184,8 @@ def main(
                 ),
                 n_steps=(2**factor) * (steps + 1) + 1,
             )
-            _attr = summarize_attributions(_attr).cpu()
-            attr["discretized_integrated_gradients"].append(_attr)
+            _attr = summarize_attributions(_attr)
+            attr["discretized_integrated_gradients"] = _attr
 
         if "gradient_shap" in explainers:
             explainer = GradientShap(nn_forward_func)
@@ -199,8 +198,8 @@ def main(
                     type_embed,
                 ),
             )
-            _attr = summarize_attributions(_attr).cpu()
-            attr["gradient_shap"].append(_attr)
+            _attr = summarize_attributions(_attr)
+            attr["gradient_shap"] = _attr
 
         if "input_x_gradient" in explainers:
             explainer = InputXGradient(nn_forward_func)
@@ -212,8 +211,8 @@ def main(
                     type_embed,
                 ),
             )
-            _attr = summarize_attributions(_attr).cpu()
-            attr["input_x_gradient"].append(_attr)
+            _attr = summarize_attributions(_attr)
+            attr["input_x_gradient"] = _attr
 
         if "integrated_gradients" in explainers:
             explainer = IntegratedGradients(nn_forward_func)
@@ -225,8 +224,8 @@ def main(
                     type_embed,
                 ),
             )
-            _attr = summarize_attributions(_attr).cpu()
-            attr["integrated_gradients"].append(_attr)
+            _attr = summarize_attributions(_attr)
+            attr["integrated_gradients"] = _attr
 
         if "sequential_integrated_gradients" in explainers:
             explainer = SequentialIntegratedGradients(nn_forward_func)
@@ -238,8 +237,8 @@ def main(
                     type_embed,
                 ),
             )
-            _attr = summarize_attributions(_attr).cpu()
-            attr["sequential_integrated_gradients"].append(_attr)
+            _attr = summarize_attributions(_attr)
+            attr["sequential_integrated_gradients"] = _attr
 
         # Append metrics
         for explainer, _attr in attr.items():
@@ -251,7 +250,7 @@ def main(
                     type_embed=type_embed,
                     attention_mask=attention_mask,
                     base_token_emb=base_token_emb,
-                    attr=_attr[-1],
+                    attr=_attr,
                     topk=int(topk * 100),
                 )[0]
             )
@@ -262,7 +261,7 @@ def main(
                     position_embed=position_embed,
                     type_embed=type_embed,
                     attention_mask=attention_mask,
-                    attr=_attr[-1],
+                    attr=_attr,
                     topk=int(topk * 100),
                 )
             )
@@ -273,7 +272,7 @@ def main(
                     position_embed=position_embed,
                     type_embed=type_embed,
                     attention_mask=attention_mask,
-                    attr=_attr[-1],
+                    attr=_attr,
                     topk=int(topk * 100),
                 )
             )
