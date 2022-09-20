@@ -36,14 +36,14 @@ def lof_weights(
         for _ in data
     )
     for x, lof in zip(data, lof_tpl):
-        lof.fit(X=x.reshape(-1, x.shape[-1]).cpu().numpy())
+        lof.fit(X=x.reshape(len(x), -1).cpu().numpy())
 
     def weights_fn(inputs, inputs_pert):
         # Compute lof scores
         score_tpl = tuple()
         for input_pert in inputs_pert:
             score = -lof.score_samples(
-                input_pert.reshape(-1, input_pert.shape[-1]).cpu().numpy()
+                input_pert.reshape(len(input_pert), -1).cpu().numpy()
             )
             score = th.from_numpy(score).float()
             score = 1 / score.clip(min=1)

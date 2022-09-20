@@ -6,7 +6,6 @@ from captum._utils.common import (
     _format_baseline,
     _format_tensor_into_tuples,
     _run_forward,
-    _select_targets,
     _validate_input,
 )
 from captum._utils.typing import (
@@ -73,6 +72,11 @@ def _base_metric(
         for attr in attributions
     )
 
+    # Set topk indices to inputs device
+    topk_indices = tuple(
+        topk.to(input.device) for topk, input in zip(topk_indices, inputs)
+    )
+
     # Replace topk values with baseline
     if baselines is None:
         inputs_pert = tuple(
@@ -130,7 +134,7 @@ def _base_metric(
         out = metric(logits_original, logits_pert, target, **kwargs)
 
     if weight_fn:
-        weights = _select_targets(weights, target)
+        weights = weights.to(out.device)
         return (out * weights).sum().item() / weights.sum().item()
 
     return out.mean().item()
