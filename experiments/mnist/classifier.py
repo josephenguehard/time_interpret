@@ -67,7 +67,7 @@ class MnistClassifierNet(Net):
         y_hat = self(x)
         loss = self.loss(y_hat, y)
 
-        # getattr(self, stage + "_acc")(y_hat[:, 1], y.long())
-        # self.log(stage + "_acc", getattr(self, stage + "_acc"))
+        getattr(self, stage + "_acc")(y_hat.argmax(-1), y.long())
+        self.log(stage + "_acc", getattr(self, stage + "_acc"))
 
         return loss
