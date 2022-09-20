@@ -29,6 +29,7 @@ from tint.metrics import (
     sufficiency,
 )
 from tint.metrics.weights import lime_weights, lof_weights
+from tint.utils import get_progress_bars
 
 from experiments.mnist.main import compute_metric
 
@@ -111,11 +112,11 @@ def main(
             seg_[seg_ == seg_id] = j
         seg_test.append(seg_)
 
-    x_test = th.cat(x_test)
-    seg_test = th.cat(seg_test)
+    x_test = th.cat(x_test).to(accelerator)
+    seg_test = th.cat(seg_test).to(accelerator)
 
     # Target is the model prediction
-    y_test = resnet(x_test).argmax(-1)
+    y_test = resnet(x_test).argmax(-1).to(accelerator)
 
     # Create dict of attributions and explainers
     attr = dict()
@@ -123,62 +124,110 @@ def main(
 
     if "bayes_lime" in explainers:
         explainer = BayesLime(resnet)
-        attr["bayes_lime"] = explainer.attribute(
-            x_test,
-            target=y_test,
-            feature_mask=seg_test,
-            show_progress=True,
-        )
+        _attr = list()
+        for x, y, s in get_progress_bars()(
+            zip(x_test, y_test, seg_test),
+            total=len(x_test),
+            desc=f"{explainer.get_name()} attribution",
+        ):
+            _attr.append(
+                explainer.attribute(
+                    x.unsqueeze(0),
+                    target=y.unsqueeze(0),
+                    feature_mask=s.unsqueeze(0),
+                )
+            )
+        attr["bayes_lime"] = th.stack(_attr)
         expl["bayes_lime"] = explainer
 
     if "bayes_kernel_shap" in explainers:
         explainer = BayesKernelShap(resnet)
-        attr["bayes_kernel_shap"] = explainer.attribute(
-            x_test,
-            target=y_test,
-            feature_mask=seg_test,
-            show_progress=True,
-        )
+        _attr = list()
+        for x, y, s in get_progress_bars()(
+            zip(x_test, y_test, seg_test),
+            total=len(x_test),
+            desc=f"{explainer.get_name()} attribution",
+        ):
+            _attr.append(
+                explainer.attribute(
+                    x.unsqueeze(0),
+                    target=y.unsqueeze(0),
+                    feature_mask=s.unsqueeze(0),
+                )
+            )
+        attr["bayes_kernel_shap"] = th.stack(_attr)
         expl["bayes_kernel_shap"] = explainer
 
     if "lime" in explainers:
         explainer = Lime(resnet)
-        attr["lime"] = explainer.attribute(
-            x_test,
-            target=y_test,
-            feature_mask=seg_test,
-            show_progress=True,
-        )
+        _attr = list()
+        for x, y, s in get_progress_bars()(
+            zip(x_test, y_test, seg_test),
+            total=len(x_test),
+            desc=f"{explainer.get_name()} attribution",
+        ):
+            _attr.append(
+                explainer.attribute(
+                    x.unsqueeze(0),
+                    target=y.unsqueeze(0),
+                    feature_mask=s.unsqueeze(0),
+                )
+            )
+        attr["lime"] = th.stack(_attr)
         expl["lime"] = explainer
 
     if "kernel_shap" in explainers:
         explainer = KernelShap(resnet)
-        attr["kernel_shap"] = explainer.attribute(
-            x_test,
-            target=y_test,
-            feature_mask=seg_test,
-            show_progress=True,
-        )
+        _attr = list()
+        for x, y, s in get_progress_bars()(
+            zip(x_test, y_test, seg_test),
+            total=len(x_test),
+            desc=f"{explainer.get_name()} attribution",
+        ):
+            _attr.append(
+                explainer.attribute(
+                    x.unsqueeze(0),
+                    target=y.unsqueeze(0),
+                    feature_mask=s.unsqueeze(0),
+                )
+            )
+        attr["kernel_shap"] = th.stack(_attr)
         expl["kernel_shap"] = explainer
 
     if "lof_lime" in explainers:
         explainer = LofLime(resnet, embeddings=x_test)
-        attr["lof_lime"] = explainer.attribute(
-            x_test,
-            target=y_test,
-            feature_mask=seg_test,
-            show_progress=True,
-        )
+        _attr = list()
+        for x, y, s in get_progress_bars()(
+            zip(x_test, y_test, seg_test),
+            total=len(x_test),
+            desc=f"{explainer.get_name()} attribution",
+        ):
+            _attr.append(
+                explainer.attribute(
+                    x.unsqueeze(0),
+                    target=y.unsqueeze(0),
+                    feature_mask=s.unsqueeze(0),
+                )
+            )
+        attr["lof_lime"] = th.stack(_attr)
         expl["lof_lime"] = explainer
 
     if "lof_kernel_shap" in explainers:
         explainer = LofKernelShap(resnet, embeddings=x_test)
-        attr["lof_kernel_shap"] = explainer.attribute(
-            x_test,
-            target=y_test,
-            feature_mask=seg_test,
-            show_progress=True,
-        )
+        _attr = list()
+        for x, y, s in get_progress_bars()(
+            zip(x_test, y_test, seg_test),
+            total=len(x_test),
+            desc=f"{explainer.get_name()} attribution",
+        ):
+            _attr.append(
+                explainer.attribute(
+                    x.unsqueeze(0),
+                    target=y.unsqueeze(0),
+                    feature_mask=s.unsqueeze(0),
+                )
+            )
+        attr["lof_kernel_shap"] = th.stack(_attr)
         expl["lof_kernel_shap"] = explainer
 
     if "augmented_occlusion" in explainers:
@@ -203,17 +252,27 @@ def main(
         )
         expl["occlusion"] = explainer
 
+    lime_weights_fn = lime_weights(
+        distance_mode="euclidean", kernel_width=1000
+    )
+    lof_weights_fn = lof_weights(data=x_test, n_neighbors=20)
+
     with open("results.csv", "a") as fp:
-        for topk in areas:
-            for k, v in attr.items():
-                for i, weight_fn in enumerate(
-                    [
-                        None,
-                        lime_weights(
-                            distance_mode="euclidean", kernel_width=1000
-                        ),
-                        lof_weights(data=x_test, n_neighbors=20),
-                    ]
+        for topk in get_progress_bars()(areas, desc="Topk", leave=False):
+            for k, v in get_progress_bars()(
+                attr.items(), desc="Attr", leave=False
+            ):
+                for i, weight_fn in get_progress_bars()(
+                    enumerate(
+                        [
+                            None,
+                            lime_weights_fn,
+                            lof_weights_fn,
+                        ]
+                    ),
+                    total=3,
+                    desc="Weight_fn",
+                    leave=False,
                 ):
 
                     acc = accuracy(
@@ -221,30 +280,35 @@ def main(
                         x_test,
                         attributions=v.cpu(),
                         topk=topk,
+                        weight_fn=weight_fn,
                     )
                     comp = comprehensiveness(
                         resnet,
                         x_test,
                         attributions=v.cpu(),
                         topk=topk,
+                        weight_fn=weight_fn,
                     )
                     ce = cross_entropy(
                         resnet,
                         x_test,
                         attributions=v.cpu(),
                         topk=topk,
+                        weight_fn=weight_fn,
                     )
                     l_odds = log_odds(
                         resnet,
                         x_test,
                         attributions=v.cpu(),
                         topk=topk,
+                        weight_fn=weight_fn,
                     )
                     suff = sufficiency(
                         resnet,
                         x_test,
                         attributions=v.cpu(),
                         topk=topk,
+                        weight_fn=weight_fn,
                     )
 
                     fp.write(str(seed) + ",")
@@ -262,13 +326,17 @@ def main(
                     fp.write(f"{l_odds:.4},")
                     fp.write(f"{suff:.4},")
 
-                    for metric in [
-                        accuracy,
-                        comprehensiveness,
-                        cross_entropy,
-                        log_odds,
-                        sufficiency,
-                    ]:
+                    for metric in get_progress_bars()(
+                        [
+                            accuracy,
+                            comprehensiveness,
+                            cross_entropy,
+                            log_odds,
+                            sufficiency,
+                        ],
+                        desc="Metric",
+                        leave=False,
+                    ):
                         sens_max = sensitivity_max(
                             compute_metric,
                             x_test[:10],
@@ -278,7 +346,8 @@ def main(
                             baselines=None,
                             topk=topk,
                             target=y_test[:10],
-                            feature_mask=seg_test[:10],
+                            additional_forward_args=seg_test[:10],
+                            weight_fn=weight_fn,
                         )
                         lip_max = lipschitz_max(
                             compute_metric,
@@ -289,7 +358,8 @@ def main(
                             baselines=None,
                             topk=topk,
                             target=y_test[:10],
-                            feature_mask=seg_test[:10],
+                            additional_forward_args=seg_test[:10],
+                            weight_fn=weight_fn,
                         )
 
                         fp.write(f"{sens_max.mean().item():4f},")
