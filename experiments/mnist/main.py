@@ -335,6 +335,11 @@ def main(
         )
         expl["occlusion"] = explainer
 
+    lime_weights_fn = lime_weights(
+        distance_mode="euclidean", kernel_width=1000
+    )
+    lof_weights_fn = lof_weights(data=x_train, n_neighbors=20)
+
     with open("results.csv", "a") as fp:
         for topk in get_progress_bars()(areas, desc="Topk", leave=False):
             for k, v in get_progress_bars()(
@@ -344,10 +349,8 @@ def main(
                     enumerate(
                         [
                             None,
-                            lime_weights(
-                                distance_mode="euclidean", kernel_width=1000
-                            ),
-                            lof_weights(data=x_train, n_neighbors=20),
+                            lime_weights_fn,
+                            lof_weights_fn,
                         ]
                     ),
                     total=3,
