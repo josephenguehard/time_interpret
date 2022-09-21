@@ -240,6 +240,57 @@ def main(
             _attr = summarize_attributions(_attr)
             attr["sequential_integrated_gradients"] = _attr
 
+        if "sequential_discretized_integrated_gradients" in explainers:
+            scaled_features = scale_inputs(
+                input_ids.squeeze().tolist(),
+                ref_input_ids.squeeze().tolist(),
+                device,
+                auxiliary_data,
+                steps=steps,
+                factor=factor,
+                strategy=strategy,
+            )
+
+            explainer = DiscretetizedIntegratedGradients(nn_forward_func)
+
+            _attr = list()
+            for idx in get_progress_bars()(
+                range(input_embed.shape[1]), leave=False
+            ):
+                inputs = torch.cat(
+                    [
+                        torch.cat(
+                            [
+                                input_embed[:, :idx, ...]
+                                for _ in range(len(scaled_features))
+                            ],
+                            dim=0,
+                        ),
+                        scaled_features[:, idx, ...].unsqueeze(1),
+                        torch.cat(
+                            [
+                                input_embed[:, idx + 1 :, ...]
+                                for _ in range(len(scaled_features))
+                            ],
+                            dim=0,
+                        ),
+                    ],
+                    dim=1,
+                )
+                _attr.append(
+                    explainer.attribute(
+                        scaled_features=inputs,
+                        additional_forward_args=(
+                            attention_mask,
+                            position_embed,
+                            type_embed,
+                        ),
+                        n_steps=(2**factor) * (steps + 1) + 1,
+                    )[:, idx, ...]
+                )
+            _attr = summarize_attributions(torch.stack(_attr, dim=1))
+            attr["sequential_discretized_integrated_gradients"] = _attr
+
         # Append metrics
         for explainer, _attr in attr.items():
             _log_odds[explainer].append(
@@ -328,6 +379,7 @@ def parse_args():
             "input_x_gradient",
             "integrated_gradients",
             "sequential_integrated_gradients",
+            "sequential_discretized_integrated_gradients",
         ],
         nargs="+",
         metavar="N",
