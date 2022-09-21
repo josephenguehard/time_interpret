@@ -1,10 +1,17 @@
+import multiprocessing as mp
 import numpy as np
 import os
 import torch as th
 import torchvision.transforms as T
 import warnings
 
-from captum.attr import KernelShap, Lime
+from captum.attr import (
+    DeepLift,
+    InputXGradient,
+    IntegratedGradients,
+    KernelShap,
+    Lime,
+)
 from captum.metrics import sensitivity_max
 from captum._utils.typing import (
     BaselineType,
@@ -24,10 +31,13 @@ from tint.attr import (
     AugmentedOcclusion,
     BayesLime,
     BayesKernelShap,
+    BayesMask,
+    GeodesicIntegratedGradients,
     LofLime,
     LofKernelShap,
     Occlusion,
 )
+from tint.attr.models import BayesMaskNet
 from tint.metrics import (
     accuracy,
     comprehensiveness,
@@ -41,10 +51,53 @@ from tint.utils import get_progress_bars
 
 
 from experiments.mnist.classifier import MnistClassifierNet
+from utils import experiment_dict
 
 
 file_dir = os.path.dirname(__file__)
 warnings.filterwarnings("ignore")
+
+
+def compute_attr(
+    inputs: TensorOrTupleOfTensorsGeneric,
+    explainer,
+    baselines: BaselineType,
+    target: TargetType,
+    additional_forward_args: Union[None, Tensor, Tuple[Tensor, ...]],
+):
+    if isinstance(explainer, Occlusion):
+        attr = explainer.attribute(
+            inputs,
+            sliding_window_shapes=(1, 1, 1),
+            target=target,
+            attributions_fn=abs,
+        )
+    elif isinstance(explainer, Lime):
+        attr = explainer.attribute(
+            inputs,
+            baselines=baselines,
+            target=target,
+            feature_mask=additional_forward_args,
+        )
+    elif isinstance(explainer, IntegratedGradients):
+        attr = explainer.attribute(
+            inputs,
+            baselines=baselines,
+            target=target,
+            internal_batch_size=200,
+        )
+    elif isinstance(explainer, DeepLift):
+        attr = explainer.attribute(
+            inputs,
+            baselines=baselines,
+            target=target,
+        )
+    elif isinstance(explainer, InputXGradient):
+        attr = explainer.attribute(inputs, target=target)
+    else:
+        raise NotImplementedError
+
+    return attr
 
 
 def compute_metric(
@@ -58,20 +111,13 @@ def compute_metric(
     additional_forward_args: Union[None, Tensor, Tuple[Tensor, ...]],
     weight_fn: Callable,
 ):
-    if isinstance(explainer, Occlusion):
-        attr = explainer.attribute(
-            inputs,
-            sliding_window_shapes=(1, 1, 1),
-            target=target,
-            attributions_fn=abs,
-        )
-    else:
-        attr = explainer.attribute(
-            inputs,
-            baselines=baselines,
-            target=target,
-            feature_mask=additional_forward_args,
-        )
+    attr = compute_attr(
+        inputs=inputs,
+        explainer=explainer,
+        baselines=baselines,
+        target=target,
+        additional_forward_args=additional_forward_args,
+    )
 
     metric_ = metric(
         forward_func,
@@ -87,12 +133,17 @@ def compute_metric(
 
 def main(
     explainers: List[str],
+    experiment: str,
     areas: List[float],
     n_segments: int = 20,
     accelerator: str = "cpu",
     seed: int = 42,
     deterministic: bool = False,
 ):
+    # If experiment is provided, get list of explainers
+    if experiment is not None:
+        explainers = experiment_dict[experiment]
+
     # If deterministic, seed everything
     if deterministic:
         seed_everything(seed=seed, workers=True)
@@ -236,6 +287,73 @@ def main(
         attr["bayes_kernel_shap"] = th.stack(_attr)
         expl["bayes_kernel_shap"] = explainer
 
+    if "bayes_mask" in explainers:
+        trainer = Trainer(
+            max_epochs=500,
+            accelerator=accelerator,
+            devices=1,
+            log_every_n_steps=2,
+            deterministic=deterministic,
+        )
+        mask = BayesMaskNet(
+            forward_func=classifier,
+            distribution="normal",
+            hard=False,
+            eps=1e-5,
+            optim="adam",
+            lr=0.01,
+        )
+        explainer = BayesMask(classifier)
+        _attr = explainer.attribute(
+            x_test,
+            trainer=trainer,
+            mask_net=mask,
+        )
+        attr["bayes_mask"] = _attr.to(accelerator)
+        expl["bayes_mask"] = explainer
+
+    if "deep_lift" in explainers:
+        explainer = DeepLift(classifier)
+        _attr = explainer.attribute(
+            x_test,
+            baselines=baselines,
+            target=y_test,
+        )
+        attr["deep_lift"] = _attr
+        expl["deep_lift"] = explainer
+
+    if "geodesic_integrated_gradients" in explainers:
+        explainer = GeodesicIntegratedGradients(
+            classifier,
+            data=x_train,
+            n_neighbors=5,
+        )
+        _attr = explainer.attribute(
+            x_test,
+            baselines=baselines,
+            target=y_test,
+            internal_batch_size=200,
+        )
+        attr["geodesic_integrated_gradients"] = _attr
+        expl["geodesic_integrated_gradients"] = explainer
+
+    if "input_x_gradient" in explainers:
+        explainer = InputXGradient(classifier)
+        _attr = explainer.attribute(x_test, target=y_test)
+        attr["input_x_gradient"] = _attr
+        expl["input_x_gradient"] = explainer
+
+    if "integrated_gradients" in explainers:
+        explainer = IntegratedGradients(classifier)
+        _attr = explainer.attribute(
+            x_test,
+            baselines=baselines,
+            target=y_test,
+            internal_batch_size=200,
+        )
+        attr["integrated_gradients"] = _attr
+        expl["integrated_gradients"] = explainer
+
     if "lime" in explainers:
         explainer = Lime(classifier)
         _attr = list()
@@ -340,7 +458,7 @@ def main(
     )
     lof_weights_fn = lof_weights(data=x_train, n_neighbors=20)
 
-    with open("results.csv", "a") as fp:
+    with open("results.csv", "a") as fp, mp.Lock():
         for topk in get_progress_bars()(areas, desc="Topk", leave=False):
             for k, v in get_progress_bars()(
                 attr.items(), desc="Attr", leave=False
@@ -398,6 +516,23 @@ def main(
                         topk=topk,
                         weight_fn=weight_fn,
                     )
+                    if k != "bayes_mask":
+                        sens_max = sensitivity_max(
+                            compute_attr,
+                            x_test[:100],
+                            explainer=expl[k],
+                            baselines=baselines,
+                            target=y_test[:100],
+                            additional_forward_args=seg_test[:100],
+                        )
+                        lip_max = lipschitz_max(
+                            compute_attr,
+                            x_test[:100],
+                            explainer=expl[k],
+                            baselines=baselines,
+                            target=y_test[:100],
+                            additional_forward_args=seg_test[:100],
+                        )
 
                     fp.write(str(seed) + ",")
                     fp.write(str(topk) + ",")
@@ -413,45 +548,49 @@ def main(
                     fp.write(f"{ce:.4},")
                     fp.write(f"{l_odds:.4},")
                     fp.write(f"{suff:.4},")
+                    if k != "bayes_mask":
+                        fp.write(f"{sens_max.mean().item():.4},")
+                        fp.write(f"{lip_max.mean().item():.4},")
 
-                    for metric in get_progress_bars()(
-                        [
-                            accuracy,
-                            comprehensiveness,
-                            cross_entropy,
-                            log_odds,
-                            sufficiency,
-                        ],
-                        desc="Metric",
-                        leave=False,
-                    ):
-                        sens_max = sensitivity_max(
-                            compute_metric,
-                            x_test[:10],
-                            explainer=expl[k],
-                            metric=metric,
-                            forward_func=classifier,
-                            baselines=baselines,
-                            topk=topk,
-                            target=y_test[:10],
-                            additional_forward_args=seg_test[:10],
-                            weight_fn=weight_fn,
-                        )
-                        lip_max = lipschitz_max(
-                            compute_metric,
-                            x_test[:10],
-                            explainer=expl[k],
-                            metric=metric,
-                            forward_func=classifier,
-                            baselines=baselines,
-                            topk=topk,
-                            target=y_test[:10],
-                            additional_forward_args=seg_test[:10],
-                            weight_fn=weight_fn,
-                        )
+                    if experiment == "lof":
+                        for metric in get_progress_bars()(
+                            [
+                                accuracy,
+                                comprehensiveness,
+                                cross_entropy,
+                                log_odds,
+                                sufficiency,
+                            ],
+                            desc="Metric",
+                            leave=False,
+                        ):
+                            sens_max = sensitivity_max(
+                                compute_metric,
+                                x_test[:10],
+                                explainer=expl[k],
+                                metric=metric,
+                                forward_func=classifier,
+                                baselines=baselines,
+                                topk=topk,
+                                target=y_test[:10],
+                                additional_forward_args=seg_test[:10],
+                                weight_fn=weight_fn,
+                            )
+                            lip_max = lipschitz_max(
+                                compute_metric,
+                                x_test[:10],
+                                explainer=expl[k],
+                                metric=metric,
+                                forward_func=classifier,
+                                baselines=baselines,
+                                topk=topk,
+                                target=y_test[:10],
+                                additional_forward_args=seg_test[:10],
+                                weight_fn=weight_fn,
+                            )
 
-                        fp.write(f"{sens_max.mean().item():4f},")
-                        fp.write(f"{lip_max.mean().item():4f},")
+                            fp.write(f"{sens_max.mean().item():4f},")
+                            fp.write(f"{lip_max.mean().item():4f},")
 
                     fp.write("\n")
 
@@ -474,6 +613,12 @@ def parse_args():
         nargs="+",
         metavar="N",
         help="List of explainer to use.",
+    )
+    parser.add_argument(
+        "--experiment",
+        type=str,
+        default=None,
+        help="Which experiment to run. Ignored if None",
     )
     parser.add_argument(
         "--areas",
@@ -520,6 +665,7 @@ if __name__ == "__main__":
     args = parse_args()
     main(
         explainers=args.explainers,
+        experiment=args.experiment,
         areas=args.areas,
         n_segments=args.n_segments,
         accelerator=args.accelerator,
