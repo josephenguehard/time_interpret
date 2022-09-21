@@ -1,5 +1,6 @@
 from captum.attr import KernelShap, Lime
 from captum._utils.models.model import Model
+from captum._utils.typing import TensorOrTupleOfTensorsGeneric
 
 from sklearn.neighbors import LocalOutlierFactor
 from torch import Tensor
@@ -35,16 +36,22 @@ class LOF:
 
     def lof_similarity_func(
         self,
-        original_inp: Tensor,
-        perturbed_inp: Tensor,
-        interpretable_sample: Tensor,
+        original_inp: TensorOrTupleOfTensorsGeneric,
+        perturbed_inp: TensorOrTupleOfTensorsGeneric,
+        interpretable_sample: TensorOrTupleOfTensorsGeneric,
         **kwargs,
     ):
-        assert isinstance(
-            original_inp, Tensor
-        ), "Only one input is accepted with this method."
+        # Only use the first input if tuple
+        # Lof only accepts one input
+        pert_inp = perturbed_inp
+        if isinstance(perturbed_inp, tuple):
+            assert (
+                len(perturbed_inp) == 1
+            ), "Only one input is accepted with this method."
+            pert_inp = perturbed_inp[0]
+
         score = -self.lof.score_samples(
-            perturbed_inp.reshape(len(perturbed_inp), -1).cpu().numpy()
+            pert_inp.reshape(len(pert_inp), -1).cpu().numpy()
         )
         score = 1 / score.clip(min=1)
         return self._similarity_func(
