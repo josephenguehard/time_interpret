@@ -107,7 +107,12 @@ class BayesMask(nn.Module):
             ] = 1.0
 
     def forward(
-        self, x: th.Tensor, batch_idx, *additional_forward_args
+        self,
+        x: th.Tensor,
+        batch_idx,
+        baselines,
+        target,
+        *additional_forward_args,
     ) -> th.Tensor:
         # Clamp mask
         self.clamp()
@@ -169,12 +174,14 @@ class BayesMask(nn.Module):
 
         # Mask data according to samples
         # We eventually cut samples up to x time dimension
-        x *= samples[:, : x.shape[1], ...]
+        samples = samples[:, : x.shape[1], ...]
+        x = x * samples + baselines * (1.0 - samples)
 
         # Return f(perturbed x)
         return _run_forward(
             forward_func=self.forward_func,
             inputs=x,
+            target=target,
             additional_forward_args=additional_forward_args,
         )
 
@@ -303,7 +310,7 @@ class BayesMaskNet(Net):
     def step(self, batch, batch_idx, stage):
         # x is the data to be perturbed
         # y is the same data without perturbation
-        x, y, *additional_forward_args = batch
+        x, y, baselines, target, *additional_forward_args = batch
 
         # If additional_forward_args is only one None,
         # set it to None
@@ -312,14 +319,21 @@ class BayesMaskNet(Net):
 
         # Get perturbed output
         if additional_forward_args is None:
-            y_hat = self(x.float(), batch_idx)
+            y_hat = self(x.float(), batch_idx, baselines, target)
         else:
-            y_hat = self(x.float(), batch_idx, *additional_forward_args)
+            y_hat = self(
+                x.float(),
+                batch_idx,
+                baselines,
+                target,
+                *additional_forward_args,
+            )
 
         # Get unperturbed output
         y_target = _run_forward(
             forward_func=self.net.forward_func,
             inputs=y,
+            target=target,
             additional_forward_args=tuple(additional_forward_args)
             if additional_forward_args is not None
             else None,
