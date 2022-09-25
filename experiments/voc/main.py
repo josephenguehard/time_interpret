@@ -13,7 +13,6 @@ from captum.attr import (
 )
 from captum.metrics import sensitivity_max
 from captum._utils.typing import (
-    BaselineType,
     TargetType,
     TensorOrTupleOfTensorsGeneric,
 )
@@ -24,19 +23,16 @@ from torch import Tensor
 from torch.utils.data import DataLoader
 from torchvision.datasets import VOCSegmentation
 from torchvision.models import resnet18
-from typing import Callable, List, Tuple, Union
+from typing import List, Tuple, Union
 
 from tint.attr import (
     AugmentedOcclusion,
-    BayesLime,
-    BayesKernelShap,
     BayesMask,
+    DynaMask,
     GeodesicIntegratedGradients,
-    LofLime,
-    LofKernelShap,
     Occlusion,
 )
-from tint.attr.models import BayesMaskNet
+from tint.attr.models import BayesMaskNet, MaskNet
 from tint.metrics import (
     accuracy,
     comprehensiveness,
@@ -45,10 +41,7 @@ from tint.metrics import (
     log_odds,
     sufficiency,
 )
-from tint.metrics.weights import lime_weights, lof_weights
 from tint.utils import get_progress_bars
-
-from experiments.mnist.utils import experiment_dict
 
 
 file_dir = os.path.dirname(__file__)
@@ -61,19 +54,16 @@ def compute_attr(
     target: TargetType,
     additional_forward_args: Union[None, Tensor, Tuple[Tensor, ...]],
 ):
-    if isinstance(explainer, Occlusion):
+    if isinstance(explainer, DeepLift):
         attr = explainer.attribute(
             inputs,
-            sliding_window_shapes=(3, 15, 15),
-            strides=(3, 8, 8),
             target=target,
-            attributions_fn=abs,
         )
-    elif isinstance(explainer, Lime):
+    elif isinstance(explainer, GeodesicIntegratedGradients):
         attr = explainer.attribute(
             inputs,
             target=target,
-            feature_mask=additional_forward_args,
+            internal_batch_size=200,
         )
     elif isinstance(explainer, IntegratedGradients):
         attr = explainer.attribute(
@@ -81,61 +71,35 @@ def compute_attr(
             target=target,
             internal_batch_size=200,
         )
-    elif isinstance(explainer, DeepLift):
+    elif isinstance(explainer, InputXGradient):
+        attr = explainer.attribute(inputs, target=target)
+    elif isinstance(explainer, Lime):
         attr = explainer.attribute(
             inputs,
             target=target,
+            feature_mask=additional_forward_args,
         )
-    elif isinstance(explainer, InputXGradient):
-        attr = explainer.attribute(inputs, target=target)
+    elif isinstance(explainer, Occlusion):
+        attr = explainer.attribute(
+            inputs,
+            sliding_window_shapes=(3, 15, 15),
+            strides=(3, 8, 8),
+            target=target,
+            attributions_fn=abs,
+        )
     else:
         raise NotImplementedError
 
     return attr
 
 
-def compute_metric(
-    inputs: TensorOrTupleOfTensorsGeneric,
-    explainer,
-    metric: Callable,
-    forward_func: Callable,
-    baselines: BaselineType,
-    topk: float,
-    target: TargetType,
-    additional_forward_args: Union[None, Tensor, Tuple[Tensor, ...]],
-    weight_fn: Callable,
-):
-    attr = compute_attr(
-        inputs=inputs,
-        explainer=explainer,
-        target=target,
-        additional_forward_args=additional_forward_args,
-    )
-
-    metric_ = metric(
-        forward_func,
-        inputs,
-        attributions=attr,
-        baselines=baselines,
-        topk=topk,
-        weight_fn=weight_fn,
-    )
-
-    return tuple(th.ones_like(i) * metric_ for i in inputs)
-
-
 def main(
     explainers: List[str],
-    experiment: str,
     areas: List[float],
     accelerator: str = "cpu",
     seed: int = 42,
     deterministic: bool = False,
 ):
-    # If experiment is provided, get list of explainers
-    if experiment is not None:
-        explainers = experiment_dict[experiment]
-
     # If deterministic, seed everything
     if deterministic:
         seed_everything(seed=seed, workers=True)
@@ -219,42 +183,6 @@ def main(
     attr = dict()
     expl = dict()
 
-    if "bayes_lime" in explainers:
-        explainer = BayesLime(resnet)
-        _attr = list()
-        for x, y, s in get_progress_bars()(
-            zip(x_test, y_test, seg_test),
-            total=len(x_test),
-            desc=f"{explainer.get_name()} attribution",
-        ):
-            _attr.append(
-                explainer.attribute(
-                    x.unsqueeze(0),
-                    target=y.unsqueeze(0),
-                    feature_mask=s.unsqueeze(0),
-                )
-            )
-        attr["bayes_lime"] = th.stack(_attr)
-        expl["bayes_lime"] = explainer
-
-    if "bayes_kernel_shap" in explainers:
-        explainer = BayesKernelShap(resnet)
-        _attr = list()
-        for x, y, s in get_progress_bars()(
-            zip(x_test, y_test, seg_test),
-            total=len(x_test),
-            desc=f"{explainer.get_name()} attribution",
-        ):
-            _attr.append(
-                explainer.attribute(
-                    x.unsqueeze(0),
-                    target=y.unsqueeze(0),
-                    feature_mask=s.unsqueeze(0),
-                )
-            )
-        attr["bayes_kernel_shap"] = th.stack(_attr)
-        expl["bayes_kernel_shap"] = explainer
-
     if "bayes_mask" in explainers:
         trainer = Trainer(
             max_epochs=500,
@@ -265,9 +193,9 @@ def main(
         )
         mask = BayesMaskNet(
             forward_func=resnet,
-            distribution="normal",
+            distribution="none",
             hard=False,
-            eps=1e-5,
+            comp_loss=True,
             optim="adam",
             lr=0.01,
         )
@@ -284,16 +212,75 @@ def main(
     if "deep_lift" in explainers:
         pass
 
-    if "geodesic_integrated_gradients" in explainers:
-        explainer = GeodesicIntegratedGradients(resnet)
+    if "dyna_mask" in explainers:
+        trainer = Trainer(
+            max_epochs=1000,
+            accelerator=accelerator,
+            devices=1,
+            log_every_n_steps=2,
+            deterministic=deterministic,
+        )
+        mask = MaskNet(
+            forward_func=resnet,
+            perturbation="fade_moving_average",
+            keep_ratio=[0.01, 0.02, 0.05, 0.1, 0.2, 0.5],
+            size_reg_factor_init=0.1,
+            size_reg_factor_dilation=10000,
+            time_reg_factor=0.0,
+        )
+        explainer = DynaMask(resnet)
         _attr = explainer.attribute(
             x_test,
-            n_neighbors=5,
-            target=y_test,
-            internal_batch_size=200,
+            trainer=trainer,
+            mask_net=mask,
+            return_best_ratio=True,
         )
-        attr["geodesic_integrated_gradients"] = _attr
-        expl["geodesic_integrated_gradients"] = explainer
+        print(f"Best keep ratio is {_attr[1]}")
+        attr["dyna_mask"] = _attr[0].to(accelerator)
+
+    if "geodesic_integrated_gradients" in explainers:
+        _attr = list()
+        _sens_max = list()
+        _lip_max = list()
+        for x, y, s in get_progress_bars()(
+            zip(x_test, y_test, seg_test),
+            total=len(x_test),
+            desc=f"{GeodesicIntegratedGradients.get_name()} attribution",
+        ):
+            x_aug = th.stack([x * th.rand_like(x) for _ in range(500)])
+            explainer = GeodesicIntegratedGradients(
+                resnet, data=x_aug, n_neighbors=5
+            )
+
+            _attr.append(
+                explainer.attribute(
+                    x.unsqueeze(0),
+                    target=y.item(),
+                    internal_batch_size=200,
+                )
+            )
+            _sens_max.append(
+                sensitivity_max(
+                    compute_attr,
+                    x.unsqueeze(0),
+                    explainer=explainer,
+                    target=y.item(),
+                    additional_forward_args=None,
+                )
+            )
+            _lip_max.append(
+                lipschitz_max(
+                    compute_attr,
+                    x.unsqueeze(0),
+                    explainer=explainer,
+                    target=y.item(),
+                    additional_forward_args=None,
+                )
+            )
+
+        attr["geodesic_integrated_gradients"] = th.cat(_attr)
+        _sens_max = th.cat(_sens_max)
+        _lip_max = th.cat(_lip_max)
 
     if "input_x_gradient" in explainers:
         explainer = InputXGradient(resnet)
@@ -347,42 +334,6 @@ def main(
         attr["kernel_shap"] = th.stack(_attr)
         expl["kernel_shap"] = explainer
 
-    if "lof_lime" in explainers:
-        explainer = LofLime(resnet, embeddings=x_test)
-        _attr = list()
-        for x, y, s in get_progress_bars()(
-            zip(x_test, y_test, seg_test),
-            total=len(x_test),
-            desc=f"{explainer.get_name()} attribution",
-        ):
-            _attr.append(
-                explainer.attribute(
-                    x.unsqueeze(0),
-                    target=y.unsqueeze(0),
-                    feature_mask=s.unsqueeze(0),
-                )
-            )
-        attr["lof_lime"] = th.stack(_attr)
-        expl["lof_lime"] = explainer
-
-    if "lof_kernel_shap" in explainers:
-        explainer = LofKernelShap(resnet, embeddings=x_test)
-        _attr = list()
-        for x, y, s in get_progress_bars()(
-            zip(x_test, y_test, seg_test),
-            total=len(x_test),
-            desc=f"{explainer.get_name()} attribution",
-        ):
-            _attr.append(
-                explainer.attribute(
-                    x.unsqueeze(0),
-                    target=y.unsqueeze(0),
-                    feature_mask=s.unsqueeze(0),
-                )
-            )
-        attr["lof_kernel_shap"] = th.stack(_attr)
-        expl["lof_kernel_shap"] = explainer
-
     if "augmented_occlusion" in explainers:
         explainer = AugmentedOcclusion(resnet, data=x_test)
         attr["augmented_occlusion"] = explainer.attribute(
@@ -407,139 +358,108 @@ def main(
         )
         expl["occlusion"] = explainer
 
-    lime_weights_fn = lime_weights(
-        distance_mode="euclidean", kernel_width=1000
-    )
-    lof_weights_fn = lof_weights(data=x_test, n_neighbors=20)
-
     with open("results.csv", "a") as fp, mp.Lock():
+        for k, v in get_progress_bars()(
+            attr.items(), desc="Attr", leave=False
+        ):
+            if k not in ["bayes_mask", "dyna_mask"]:
+                if k == "geodesic_integrated_gradients":
+                    sens_max = _sens_max
+                    lip_max = _lip_max
+                else:
+                    sens_max = sensitivity_max(
+                        compute_attr,
+                        x_test,
+                        explainer=expl[k],
+                        target=y_test,
+                        additional_forward_args=seg_test,
+                    )
+                    lip_max = lipschitz_max(
+                        compute_attr,
+                        x_test,
+                        explainer=expl[k],
+                        target=y_test,
+                        additional_forward_args=seg_test,
+                    )
+
+                fp.write(str(seed) + ",")
+                fp.write("None,")
+                fp.write(k + ",")
+                fp.write("None,")
+                fp.write("None,")
+                fp.write("None,")
+                fp.write("None,")
+                fp.write("None,")
+                fp.write("None,")
+                fp.write("None,")
+                fp.write(f"{sens_max.mean().item():.4},")
+                fp.write(f"{lip_max.mean().item():.4}")
+                fp.write("\n")
+
         for topk in get_progress_bars()(areas, desc="Topk", leave=False):
             for k, v in get_progress_bars()(
                 attr.items(), desc="Attr", leave=False
             ):
-                for i, weight_fn in get_progress_bars()(
-                    enumerate(
-                        [
-                            None,
-                            lime_weights_fn,
-                            lof_weights_fn,
-                        ]
-                    ),
-                    total=3,
-                    desc="Weight_fn",
-                    leave=False,
-                ):
+                acc_comp = accuracy(
+                    resnet,
+                    x_test,
+                    attributions=v.cpu(),
+                    topk=topk,
+                    mask_largest=True,
+                )
+                acc_suff = accuracy(
+                    resnet,
+                    x_test,
+                    attributions=v.cpu(),
+                    topk=topk,
+                    mask_largest=False,
+                )
+                comp = comprehensiveness(
+                    resnet,
+                    x_test,
+                    attributions=v.cpu(),
+                    topk=topk,
+                )
+                ce_comp = cross_entropy(
+                    resnet,
+                    x_test,
+                    attributions=v.cpu(),
+                    topk=topk,
+                    mask_largest=True,
+                )
+                ce_suff = cross_entropy(
+                    resnet,
+                    x_test,
+                    attributions=v.cpu(),
+                    topk=topk,
+                    mask_largest=False,
+                )
+                l_odds = log_odds(
+                    resnet,
+                    x_test,
+                    attributions=v.cpu(),
+                    topk=topk,
+                )
+                suff = sufficiency(
+                    resnet,
+                    x_test,
+                    attributions=v.cpu(),
+                    topk=topk,
+                )
 
-                    acc = accuracy(
-                        resnet,
-                        x_test,
-                        attributions=v.cpu(),
-                        topk=topk,
-                        weight_fn=weight_fn,
-                    )
-                    comp = comprehensiveness(
-                        resnet,
-                        x_test,
-                        attributions=v.cpu(),
-                        topk=topk,
-                        weight_fn=weight_fn,
-                    )
-                    ce = cross_entropy(
-                        resnet,
-                        x_test,
-                        attributions=v.cpu(),
-                        topk=topk,
-                        weight_fn=weight_fn,
-                    )
-                    l_odds = log_odds(
-                        resnet,
-                        x_test,
-                        attributions=v.cpu(),
-                        topk=topk,
-                        weight_fn=weight_fn,
-                    )
-                    suff = sufficiency(
-                        resnet,
-                        x_test,
-                        attributions=v.cpu(),
-                        topk=topk,
-                        weight_fn=weight_fn,
-                    )
-                    if k != "bayes_mask":
-                        sens_max = sensitivity_max(
-                            compute_attr,
-                            x_test[:100],
-                            explainer=expl[k],
-                            target=y_test[:100],
-                            additional_forward_args=seg_test[:100],
-                        )
-                        lip_max = lipschitz_max(
-                            compute_attr,
-                            x_test[:100],
-                            explainer=expl[k],
-                            target=y_test[:100],
-                            additional_forward_args=seg_test[:100],
-                        )
-
-                    fp.write(str(seed) + ",")
-                    fp.write(str(topk) + ",")
-                    if i == 0:
-                        fp.write("None,")
-                    elif i == 1:
-                        fp.write("lime_weights,")
-                    else:
-                        fp.write("lof_weights,")
-                    fp.write(k + ",")
-                    fp.write(f"{acc:.4},")
-                    fp.write(f"{comp:.4},")
-                    fp.write(f"{ce:.4},")
-                    fp.write(f"{l_odds:.4},")
-                    fp.write(f"{suff:.4},")
-                    if k != "bayes_mask":
-                        fp.write(f"{sens_max.mean().item():.4},")
-                        fp.write(f"{lip_max.mean().item():.4},")
-
-                    if experiment == "lof":
-                        for metric in get_progress_bars()(
-                            [
-                                accuracy,
-                                comprehensiveness,
-                                cross_entropy,
-                                log_odds,
-                                sufficiency,
-                            ],
-                            desc="Metric",
-                            leave=False,
-                        ):
-                            sens_max = sensitivity_max(
-                                compute_metric,
-                                x_test[:10],
-                                explainer=expl[k],
-                                metric=metric,
-                                forward_func=resnet,
-                                baselines=None,
-                                topk=topk,
-                                target=y_test[:10],
-                                additional_forward_args=seg_test[:10],
-                                weight_fn=weight_fn,
-                            )
-                            lip_max = lipschitz_max(
-                                compute_metric,
-                                x_test[:10],
-                                explainer=expl[k],
-                                metric=metric,
-                                forward_func=resnet,
-                                baselines=None,
-                                topk=topk,
-                                target=y_test[:10],
-                                additional_forward_args=seg_test[:10],
-                                weight_fn=weight_fn,
-                            )
-
-                            fp.write(f"{sens_max.mean().item():4f},")
-                            fp.write(f"{lip_max.mean().item():4f},")
-
-                    fp.write("\n")
+                fp.write(str(seed) + ",")
+                fp.write(str(topk) + ",")
+                fp.write(k + ",")
+                fp.write(f"{acc_comp:.4},")
+                fp.write(f"{acc_suff:.4},")
+                fp.write(f"{comp:.4},")
+                fp.write(f"{ce_comp:.4},")
+                fp.write(f"{ce_suff:.4},")
+                fp.write(f"{l_odds:.4},")
+                fp.write(f"{suff:.4},")
+                fp.write("None,")
+                fp.write("None")
+                fp.write("\n")
 
 
 def parse_args():
@@ -548,12 +468,14 @@ def parse_args():
         "--explainers",
         type=str,
         default=[
-            "bayes_lime",
-            "bayes_kernel_shap",
+            "bayes_mask",
+            "deep_lift",
+            "dyna_mask",
+            "geodesic_integrated_gradients",
+            "input_x_gradient",
+            "integrated_gradients",
             "lime",
             "kernel_shap",
-            "lof_lime",
-            "lof_kernel_shap",
             "augmented_occlusion",
             "occlusion",
         ],
@@ -562,21 +484,15 @@ def parse_args():
         help="List of explainer to use.",
     )
     parser.add_argument(
-        "--experiment",
-        type=str,
-        default=None,
-        help="Which experiment to run. Ignored if None",
-    )
-    parser.add_argument(
         "--areas",
         type=float,
         default=[
+            0.01,
+            0.02,
+            0.05,
             0.1,
             0.2,
-            0.3,
-            0.4,
             0.5,
-            0.6,
         ],
         nargs="+",
         metavar="N",
@@ -606,7 +522,6 @@ if __name__ == "__main__":
     args = parse_args()
     main(
         explainers=args.explainers,
-        experiment=args.experiment,
         areas=args.areas,
         accelerator=args.accelerator,
         seed=args.seed,

@@ -33,6 +33,7 @@ rotten,distilbert,gradient_shap,-0.2492,0.1277,0.2809
 rotten,distilbert,input_x_gradient,-0.1524,0.06814,0.3147
 rotten,distilbert,integrated_gradients,-0.3098,0.1708,0.244
 rotten,distilbert,sequential_integrated_gradients,-0.5357,0.2893,0.1366
+rotten,distilbert,sequential_discretized_integrated_gradients,-0.7402,0.3762,0.1188
 rotten,roberta,deep_lift,-0.2108,0.06174,0.3625
 rotten,roberta,discretized_integrated_gradients,-0.3462,0.1532,0.3101
 rotten,roberta,gradient_shap,-0.2723,0.1101,0.3355
