@@ -1,7 +1,1 @@
 Seed,Topk,Explainer,Accuracy Comp,Accuracy Suff,Comprehensiveness,Cross Entropy Comp,Cross Entropy Suff,Log Odds,Sufficiency,Sensitivity,Lipschitz,
-42,0.01,dyna_mask,0.0,0.0,8.196e-09,2.014,2.273,-4.768e-08,0.03164,None,None
-42,0.02,dyna_mask,0.0,0.0,7.451e-10,2.014,2.273,1.192e-08,0.03164,None,None
-42,0.05,dyna_mask,0.0,0.0,5.96e-09,2.014,2.273,-4.768e-08,0.03164,None,None
-42,0.1,dyna_mask,0.0,0.0,3.83e-05,2.014,2.274,-0.0002396,0.03169,None,None
-42,0.2,dyna_mask,0.0,0.0,0.004002,2.042,2.249,-0.02779,0.02902,None,None
-42,0.5,dyna_mask,0.0,0.0,0.0109,2.095,2.095,-0.08056,0.0109,None,None
