@@ -203,3 +203,20 @@ def _validate_input(
                 " input tensor must be a scalar."
                 " Found data: {} and input: {} ".format(d.shape, input.shape)
             )
+
+
+def unsqueeze_like(tensor: torch.Tensor, like: torch.Tensor):
+    """
+    Unsqueeze last dimensions of tensor to match another tensor's number of dimensions.
+
+    Args:
+        tensor (torch.Tensor): tensor to unsqueeze
+        like (torch.Tensor): tensor whose dimensions to match
+    """
+    n_unsqueezes = like.ndim - tensor.ndim
+    if n_unsqueezes < 0:
+        raise ValueError(f"tensor.ndim={tensor.ndim} > like.ndim={like.ndim}")
+    elif n_unsqueezes == 0:
+        return tensor
+    else:
+        return tensor[(...,) + (None,) * n_unsqueezes]

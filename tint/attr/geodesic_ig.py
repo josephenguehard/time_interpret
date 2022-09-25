@@ -100,7 +100,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
             self.n_neighbors = n_neighbors
             self.nn = tuple(
                 NearestNeighbors(n_neighbors=n, **kwargs).fit(
-                    X=x.reshape(-1, x.shape[-1]).cpu()
+                    X=x.reshape(len(x), -1).cpu()
                 )
                 for x, n in zip(data, n_neighbors)
             )
@@ -347,7 +347,9 @@ class GeodesicIntegratedGradients(GradientAttribution):
                 n_neighbors = tuple(n_neighbors for _ in inputs)
 
             nn = tuple(
-                NearestNeighbors(n_neighbors=n, **kwargs).fit(X=x.cpu())
+                NearestNeighbors(n_neighbors=n, **kwargs).fit(
+                    X=x.reshape(len(x), -1).cpu()
+                )
                 for x, n in zip(inputs, n_neighbors)
             )
 
@@ -455,13 +457,19 @@ class GeodesicIntegratedGradients(GradientAttribution):
             return torch.linalg.norm(d[u] - d[v]).item()
 
         # Compute A* paths
-        inputs_idx = tuple(
-            range(len(x), len(x) + len(y)) for x, y in zip(self.data, inputs)
-        )
-        baselines_idx = tuple(
-            range(len(x) + len(y), len(x) + 2 * len(y))
-            for x, y in zip(self.data, inputs)
-        )
+        if self.data is not None:
+            inputs_idx = tuple(
+                range(len(x), len(x) + len(y))
+                for x, y in zip(self.data, inputs)
+            )
+            baselines_idx = tuple(
+                range(len(x) + len(y), len(x) + 2 * len(y))
+                for x, y in zip(self.data, inputs)
+            )
+        else:
+            inputs_idx = tuple(range(len(x)) for x in inputs)
+            baselines_idx = tuple(range(len(x), 2 * len(x)) for x in inputs)
+
         paths = tuple(
             [
                 astar_path(graph, i, j, heuristic=heuristic, d=d)
@@ -496,19 +504,6 @@ class GeodesicIntegratedGradients(GradientAttribution):
         total_grads = tuple(
             grad[grad_idx] for grad, grad_idx in zip(total_grads, grads_idx)
         )
-
-        # Get sign for each path
-        # and multipy with total_grads
-        """
-        signs = tuple(
-            2 * (id[grad_idx] == path[:, 1]).float() - 1
-            for id, grad_idx, path in zip(idx, grads_idx, paths)
-        )
-        total_grads = tuple(
-            grad * sign.unsqueeze(-1)
-            for grad, sign in zip(total_grads, signs)
-        )
-        """
 
         # Split for each path
         total_grads = tuple(
@@ -654,7 +649,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
         # Get kneighbors_graph
         graphs = tuple(
             nn_.kneighbors_graph(
-                x.reshape(-1, x.shape[-1]).detach().cpu(),
+                x.reshape(len(x), -1).detach().cpu(),
                 n_neighbors=n,
                 mode="distance",
             )
