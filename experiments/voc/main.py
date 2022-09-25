@@ -202,8 +202,10 @@ def main(
         explainer = BayesMask(resnet)
         _attr = explainer.attribute(
             x_test,
+            target=y_test,
             trainer=trainer,
             mask_net=mask,
+            batch_size=64,
         )
         attr["bayes_mask"] = _attr.to(accelerator)
         expl["bayes_mask"] = explainer
