@@ -1,3 +1,5 @@
+import torch
+
 from captum._utils.common import _format_tensor_into_tuples
 from captum._utils.typing import TensorOrTupleOfTensorsGeneric
 

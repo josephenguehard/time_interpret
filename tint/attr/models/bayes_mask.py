@@ -113,7 +113,7 @@ class BayesMask(nn.Module):
         baselines,
         target,
         *additional_forward_args,
-    ) -> th.Tensor:
+    ) -> (th.Tensor, th.Tensor):
         # Clamp mask
         self.clamp()
 
@@ -174,15 +174,26 @@ class BayesMask(nn.Module):
 
         # Mask data according to samples
         # We eventually cut samples up to x time dimension
+        # x1 represents inputs with important features masked.
+        # x2 represents inputs with unimportant features masked.
         samples = samples[:, : x.shape[1], ...]
-        x = x * samples + baselines * (1.0 - samples)
+        x1 = x * samples + baselines * (1.0 - samples)
+        x2 = x * (1.0 - samples) + baselines * samples
 
         # Return f(perturbed x)
-        return _run_forward(
-            forward_func=self.forward_func,
-            inputs=x,
-            target=target,
-            additional_forward_args=additional_forward_args,
+        return (
+            _run_forward(
+                forward_func=self.forward_func,
+                inputs=x1,
+                target=target,
+                additional_forward_args=additional_forward_args,
+            ),
+            _run_forward(
+                forward_func=self.forward_func,
+                inputs=x2,
+                target=target,
+                additional_forward_args=additional_forward_args,
+            ),
         )
 
     def regularisation(self, loss: th.Tensor) -> th.Tensor:
@@ -236,6 +247,8 @@ class BayesMaskNet(Net):
         hard (bool): Whether to create hard mask values or not. In both
             cases, soft values will be used for back-propagation.
             Default to ``True``
+        comp_loss (bool): Whether to include comprehensiveness loss.
+            Default to ``False``
         model (nnn.Module): A model used to recreate the original
             predictions, in addition to the mask. Default to ``None``
         eps (float): Optional param for normal distribution.
@@ -275,6 +288,7 @@ class BayesMaskNet(Net):
         forward_func: Callable,
         distribution: str = "bernoulli",
         hard: bool = True,
+        comp_loss: bool = False,
         model: nn.Module = None,
         eps: float = 1e-3,
         batch_size: int = 32,
@@ -304,6 +318,8 @@ class BayesMaskNet(Net):
             l2=l2,
         )
 
+        self.comp_loss = comp_loss
+
     def forward(self, *args, **kwargs) -> th.Tensor:
         return self.net(*args, **kwargs)
 
@@ -318,10 +334,12 @@ class BayesMaskNet(Net):
             additional_forward_args = None
 
         # Get perturbed output
+        # y_hat1 is computed by masking important features
+        # y_hat2 is computed by masking unimportant features
         if additional_forward_args is None:
-            y_hat = self(x.float(), batch_idx, baselines, target)
+            y_hat1, y_hat2 = self(x.float(), batch_idx, baselines, target)
         else:
-            y_hat = self(
+            y_hat1, y_hat2 = self(
                 x.float(),
                 batch_idx,
                 baselines,
@@ -329,8 +347,8 @@ class BayesMaskNet(Net):
                 *additional_forward_args,
             )
 
-        # Get unperturbed output
-        y_target = _run_forward(
+        # Get unperturbed output for inputs and baselines
+        y_target1 = _run_forward(
             forward_func=self.net.forward_func,
             inputs=y,
             target=target,
@@ -338,10 +356,19 @@ class BayesMaskNet(Net):
             if additional_forward_args is not None
             else None,
         )
+        y_target2 = _run_forward(
+            forward_func=self.net.forward_func,
+            inputs=th.zeros_like(y) + baselines,
+            target=target,
+            additional_forward_args=tuple(additional_forward_args)
+            if additional_forward_args is not None
+            else None,
+        )
 
-        # Compute loss
-        loss = self.loss(y_hat, y_target)
-        return loss
+        # Compute and return loss
+        if self.comp_loss:
+            return self.loss(y_hat1, y_target1) + self.loss(y_hat2, y_target2)
+        return self.loss(y_hat1, y_target1)
 
     def training_step_end(self, step_output):
         """"""
