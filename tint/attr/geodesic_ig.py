@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 import typing
 import warnings
@@ -112,7 +113,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
             )
             if any(n > 1 for n in n_components):
                 warnings.warn(
-                    "The knn graph is disconnected. You should increase n_neighbors"
+                    "The knn graph is disconnected. You should increase n_neighbors."
                 )
 
     # The following overloaded method signatures correspond to the case where
@@ -127,9 +128,8 @@ class GeodesicIntegratedGradients(GradientAttribution):
         target: TargetType = None,
         additional_forward_args: Any = None,
         n_neighbors: Union[int, Tuple[int]] = None,
-        n_steps: int = 50,
+        n_steps: int = 5,
         method: str = "gausslegendre",
-        n_steiner: int = None,
         internal_batch_size: Union[None, int] = None,
         return_convergence_delta: Literal[False] = False,
         show_progress: bool = False,
@@ -145,9 +145,8 @@ class GeodesicIntegratedGradients(GradientAttribution):
         target: TargetType = None,
         additional_forward_args: Any = None,
         n_neighbors: Union[int, Tuple[int]] = None,
-        n_steps: int = 50,
+        n_steps: int = 5,
         method: str = "gausslegendre",
-        n_steiner: int = None,
         internal_batch_size: Union[None, int] = None,
         *,
         return_convergence_delta: Literal[True],
@@ -164,9 +163,8 @@ class GeodesicIntegratedGradients(GradientAttribution):
         target: TargetType = None,
         additional_forward_args: Any = None,
         n_neighbors: Union[int, Tuple[int]] = None,
-        n_steps: int = 50,
+        n_steps: int = 5,
         method: str = "gausslegendre",
-        n_steiner: int = None,
         internal_batch_size: Union[None, int] = None,
         return_convergence_delta: bool = False,
         show_progress: bool = False,
@@ -265,14 +263,11 @@ class GeodesicIntegratedGradients(GradientAttribution):
                 to these arguments.
                 Default: None
             n_steps (int, optional): The number of steps used by the approximation
-                method. Default: 50.
+                method. Default: 5.
             method (string, optional): Method for approximating the integral,
                 one of `riemann_right`, `riemann_left`, `riemann_middle`,
                 `riemann_trapezoid` or `gausslegendre`.
                 Default: `gausslegendre` if no method is provided.
-            n_steiner (int, optional): If provided, creates a number of steiner
-                points to improve the geodesic path.
-                Default: None
             internal_batch_size (int, optional): Divides total #steps * #examples
                 data points into chunks of size at most internal_batch_size,
                 which are computed (forward / backward passes)
@@ -359,7 +354,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
             )
             if any(n > 1 for n in n_components):
                 warnings.warn(
-                    "The knn graph is disconnected. You should increase n_neighbors"
+                    "The knn graph is disconnected. You should increase n_neighbors."
                 )
 
         # Concat data, inputs and baselines
@@ -378,41 +373,6 @@ class GeodesicIntegratedGradients(GradientAttribution):
             n_neighbors=n_neighbors,
         )
 
-        # If steiner is provided, augment inputs
-        if n_steiner is not None:
-            # Get number of points to add
-            max_dists = tuple(d.max() for d in dists)
-            n_points = tuple(
-                torch.div(d, m / n_steiner, rounding_mode="floor").long() + 1
-                for d, m in zip(dists, max_dists)
-            )
-
-            # Augment inputs
-            data = tuple(
-                torch.cat(
-                    [x]
-                    + [
-                        torch.stack(
-                            [
-                                x[id][i] + (k / n) * (x[knn][i] - x[id][i])
-                                for k in range(1, n)
-                            ]
-                        )
-                        for i, n in enumerate(n_point)
-                        if n > 1
-                    ],
-                    dim=0,
-                )
-                for x, knn, id, n_point in zip(data, knns, idx, n_points)
-            )
-
-            # Get knns
-            knns, idx, _ = self._get_knns(
-                nn=nn,
-                inputs=data,
-                n_neighbors=n_neighbors,
-            )
-
         # Compute grads for inputs and baselines
         if internal_batch_size is not None:
             grads_norm, total_grads = _geodesic_batch_attribution(
@@ -424,6 +384,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
                 show_progress=show_progress,
                 target=target,
                 additional_forward_args=additional_forward_args,
+                n_steps=n_steps,
                 method=method,
             )
         else:
@@ -436,18 +397,9 @@ class GeodesicIntegratedGradients(GradientAttribution):
                 method=method,
             )
 
-        # Multiply by inputs - baselines
-        attributions_norm = tuple(
-            grad_norm
-            * torch.linalg.norm(
-                (x[knn] - x[id]).reshape(len(x[knn]), -1), dim=1
-            )
-            for grad_norm, x, knn, id in zip(grads_norm, data, knns, idx)
-        )
-
         # Create undirected graph for the A* algorithm
         graphs = tuple(dict() for _ in data)
-        for graph, id, knn, attr in zip(graphs, idx, knns, attributions_norm):
+        for graph, id, knn, attr in zip(graphs, idx, knns, grads_norm):
             for i, k, a in zip(id.tolist(), knn.tolist(), attr.tolist()):
                 graph[k] = graph.get(k, list()) + [(i, a)]
                 graph[i] = graph.get(i, list()) + [(k, a)]
@@ -518,30 +470,18 @@ class GeodesicIntegratedGradients(GradientAttribution):
         )
         total_grads = tuple(torch.stack(grad) for grad in total_grads)
 
-        # computes attribution for each tensor in input tuple
-        # attributions has the same dimensionality as inputs
-        if not self.multiplies_by_inputs:
-            attributions = total_grads
-        else:
-            attributions = tuple(
-                total_grad * (input - baseline)
-                for total_grad, input, baseline in zip(
-                    total_grads, inputs, baselines
-                )
-            )
-
         if return_convergence_delta:
             start_point, end_point = baselines, inputs
             # computes approximation error based on the completeness axiom
             delta = self.compute_convergence_delta(
-                attributions,
+                total_grads,
                 start_point,
                 end_point,
                 additional_forward_args=additional_forward_args,
                 target=target,
             )
-            return _format_output(is_inputs_tuple, attributions), delta
-        return _format_output(is_inputs_tuple, attributions)
+            return _format_output(is_inputs_tuple, total_grads), delta
+        return _format_output(is_inputs_tuple, total_grads)
 
     def _attribute(
         self,
@@ -621,6 +561,17 @@ class GeodesicIntegratedGradients(GradientAttribution):
             for grad in scaled_grads
         )
 
+        # Multiply by inputs - baselines
+        grads_norm = tuple(
+            grad_norm
+            * torch.linalg.norm(
+                (input - baseline).reshape(len(input), -1), dim=1
+            )
+            for grad_norm, input, baseline in zip(
+                grads_norm, inputs, baselines
+            )
+        )
+
         # aggregates across all steps for each tensor in the input tuple
         # total_grads has the same dimensionality as inputs
         total_grads = tuple(
@@ -629,6 +580,15 @@ class GeodesicIntegratedGradients(GradientAttribution):
             )
             for (scaled_grad, grad) in zip(scaled_grads, grads)
         )
+
+        # Multiply by inputs - baselines if necessary
+        if self.multiplies_by_inputs:
+            total_grads = tuple(
+                total_grad * (input - baseline)
+                for total_grad, input, baseline in zip(
+                    total_grads, inputs, baselines
+                )
+            )
 
         return grads_norm, total_grads
 
@@ -656,9 +616,56 @@ class GeodesicIntegratedGradients(GradientAttribution):
             for nn_, x, n in zip(nn, inputs, n_neighbors)
         )
 
+        # Get graphs components
+        components = tuple(
+            sparse.csgraph.connected_components(graph[: graph.shape[1]])
+            for graph in graphs
+        )
+
+        # Get smallest norms and indexes if multiple components
+        add_dists = tuple()
+        add_idx = tuple()
+        add_knns = tuple()
+        for component, input in zip(components, inputs):
+            add_dist_list = list()
+            add_id_list = list()
+            add_knn_list = list()
+            for i in range(component[0]):
+                for j in range(component[0]):
+                    if i < j:
+                        input_i = input[: len(component[1])][component[1] == i]
+                        input_j = input[: len(component[1])][component[1] == j]
+                        norm = torch.linalg.norm(
+                            (
+                                torch.cat([input_i] * len(input_j), dim=0)
+                                - input_j.repeat_interleave(
+                                    len(input_i), dim=0
+                                )
+                            ).reshape(len(input_i) * len(input_j), -1),
+                            dim=1,
+                        )
+                        dist = norm.min().item()
+                        norm_idx = norm.argmin().item()
+                        id = norm_idx % len(input_i)
+                        id = np.where(component[1] == i)[0][id]
+                        knn = norm_idx // len(input_i)
+                        knn = np.where(component[1] == j)[0][knn]
+
+                        add_dist_list.append(dist)
+                        add_id_list.append(id)
+                        add_knn_list.append(knn)
+
+            add_dists += (torch.Tensor(add_dist_list),)
+            add_idx += (torch.Tensor(add_id_list).long(),)
+            add_knns += (torch.Tensor(add_knn_list).long(),)
+
         # Get dists
         dists = tuple(torch.from_numpy(graph.data) for graph in graphs)
         dists = tuple(d[d != 0.0] for d in dists)
+        dists = tuple(
+            torch.cat([d, a], dim=0) if len(a) > 0 else d
+            for d, a in zip(dists, add_dists)
+        )
 
         # Get nonzeros
         nonzeros = tuple(graph.nonzero() for graph in graphs)
@@ -667,8 +674,17 @@ class GeodesicIntegratedGradients(GradientAttribution):
         idx = tuple(
             torch.from_numpy(nonzero[0]).long() for nonzero in nonzeros
         )
+        idx = tuple(
+            torch.cat([i, a], dim=0) if len(a) > 0 else i
+            for i, a in zip(idx, add_idx)
+        )
+
         knns = tuple(
             torch.from_numpy(nonzero[1]).long() for nonzero in nonzeros
+        )
+        knns = tuple(
+            torch.cat([k, a], dim=0) if len(a) > 0 else k
+            for k, a in zip(knns, add_knns)
         )
 
         return idx, knns, dists
