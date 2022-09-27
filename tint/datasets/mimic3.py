@@ -740,8 +740,8 @@ class Mimic3(DataModule):
 
         # Compute mean and std
         if split == "train":
-            self._mean = features.reshape(-1, features.shape[-1]).mean(0)
-            self._std = features.reshape(-1, features.shape[-1]).mean(0)
+            self._mean = features.mean(dim=(0, 1), keepdim=True)
+            self._std = features.std(dim=(0, 1), keepdim=True)
         else:
             assert split == "test", "split must be train or test"
 
@@ -750,9 +750,7 @@ class Mimic3(DataModule):
         ), "You must call preprocess('train') first"
 
         # Normalise
-        mean = self._mean.unsqueeze(0).unsqueeze(0)
-        std = self._std.unsqueeze(0).unsqueeze(0)
-        features = (features - mean) / (std + EPS)
+        features = (features - self._mean) / (self._std + EPS)
 
         return {
             "x": features.float(),
