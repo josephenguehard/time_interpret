@@ -27,7 +27,7 @@ from tint.models import MLP
 def main(
     rare_dim: int,
     explainers: List[str],
-    accelerator: str = "cpu",
+    device: str = "cpu",
     fold: int = 0,
     seed: int = 42,
     deterministic: bool = False,
@@ -36,14 +36,20 @@ def main(
     if deterministic:
         seed_everything(seed=seed, workers=True)
 
+    # Get accelerator and device
+    accelerator = device.split(":")[0]
+    device_id = 1
+    if len(device.split(":")) > 0:
+        device_id = [device.split(":")[1]]
+
     # Load data
     arma = Arma(n_folds=5, fold=fold, seed=seed)
     arma.download()
 
     # Only use the first 10 data points
     with mp.Lock():
-        x = arma.preprocess()["x"][:10].to(accelerator)
-        true_saliency = arma.true_saliency(dim=rare_dim)[:10].to(accelerator)
+        x = arma.preprocess()["x"][:10].to(device)
+        true_saliency = arma.true_saliency(dim=rare_dim)[:10].to(device)
 
     # Create dict of attributions
     attr = dict()
@@ -52,7 +58,7 @@ def main(
         trainer = Trainer(
             max_epochs=2000,
             accelerator=accelerator,
-            devices=1,
+            devices=device_id,
             log_every_n_steps=2,
             deterministic=deterministic,
             logger=TensorBoardLogger(
@@ -82,7 +88,7 @@ def main(
         trainer = Trainer(
             max_epochs=1000,
             accelerator=accelerator,
-            devices=1,
+            devices=device_id,
             deterministic=deterministic,
             logger=TensorBoardLogger(
                 save_dir=".",
@@ -190,10 +196,10 @@ def parse_args():
         help="List of explainer to use.",
     )
     parser.add_argument(
-        "--accelerator",
+        "--device",
         type=str,
         default="cpu",
-        help="Which accelerator to use.",
+        help="Which device to use.",
     )
     parser.add_argument(
         "--fold",
@@ -220,7 +226,7 @@ if __name__ == "__main__":
     main(
         rare_dim=args.rare_dim,
         explainers=args.explainers,
-        accelerator=args.accelerator,
+        device=args.device,
         fold=args.fold,
         seed=args.seed,
         deterministic=args.deterministic,

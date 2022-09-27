@@ -21,7 +21,7 @@ from experiments.hawkes.classifier import HawkesClassifierNet
 
 def main(
     explainers: List[str],
-    accelerator: str = "cpu",
+    device: str = "cpu",
     fold: int = 0,
     seed: int = 42,
     deterministic: bool = False,
@@ -29,6 +29,12 @@ def main(
     # If deterministic, seed everything
     if deterministic:
         seed_everything(seed=seed, workers=True)
+
+    # Get accelerator and device
+    accelerator = device.split(":")[0]
+    device_id = 1
+    if len(device.split(":")) > 0:
+        device_id = [device.split(":")[1]]
 
     # Load data
     hawkes = Hawkes(n_folds=5, fold=fold, seed=seed)
@@ -48,7 +54,7 @@ def main(
     trainer = Trainer(
         max_epochs=250,
         accelerator=accelerator,
-        devices=1,
+        devices=device_id,
         deterministic=deterministic,
         logger=TensorBoardLogger(
             save_dir=".",
@@ -59,10 +65,10 @@ def main(
 
     # Get data for explainers
     with mp.Lock():
-        x_train = hawkes.preprocess(split="train")["x"].to(accelerator)
-        x_test = hawkes.preprocess(split="test")["x"].to(accelerator)
-        y_test = hawkes.preprocess(split="test")["y"].to(accelerator)
-        true_saliency = hawkes.true_saliency(split="test").to(accelerator)
+        x_train = hawkes.preprocess(split="train")["x"].to(device)
+        x_test = hawkes.preprocess(split="test")["x"].to(device)
+        y_test = hawkes.preprocess(split="test")["y"].to(device)
+        true_saliency = hawkes.true_saliency(split="test").to(device)
 
     # Create x out of x_test and y_test
     idx = (x_test > 0).sum(1, keepdim=True)
@@ -86,8 +92,8 @@ def main(
     # Switch to eval
     classifier.eval()
 
-    # Set model to accelerator
-    classifier.to(accelerator)
+    # Set model to device
+    classifier.to(device)
 
     # Disable cudnn if using cuda accelerator.
     # Please see https://captum.ai/docs/faq#how-can-i-resolve-cudnn-rnn-backward-error-for-rnn-or-lstm-network
@@ -201,10 +207,10 @@ def parse_args():
         help="List of explainer to use.",
     )
     parser.add_argument(
-        "--accelerator",
+        "--device",
         type=str,
         default="cpu",
-        help="Which accelerator to use.",
+        help="Which device to use.",
     )
     parser.add_argument(
         "--fold",
@@ -230,7 +236,7 @@ if __name__ == "__main__":
     args = parse_args()
     main(
         explainers=args.explainers,
-        accelerator=args.accelerator,
+        device=args.device,
         fold=args.fold,
         seed=args.seed,
         deterministic=args.deterministic,

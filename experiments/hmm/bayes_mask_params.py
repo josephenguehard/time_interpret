@@ -4,6 +4,7 @@ import torch as th
 from argparse import ArgumentParser
 from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import TensorBoardLogger
+from typing import Union
 
 from tint.attr import BayesMask
 from tint.attr.models import BayesMaskNet
@@ -20,7 +21,9 @@ def objective(
     true_saliency: th.Tensor,
     classifier: StateClassifierNet,
     metric: str,
+    device: str,
     accelerator: str,
+    device_id: Union[list, int],
 ):
     # Create several models
     input_shape = x_val.shape[-1]
@@ -41,7 +44,7 @@ def objective(
     trainer = Trainer(
         max_epochs=500,
         accelerator=accelerator,
-        devices=1,
+        devices=device_id,
         log_every_n_steps=2,
         logger=TensorBoardLogger(save_dir=".", version=version),
     )
@@ -72,7 +75,7 @@ def objective(
         trainer=trainer,
         mask_net=mask,
         batch_size=100,
-    ).to(accelerator)
+    ).to(device)
 
     # Compute the metric
     if metric == "aup":
@@ -89,12 +92,19 @@ def objective(
 def main(
     pruning: bool,
     metric: str,
-    accelerator: str,
+    device: str,
     seed: int,
     n_trials: int,
     timeout: int,
     n_jobs: int,
 ):
+    # Get accelerator and device
+    accelerator = device.split(":")[0]
+    if len(device.split(":")) > 0:
+        device_id = [device.split(":")[1]]
+    else:
+        device_id = 1
+
     # Load data
     hmm = HMM(n_folds=5, fold=0, seed=seed)
 
@@ -110,23 +120,25 @@ def main(
     )
 
     # Train classifier
-    trainer = Trainer(max_epochs=50, accelerator=accelerator, devices=1)
+    trainer = Trainer(
+        max_epochs=50, accelerator=accelerator, devices=device_id
+    )
     trainer.fit(classifier, datamodule=hmm)
 
     # Get data for explainers
-    x = hmm.preprocess(split="train")["x"].to(accelerator)
+    x = hmm.preprocess(split="train")["x"].to(device)
     hmm.setup()
     idx = hmm.val_dataloader().dataset.indices
     x_val = x[idx]
 
     # Get true saliency
-    true_saliency = hmm.true_saliency(split="train").to(accelerator)[idx]
+    true_saliency = hmm.true_saliency(split="train").to(device)[idx]
 
     # Switch to eval
     classifier.eval()
 
-    # Set model to accelerator
-    classifier.to(accelerator)
+    # Set model to device
+    classifier.to(device)
 
     # Disable cudnn if using cuda accelerator.
     # Please see https://captum.ai/docs/faq#how-can-i-resolve-cudnn-rnn-backward-error-for-rnn-or-lstm-network
@@ -153,7 +165,9 @@ def main(
             true_saliency=true_saliency,
             classifier=classifier,
             metric=metric,
+            device=device,
             accelerator=accelerator,
+            device_id=device_id,
         ),
         n_trials=n_trials,
         timeout=timeout,
@@ -185,10 +199,10 @@ def parse_args():
         help="Which metric to use as benchmark.",
     )
     parser.add_argument(
-        "--accelerator",
+        "--device",
         type=str,
         default="cpu",
-        help="Which accelerator to use.",
+        help="Which device to use.",
     )
     parser.add_argument(
         "--seed",
@@ -222,7 +236,7 @@ if __name__ == "__main__":
     main(
         pruning=args.pruning,
         metric=args.metric,
-        accelerator=args.accelerator,
+        device=args.device,
         seed=args.seed,
         n_trials=args.n_trials,
         timeout=args.timeout,

@@ -4,6 +4,7 @@ import torch as th
 from argparse import ArgumentParser
 from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import TensorBoardLogger
+from typing import Union
 
 from tint.attr import BayesMask
 from tint.attr.models import BayesMaskNet
@@ -19,6 +20,7 @@ def objective(
     dataset: Arma,
     metric: str,
     accelerator: str,
+    device_id: Union[list, int],
 ):
     # Create several models
     input_shape = x.shape[-1]
@@ -39,7 +41,7 @@ def objective(
     trainer = Trainer(
         max_epochs=2000,
         accelerator=accelerator,
-        devices=1,
+        devices=device_id,
         log_every_n_steps=2,
         logger=TensorBoardLogger(save_dir=".", version=version),
     )
@@ -88,19 +90,26 @@ def main(
     pruning: bool,
     rare_dim: int,
     metric: str,
-    accelerator: str,
+    device: str,
     seed: int,
     n_trials: int,
     timeout: int,
     n_jobs: int,
 ):
+    # Get accelerator and device
+    accelerator = device.split(":")[0]
+    if len(device.split(":")) > 0:
+        device_id = [device.split(":")[1]]
+    else:
+        device_id = 1
+
     # Load data
     arma = Arma(n_folds=5, fold=0, seed=seed)
     arma.download()
 
     # Only use the first 10 to 20 data points
-    x = arma.preprocess()["x"][10:20].to(accelerator)
-    true_saliency = arma.true_saliency(dim=rare_dim)[10:20].to(accelerator)
+    x = arma.preprocess()["x"][10:20].to(device)
+    true_saliency = arma.true_saliency(dim=rare_dim)[10:20].to(device)
 
     # Set pruner
     pruner: optuna.pruners.BasePruner = (
@@ -122,6 +131,7 @@ def main(
             dataset=arma,
             metric=metric,
             accelerator=accelerator,
+            device_id=device_id,
         ),
         n_trials=n_trials,
         timeout=timeout,
@@ -160,10 +170,10 @@ def parse_args():
         help="Which metric to use as benchmark.",
     )
     parser.add_argument(
-        "--accelerator",
+        "--device",
         type=str,
         default="cpu",
-        help="Which accelerator to use.",
+        help="Which device to use.",
     )
     parser.add_argument(
         "--seed",
@@ -198,7 +208,7 @@ if __name__ == "__main__":
         pruning=args.pruning,
         rare_dim=args.rare_dim,
         metric=args.metric,
-        accelerator=args.accelerator,
+        device=args.device,
         seed=args.seed,
         n_trials=args.n_trials,
         timeout=args.timeout,

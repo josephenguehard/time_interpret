@@ -31,7 +31,7 @@ usage: experiments/hawkes/main.py [-h] [--explainers] [--accelerator] [--seed] [
 optional arguments:
   -h, --help            Show this help message and exit.
   --explainers          List of the explainers to use. Default to ["deep_lift", "gradient_shap", "integrated_gradients", "augmented_occlusion", "occlusion", "temporal_integrated_gradients"]
-  --accelerator         Which accelerator to use. Default to 'cpu'
+  --device              Which device to use. Default to 'cpu'
   --seed                Which seed to use to generate the data. Default to 42
   --deterministic       Whether to make training deterministic or not. Default to False
 ```
@@ -41,7 +41,7 @@ usage : experiemnts/hawkes/main.sh [--processes] [--accelerator] [--seed]
 
 optional arguments:
   --processes           Number of runners in parallel. Default to 5
-  --accelerator         Which accelerator to use. Default to 'cpu'
+  --device              Which device to use. Default to 'cpu'
   --seed                Which seed to use to generate the data. Default to 42
 ```
 

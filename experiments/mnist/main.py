@@ -106,13 +106,19 @@ def main(
     explainers: List[str],
     areas: List[float],
     n_segments: int = 20,
-    accelerator: str = "cpu",
+    device: str = "cpu",
     seed: int = 42,
     deterministic: bool = False,
 ):
     # If deterministic, seed everything
     if deterministic:
         seed_everything(seed=seed, workers=True)
+
+    # Get accelerator and device
+    accelerator = device.split(":")[0]
+    device_id = 0
+    if len(device.split(":")) > 0:
+        device_id = [device.split(":")[1]]
 
     # Get data transform
     transform = T.Compose([T.ToTensor(), T.Normalize((0.1307,), (0.3081,))])
@@ -155,7 +161,7 @@ def main(
     trainer = Trainer(
         max_epochs=10,
         accelerator=accelerator,
-        devices=1,
+        devices=device_id,
         deterministic=deterministic,
     )
     trainer.fit(
@@ -167,8 +173,8 @@ def main(
     # Switch to eval
     classifier.eval()
 
-    # Set model to accelerator
-    classifier.to(accelerator)
+    # Set model to device
+    classifier.to(device)
 
     # Disable cudnn if using cuda accelerator.
     # Please see https://captum.ai/docs/faq#how-can-i-resolve-cudnn-rnn-backward-error-for-rnn-or-lstm-network
@@ -198,15 +204,15 @@ def main(
         y_test.append(y[0])
         seg_test.append(th.from_numpy(segments) - 1)
 
-    x_test = th.stack(x_test).float().to(accelerator)
-    y_test = th.stack(y_test).long().to(accelerator)
-    seg_test = th.stack(seg_test).to(accelerator)
+    x_test = th.stack(x_test).float().to(device)
+    y_test = th.stack(y_test).long().to(device)
+    seg_test = th.stack(seg_test).to(device)
 
     # Get train data for LOF and AugmentedOcclusion methods
     x_train = list()
     for data, _ in mnist_train_loader:
         x_train.append(data)
-    x_train = th.cat(x_train).to(accelerator)
+    x_train = th.cat(x_train).to(device)
 
     # Create dict of attributions and explainers
     attr = dict()
@@ -219,7 +225,7 @@ def main(
         trainer = Trainer(
             max_epochs=500,
             accelerator=accelerator,
-            devices=1,
+            devices=device_id,
             log_every_n_steps=2,
             deterministic=deterministic,
         )
@@ -240,7 +246,7 @@ def main(
             mask_net=mask,
             batch_size=64,
         )
-        attr["bayes_mask"] = _attr.to(accelerator)
+        attr["bayes_mask"] = _attr.to(device)
         expl["bayes_mask"] = explainer
 
     if "deep_lift" in explainers:
@@ -257,7 +263,7 @@ def main(
         trainer = Trainer(
             max_epochs=1000,
             accelerator=accelerator,
-            devices=1,
+            devices=device_id,
             log_every_n_steps=2,
             deterministic=deterministic,
         )
@@ -277,7 +283,7 @@ def main(
             return_best_ratio=True,
         )
         print(f"Best keep ratio is {_attr[1]}")
-        attr["dyna_mask"] = _attr[0].to(accelerator)
+        attr["dyna_mask"] = _attr[0].to(device)
 
     if "geodesic_integrated_gradients" in explainers:
         _attr = list()
@@ -288,12 +294,8 @@ def main(
             total=len(x_test),
             desc=f"{GeodesicIntegratedGradients.get_name()} attribution",
         ):
-            x_aug = th.stack(
-                [
-                    (x - baselines) * th.rand_like(x) + baselines
-                    for _ in range(500)
-                ]
-            )
+            rand = th.rand((500,) + x.shape).sort(dim=0).values.to(device)
+            x_aug = (x - baselines).unsqueeze(0) * rand + baselines
             explainer = GeodesicIntegratedGradients(
                 classifier, data=x_aug, n_neighbors=5
             )
@@ -567,10 +569,10 @@ def parse_args():
         help="Number of segmentations.",
     )
     parser.add_argument(
-        "--accelerator",
+        "--device",
         type=str,
         default="cpu",
-        help="Which accelerator to use.",
+        help="Which device to use.",
     )
     parser.add_argument(
         "--seed",
@@ -592,7 +594,7 @@ if __name__ == "__main__":
         explainers=args.explainers,
         areas=args.areas,
         n_segments=args.n_segments,
-        accelerator=args.accelerator,
+        device=args.device,
         seed=args.seed,
         deterministic=args.deterministic,
     )

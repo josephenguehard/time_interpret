@@ -42,6 +42,7 @@ class MimicRegressorNet(Net):
             lr_scheduler_args=lr_scheduler_args,
             l2=l2,
         )
+        self.save_hyperparameters()
 
     def forward(self, *args, **kwargs) -> th.Tensor:
         return self.net(*args, **kwargs)

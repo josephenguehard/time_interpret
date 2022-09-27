@@ -41,7 +41,7 @@ usage: experiments/mimci3/mortality/main.py [-h] [--explainers] [--accelerator] 
 optional arguments:
   -h, --help            Show this help message and exit.
   --explainers          List of the explainers to use. Default to ["bayes_mask", "deep_lift", "dyna_mask", "fit", "gradient_shap", "integrated_gradients", "lime", "retain", "augmented_occlusion", "occlusion"]
-  --accelerator         Which accelerator to use. Default to 'cpu'
+  --device              Which device to use. Default to 'cpu'
   --seed                Which seed to use to generate the data. Default to 42
   --deterministic       Whether to make training deterministic or not. Default to False
 ```
@@ -51,7 +51,7 @@ usage : experiemnts/mimci3/mortality/main.sh [--processes] [--accelerator] [--se
 
 optional arguments:
   --processes           Number of runners in parallel. Default to 5
-  --accelerator         Which accelerator to use. Default to 'cpu'
+  --device              Which device to use. Default to 'cpu'
   --seed                Which seed to use to generate the data. Default to 42
 ```
 
@@ -63,7 +63,7 @@ optional arguments:
   -p, --pruning         Activate the pruning feature.
   --metric              Which metric to use as benchmark. Default to 'cross_entropy'
   --topk                Which topk to use for the metric. Default to 0.2
-  --accelerator         Which accelerator to use. Default to 'cpu'
+  --device              Which device to use. Default to 'cpu'
   --seed                Seed for train val split. Default to 42
   --n-trials            The number of trials. Default to 100
   --timeout             Stop study after the given number of second(s). Default to None

@@ -100,6 +100,7 @@ class StateClassifierNet(Net):
             lr_scheduler_args=lr_scheduler_args,
             l2=l2,
         )
+        self.save_hyperparameters()
 
         for stage in ["train", "val", "test"]:
             setattr(self, stage + "_acc", Accuracy())

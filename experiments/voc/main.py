@@ -96,13 +96,19 @@ def compute_attr(
 def main(
     explainers: List[str],
     areas: List[float],
-    accelerator: str = "cpu",
+    device: str = "cpu",
     seed: int = 42,
     deterministic: bool = False,
 ):
     # If deterministic, seed everything
     if deterministic:
         seed_everything(seed=seed, workers=True)
+
+    # Get accelerator and device
+    accelerator = device.split(":")[0]
+    device_id = 0
+    if len(device.split(":")) > 0:
+        device_id = [device.split(":")[1]]
 
     # Get data transform
     transform = T.Compose(
@@ -143,8 +149,8 @@ def main(
     # Switch to eval
     resnet.eval()
 
-    # Set model to accelerator
-    resnet.to(accelerator)
+    # Set model to device
+    resnet.to(device)
 
     # Disable cudnn if using cuda accelerator.
     # Please see https://captum.ai/docs/faq#how-can-i-resolve-cudnn-rnn-backward-error-for-rnn-or-lstm-network
@@ -173,11 +179,11 @@ def main(
         seg_test.append(seg_)
         i += 1
 
-    x_test = th.cat(x_test).to(accelerator)
-    seg_test = th.cat(seg_test).to(accelerator)
+    x_test = th.cat(x_test).to(device)
+    seg_test = th.cat(seg_test).to(device)
 
     # Target is the model prediction
-    y_test = resnet(x_test).argmax(-1).to(accelerator)
+    y_test = resnet(x_test).argmax(-1).to(device)
 
     # Create dict of attributions and explainers
     attr = dict()
@@ -187,7 +193,7 @@ def main(
         trainer = Trainer(
             max_epochs=500,
             accelerator=accelerator,
-            devices=1,
+            devices=device_id,
             log_every_n_steps=2,
             deterministic=deterministic,
         )
@@ -207,7 +213,7 @@ def main(
             mask_net=mask,
             batch_size=64,
         )
-        attr["bayes_mask"] = _attr.to(accelerator)
+        attr["bayes_mask"] = _attr.to(device)
         expl["bayes_mask"] = explainer
 
     # DeepLift not supported for ResNet
@@ -218,7 +224,7 @@ def main(
         trainer = Trainer(
             max_epochs=1000,
             accelerator=accelerator,
-            devices=1,
+            devices=device_id,
             log_every_n_steps=2,
             deterministic=deterministic,
         )
@@ -238,18 +244,19 @@ def main(
             return_best_ratio=True,
         )
         print(f"Best keep ratio is {_attr[1]}")
-        attr["dyna_mask"] = _attr[0].to(accelerator)
+        attr["dyna_mask"] = _attr[0].to(device)
 
     if "geodesic_integrated_gradients" in explainers:
         _attr = list()
         _sens_max = list()
         _lip_max = list()
-        for x, y, s in get_progress_bars()(
-            zip(x_test, y_test, seg_test),
+        for i, (x, y, s) in get_progress_bars()(
+            enumerate(zip(x_test, y_test, seg_test)),
             total=len(x_test),
             desc=f"{GeodesicIntegratedGradients.get_name()} attribution",
         ):
-            x_aug = th.stack([x * th.rand_like(x) for _ in range(500)])
+            rand = th.rand((500,) + x.shape).sort(dim=0).values.to(device)
+            x_aug = x.unsqueeze(0) * rand
             explainer = GeodesicIntegratedGradients(
                 resnet, data=x_aug, n_neighbors=5
             )
@@ -261,24 +268,26 @@ def main(
                     internal_batch_size=200,
                 )
             )
-            _sens_max.append(
-                sensitivity_max(
-                    compute_attr,
-                    x.unsqueeze(0),
-                    explainer=explainer,
-                    target=y.item(),
-                    additional_forward_args=None,
+
+            if i < 10:
+                _sens_max.append(
+                    sensitivity_max(
+                        compute_attr,
+                        x.unsqueeze(0),
+                        explainer=explainer,
+                        target=y.item(),
+                        additional_forward_args=None,
+                    )
                 )
-            )
-            _lip_max.append(
-                lipschitz_max(
-                    compute_attr,
-                    x.unsqueeze(0),
-                    explainer=explainer,
-                    target=y.item(),
-                    additional_forward_args=None,
+                _lip_max.append(
+                    lipschitz_max(
+                        compute_attr,
+                        x.unsqueeze(0),
+                        explainer=explainer,
+                        target=y.item(),
+                        additional_forward_args=None,
+                    )
                 )
-            )
 
         attr["geodesic_integrated_gradients"] = th.cat(_attr)
         _sens_max = th.cat(_sens_max)
@@ -371,17 +380,17 @@ def main(
                 else:
                     sens_max = sensitivity_max(
                         compute_attr,
-                        x_test,
+                        x_test[:10],
                         explainer=expl[k],
-                        target=y_test,
-                        additional_forward_args=seg_test,
+                        target=y_test[:10],
+                        additional_forward_args=seg_test[:10],
                     )
                     lip_max = lipschitz_max(
                         compute_attr,
-                        x_test,
+                        x_test[:10],
                         explainer=expl[k],
-                        target=y_test,
-                        additional_forward_args=seg_test,
+                        target=y_test[:10],
+                        additional_forward_args=seg_test[:10],
                     )
 
                 fp.write(str(seed) + ",")
@@ -501,10 +510,10 @@ def parse_args():
         help="List of areas to use.",
     )
     parser.add_argument(
-        "--accelerator",
+        "--device",
         type=str,
         default="cpu",
-        help="Which accelerator to use.",
+        help="Which device to use.",
     )
     parser.add_argument(
         "--seed",
@@ -525,7 +534,7 @@ if __name__ == "__main__":
     main(
         explainers=args.explainers,
         areas=args.areas,
-        accelerator=args.accelerator,
+        device=args.device,
         seed=args.seed,
         deterministic=args.deterministic,
     )

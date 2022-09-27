@@ -4,6 +4,7 @@ import torch as th
 from argparse import ArgumentParser
 from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import TensorBoardLogger
+from typing import Union
 
 from tint.attr import BayesMask
 from tint.attr.models import BayesMaskNet
@@ -26,7 +27,9 @@ def objective(
     classifier: MimicClassifierNet,
     metric: str,
     topk: float,
+    device: str,
     accelerator: str,
+    device_id: Union[list, int],
 ):
     # Create several models
     input_shape = x_val.shape[-1]
@@ -47,7 +50,7 @@ def objective(
     trainer = Trainer(
         max_epochs=500,
         accelerator=accelerator,
-        devices=1,
+        devices=device_id,
         log_every_n_steps=2,
         logger=TensorBoardLogger(save_dir=".", version=version),
     )
@@ -79,7 +82,7 @@ def objective(
         trainer=trainer,
         mask_net=mask,
         batch_size=100,
-    ).to(accelerator)
+    ).to(device)
 
     # Compute x_avg for the baseline
     x_avg = x_val.mean(1, keepdim=True).repeat(1, x_val.shape[1], 1)
@@ -132,12 +135,18 @@ def main(
     pruning: bool,
     metric: str,
     topk: float,
-    accelerator: str,
+    device: str,
     seed: int,
     n_trials: int,
     timeout: int,
     n_jobs: int,
 ):
+    # Get accelerator and device
+    accelerator = device.split(":")[0]
+    device_id = 0
+    if len(device.split(":")) > 0:
+        device_id = [device.split(":")[1]]
+
     # Load data
     mimic3 = Mimic3(n_folds=5, fold=0, seed=seed)
 
@@ -153,11 +162,13 @@ def main(
     )
 
     # Train classifier
-    trainer = Trainer(max_epochs=100, accelerator=accelerator, devices=1)
+    trainer = Trainer(
+        max_epochs=100, accelerator=accelerator, devices=device_id
+    )
     trainer.fit(classifier, datamodule=mimic3)
 
     # Get data for explainers
-    x = mimic3.preprocess(split="train")["x"].to(accelerator)
+    x = mimic3.preprocess(split="train")["x"].to(device)
     mimic3.setup()
     idx = mimic3.val_dataloader().dataset.indices
     x_val = x[idx]
@@ -165,8 +176,8 @@ def main(
     # Switch to eval
     classifier.eval()
 
-    # Set model to accelerator
-    classifier.to(accelerator)
+    # Set model to device
+    classifier.to(device)
 
     # Disable cudnn if using cuda accelerator.
     # Please see https://captum.ai/docs/faq#how-can-i-resolve-cudnn-rnn-backward-error-for-rnn-or-lstm-network
@@ -198,7 +209,9 @@ def main(
             classifier=classifier,
             metric=metric,
             topk=topk,
+            device=device,
             accelerator=accelerator,
+            device_id=device_id,
         ),
         n_trials=n_trials,
         timeout=timeout,
@@ -237,10 +250,10 @@ def parse_args():
         help="Which topk to use for the metric.",
     )
     parser.add_argument(
-        "--accelerator",
+        "--device",
         type=str,
         default="cpu",
-        help="Which accelerator to use.",
+        help="Which device to use.",
     )
     parser.add_argument(
         "--seed",
@@ -275,7 +288,7 @@ if __name__ == "__main__":
         pruning=args.pruning,
         metric=args.metric,
         topk=args.topk,
-        accelerator=args.accelerator,
+        device=args.device,
         seed=args.seed,
         n_trials=args.n_trials,
         timeout=args.timeout,

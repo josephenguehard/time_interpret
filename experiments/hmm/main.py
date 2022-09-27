@@ -41,7 +41,7 @@ from experiments.hmm.classifier import StateClassifierNet
 
 def main(
     explainers: List[str],
-    accelerator: str = "cpu",
+    device: str = "cpu",
     fold: int = 0,
     seed: int = 42,
     deterministic: bool = False,
@@ -49,6 +49,12 @@ def main(
     # If deterministic, seed everything
     if deterministic:
         seed_everything(seed=seed, workers=True)
+
+    # Get accelerator and device
+    accelerator = device.split(":")[0]
+    device_id = 0
+    if len(device.split(":")) > 0:
+        device_id = [device.split(":")[1]]
 
     # Load data
     hmm = HMM(n_folds=5, fold=fold, seed=seed)
@@ -68,7 +74,7 @@ def main(
     trainer = Trainer(
         max_epochs=50,
         accelerator=accelerator,
-        devices=1,
+        devices=device_id,
         deterministic=deterministic,
         logger=TensorBoardLogger(
             save_dir=".",
@@ -79,16 +85,16 @@ def main(
 
     # Get data for explainers
     with mp.Lock():
-        x_train = hmm.preprocess(split="train")["x"].to(accelerator)
-        x_test = hmm.preprocess(split="test")["x"].to(accelerator)
-        y_test = hmm.preprocess(split="test")["y"].to(accelerator)
-        true_saliency = hmm.true_saliency(split="test").to(accelerator)
+        x_train = hmm.preprocess(split="train")["x"].to(device)
+        x_test = hmm.preprocess(split="test")["x"].to(device)
+        y_test = hmm.preprocess(split="test")["y"].to(device)
+        true_saliency = hmm.true_saliency(split="test").to(device)
 
     # Switch to eval
     classifier.eval()
 
-    # Set model to accelerator
-    classifier.to(accelerator)
+    # Set model to device
+    classifier.to(device)
 
     # Disable cudnn if using cuda accelerator.
     # Please see https://captum.ai/docs/faq#how-can-i-resolve-cudnn-rnn-backward-error-for-rnn-or-lstm-network
@@ -103,7 +109,7 @@ def main(
         trainer = Trainer(
             max_epochs=500,
             accelerator=accelerator,
-            devices=1,
+            devices=device_id,
             log_every_n_steps=2,
             deterministic=deterministic,
             logger=TensorBoardLogger(
@@ -128,7 +134,7 @@ def main(
             mask_net=mask,
             batch_size=100,
         )
-        attr["bayes_mask"] = _attr.to(accelerator)
+        attr["bayes_mask"] = _attr.to(device)
 
     if "deep_lift" in explainers:
         explainer = TimeForwardTunnel(DeepLift(classifier))
@@ -143,7 +149,7 @@ def main(
         trainer = Trainer(
             max_epochs=1000,
             accelerator=accelerator,
-            devices=1,
+            devices=device_id,
             log_every_n_steps=2,
             deterministic=deterministic,
             logger=TensorBoardLogger(
@@ -170,14 +176,14 @@ def main(
             return_best_ratio=True,
         )
         print(f"Best keep ratio is {_attr[1]}")
-        attr["dyna_mask"] = _attr[0].to(accelerator)
+        attr["dyna_mask"] = _attr[0].to(device)
 
     if "fit" in explainers:
         generator = JointFeatureGeneratorNet(rnn_hidden_size=6)
         trainer = Trainer(
             max_epochs=300,
             accelerator=accelerator,
-            devices=1,
+            devices=device_id,
             log_every_n_steps=10,
             deterministic=deterministic,
             logger=TensorBoardLogger(
@@ -203,7 +209,7 @@ def main(
             task="binary",
             show_progress=True,
         ).abs()
-        classifier.to(accelerator)
+        classifier.to(device)
 
     if "integrated_gradients" in explainers:
         explainer = TimeForwardTunnel(IntegratedGradients(classifier))
@@ -264,7 +270,7 @@ def main(
             trainer=Trainer(
                 max_epochs=50,
                 accelerator=accelerator,
-                devices=1,
+                devices=device_id,
                 deterministic=deterministic,
                 logger=TensorBoardLogger(
                     save_dir=".",
@@ -273,7 +279,7 @@ def main(
             ),
         )
         attr["retain"] = (
-            explainer.attribute(x_test, target=y_test).abs().to(accelerator)
+            explainer.attribute(x_test, target=y_test).abs().to(device)
         )
 
     with open("results.csv", "a") as fp, mp.Lock():
@@ -312,10 +318,10 @@ def parse_args():
         help="List of explainer to use.",
     )
     parser.add_argument(
-        "--accelerator",
+        "--device",
         type=str,
         default="cpu",
-        help="Which accelerator to use.",
+        help="Which device to use.",
     )
     parser.add_argument(
         "--fold",
@@ -341,7 +347,7 @@ if __name__ == "__main__":
     args = parse_args()
     main(
         explainers=args.explainers,
-        accelerator=args.accelerator,
+        device=args.device,
         fold=args.fold,
         seed=args.seed,
         deterministic=args.deterministic,

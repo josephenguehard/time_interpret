@@ -45,6 +45,7 @@ class HawkesClassifierNet(Net):
             lr_scheduler_args=lr_scheduler_args,
             l2=l2,
         )
+        self.save_hyperparameters()
 
         self.window = window
 

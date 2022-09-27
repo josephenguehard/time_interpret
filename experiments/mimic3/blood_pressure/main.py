@@ -25,7 +25,7 @@ from experiments.mimic3.blood_pressure.regressor import MimicRegressorNet
 def main(
     explainers: List[str],
     areas: list,
-    accelerator: str = "cpu",
+    device: str = "cpu",
     fold: int = 0,
     seed: int = 42,
     deterministic: bool = False,
@@ -33,6 +33,12 @@ def main(
     # If deterministic, seed everything
     if deterministic:
         seed_everything(seed=seed, workers=True)
+
+    # Get accelerator and device
+    accelerator = device.split(":")[0]
+    device_id = 0
+    if len(device.split(":")) > 0:
+        device_id = [device.split(":")[1]]
 
     # Load data
     mimic3 = Mimic3(task="blood_pressure", n_folds=5, fold=fold, seed=seed)
@@ -53,7 +59,7 @@ def main(
     trainer = Trainer(
         max_epochs=100,
         accelerator=accelerator,
-        devices=1,
+        devices=device_id,
         deterministic=deterministic,
         logger=TensorBoardLogger(
             save_dir=".",
@@ -64,14 +70,14 @@ def main(
 
     # Get data for explainers
     with mp.Lock():
-        x_train = mimic3.preprocess(split="train")["x"].to(accelerator)
-        x_test = mimic3.preprocess(split="test")["x"].to(accelerator)
+        x_train = mimic3.preprocess(split="train")["x"].to(device)
+        x_test = mimic3.preprocess(split="test")["x"].to(device)
 
     # Switch to eval
     regressor.eval()
 
-    # Set model to accelerator
-    regressor.to(accelerator)
+    # Set model to device
+    regressor.to(device)
 
     # Disable cudnn if using cuda accelerator.
     # Please see https://captum.ai/docs/faq#how-can-i-resolve-cudnn-rnn-backward-error-for-rnn-or-lstm-network
@@ -109,7 +115,7 @@ def main(
             .abs()
             .cpu()
         )
-        regressor.to(accelerator)
+        regressor.to(device)
 
     if "integrated_gradients" in explainers:
         explainer = TimeForwardTunnel(IntegratedGradients(regressor))
@@ -285,10 +291,10 @@ def parse_args():
         help="List of areas to use.",
     )
     parser.add_argument(
-        "--accelerator",
+        "--device",
         type=str,
         default="cpu",
-        help="Which accelerator to use.",
+        help="Which device to use.",
     )
     parser.add_argument(
         "--fold",
@@ -315,7 +321,7 @@ if __name__ == "__main__":
     main(
         explainers=args.explainers,
         areas=args.areas,
-        accelerator=args.accelerator,
+        device=args.device,
         fold=args.fold,
         seed=args.seed,
         deterministic=args.deterministic,
