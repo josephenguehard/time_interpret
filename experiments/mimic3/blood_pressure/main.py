@@ -36,9 +36,9 @@ def main(
 
     # Get accelerator and device
     accelerator = device.split(":")[0]
-    device_id = 0
+    device_id = 1
     if len(device.split(":")) > 0:
-        device_id = [device.split(":")[1]]
+        device_id = [int(device.split(":")[1])]
 
     # Load data
     mimic3 = Mimic3(task="blood_pressure", n_folds=5, fold=fold, seed=seed)

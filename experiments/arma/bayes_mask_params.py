@@ -99,7 +99,7 @@ def main(
     # Get accelerator and device
     accelerator = device.split(":")[0]
     if len(device.split(":")) > 0:
-        device_id = [device.split(":")[1]]
+        device_id = [int(device.split(":")[1])]
     else:
         device_id = 1
 

@@ -52,9 +52,9 @@ def main(
 
     # Get accelerator and device
     accelerator = device.split(":")[0]
-    device_id = 0
+    device_id = 1
     if len(device.split(":")) > 0:
-        device_id = [device.split(":")[1]]
+        device_id = [int(device.split(":")[1])]
 
     # Load data
     hmm = HMM(n_folds=5, fold=fold, seed=seed)
