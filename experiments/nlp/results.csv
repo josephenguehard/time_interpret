@@ -44,12 +44,14 @@ rotten,roberta,sequential_discretized_integrated_gradients,-0.7334,0.302,0.2666
 imdb,distilbert,deep_lift,-0.1886,0.0815,0.2094
 imdb,distilbert,gradient_shap,-0.3806,0.1549,0.1868
 imdb,distilbert,input_x_gradient,-0.1886,0.0815,0.2094
+imdb,distilbert,integrated_gradients,-0.5979,0.251,0.08756
+imdb,distilbert,sequential_integrated_gradients,-0.9756,0.3641,0.02524
 imdb,bert,deep_lift,-0.6397,0.08507,0.3119
+imdb,bert,discretized_integrated_gradients,-0.9707,0.192,0.2287
 imdb,bert,gradient_shap,-0.821,0.1468,0.2741
 imdb,bert,input_x_gradient,-0.6537,0.0867,0.2987
+imdb,bert,integrated_gradients,-1.391,0.2205,0.1554
 imdb,roberta,deep_lift,-0.2158,0.04736,0.3146
 imdb,roberta,gradient_shap,-0.458,0.1257,0.1966
 imdb,roberta,input_x_gradient,-0.2159,0.04742,0.3145
-imdb,distilbert,integrated_gradients,-0.5979,0.251,0.08756
 imdb,roberta,integrated_gradients,-0.7394,0.2337,0.08531
-imdb,bert,integrated_gradients,-1.391,0.2205,0.1554
