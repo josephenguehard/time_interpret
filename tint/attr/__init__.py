@@ -3,6 +3,7 @@ from .bayes import BayesLime, BayesKernelShap
 from .bayes_mask import BayesMask
 from .discretised_ig import DiscretetizedIntegratedGradients
 from .dynamic_masks import DynaMask
+from .feature_ablation import FeatureAblation
 from .fit import Fit
 from .geodesic_ig import GeodesicIntegratedGradients
 from .lof import LofKernelShap, LofLime
@@ -22,6 +23,7 @@ __all__ = [
     "BayesMask",
     "DiscretetizedIntegratedGradients",
     "DynaMask",
+    "FeatureAblation",
     "Fit",
     "GeodesicIntegratedGradients",
     "LofKernelShap",
