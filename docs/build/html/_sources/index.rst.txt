@@ -78,6 +78,7 @@ Each of the implemented interpretability methods can be found here:
     tint.attr.BayesMask
     tint.attr.DiscretetizedIntegratedGradients
     tint.attr.DynaMask
+    tint.attr.FeatureAblation
     tint.attr.Fit
     tint.attr.LofKernelShap
     tint.attr.LofLime

@@ -186,8 +186,13 @@
             <span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
 
 <div class="viewcode-block" id="BayesMask.forward"><a class="viewcode-back" href="../../../../attr_models.html#tint.attr.models.BayesMask.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">,</span> <span class="o">*</span><span class="n">additional_forward_args</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">x</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">batch_idx</span><span class="p">,</span>
+        <span class="n">baselines</span><span class="p">,</span>
+        <span class="n">target</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">additional_forward_args</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">th</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">th</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
         <span class="c1"># Clamp mask</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">clamp</span><span class="p">()</span>
 
@@ -248,13 +253,26 @@
 
         <span class="c1"># Mask data according to samples</span>
         <span class="c1"># We eventually cut samples up to x time dimension</span>
-        <span class="n">x</span> <span class="o">*=</span> <span class="n">samples</span><span class="p">[:,</span> <span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span>
+        <span class="c1"># x1 represents inputs with important features masked.</span>
+        <span class="c1"># x2 represents inputs with unimportant features masked.</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="n">samples</span><span class="p">[:,</span> <span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span>
+        <span class="n">x1</span> <span class="o">=</span> <span class="n">x</span> <span class="o">*</span> <span class="n">samples</span> <span class="o">+</span> <span class="n">baselines</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">samples</span><span class="p">)</span>
+        <span class="n">x2</span> <span class="o">=</span> <span class="n">x</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">samples</span><span class="p">)</span> <span class="o">+</span> <span class="n">baselines</span> <span class="o">*</span> <span class="n">samples</span>
 
         <span class="c1"># Return f(perturbed x)</span>
-        <span class="k">return</span> <span class="n">_run_forward</span><span class="p">(</span>
-            <span class="n">forward_func</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">forward_func</span><span class="p">,</span>
-            <span class="n">inputs</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
-            <span class="n">additional_forward_args</span><span class="o">=</span><span class="n">additional_forward_args</span><span class="p">,</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">_run_forward</span><span class="p">(</span>
+                <span class="n">forward_func</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">forward_func</span><span class="p">,</span>
+                <span class="n">inputs</span><span class="o">=</span><span class="n">x1</span><span class="p">,</span>
+                <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
+                <span class="n">additional_forward_args</span><span class="o">=</span><span class="n">additional_forward_args</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">_run_forward</span><span class="p">(</span>
+                <span class="n">forward_func</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">forward_func</span><span class="p">,</span>
+                <span class="n">inputs</span><span class="o">=</span><span class="n">x2</span><span class="p">,</span>
+                <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
+                <span class="n">additional_forward_args</span><span class="o">=</span><span class="n">additional_forward_args</span><span class="p">,</span>
+            <span class="p">),</span>
         <span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">regularisation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loss</span><span class="p">:</span> <span class="n">th</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
@@ -308,6 +326,8 @@
 <span class="sd">        hard (bool): Whether to create hard mask values or not. In both</span>
 <span class="sd">            cases, soft values will be used for back-propagation.</span>
 <span class="sd">            Default to ``True``</span>
+<span class="sd">        comp_loss (bool): Whether to include comprehensiveness loss.</span>
+<span class="sd">            Default to ``False``</span>
 <span class="sd">        model (nnn.Module): A model used to recreate the original</span>
 <span class="sd">            predictions, in addition to the mask. Default to ``None``</span>
 <span class="sd">        eps (float): Optional param for normal distribution.</span>
@@ -347,6 +367,7 @@
         <span class="n">forward_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
         <span class="n">distribution</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;bernoulli&quot;</span><span class="p">,</span>
         <span class="n">hard</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">comp_loss</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">model</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-3</span><span class="p">,</span>
         <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
@@ -376,13 +397,15 @@
             <span class="n">l2</span><span class="o">=</span><span class="n">l2</span><span class="p">,</span>
         <span class="p">)</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">comp_loss</span> <span class="o">=</span> <span class="n">comp_loss</span>
+
 <div class="viewcode-block" id="BayesMaskNet.forward"><a class="viewcode-back" href="../../../../attr_models.html#tint.attr.models.BayesMaskNet.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">,</span> <span class="n">stage</span><span class="p">):</span>
         <span class="c1"># x is the data to be perturbed</span>
         <span class="c1"># y is the same data without perturbation</span>
-        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">*</span><span class="n">additional_forward_args</span> <span class="o">=</span> <span class="n">batch</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">baselines</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="o">*</span><span class="n">additional_forward_args</span> <span class="o">=</span> <span class="n">batch</span>
 
         <span class="c1"># If additional_forward_args is only one None,</span>
         <span class="c1"># set it to None</span>
@@ -390,23 +413,41 @@
             <span class="n">additional_forward_args</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># Get perturbed output</span>
+        <span class="c1"># y_hat1 is computed by masking important features</span>
+        <span class="c1"># y_hat2 is computed by masking unimportant features</span>
         <span class="k">if</span> <span class="n">additional_forward_args</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">y_hat</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">float</span><span class="p">(),</span> <span class="n">batch_idx</span><span class="p">)</span>
+            <span class="n">y_hat1</span><span class="p">,</span> <span class="n">y_hat2</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">float</span><span class="p">(),</span> <span class="n">batch_idx</span><span class="p">,</span> <span class="n">baselines</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">y_hat</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">float</span><span class="p">(),</span> <span class="n">batch_idx</span><span class="p">,</span> <span class="o">*</span><span class="n">additional_forward_args</span><span class="p">)</span>
+            <span class="n">y_hat1</span><span class="p">,</span> <span class="n">y_hat2</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span>
+                <span class="n">x</span><span class="o">.</span><span class="n">float</span><span class="p">(),</span>
+                <span class="n">batch_idx</span><span class="p">,</span>
+                <span class="n">baselines</span><span class="p">,</span>
+                <span class="n">target</span><span class="p">,</span>
+                <span class="o">*</span><span class="n">additional_forward_args</span><span class="p">,</span>
+            <span class="p">)</span>
 
-        <span class="c1"># Get unperturbed output</span>
-        <span class="n">y_target</span> <span class="o">=</span> <span class="n">_run_forward</span><span class="p">(</span>
+        <span class="c1"># Get unperturbed output for inputs and baselines</span>
+        <span class="n">y_target1</span> <span class="o">=</span> <span class="n">_run_forward</span><span class="p">(</span>
             <span class="n">forward_func</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">forward_func</span><span class="p">,</span>
             <span class="n">inputs</span><span class="o">=</span><span class="n">y</span><span class="p">,</span>
+            <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
+            <span class="n">additional_forward_args</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">additional_forward_args</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">additional_forward_args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">y_target2</span> <span class="o">=</span> <span class="n">_run_forward</span><span class="p">(</span>
+            <span class="n">forward_func</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">forward_func</span><span class="p">,</span>
+            <span class="n">inputs</span><span class="o">=</span><span class="n">th</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">+</span> <span class="n">baselines</span><span class="p">,</span>
+            <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
             <span class="n">additional_forward_args</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">additional_forward_args</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">additional_forward_args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
             <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="c1"># Compute loss</span>
-        <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">(</span><span class="n">y_hat</span><span class="p">,</span> <span class="n">y_target</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">loss</span>
+        <span class="c1"># Compute and return loss</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">comp_loss</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">(</span><span class="n">y_hat1</span><span class="p">,</span> <span class="n">y_target1</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">(</span><span class="n">y_hat2</span><span class="p">,</span> <span class="n">y_target2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">(</span><span class="n">y_hat1</span><span class="p">,</span> <span class="n">y_target1</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">training_step_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_output</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;&quot;&quot;&quot;</span>

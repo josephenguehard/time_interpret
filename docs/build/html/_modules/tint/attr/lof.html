@@ -79,6 +79,7 @@
   <h1>Source code for tint.attr.lof</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">captum.attr</span> <span class="kn">import</span> <span class="n">KernelShap</span><span class="p">,</span> <span class="n">Lime</span>
 <span class="kn">from</span> <span class="nn">captum._utils.models.model</span> <span class="kn">import</span> <span class="n">Model</span>
+<span class="kn">from</span> <span class="nn">captum._utils.typing</span> <span class="kn">import</span> <span class="n">TensorOrTupleOfTensorsGeneric</span>
 
 <span class="kn">from</span> <span class="nn">sklearn.neighbors</span> <span class="kn">import</span> <span class="n">LocalOutlierFactor</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
@@ -108,24 +109,28 @@
             <span class="n">novelty</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">lof</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
-            <span class="n">X</span><span class="o">=</span><span class="n">embeddings</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">embeddings</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
-        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lof</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">embeddings</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">embeddings</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_similarity_func</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="nf">lof_similarity_func</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">original_inp</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
-        <span class="n">perturbed_inp</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
-        <span class="n">interpretable_sample</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">original_inp</span><span class="p">:</span> <span class="n">TensorOrTupleOfTensorsGeneric</span><span class="p">,</span>
+        <span class="n">perturbed_inp</span><span class="p">:</span> <span class="n">TensorOrTupleOfTensorsGeneric</span><span class="p">,</span>
+        <span class="n">interpretable_sample</span><span class="p">:</span> <span class="n">TensorOrTupleOfTensorsGeneric</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
-            <span class="n">original_inp</span><span class="p">,</span> <span class="n">Tensor</span>
-        <span class="p">),</span> <span class="s2">&quot;Only one input is accepted with this method.&quot;</span>
+        <span class="c1"># Only use the first input if tuple</span>
+        <span class="c1"># Lof only accepts one input</span>
+        <span class="n">pert_inp</span> <span class="o">=</span> <span class="n">perturbed_inp</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">perturbed_inp</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="k">assert</span> <span class="p">(</span>
+                <span class="nb">len</span><span class="p">(</span><span class="n">perturbed_inp</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+            <span class="p">),</span> <span class="s2">&quot;Only one input is accepted with this method.&quot;</span>
+            <span class="n">pert_inp</span> <span class="o">=</span> <span class="n">perturbed_inp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
         <span class="n">score</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">lof</span><span class="o">.</span><span class="n">score_samples</span><span class="p">(</span>
-            <span class="n">perturbed_inp</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">perturbed_inp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+            <span class="n">pert_inp</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pert_inp</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
         <span class="p">)</span>
         <span class="n">score</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">score</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_similarity_func</span><span class="p">(</span>

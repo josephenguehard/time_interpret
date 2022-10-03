@@ -154,37 +154,40 @@ corresponding true saliency:</p>
 <tr class="row-even"><td><p><a class="reference internal" href="attr.html#tint.attr.DynaMask" title="tint.attr.DynaMask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.DynaMask</span></code></a>(forward_func)</p></td>
 <td><p>Dynamic masks method.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="attr.html#tint.attr.Fit" title="tint.attr.Fit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.Fit</span></code></a>(forward_func[, generator, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="attr.html#tint.attr.FeatureAblation" title="tint.attr.FeatureAblation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.FeatureAblation</span></code></a>(forward_func)</p></td>
+<td><p>A perturbation based approach to computing attribution, involving replacing each input feature with a given baseline / reference, and computing the difference in output.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="attr.html#tint.attr.Fit" title="tint.attr.Fit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.Fit</span></code></a>(forward_func[, generator, ...])</p></td>
 <td><p>Feature Importance in Time.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="attr.html#tint.attr.LofKernelShap" title="tint.attr.LofKernelShap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.LofKernelShap</span></code></a>(forward_func, embeddings)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="attr.html#tint.attr.LofKernelShap" title="tint.attr.LofKernelShap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.LofKernelShap</span></code></a>(forward_func, embeddings)</p></td>
 <td><p>Local Outlier Factor Kernel Shap.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="attr.html#tint.attr.LofLime" title="tint.attr.LofLime"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.LofLime</span></code></a>(forward_func, embeddings)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="attr.html#tint.attr.LofLime" title="tint.attr.LofLime"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.LofLime</span></code></a>(forward_func, embeddings)</p></td>
 <td><p>Local Outlier Factor Lime.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="attr.html#tint.attr.Occlusion" title="tint.attr.Occlusion"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.Occlusion</span></code></a>(forward_func)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="attr.html#tint.attr.Occlusion" title="tint.attr.Occlusion"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.Occlusion</span></code></a>(forward_func)</p></td>
 <td><p>A perturbation based approach to compute attribution, involving replacing each contiguous rectangular region with a given baseline / reference, and computing the difference in output.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="attr.html#tint.attr.Retain" title="tint.attr.Retain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.Retain</span></code></a>([forward_func, retain, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="attr.html#tint.attr.Retain" title="tint.attr.Retain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.Retain</span></code></a>([forward_func, retain, ...])</p></td>
 <td><p>Retain explainer method.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="attr.html#tint.attr.SmoothGrad" title="tint.attr.SmoothGrad"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.SmoothGrad</span></code></a>(forward_func)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="attr.html#tint.attr.SmoothGrad" title="tint.attr.SmoothGrad"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.SmoothGrad</span></code></a>(forward_func)</p></td>
 <td><p>Wrapper combining Saliency and NoiseTunnel to recover SmoothGrad.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="attr.html#tint.attr.SequentialIntegratedGradients" title="tint.attr.SequentialIntegratedGradients"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.SequentialIntegratedGradients</span></code></a>(...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="attr.html#tint.attr.SequentialIntegratedGradients" title="tint.attr.SequentialIntegratedGradients"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.SequentialIntegratedGradients</span></code></a>(...)</p></td>
 <td><p>Sequential Integrated Gradients.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="attr.html#tint.attr.TemporalAugmentedOcclusion" title="tint.attr.TemporalAugmentedOcclusion"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.TemporalAugmentedOcclusion</span></code></a>(...[, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="attr.html#tint.attr.TemporalAugmentedOcclusion" title="tint.attr.TemporalAugmentedOcclusion"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.TemporalAugmentedOcclusion</span></code></a>(...[, ...])</p></td>
 <td><p>Temporal Augmented Occlusion</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="attr.html#tint.attr.TemporalIntegratedGradients" title="tint.attr.TemporalIntegratedGradients"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.TemporalIntegratedGradients</span></code></a>(...[, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="attr.html#tint.attr.TemporalIntegratedGradients" title="tint.attr.TemporalIntegratedGradients"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.TemporalIntegratedGradients</span></code></a>(...[, ...])</p></td>
 <td><p>Temporal Integrated Gradients.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="attr.html#tint.attr.TemporalOcclusion" title="tint.attr.TemporalOcclusion"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.TemporalOcclusion</span></code></a>(forward_func)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="attr.html#tint.attr.TemporalOcclusion" title="tint.attr.TemporalOcclusion"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.TemporalOcclusion</span></code></a>(forward_func)</p></td>
 <td><p>Temporal Occlusion</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="attr.html#tint.attr.TimeForwardTunnel" title="tint.attr.TimeForwardTunnel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.TimeForwardTunnel</span></code></a>(attribution_method)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="attr.html#tint.attr.TimeForwardTunnel" title="tint.attr.TimeForwardTunnel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.TimeForwardTunnel</span></code></a>(attribution_method)</p></td>
 <td><p>Performs interpretation method by iteratively retrieving the input data up to a time, and computing the predictions using this data and the forward_func.</p></td>
 </tr>
 </tbody>

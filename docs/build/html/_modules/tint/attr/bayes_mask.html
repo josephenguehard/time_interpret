@@ -83,11 +83,17 @@
 <span class="kn">from</span> <span class="nn">captum.attr._utils.attribution</span> <span class="kn">import</span> <span class="n">PerturbationAttribution</span>
 <span class="kn">from</span> <span class="nn">captum.log</span> <span class="kn">import</span> <span class="n">log_usage</span>
 <span class="kn">from</span> <span class="nn">captum._utils.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_format_baseline</span><span class="p">,</span>
     <span class="n">_format_input</span><span class="p">,</span>
     <span class="n">_format_output</span><span class="p">,</span>
     <span class="n">_is_tuple</span><span class="p">,</span>
+    <span class="n">_validate_input</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">captum._utils.typing</span> <span class="kn">import</span> <span class="n">TensorOrTupleOfTensorsGeneric</span>
+<span class="kn">from</span> <span class="nn">captum._utils.typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BaselineType</span><span class="p">,</span>
+    <span class="n">TargetType</span><span class="p">,</span>
+    <span class="n">TensorOrTupleOfTensorsGeneric</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">pytorch_lightning</span> <span class="kn">import</span> <span class="n">Trainer</span>
 <span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
@@ -125,6 +131,8 @@
     <span class="k">def</span> <span class="nf">attribute</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">inputs</span><span class="p">:</span> <span class="n">TensorOrTupleOfTensorsGeneric</span><span class="p">,</span>
+        <span class="n">baselines</span><span class="p">:</span> <span class="n">BaselineType</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">target</span><span class="p">:</span> <span class="n">TargetType</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">additional_forward_args</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">trainer</span><span class="p">:</span> <span class="n">Trainer</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">mask_net</span><span class="p">:</span> <span class="n">BayesMaskNet</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -137,30 +145,120 @@
 <span class="sd">        Attribute method.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            inputs (tuple, th.Tensor): Input data.</span>
-<span class="sd">            additional_forward_args (Any): Any additional argument passed</span>
-<span class="sd">                to the model. Default to ``None``</span>
+<span class="sd">            inputs (tensor or tuple of tensors):  Input for which occlusion</span>
+<span class="sd">                attributions are computed. If forward_func takes a single</span>
+<span class="sd">                tensor as input, a single input tensor should be provided.</span>
+<span class="sd">                If forward_func takes multiple tensors as input, a tuple</span>
+<span class="sd">                of the input tensors should be provided. It is assumed</span>
+<span class="sd">                that for all given input tensors, dimension 0 corresponds</span>
+<span class="sd">                to the number of examples (aka batch size), and if</span>
+<span class="sd">                multiple input tensors are provided, the examples must</span>
+<span class="sd">                be aligned appropriately.</span>
+<span class="sd">            baselines (scalar, tensor, tuple of scalars or tensors, optional):</span>
+<span class="sd">                Baselines define reference value which replaces each</span>
+<span class="sd">                feature when occluded.</span>
+<span class="sd">                Baselines can be provided as:</span>
+
+<span class="sd">                - a single tensor, if inputs is a single tensor, with</span>
+<span class="sd">                  exactly the same dimensions as inputs or</span>
+<span class="sd">                  broadcastable to match the dimensions of inputs</span>
+
+<span class="sd">                - a single scalar, if inputs is a single tensor, which will</span>
+<span class="sd">                  be broadcasted for each input value in input tensor.</span>
+
+<span class="sd">                - a tuple of tensors or scalars, the baseline corresponding</span>
+<span class="sd">                  to each tensor in the inputs&#39; tuple can be:</span>
+
+<span class="sd">                  - either a tensor with matching dimensions to</span>
+<span class="sd">                    corresponding tensor in the inputs&#39; tuple</span>
+<span class="sd">                    or the first dimension is one and the remaining</span>
+<span class="sd">                    dimensions match with the corresponding</span>
+<span class="sd">                    input tensor.</span>
+
+<span class="sd">                  - or a scalar, corresponding to a tensor in the</span>
+<span class="sd">                    inputs&#39; tuple. This scalar value is broadcasted</span>
+<span class="sd">                    for corresponding input tensor.</span>
+
+<span class="sd">                In the cases when `baselines` is not provided, we internally</span>
+<span class="sd">                use zero scalar corresponding to each input tensor.</span>
+<span class="sd">                Default: None</span>
+<span class="sd">            target (int, tuple, tensor or list, optional):  Output indices for</span>
+<span class="sd">                which difference is computed (for classification cases,</span>
+<span class="sd">                this is usually the target class).</span>
+<span class="sd">                If the network returns a scalar value per example,</span>
+<span class="sd">                no target index is necessary.</span>
+<span class="sd">                For general 2D outputs, targets can be either:</span>
+
+<span class="sd">                - a single integer or a tensor containing a single</span>
+<span class="sd">                  integer, which is applied to all input examples</span>
+
+<span class="sd">                - a list of integers or a 1D tensor, with length matching</span>
+<span class="sd">                  the number of examples in inputs (dim 0). Each integer</span>
+<span class="sd">                  is applied as the target for the corresponding example.</span>
+
+<span class="sd">                For outputs with &gt; 2 dimensions, targets can be either:</span>
+
+<span class="sd">                - A single tuple, which contains #output_dims - 1</span>
+<span class="sd">                  elements. This target index is applied to all examples.</span>
+
+<span class="sd">                - A list of tuples with length equal to the number of</span>
+<span class="sd">                  examples in inputs (dim 0), and each tuple containing</span>
+<span class="sd">                  #output_dims - 1 elements. Each tuple is applied as the</span>
+<span class="sd">                  target for the corresponding example.</span>
+
+<span class="sd">                Default: None</span>
+<span class="sd">            additional_forward_args (any, optional): If the forward function</span>
+<span class="sd">                requires additional arguments other than the inputs for</span>
+<span class="sd">                which attributions should not be computed, this argument</span>
+<span class="sd">                can be provided. It must be either a single additional</span>
+<span class="sd">                argument of a Tensor or arbitrary (non-tuple) type or a</span>
+<span class="sd">                tuple containing multiple additional arguments including</span>
+<span class="sd">                tensors or any arbitrary python types. These arguments</span>
+<span class="sd">                are provided to forward_func in order following the</span>
+<span class="sd">                arguments in inputs.</span>
+<span class="sd">                For a tensor, the first dimension of the tensor must</span>
+<span class="sd">                correspond to the number of examples. For all other types,</span>
+<span class="sd">                the given argument is used for all forward evaluations.</span>
+<span class="sd">                Note that attributions are not computed with respect</span>
+<span class="sd">                to these arguments.</span>
+<span class="sd">                Default: None</span>
 <span class="sd">            trainer (Trainer): Pytorch Lightning trainer. If ``None``, a</span>
-<span class="sd">                default trainer will be provided. Default to ``None``</span>
+<span class="sd">                default trainer will be provided.</span>
+<span class="sd">                Default: None</span>
 <span class="sd">            mask_net (BayesMaskNet): A Mask model. If ``None``, a default model</span>
-<span class="sd">                will be provided. Default to ``None``</span>
-<span class="sd">            batch_size (int): Batch size for Mask training. Default to 32</span>
+<span class="sd">                will be provided.</span>
+<span class="sd">                Default: None</span>
+<span class="sd">            batch_size (int): Batch size for Mask training.</span>
+<span class="sd">                Default: 32</span>
 <span class="sd">            temporal_additional_forward_args (tuple): Set each</span>
 <span class="sd">                additional forward arg which is temporal.</span>
 <span class="sd">                Only used with return_temporal_attributions.</span>
-<span class="sd">                Default to ``None``</span>
+<span class="sd">                Default: None</span>
 <span class="sd">            return_temporal_attributions (bool): Whether to return</span>
-<span class="sd">                attributions for all times or not. Default to ``False``</span>
+<span class="sd">                attributions for all times or not.</span>
+<span class="sd">                Default: False</span>
 <span class="sd">            return_covariance (bool): Whether to return the covariance of the</span>
-<span class="sd">                bayes mask network or not. Default to ``False``</span>
+<span class="sd">                bayes mask network or not.</span>
+<span class="sd">                Default: False</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            (th.Tensor, tuple): Attributions.</span>
+<span class="sd">            - **attributions** (*tensor* or tuple of *tensors*):</span>
+<span class="sd">                The attributions with respect to each input feature.</span>
+<span class="sd">                Attributions will always be</span>
+<span class="sd">                the same size as the provided inputs, with each value</span>
+<span class="sd">                providing the attribution of the corresponding input index.</span>
+<span class="sd">                If a single tensor is provided as inputs, a single tensor is</span>
+<span class="sd">                returned. If a tuple is provided for inputs, a tuple of</span>
+<span class="sd">                corresponding sized tensors is returned.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Keeps track whether original input is a tuple or not before</span>
         <span class="c1"># converting it into a tuple.</span>
         <span class="n">is_inputs_tuple</span> <span class="o">=</span> <span class="n">_is_tuple</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
         <span class="n">inputs</span> <span class="o">=</span> <span class="n">_format_input</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+
+        <span class="c1"># Format and validate baselines</span>
+        <span class="n">baselines</span> <span class="o">=</span> <span class="n">_format_baseline</span><span class="p">(</span><span class="n">baselines</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>
+        <span class="n">_validate_input</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">baselines</span><span class="p">)</span>
 
         <span class="c1"># Init trainer if not provided</span>
         <span class="k">if</span> <span class="n">trainer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -173,6 +271,7 @@
             <span class="nb">len</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
         <span class="p">),</span> <span class="s2">&quot;Multiple inputs are not accepted for this method&quot;</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">baseline</span> <span class="o">=</span> <span class="n">baselines</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="c1"># If return temporal attr, we expand the input data</span>
         <span class="c1"># and multiply it with a lower triangular mask</span>
@@ -195,9 +294,9 @@
         <span class="c1"># Prepare data</span>
         <span class="n">dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
             <span class="n">TensorDataset</span><span class="p">(</span>
-                <span class="o">*</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="o">*</span><span class="n">additional_forward_args</span><span class="p">)</span>
+                <span class="o">*</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">baseline</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="o">*</span><span class="n">additional_forward_args</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">additional_forward_args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-                <span class="k">else</span> <span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">else</span> <span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">baseline</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
             <span class="p">),</span>
             <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
             <span class="n">collate_fn</span><span class="o">=</span><span class="n">default_collate</span><span class="p">,</span>

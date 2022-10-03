@@ -77,7 +77,8 @@
            <div itemprop="articleBody">
              
   <h1>Source code for tint.attr.geodesic_ig</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">typing</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
 
@@ -110,6 +111,8 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">from</span> <span class="nn">tint.utils</span> <span class="kn">import</span> <span class="n">astar_path</span><span class="p">,</span> <span class="n">_geodesic_batch_attribution</span>
+
+<span class="kn">from</span> <span class="nn">tqdm.notebook</span> <span class="kn">import</span> <span class="n">tqdm</span>
 
 
 <div class="viewcode-block" id="GeodesicIntegratedGradients"><a class="viewcode-back" href="../../../attr.html#tint.attr.GeodesicIntegratedGradients">[docs]</a><span class="k">class</span> <span class="nc">GeodesicIntegratedGradients</span><span class="p">(</span><span class="n">GradientAttribution</span><span class="p">):</span>
@@ -179,7 +182,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">n_neighbors</span> <span class="o">=</span> <span class="n">n_neighbors</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">nn</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
                 <span class="n">NearestNeighbors</span><span class="p">(</span><span class="n">n_neighbors</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
-                    <span class="n">X</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+                    <span class="n">X</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
                 <span class="p">)</span>
                 <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">n_neighbors</span><span class="p">)</span>
             <span class="p">)</span>
@@ -191,7 +194,7 @@
             <span class="p">)</span>
             <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">n</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">n_components</span><span class="p">):</span>
                 <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-                    <span class="s2">&quot;The knn graph is disconnected. You should increase n_neighbors&quot;</span>
+                    <span class="s2">&quot;The knn graph is disconnected. You should increase n_neighbors.&quot;</span>
                 <span class="p">)</span>
 
     <span class="c1"># The following overloaded method signatures correspond to the case where</span>
@@ -206,9 +209,9 @@
         <span class="n">target</span><span class="p">:</span> <span class="n">TargetType</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">additional_forward_args</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">n_neighbors</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">n_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
-        <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;gausslegendre&quot;</span><span class="p">,</span>
+        <span class="n">n_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
         <span class="n">n_steiner</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;gausslegendre&quot;</span><span class="p">,</span>
         <span class="n">internal_batch_size</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">return_convergence_delta</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="kc">False</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -224,9 +227,9 @@
         <span class="n">target</span><span class="p">:</span> <span class="n">TargetType</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">additional_forward_args</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">n_neighbors</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">n_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
-        <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;gausslegendre&quot;</span><span class="p">,</span>
+        <span class="n">n_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
         <span class="n">n_steiner</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;gausslegendre&quot;</span><span class="p">,</span>
         <span class="n">internal_batch_size</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">return_convergence_delta</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="kc">True</span><span class="p">],</span>
@@ -243,9 +246,9 @@
         <span class="n">target</span><span class="p">:</span> <span class="n">TargetType</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">additional_forward_args</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">n_neighbors</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">n_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
-        <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;gausslegendre&quot;</span><span class="p">,</span>
+        <span class="n">n_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
         <span class="n">n_steiner</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;gausslegendre&quot;</span><span class="p">,</span>
         <span class="n">internal_batch_size</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">return_convergence_delta</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -344,14 +347,11 @@
 <span class="sd">                to these arguments.</span>
 <span class="sd">                Default: None</span>
 <span class="sd">            n_steps (int, optional): The number of steps used by the approximation</span>
-<span class="sd">                method. Default: 50.</span>
+<span class="sd">                method. Default: 5.</span>
 <span class="sd">            method (string, optional): Method for approximating the integral,</span>
 <span class="sd">                one of `riemann_right`, `riemann_left`, `riemann_middle`,</span>
 <span class="sd">                `riemann_trapezoid` or `gausslegendre`.</span>
 <span class="sd">                Default: `gausslegendre` if no method is provided.</span>
-<span class="sd">            n_steiner (int, optional): If provided, creates a number of steiner</span>
-<span class="sd">                points to improve the geodesic path.</span>
-<span class="sd">                Default: None</span>
 <span class="sd">            internal_batch_size (int, optional): Divides total #steps * #examples</span>
 <span class="sd">                data points into chunks of size at most internal_batch_size,</span>
 <span class="sd">                which are computed (forward / backward passes)</span>
@@ -426,7 +426,9 @@
                 <span class="n">n_neighbors</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">n_neighbors</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">)</span>
 
             <span class="n">nn</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
-                <span class="n">NearestNeighbors</span><span class="p">(</span><span class="n">n_neighbors</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">cpu</span><span class="p">())</span>
+                <span class="n">NearestNeighbors</span><span class="p">(</span><span class="n">n_neighbors</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+                    <span class="n">X</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+                <span class="p">)</span>
                 <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">n_neighbors</span><span class="p">)</span>
             <span class="p">)</span>
 
@@ -436,7 +438,7 @@
             <span class="p">)</span>
             <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">n</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">n_components</span><span class="p">):</span>
                 <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-                    <span class="s2">&quot;The knn graph is disconnected. You should increase n_neighbors&quot;</span>
+                    <span class="s2">&quot;The knn graph is disconnected. You should increase n_neighbors.&quot;</span>
                 <span class="p">)</span>
 
         <span class="c1"># Concat data, inputs and baselines</span>
@@ -501,6 +503,7 @@
                 <span class="n">show_progress</span><span class="o">=</span><span class="n">show_progress</span><span class="p">,</span>
                 <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
                 <span class="n">additional_forward_args</span><span class="o">=</span><span class="n">additional_forward_args</span><span class="p">,</span>
+                <span class="n">n_steps</span><span class="o">=</span><span class="n">n_steps</span><span class="p">,</span>
                 <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -513,37 +516,34 @@
                 <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
             <span class="p">)</span>
 
-        <span class="c1"># Multiply by inputs - baselines</span>
-        <span class="n">attributions_norm</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
-            <span class="n">grad_norm</span>
-            <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span>
-                <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">knn</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="nb">id</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">knn</span><span class="p">]),</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span>
-            <span class="p">)</span>
-            <span class="k">for</span> <span class="n">grad_norm</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">knn</span><span class="p">,</span> <span class="nb">id</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">grads_norm</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">knns</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
-        <span class="p">)</span>
-
         <span class="c1"># Create undirected graph for the A* algorithm</span>
         <span class="n">graphs</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">data</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">graph</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="n">knn</span><span class="p">,</span> <span class="n">attr</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">graphs</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">knns</span><span class="p">,</span> <span class="n">attributions_norm</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">graph</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="n">knn</span><span class="p">,</span> <span class="n">attr</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">graphs</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">knns</span><span class="p">,</span> <span class="n">grads_norm</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">id</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">knn</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">attr</span><span class="o">.</span><span class="n">tolist</span><span class="p">()):</span>
-                <span class="n">graph</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">list</span><span class="p">())</span> <span class="o">+</span> <span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">a</span><span class="p">)]</span>
-                <span class="n">graph</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">list</span><span class="p">())</span> <span class="o">+</span> <span class="p">[(</span><span class="n">k</span><span class="p">,</span> <span class="n">a</span><span class="p">)]</span>
+                <span class="n">graph</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">list</span><span class="p">())</span> <span class="o">+</span> <span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">a</span><span class="p">)]))</span>
+                <span class="n">graph</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">list</span><span class="p">())</span> <span class="o">+</span> <span class="p">[(</span><span class="n">k</span><span class="p">,</span> <span class="n">a</span><span class="p">)]))</span>
 
         <span class="c1"># Def heuristic for A* algorithm: euclidean distance to target</span>
         <span class="k">def</span> <span class="nf">heuristic</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">u</span><span class="p">]</span> <span class="o">-</span> <span class="n">d</span><span class="p">[</span><span class="n">v</span><span class="p">])</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
 
         <span class="c1"># Compute A* paths</span>
-        <span class="n">inputs_idx</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
-            <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">))</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>
-        <span class="p">)</span>
-        <span class="n">baselines_idx</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
-            <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
-            <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>
-        <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">inputs_idx</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+                <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">baselines_idx</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+                <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">inputs_idx</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">)</span>
+            <span class="n">baselines_idx</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="mi">2</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">)</span>
+
         <span class="n">paths</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
             <span class="p">[</span>
-                <span class="n">astar_path</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">heuristic</span><span class="o">=</span><span class="n">heuristic</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="n">d</span><span class="p">)</span>
+                <span class="n">astar_path</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">heuristic</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="n">d</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">input_idx</span><span class="p">,</span> <span class="n">baseline_idx</span><span class="p">)</span>
             <span class="p">]</span>
             <span class="k">for</span> <span class="n">graph</span><span class="p">,</span> <span class="n">input_idx</span><span class="p">,</span> <span class="n">baseline_idx</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
@@ -553,6 +553,8 @@
 
         <span class="c1"># Get paths lengths</span>
         <span class="n">paths_len</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">path</span><span class="p">]</span> <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">)</span>
+
+        <span class="n">_paths</span> <span class="o">=</span> <span class="n">paths</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="c1"># Make them pairwise</span>
         <span class="n">paths</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
@@ -576,24 +578,14 @@
             <span class="n">grad</span><span class="p">[</span><span class="n">grad_idx</span><span class="p">]</span> <span class="k">for</span> <span class="n">grad</span><span class="p">,</span> <span class="n">grad_idx</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">total_grads</span><span class="p">,</span> <span class="n">grads_idx</span><span class="p">)</span>
         <span class="p">)</span>
 
-        <span class="c1"># Get sign for each path</span>
-        <span class="c1"># and multipy with total_grads</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        signs = tuple(</span>
-<span class="sd">            2 * (id[grad_idx] == path[:, 1]).float() - 1</span>
-<span class="sd">            for id, grad_idx, path in zip(idx, grads_idx, paths)</span>
-<span class="sd">        )</span>
-<span class="sd">        total_grads = tuple(</span>
-<span class="sd">            grad * sign.unsqueeze(-1)</span>
-<span class="sd">            for grad, sign in zip(total_grads, signs)</span>
-<span class="sd">        )</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="c1"># Split for each path</span>
         <span class="n">total_grads</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
             <span class="n">torch</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">grad</span><span class="p">,</span> <span class="n">split_size_or_sections</span><span class="o">=</span><span class="n">path_len</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">grad</span><span class="p">,</span> <span class="n">path_len</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">total_grads</span><span class="p">,</span> <span class="n">paths_len</span><span class="p">)</span>
         <span class="p">)</span>
+
+        <span class="kn">import</span> <span class="nn">copy</span>
+        <span class="n">_grads</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">total_grads</span><span class="p">)</span>
 
         <span class="c1"># Sum over points and paths</span>
         <span class="c1"># and stack result</span>
@@ -602,30 +594,18 @@
         <span class="p">)</span>
         <span class="n">total_grads</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">grad</span><span class="p">)</span> <span class="k">for</span> <span class="n">grad</span> <span class="ow">in</span> <span class="n">total_grads</span><span class="p">)</span>
 
-        <span class="c1"># computes attribution for each tensor in input tuple</span>
-        <span class="c1"># attributions has the same dimensionality as inputs</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiplies_by_inputs</span><span class="p">:</span>
-            <span class="n">attributions</span> <span class="o">=</span> <span class="n">total_grads</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">attributions</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
-                <span class="n">total_grad</span> <span class="o">*</span> <span class="p">(</span><span class="nb">input</span> <span class="o">-</span> <span class="n">baseline</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">total_grad</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">baseline</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
-                    <span class="n">total_grads</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">baselines</span>
-                <span class="p">)</span>
-            <span class="p">)</span>
-
         <span class="k">if</span> <span class="n">return_convergence_delta</span><span class="p">:</span>
             <span class="n">start_point</span><span class="p">,</span> <span class="n">end_point</span> <span class="o">=</span> <span class="n">baselines</span><span class="p">,</span> <span class="n">inputs</span>
             <span class="c1"># computes approximation error based on the completeness axiom</span>
             <span class="n">delta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_convergence_delta</span><span class="p">(</span>
-                <span class="n">attributions</span><span class="p">,</span>
+                <span class="n">total_grads</span><span class="p">,</span>
                 <span class="n">start_point</span><span class="p">,</span>
                 <span class="n">end_point</span><span class="p">,</span>
                 <span class="n">additional_forward_args</span><span class="o">=</span><span class="n">additional_forward_args</span><span class="p">,</span>
                 <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
             <span class="p">)</span>
-            <span class="k">return</span> <span class="n">_format_output</span><span class="p">(</span><span class="n">is_inputs_tuple</span><span class="p">,</span> <span class="n">attributions</span><span class="p">),</span> <span class="n">delta</span>
-        <span class="k">return</span> <span class="n">_format_output</span><span class="p">(</span><span class="n">is_inputs_tuple</span><span class="p">,</span> <span class="n">attributions</span><span class="p">)</span></div>
+            <span class="k">return</span> <span class="n">_format_output</span><span class="p">(</span><span class="n">is_inputs_tuple</span><span class="p">,</span> <span class="n">total_grads</span><span class="p">),</span> <span class="n">delta</span>
+        <span class="k">return</span> <span class="n">_format_output</span><span class="p">(</span><span class="n">is_inputs_tuple</span><span class="p">,</span> <span class="n">total_grads</span><span class="p">),</span> <span class="n">_paths</span><span class="p">,</span> <span class="n">_grads</span></div>
 
     <span class="k">def</span> <span class="nf">_attribute</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -705,6 +685,17 @@
             <span class="k">for</span> <span class="n">grad</span> <span class="ow">in</span> <span class="n">scaled_grads</span>
         <span class="p">)</span>
 
+        <span class="c1"># Multiply by inputs - baselines</span>
+        <span class="n">grads_norm</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">grad_norm</span>
+            <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span>
+                <span class="p">(</span><span class="nb">input</span> <span class="o">-</span> <span class="n">baseline</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">input</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">grad_norm</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">baseline</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+                <span class="n">grads_norm</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">baselines</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
         <span class="c1"># aggregates across all steps for each tensor in the input tuple</span>
         <span class="c1"># total_grads has the same dimensionality as inputs</span>
         <span class="n">total_grads</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
@@ -713,6 +704,15 @@
             <span class="p">)</span>
             <span class="k">for</span> <span class="p">(</span><span class="n">scaled_grad</span><span class="p">,</span> <span class="n">grad</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">scaled_grads</span><span class="p">,</span> <span class="n">grads</span><span class="p">)</span>
         <span class="p">)</span>
+
+        <span class="c1"># Multiply by inputs - baselines if necessary</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiplies_by_inputs</span><span class="p">:</span>
+            <span class="n">total_grads</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+                <span class="n">total_grad</span> <span class="o">*</span> <span class="p">(</span><span class="nb">input</span> <span class="o">-</span> <span class="n">baseline</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">total_grad</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">baseline</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+                    <span class="n">total_grads</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">baselines</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">grads_norm</span><span class="p">,</span> <span class="n">total_grads</span>
 
@@ -733,16 +733,63 @@
         <span class="c1"># Get kneighbors_graph</span>
         <span class="n">graphs</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
             <span class="n">nn_</span><span class="o">.</span><span class="n">kneighbors_graph</span><span class="p">(</span>
-                <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),</span>
+                <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),</span>
                 <span class="n">n_neighbors</span><span class="o">=</span><span class="n">n</span><span class="p">,</span>
                 <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;distance&quot;</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="k">for</span> <span class="n">nn_</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">nn</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">n_neighbors</span><span class="p">)</span>
         <span class="p">)</span>
 
+        <span class="c1"># Get graphs components</span>
+        <span class="n">components</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">sparse</span><span class="o">.</span><span class="n">csgraph</span><span class="o">.</span><span class="n">connected_components</span><span class="p">(</span><span class="n">graph</span><span class="p">[:</span> <span class="n">graph</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+            <span class="k">for</span> <span class="n">graph</span> <span class="ow">in</span> <span class="n">graphs</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Get smallest norms and indexes if multiple components</span>
+        <span class="n">add_dists</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">()</span>
+        <span class="n">add_idx</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">()</span>
+        <span class="n">add_knns</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">component</span><span class="p">,</span> <span class="nb">input</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">components</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+            <span class="n">add_dist_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+            <span class="n">add_id_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+            <span class="n">add_knn_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">component</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">component</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                    <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">j</span><span class="p">:</span>
+                        <span class="n">input_i</span> <span class="o">=</span> <span class="nb">input</span><span class="p">[:</span> <span class="nb">len</span><span class="p">(</span><span class="n">component</span><span class="p">[</span><span class="mi">1</span><span class="p">])][</span><span class="n">component</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">i</span><span class="p">]</span>
+                        <span class="n">input_j</span> <span class="o">=</span> <span class="nb">input</span><span class="p">[:</span> <span class="nb">len</span><span class="p">(</span><span class="n">component</span><span class="p">[</span><span class="mi">1</span><span class="p">])][</span><span class="n">component</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">j</span><span class="p">]</span>
+                        <span class="n">norm</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span>
+                            <span class="p">(</span>
+                                <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">input_i</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_j</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                                <span class="o">-</span> <span class="n">input_j</span><span class="o">.</span><span class="n">repeat_interleave</span><span class="p">(</span>
+                                    <span class="nb">len</span><span class="p">(</span><span class="n">input_i</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span>
+                                <span class="p">)</span>
+                            <span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">input_i</span><span class="p">)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_j</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+                            <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                        <span class="p">)</span>
+                        <span class="n">dist</span> <span class="o">=</span> <span class="n">norm</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+                        <span class="n">norm_idx</span> <span class="o">=</span> <span class="n">norm</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+                        <span class="nb">id</span> <span class="o">=</span> <span class="n">norm_idx</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_i</span><span class="p">)</span>
+                        <span class="nb">id</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">component</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">i</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="nb">id</span><span class="p">]</span>
+                        <span class="n">knn</span> <span class="o">=</span> <span class="n">norm_idx</span> <span class="o">//</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_i</span><span class="p">)</span>
+                        <span class="n">knn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">component</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">j</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="n">knn</span><span class="p">]</span>
+
+                        <span class="n">add_dist_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dist</span><span class="p">)</span>
+                        <span class="n">add_id_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+                        <span class="n">add_knn_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">knn</span><span class="p">)</span>
+
+            <span class="n">add_dists</span> <span class="o">+=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">add_dist_list</span><span class="p">),)</span>
+            <span class="n">add_idx</span> <span class="o">+=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">add_id_list</span><span class="p">)</span><span class="o">.</span><span class="n">long</span><span class="p">(),)</span>
+            <span class="n">add_knns</span> <span class="o">+=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">add_knn_list</span><span class="p">)</span><span class="o">.</span><span class="n">long</span><span class="p">(),)</span>
+
         <span class="c1"># Get dists</span>
         <span class="n">dists</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="k">for</span> <span class="n">graph</span> <span class="ow">in</span> <span class="n">graphs</span><span class="p">)</span>
         <span class="n">dists</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">d</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">]</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dists</span><span class="p">)</span>
+        <span class="n">dists</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">d</span><span class="p">,</span> <span class="n">a</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">d</span>
+            <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">dists</span><span class="p">,</span> <span class="n">add_dists</span><span class="p">)</span>
+        <span class="p">)</span>
 
         <span class="c1"># Get nonzeros</span>
         <span class="n">nonzeros</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">nonzero</span><span class="p">()</span> <span class="k">for</span> <span class="n">graph</span> <span class="ow">in</span> <span class="n">graphs</span><span class="p">)</span>
@@ -751,8 +798,17 @@
         <span class="n">idx</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
             <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">nonzero</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">long</span><span class="p">()</span> <span class="k">for</span> <span class="n">nonzero</span> <span class="ow">in</span> <span class="n">nonzeros</span>
         <span class="p">)</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">i</span><span class="p">,</span> <span class="n">a</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">i</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">add_idx</span><span class="p">)</span>
+        <span class="p">)</span>
+
         <span class="n">knns</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
             <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">nonzero</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">long</span><span class="p">()</span> <span class="k">for</span> <span class="n">nonzero</span> <span class="ow">in</span> <span class="n">nonzeros</span>
+        <span class="p">)</span>
+        <span class="n">knns</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">k</span><span class="p">,</span> <span class="n">a</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">k</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">knns</span><span class="p">,</span> <span class="n">add_knns</span><span class="p">)</span>
         <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">idx</span><span class="p">,</span> <span class="n">knns</span><span class="p">,</span> <span class="n">dists</span>
