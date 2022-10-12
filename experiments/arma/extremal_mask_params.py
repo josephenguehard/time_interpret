@@ -47,7 +47,9 @@ def objective(
     }
 
     # Select a set of hyperparameters to test
-    model = trial.suggest_categorical("model", ["none", "mlp", "gru", "bi_gru"])
+    model = trial.suggest_categorical(
+        "model", ["none", "mlp", "gru", "bi_gru"]
+    )
 
     # Define model and trainer given the hyperparameters
     version = trial.study.study_name + "_" + str(trial._trial_id)
