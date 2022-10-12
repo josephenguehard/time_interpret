@@ -29,12 +29,12 @@ from typing import List, Tuple, Union
 
 from tint.attr import (
     AugmentedOcclusion,
-    BayesMask,
     DynaMask,
+    ExtremalMask,
     GeodesicIntegratedGradients,
     Occlusion,
 )
-from tint.attr.models import BayesMaskNet, MaskNet
+from tint.attr.models import ExtremalMaskNet, MaskNet
 from tint.metrics import (
     accuracy,
     comprehensiveness,
@@ -43,6 +43,7 @@ from tint.metrics import (
     log_odds,
     sufficiency,
 )
+from tint.models import CNN
 from tint.utils import get_progress_bars
 
 
@@ -221,34 +222,6 @@ def main(
     # Baselines is the normalised background
     baselines = -0.4242
 
-    if "bayes_mask" in explainers:
-        trainer = Trainer(
-            max_epochs=500,
-            accelerator=accelerator,
-            devices=device_id,
-            log_every_n_steps=2,
-            deterministic=deterministic,
-        )
-        mask = BayesMaskNet(
-            forward_func=classifier,
-            distribution="none",
-            hard=False,
-            comp_loss=True,
-            optim="adam",
-            lr=0.01,
-        )
-        explainer = BayesMask(classifier)
-        _attr = explainer.attribute(
-            x_test,
-            baselines=baselines,
-            target=y_test,
-            trainer=trainer,
-            mask_net=mask,
-            batch_size=64,
-        )
-        attr["bayes_mask"] = _attr.to(device)
-        expl["bayes_mask"] = explainer
-
     if "deep_lift" in explainers:
         explainer = DeepLift(classifier)
         _attr = explainer.attribute(
@@ -285,6 +258,33 @@ def main(
         print(f"Best keep ratio is {_attr[1]}")
         attr["dyna_mask"] = _attr[0].to(device)
 
+    if "extremal_mask" in explainers:
+        trainer = Trainer(
+            max_epochs=500,
+            accelerator=accelerator,
+            devices=device_id,
+            log_every_n_steps=2,
+            deterministic=deterministic,
+        )
+        mask = ExtremalMaskNet(
+            forward_func=classifier,
+            comp_loss=True,
+            model=CNN([1, 1], kernel_size=3, padding=1, flatten=False),
+            optim="adam",
+            lr=0.01,
+        )
+        explainer = ExtremalMask(classifier)
+        _attr = explainer.attribute(
+            x_test,
+            baselines=baselines,
+            target=y_test,
+            trainer=trainer,
+            mask_net=mask,
+            batch_size=256,
+        )
+        attr["extremal_mask"] = _attr.to(device)
+        expl["extremal_mask"] = explainer
+
     if "geodesic_integrated_gradients" in explainers:
         _attr = list()
         _sens_max = list()
@@ -294,7 +294,7 @@ def main(
             total=len(x_test),
             desc=f"{GeodesicIntegratedGradients.get_name()} attribution",
         ):
-            rand = th.rand((500,) + x.shape).sort(dim=0).values.to(device)
+            rand = th.rand((50,) + x.shape).sort(dim=0).values.to(device)
             x_aug = (x - baselines).unsqueeze(0) * rand + baselines
             explainer = GeodesicIntegratedGradients(
                 classifier, data=x_aug, n_neighbors=5
@@ -417,7 +417,7 @@ def main(
         for k, v in get_progress_bars()(
             attr.items(), desc="Attr", leave=False
         ):
-            if k not in ["bayes_mask", "dyna_mask"]:
+            if k not in ["dyna_mask", "extremal_mask"]:
                 if k == "geodesic_integrated_gradients":
                     sens_max = _sens_max
                     lip_max = _lip_max
@@ -532,9 +532,9 @@ def parse_args():
         "--explainers",
         type=str,
         default=[
-            "bayes_mask",
             "deep_lift",
             "dyna_mask",
+            "extremal_mask",
             "geodesic_integrated_gradients",
             "input_x_gradient",
             "integrated_gradients",

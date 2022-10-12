@@ -1,8 +1,8 @@
 from .augmented_occlusion import AugmentedOcclusion
 from .bayes import BayesLime, BayesKernelShap
-from .bayes_mask import BayesMask
 from .discretised_ig import DiscretetizedIntegratedGradients
 from .dynamic_masks import DynaMask
+from .extremal_mask import ExtremalMask
 from .feature_ablation import FeatureAblation
 from .fit import Fit
 from .geodesic_ig import GeodesicIntegratedGradients
@@ -20,9 +20,9 @@ __all__ = [
     "AugmentedOcclusion",
     "BayesKernelShap",
     "BayesLime",
-    "BayesMask",
     "DiscretetizedIntegratedGradients",
     "DynaMask",
+    "ExtremalMask",
     "FeatureAblation",
     "Fit",
     "GeodesicIntegratedGradients",

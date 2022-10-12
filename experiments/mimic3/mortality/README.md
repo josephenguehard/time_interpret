@@ -25,11 +25,11 @@ python reset.py -e main
 ```
 
 
-It is also possible to search the best hyperparameters for the BayesMask model.
+It is also possible to search the best hyperparameters for the ExtremalMask model.
 To do so, run:
 
 ```shell script
-python bayes_mask_params.py -p
+python extremal_mask_params.py -p
 ```
 
 
@@ -40,7 +40,7 @@ usage: experiments/mimci3/mortality/main.py [-h] [--explainers] [--accelerator] 
 
 optional arguments:
   -h, --help            Show this help message and exit.
-  --explainers          List of the explainers to use. Default to ["bayes_mask", "deep_lift", "dyna_mask", "fit", "gradient_shap", "integrated_gradients", "lime", "retain", "augmented_occlusion", "occlusion"]
+  --explainers          List of the explainers to use. Default to ["deep_lift", "dyna_mask", "extremal_mask", "fit", "gradient_shap", "integrated_gradients", "lime", "retain", "augmented_occlusion", "occlusion"]
   --device              Which device to use. Default to 'cpu'
   --seed                Which seed to use to generate the data. Default to 42
   --deterministic       Whether to make training deterministic or not. Default to False
@@ -75,5 +75,5 @@ usage: experiments/mimci3/mortality/reset.py [-h] [-e]
 
 optional arguments:
   -h, --help            Show this help message and exit.
-  -e, --experiment      Name of the experiment. Either 'main' or 'bayes_mask_params'.
+  -e, --experiment      Name of the experiment. Either 'main' or 'extremal_mask_params'.
 ```

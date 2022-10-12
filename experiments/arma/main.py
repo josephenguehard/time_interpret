@@ -2,6 +2,7 @@ import multiprocessing as mp
 import numpy as np
 import random
 import torch as th
+import torch.nn as nn
 
 from argparse import ArgumentParser
 from captum.attr import (
@@ -14,14 +15,14 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from typing import List
 
 from tint.attr import (
-    BayesMask,
     DynaMask,
+    ExtremalMask,
     Occlusion,
 )
-from tint.attr.models import BayesMaskNet, MaskNet
+from tint.attr.models import ExtremalMaskNet, MaskNet
 from tint.datasets import Arma
 from tint.metrics.white_box import aup, aur, information, entropy
-from tint.models import MLP
+from tint.models import MLP, RNN
 
 
 def main(
@@ -54,36 +55,6 @@ def main(
     # Create dict of attributions
     attr = dict()
 
-    if "bayes_mask" in explainers:
-        trainer = Trainer(
-            max_epochs=2000,
-            accelerator=accelerator,
-            devices=device_id,
-            log_every_n_steps=2,
-            deterministic=deterministic,
-            logger=TensorBoardLogger(
-                save_dir=".",
-                version=random.getrandbits(128),
-            ),
-        )
-        mask = BayesMaskNet(
-            forward_func=arma.get_white_box,
-            distribution="normal",
-            model=MLP([x.shape[-1], x.shape[-1]]),
-            eps=1e-7,
-            optim="adam",
-            lr=0.01,
-        )
-        explainer = BayesMask(arma.get_white_box)
-        _attr = explainer.attribute(
-            x,
-            trainer=trainer,
-            mask_net=mask,
-            batch_size=50,
-            additional_forward_args=(true_saliency,),
-        )
-        attr["bayes_mask"] = _attr
-
     if "dyna_mask" in explainers:
         trainer = Trainer(
             max_epochs=1000,
@@ -115,6 +86,42 @@ def main(
         )
         print(f"Best keep ratio is {_attr[1]}")
         attr["dyna_mask"] = _attr[0]
+
+    if "extremal_mask" in explainers:
+        trainer = Trainer(
+            max_epochs=2000,
+            accelerator=accelerator,
+            devices=device_id,
+            log_every_n_steps=2,
+            deterministic=deterministic,
+            logger=TensorBoardLogger(
+                save_dir=".",
+                version=random.getrandbits(128),
+            ),
+        )
+        mask = ExtremalMaskNet(
+            forward_func=arma.get_white_box,
+            model=nn.Sequential(
+                RNN(
+                    input_size=x.shape[-1],
+                    rnn="gru",
+                    hidden_size=x.shape[-1],
+                    bidirectional=True,
+                ),
+                MLP([2 * x.shape[-1], x.shape[-1]]),
+            ),
+            optim="adam",
+            lr=0.01,
+        )
+        explainer = ExtremalMask(arma.get_white_box)
+        _attr = explainer.attribute(
+            x,
+            trainer=trainer,
+            mask_net=mask,
+            batch_size=50,
+            additional_forward_args=(true_saliency,),
+        )
+        attr["extremal_mask"] = _attr
 
     if "integrated_gradients" in explainers:
         attr["integrated_gradients"] = th.zeros_like(x)
@@ -184,8 +191,8 @@ def parse_args():
         "--explainers",
         type=str,
         default=[
-            "bayes_mask",
             "dyna_mask",
+            "extremal_mask",
             "integrated_gradients",
             "occlusion",
             "permutation",

@@ -21,12 +21,12 @@ from torch.utils.data import DataLoader
 from typing import Any, Callable, Tuple
 
 from tint.utils import TensorDataset, _add_temporal_mask, default_collate
-from .models import BayesMaskNet
+from .models import ExtremalMaskNet
 
 
-class BayesMask(PerturbationAttribution):
+class ExtremalMask(PerturbationAttribution):
     """
-    Bayes masks method.
+    Extremal masks method.
 
     Args:
         forward_func (callable): The forward function of the model or any
@@ -34,14 +34,14 @@ class BayesMask(PerturbationAttribution):
 
     Examples:
         >>> import torch as th
-        >>> from tint.attr import BayesMask
+        >>> from tint.attr import ExtremalMask
         >>> from tint.models import MLP
         <BLANKLINE>
         >>> inputs = th.rand(8, 7, 5)
         >>> data = th.rand(32, 7, 5)
         >>> mlp = MLP([5, 3, 1])
         <BLANKLINE>
-        >>> explainer = BayesMask(mlp)
+        >>> explainer = ExtremalMask(mlp)
         >>> attr = explainer.attribute(inputs)
     """
 
@@ -56,11 +56,10 @@ class BayesMask(PerturbationAttribution):
         target: TargetType = None,
         additional_forward_args: Any = None,
         trainer: Trainer = None,
-        mask_net: BayesMaskNet = None,
+        mask_net: ExtremalMaskNet = None,
         batch_size: int = 32,
         temporal_additional_forward_args: Tuple[bool] = None,
         return_temporal_attributions: bool = False,
-        return_covariance: bool = False,
     ) -> TensorOrTupleOfTensorsGeneric:
         """
         Attribute method.
@@ -158,9 +157,6 @@ class BayesMask(PerturbationAttribution):
             return_temporal_attributions (bool): Whether to return
                 attributions for all times or not.
                 Default: False
-            return_covariance (bool): Whether to return the covariance of the
-                bayes mask network or not.
-                Default: False
 
         Returns:
             - **attributions** (*tensor* or tuple of *tensors*):
@@ -205,9 +201,7 @@ class BayesMask(PerturbationAttribution):
 
         # Init MaskNet if not provided
         if mask_net is None:
-            mask_net = BayesMaskNet(forward_func=self.forward_func)
-        else:
-            mask_net = copy.deepcopy(mask_net)
+            mask_net = ExtremalMaskNet(forward_func=self.forward_func)
 
         # Init model
         mask_net.net.init(input_size=data.shape, batch_size=batch_size)
@@ -230,7 +224,7 @@ class BayesMask(PerturbationAttribution):
         mask_net.eval()
 
         # Get attributions as mask representation
-        attributions = mask_net.net.representation()
+        attributions = mask_net.net.representation(data, baseline)
 
         # Reshape representation if temporal attributions
         if return_temporal_attributions:
@@ -240,23 +234,6 @@ class BayesMask(PerturbationAttribution):
 
         # Reshape as a tuple
         attributions = (attributions,)
-
-        if return_covariance:
-            covariance = mask_net.net.covariance()
-
-            # Reshape representation if temporal attributions
-            if return_temporal_attributions:
-                covariance = covariance.reshape(
-                    (-1, data.shape[1]) + data.shape[1:] + (data.shape[-1],)
-                )
-
-            # Reshape as a tuple
-            covariance = (covariance,)
-
-            return (
-                _format_output(is_inputs_tuple, attributions),
-                _format_output(is_inputs_tuple, covariance),
-            )
 
         # Format attributions and return
         return _format_output(is_inputs_tuple, attributions)

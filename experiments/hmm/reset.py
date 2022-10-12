@@ -10,7 +10,7 @@ def main(experiment: str):
             fp.write(
                 "Seed,Fold,Explainer,AUP,AUR,Information,Entropy,AUROC,AUPRC\n"
             )
-    elif experiment == "bayes_mask_params":
+    elif experiment == "extremal_mask_params":
         with open("bayes_mask_params.csv", "w") as fp:
             fp.write("Metric,Distribution,Hard,Model,Eps\n")
     else:
@@ -27,7 +27,7 @@ def parse_args():
         "-e",
         type=str,
         required=True,
-        help="Name of the experiment. Either 'main' or 'bayes_mask_params'.",
+        help="Name of the experiment. Either 'main' or 'extremal_mask_params'.",
     )
     return parser.parse_args()
 

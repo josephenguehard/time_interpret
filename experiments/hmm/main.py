@@ -2,6 +2,7 @@ import multiprocessing as mp
 import numpy as np
 import random
 import torch as th
+import torch.nn as nn
 
 from argparse import ArgumentParser
 from captum.attr import DeepLift, GradientShap, IntegratedGradients, Lime
@@ -10,8 +11,8 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from typing import List
 
 from tint.attr import (
-    BayesMask,
     DynaMask,
+    ExtremalMask,
     Fit,
     Retain,
     TemporalAugmentedOcclusion,
@@ -19,7 +20,7 @@ from tint.attr import (
     TimeForwardTunnel,
 )
 from tint.attr.models import (
-    BayesMaskNet,
+    ExtremalMaskNet,
     JointFeatureGeneratorNet,
     MaskNet,
     RetainNet,
@@ -33,7 +34,7 @@ from tint.metrics.white_box import (
     roc_auc,
     auprc,
 )
-from tint.models import MLP
+from tint.models import MLP, RNN
 
 
 from experiments.hmm.classifier import StateClassifierNet
@@ -105,37 +106,6 @@ def main(
     # Create dict of attributions
     attr = dict()
 
-    if "bayes_mask" in explainers:
-        trainer = Trainer(
-            max_epochs=500,
-            accelerator=accelerator,
-            devices=device_id,
-            log_every_n_steps=2,
-            deterministic=deterministic,
-            logger=TensorBoardLogger(
-                save_dir=".",
-                version=random.getrandbits(128),
-            ),
-        )
-        mask = BayesMaskNet(
-            forward_func=classifier,
-            distribution="normal",
-            hard=False,
-            model=MLP([x_test.shape[-1], x_test.shape[-1]]),
-            eps=1e-5,
-            optim="adam",
-            lr=0.01,
-        )
-        explainer = BayesMask(classifier)
-        _attr = explainer.attribute(
-            x_test,
-            additional_forward_args=(True,),
-            trainer=trainer,
-            mask_net=mask,
-            batch_size=100,
-        )
-        attr["bayes_mask"] = _attr.to(device)
-
     if "deep_lift" in explainers:
         explainer = TimeForwardTunnel(DeepLift(classifier))
         attr["deep_lift"] = explainer.attribute(
@@ -177,6 +147,42 @@ def main(
         )
         print(f"Best keep ratio is {_attr[1]}")
         attr["dyna_mask"] = _attr[0].to(device)
+
+    if "extremal_mask" in explainers:
+        trainer = Trainer(
+            max_epochs=500,
+            accelerator=accelerator,
+            devices=device_id,
+            log_every_n_steps=2,
+            deterministic=deterministic,
+            logger=TensorBoardLogger(
+                save_dir=".",
+                version=random.getrandbits(128),
+            ),
+        )
+        mask = ExtremalMaskNet(
+            forward_func=classifier,
+            model=nn.Sequential(
+                RNN(
+                    input_size=x_test.shape[-1],
+                    rnn="gru",
+                    hidden_size=x_test.shape[-1],
+                    bidirectional=True,
+                ),
+                MLP([2 * x_test.shape[-1], x_test.shape[-1]]),
+            ),
+            optim="adam",
+            lr=0.01,
+        )
+        explainer = ExtremalMask(classifier)
+        _attr = explainer.attribute(
+            x_test,
+            additional_forward_args=(True,),
+            trainer=trainer,
+            mask_net=mask,
+            batch_size=100,
+        )
+        attr["extremal_mask"] = _attr.to(device)
 
     if "fit" in explainers:
         generator = JointFeatureGeneratorNet(rnn_hidden_size=6)
@@ -302,9 +308,9 @@ def parse_args():
         "--explainers",
         type=str,
         default=[
-            "bayes_mask",
             "deep_lift",
             "dyna_mask",
+            "extremal_mask",
             "fit",
             "gradient_shap",
             "integrated_gradients",

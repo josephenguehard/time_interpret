@@ -1,5 +1,5 @@
 from .bayes_linear import BLRRegression, BLRRidge
-from .bayes_mask import BayesMask, BayesMaskNet
+from .extremal_mask import ExtremalMask, ExtremalMaskNet
 from .joint_features_generator import (
     JointFeatureGenerator,
     JointFeatureGeneratorNet,
@@ -9,10 +9,10 @@ from .path_generator import scale_inputs
 from .retain import Retain, RetainNet
 
 __all__ = [
-    "BayesMask",
-    "BayesMaskNet",
     "BLRRegression",
     "BLRRidge",
+    "ExtremalMask",
+    "ExtremalMaskNet",
     "JointFeatureGenerator",
     "JointFeatureGeneratorNet",
     "Mask",

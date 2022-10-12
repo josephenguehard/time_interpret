@@ -1,43 +1,62 @@
 import optuna
 import torch as th
+import torch.nn as nn
 
 from argparse import ArgumentParser
 from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import TensorBoardLogger
 from typing import Union
 
-from tint.attr import BayesMask
-from tint.attr.models import BayesMaskNet
-from tint.datasets import HMM
-from tint.metrics.white_box import aup, aur, information, entropy
-from tint.models import MLP
+from tint.attr import ExtremalMask
+from tint.attr.models import ExtremalMaskNet
+from tint.datasets import Mimic3
+from tint.metrics import (
+    accuracy,
+    comprehensiveness,
+    cross_entropy,
+    log_odds,
+    sufficiency,
+)
+from tint.models import MLP, RNN
 
-from experiments.hmm.classifier import StateClassifierNet
+from experiments.mimic3.mortality.classifier import MimicClassifierNet
 
 
 def objective(
     trial: optuna.trial.Trial,
     x_val: th.Tensor,
-    true_saliency: th.Tensor,
-    classifier: StateClassifierNet,
+    classifier: MimicClassifierNet,
     metric: str,
+    topk: float,
     device: str,
     accelerator: str,
     device_id: Union[list, int],
 ):
     # Create several models
     input_shape = x_val.shape[-1]
-    model1 = MLP([input_shape, input_shape])
-    model2 = MLP([input_shape, input_shape, input_shape])
-    model_dict = {"none": None, "model1": model1, "model2": model2}
+    mlp = MLP([input_shape, input_shape])
+    gru = RNN(
+        input_size=input_shape,
+        rnn="gru",
+        hidden_size=input_shape,
+    )
+    _bi_gru = RNN(
+        input_size=input_shape,
+        rnn="gru",
+        hidden_size=input_shape,
+        bidirectional=True,
+    )
+    _bi_mlp = MLP([2 * input_shape, input_shape])
+    bi_gru = nn.Sequential(_bi_gru, _bi_mlp)
+    model_dict = {
+        "none": None,
+        "mlp": mlp,
+        "gru": gru,
+        "bi_gru": bi_gru,
+    }
 
     # Select a set of hyperparameters to test
-    distribution = trial.suggest_categorical(
-        "distribution", ["none", "bernoulli", "normal", "gumbel_softmax"]
-    )
-    hard = trial.suggest_categorical("hard", [True, False])
-    model = trial.suggest_categorical("model", ["none", "model1", "model2"])
-    eps = trial.suggest_float("eps", 1e-7, 1e-1, log=True)
+    model = trial.suggest_categorical("model", ["none", "mlp", "gru", "bi_gru"])
 
     # Define model and trainer given the hyperparameters
     version = trial.study.study_name + "_" + str(trial._trial_id)
@@ -48,27 +67,20 @@ def objective(
         log_every_n_steps=2,
         logger=TensorBoardLogger(save_dir=".", version=version),
     )
-    mask = BayesMaskNet(
+    mask = ExtremalMaskNet(
         forward_func=classifier,
-        distribution=distribution,
-        hard=hard,
         model=model_dict[model],
-        eps=eps,
+        loss="cross_entropy",
         optim="adam",
         lr=0.01,
     )
 
     # Log hyperparameters
-    hyperparameters = dict(
-        distribution=distribution,
-        hard=hard,
-        model=model,
-        eps=eps,
-    )
+    hyperparameters = dict(model=model)
     trainer.logger.log_hyperparams(hyperparameters)
 
     # Get attributions given the hyperparameters
-    explainer = BayesMask(classifier)
+    explainer = ExtremalMask(classifier)
     attr = explainer.attribute(
         x_val,
         additional_forward_args=(True,),
@@ -77,21 +89,57 @@ def objective(
         batch_size=100,
     ).to(device)
 
+    # Compute x_avg for the baseline
+    x_avg = x_val.mean(1, keepdim=True).repeat(1, x_val.shape[1], 1)
+
     # Compute the metric
-    if metric == "aup":
-        return aup(attr, true_saliency)
-    if metric == "aur":
-        return aur(attr, true_saliency)
-    if metric == "information":
-        return information(attr, true_saliency)
-    if metric == "entropy":
-        return entropy(attr, true_saliency)
+    if metric == "accuracy":
+        return accuracy(
+            classifier,
+            x_val,
+            attributions=attr,
+            baselines=x_avg,
+            topk=topk,
+        )
+    if metric == "comprehensiveness":
+        return comprehensiveness(
+            classifier,
+            x_val,
+            attributions=attr,
+            baselines=x_avg,
+            topk=topk,
+        )
+    if metric == "cross_entropy":
+        return cross_entropy(
+            classifier,
+            x_val,
+            attributions=attr,
+            baselines=x_avg,
+            topk=topk,
+        )
+    if metric == "logg_odds":
+        return log_odds(
+            classifier,
+            x_val,
+            attributions=attr,
+            baselines=x_avg,
+            topk=topk,
+        )
+    if metric == "sufficiency":
+        return sufficiency(
+            classifier,
+            x_val,
+            attributions=attr,
+            baselines=x_avg,
+            topk=topk,
+        )
     raise NotImplementedError
 
 
 def main(
     pruning: bool,
     metric: str,
+    topk: float,
     device: str,
     seed: int,
     n_trials: int,
@@ -100,17 +148,16 @@ def main(
 ):
     # Get accelerator and device
     accelerator = device.split(":")[0]
+    device_id = 1
     if len(device.split(":")) > 1:
         device_id = [int(device.split(":")[1])]
-    else:
-        device_id = 1
 
     # Load data
-    hmm = HMM(n_folds=5, fold=0, seed=seed)
+    mimic3 = Mimic3(n_folds=5, fold=0, seed=seed)
 
     # Create classifier
-    classifier = StateClassifierNet(
-        feature_size=3,
+    classifier = MimicClassifierNet(
+        feature_size=31,
         n_state=2,
         hidden_size=200,
         regres=True,
@@ -121,18 +168,15 @@ def main(
 
     # Train classifier
     trainer = Trainer(
-        max_epochs=50, accelerator=accelerator, devices=device_id
+        max_epochs=100, accelerator=accelerator, devices=device_id
     )
-    trainer.fit(classifier, datamodule=hmm)
+    trainer.fit(classifier, datamodule=mimic3)
 
     # Get data for explainers
-    x = hmm.preprocess(split="train")["x"].to(device)
-    hmm.setup()
-    idx = hmm.val_dataloader().dataset.indices
+    x = mimic3.preprocess(split="train")["x"].to(device)
+    mimic3.setup()
+    idx = mimic3.val_dataloader().dataset.indices
     x_val = x[idx]
-
-    # Get true saliency
-    true_saliency = hmm.true_saliency(split="train").to(device)[idx]
 
     # Switch to eval
     classifier.eval()
@@ -154,7 +198,12 @@ def main(
     )
 
     # Define study
-    direction = "minimize" if metric == "entropy" else "maximize"
+    if metric in ["accuracy", "log_odds", "sufficiency"]:
+        direction = "minimize"
+    elif metric in ["comprehensiveness", "cross_entropy"]:
+        direction = "maximize"
+    else:
+        raise NotImplementedError
     study = optuna.create_study(direction=direction, pruner=pruner)
 
     # Find best trial
@@ -162,9 +211,9 @@ def main(
         lambda t: objective(
             trial=t,
             x_val=x_val,
-            true_saliency=true_saliency,
             classifier=classifier,
             metric=metric,
+            topk=topk,
             device=device,
             accelerator=accelerator,
             device_id=device_id,
@@ -175,9 +224,10 @@ def main(
     )
 
     # Write results
-    with open("bayes_mask_params.csv", "a") as fp:
+    with open("extremal_mask_params.csv", "a") as fp:
         for trial in study.trials:
             fp.write(str(trial.value) + ",")
+            fp.write(str(topk) + ",")
             for value in trial.params.values():
                 fp.write(str(value) + ",")
             fp.write("\n")
@@ -195,8 +245,14 @@ def parse_args():
     parser.add_argument(
         "--metric",
         type=str,
-        default="aur",
+        default="cross_entropy",
         help="Which metric to use as benchmark.",
+    )
+    parser.add_argument(
+        "--topk",
+        type=float,
+        default=0.2,
+        help="Which topk to use for the metric.",
     )
     parser.add_argument(
         "--device",
@@ -236,6 +292,7 @@ if __name__ == "__main__":
     main(
         pruning=args.pruning,
         metric=args.metric,
+        topk=args.topk,
         device=args.device,
         seed=args.seed,
         n_trials=args.n_trials,

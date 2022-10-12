@@ -1,16 +1,17 @@
 import optuna
 import torch as th
+import torch.nn as nn
 
 from argparse import ArgumentParser
 from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import TensorBoardLogger
 from typing import Union
 
-from tint.attr import BayesMask
-from tint.attr.models import BayesMaskNet
+from tint.attr import ExtremalMask
+from tint.attr.models import ExtremalMaskNet
 from tint.datasets import Arma
 from tint.metrics.white_box import aup, aur, information, entropy
-from tint.models import MLP
+from tint.models import MLP, RNN
 
 
 def objective(
@@ -24,17 +25,29 @@ def objective(
 ):
     # Create several models
     input_shape = x.shape[-1]
-    model1 = MLP([input_shape, input_shape])
-    model2 = MLP([input_shape, input_shape // 4, input_shape])
-    model_dict = {"none": None, "model1": model1, "model2": model2}
+    mlp = MLP([input_shape, input_shape])
+    gru = RNN(
+        input_size=input_shape,
+        rnn="gru",
+        hidden_size=input_shape,
+    )
+    _bi_gru = RNN(
+        input_size=input_shape,
+        rnn="gru",
+        hidden_size=input_shape,
+        bidirectional=True,
+    )
+    _bi_mlp = MLP([2 * input_shape, input_shape])
+    bi_gru = nn.Sequential(_bi_gru, _bi_mlp)
+    model_dict = {
+        "none": None,
+        "mlp": mlp,
+        "gru": gru,
+        "bi_gru": bi_gru,
+    }
 
     # Select a set of hyperparameters to test
-    distribution = trial.suggest_categorical(
-        "distribution", ["none", "bernoulli", "normal", "gumbel_softmax"]
-    )
-    hard = trial.suggest_categorical("hard", [True, False])
-    model = trial.suggest_categorical("model", ["none", "model1", "model2"])
-    eps = trial.suggest_float("eps", 1e-7, 1e-1, log=True)
+    model = trial.suggest_categorical("model", ["none", "mlp", "gru", "bi_gru"])
 
     # Define model and trainer given the hyperparameters
     version = trial.study.study_name + "_" + str(trial._trial_id)
@@ -45,27 +58,19 @@ def objective(
         log_every_n_steps=2,
         logger=TensorBoardLogger(save_dir=".", version=version),
     )
-    mask = BayesMaskNet(
+    mask = ExtremalMaskNet(
         forward_func=dataset.get_white_box,
-        distribution=distribution,
-        hard=hard,
         model=model_dict[model],
-        eps=eps,
         optim="adam",
         lr=0.01,
     )
 
     # Log hyperparameters
-    hyperparameters = dict(
-        distribution=distribution,
-        hard=hard,
-        model=model,
-        eps=eps,
-    )
+    hyperparameters = dict(model=model)
     trainer.logger.log_hyperparams(hyperparameters)
 
     # Get attributions given the hyperparameters
-    explainer = BayesMask(dataset.get_white_box)
+    explainer = ExtremalMask(dataset.get_white_box)
     attr = explainer.attribute(
         x,
         trainer=trainer,
@@ -139,7 +144,7 @@ def main(
     )
 
     # Write results
-    with open("bayes_mask_params.csv", "a") as fp:
+    with open("extremal_mask_params.csv", "a") as fp:
         for trial in study.trials:
             fp.write(str(rare_dim) + ",")
             fp.write(str(trial.value) + ",")

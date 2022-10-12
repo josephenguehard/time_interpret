@@ -31,11 +31,11 @@ python reset.py -e main
 ```
 
 
-It is also possible to search the best hyperparameters for the BayesMask model.
+It is also possible to search the best hyperparameters for the ExtremalMask model.
 To do so, run:
 
 ```shell script
-python bayes_mask_params.py -p --rare-dim 1
+python extremal_mask_params.py -p --rare-dim 1
 ```
 
 
@@ -47,7 +47,7 @@ usage: experiments/arma/main.py [-h] [--rare-dim] [--explainers] [--accelerator]
 optional arguments:
   -h, --help            Show this help message and exit.
   --rare-dim            Which type of experiment to run. 1 is for rare-feature, 2 is for rare-time. Default to 1
-  --explainers          List of the explainers to use. Default to ["bayes_mask", "dyna_mask", "integrated_gradients", "occlusion", "permutation", "shapley_values_sampling"]
+  --explainers          List of the explainers to use. Default to ["dyna_mask", "extremal_mask", "integrated_gradients", "occlusion", "permutation", "shapley_values_sampling"]
   --device              Which device to use. Default to 'cpu'
   --seed                Which seed to use to generate the data. Default to 42
   --deterministic       Whether to make training deterministic or not. Default to False
@@ -82,5 +82,5 @@ usage: experiments/arma/reset.py [-h] [-e]
 
 optional arguments:
   -h, --help            Show this help message and exit.
-  -e, --experiment      Name of the experiment. Either 'main' or 'bayes_mask_params'.
+  -e, --experiment      Name of the experiment. Either 'main' or 'extremal_mask_params'.
 ```

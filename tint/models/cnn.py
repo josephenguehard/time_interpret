@@ -69,7 +69,9 @@ class CNN(nn.Module):
         activations (list, str): Activation functions. Either a list or a
             string. Default to ``'relu'``
         pooling (list, str): Pooling module. Either a list or a string.
-            Default t0 ``None``
+            Default to ``None``
+        flatten (bool): Whether to flatten the output of the model or not.
+            Default to ``True``
 
     References:
         https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html#torch.nn.Conv2d
@@ -97,6 +99,7 @@ class CNN(nn.Module):
         norm: Union[list, str] = None,
         activations: Union[list, str] = "relu",
         pooling: Union[list, str] = None,
+        flatten: bool = True,
     ):
         super().__init__()
 
@@ -187,7 +190,7 @@ class CNN(nn.Module):
                 name = pooling[i].__class__.__name__
                 model[f"{name}_{i}"] = pooling[i]
 
-            if final_layer:
+            if final_layer and flatten:
                 name = nn.Flatten.__name__
                 model[f"{name}_{i}"] = nn.Flatten(1)
 
