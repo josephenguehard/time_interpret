@@ -11,7 +11,7 @@ def main(experiment: str):
                 "Seed,Fold,Explainer,AUP,AUR,Information,Entropy,AUROC,AUPRC\n"
             )
     elif experiment == "extremal_mask_params":
-        with open("bayes_mask_params.csv", "w") as fp:
+        with open("extremal_mask_params.csv", "w") as fp:
             fp.write("Metric,Distribution,Hard,Model,Eps\n")
     else:
         raise NotImplementedError
