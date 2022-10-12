@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>tint.attr.bayes_mask &mdash; Time Interpret 0.1.0 documentation</title>
+  <title>tint.attr.extremal_mask &mdash; Time Interpret 0.1.0 documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
@@ -67,7 +67,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
           <li><a href="../../index.html">Module code</a> &raquo;</li>
-      <li>tint.attr.bayes_mask</li>
+      <li>tint.attr.extremal_mask</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -76,7 +76,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <h1>Source code for tint.attr.bayes_mask</h1><div class="highlight"><pre>
+  <h1>Source code for tint.attr.extremal_mask</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">torch</span> <span class="k">as</span> <span class="nn">th</span>
 
@@ -100,12 +100,12 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Tuple</span>
 
 <span class="kn">from</span> <span class="nn">tint.utils</span> <span class="kn">import</span> <span class="n">TensorDataset</span><span class="p">,</span> <span class="n">_add_temporal_mask</span><span class="p">,</span> <span class="n">default_collate</span>
-<span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="n">BayesMaskNet</span>
+<span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="n">ExtremalMaskNet</span>
 
 
-<div class="viewcode-block" id="BayesMask"><a class="viewcode-back" href="../../../attr.html#tint.attr.BayesMask">[docs]</a><span class="k">class</span> <span class="nc">BayesMask</span><span class="p">(</span><span class="n">PerturbationAttribution</span><span class="p">):</span>
+<div class="viewcode-block" id="ExtremalMask"><a class="viewcode-back" href="../../../attr.html#tint.attr.ExtremalMask">[docs]</a><span class="k">class</span> <span class="nc">ExtremalMask</span><span class="p">(</span><span class="n">PerturbationAttribution</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Bayes masks method.</span>
+<span class="sd">    Extremal masks method.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        forward_func (callable): The forward function of the model or any</span>
@@ -113,21 +113,21 @@
 
 <span class="sd">    Examples:</span>
 <span class="sd">        &gt;&gt;&gt; import torch as th</span>
-<span class="sd">        &gt;&gt;&gt; from tint.attr import BayesMask</span>
+<span class="sd">        &gt;&gt;&gt; from tint.attr import ExtremalMask</span>
 <span class="sd">        &gt;&gt;&gt; from tint.models import MLP</span>
 <span class="sd">        &lt;BLANKLINE&gt;</span>
 <span class="sd">        &gt;&gt;&gt; inputs = th.rand(8, 7, 5)</span>
 <span class="sd">        &gt;&gt;&gt; data = th.rand(32, 7, 5)</span>
 <span class="sd">        &gt;&gt;&gt; mlp = MLP([5, 3, 1])</span>
 <span class="sd">        &lt;BLANKLINE&gt;</span>
-<span class="sd">        &gt;&gt;&gt; explainer = BayesMask(mlp)</span>
+<span class="sd">        &gt;&gt;&gt; explainer = ExtremalMask(mlp)</span>
 <span class="sd">        &gt;&gt;&gt; attr = explainer.attribute(inputs)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">forward_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">forward_func</span><span class="o">=</span><span class="n">forward_func</span><span class="p">)</span>
 
-<div class="viewcode-block" id="BayesMask.attribute"><a class="viewcode-back" href="../../../attr.html#tint.attr.BayesMask.attribute">[docs]</a>    <span class="nd">@log_usage</span><span class="p">()</span>
+<div class="viewcode-block" id="ExtremalMask.attribute"><a class="viewcode-back" href="../../../attr.html#tint.attr.ExtremalMask.attribute">[docs]</a>    <span class="nd">@log_usage</span><span class="p">()</span>
     <span class="k">def</span> <span class="nf">attribute</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">inputs</span><span class="p">:</span> <span class="n">TensorOrTupleOfTensorsGeneric</span><span class="p">,</span>
@@ -135,11 +135,10 @@
         <span class="n">target</span><span class="p">:</span> <span class="n">TargetType</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">additional_forward_args</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">trainer</span><span class="p">:</span> <span class="n">Trainer</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">mask_net</span><span class="p">:</span> <span class="n">BayesMaskNet</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">mask_net</span><span class="p">:</span> <span class="n">ExtremalMaskNet</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
         <span class="n">temporal_additional_forward_args</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">return_temporal_attributions</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">return_covariance</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TensorOrTupleOfTensorsGeneric</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Attribute method.</span>
@@ -237,9 +236,6 @@
 <span class="sd">            return_temporal_attributions (bool): Whether to return</span>
 <span class="sd">                attributions for all times or not.</span>
 <span class="sd">                Default: False</span>
-<span class="sd">            return_covariance (bool): Whether to return the covariance of the</span>
-<span class="sd">                bayes mask network or not.</span>
-<span class="sd">                Default: False</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            - **attributions** (*tensor* or tuple of *tensors*):</span>
@@ -284,9 +280,7 @@
 
         <span class="c1"># Init MaskNet if not provided</span>
         <span class="k">if</span> <span class="n">mask_net</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">mask_net</span> <span class="o">=</span> <span class="n">BayesMaskNet</span><span class="p">(</span><span class="n">forward_func</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">forward_func</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">mask_net</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">mask_net</span><span class="p">)</span>
+            <span class="n">mask_net</span> <span class="o">=</span> <span class="n">ExtremalMaskNet</span><span class="p">(</span><span class="n">forward_func</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">forward_func</span><span class="p">)</span>
 
         <span class="c1"># Init model</span>
         <span class="n">mask_net</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">input_size</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
@@ -309,7 +303,7 @@
         <span class="n">mask_net</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 
         <span class="c1"># Get attributions as mask representation</span>
-        <span class="n">attributions</span> <span class="o">=</span> <span class="n">mask_net</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">representation</span><span class="p">()</span>
+        <span class="n">attributions</span> <span class="o">=</span> <span class="n">mask_net</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">representation</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">baseline</span><span class="p">)</span>
 
         <span class="c1"># Reshape representation if temporal attributions</span>
         <span class="k">if</span> <span class="n">return_temporal_attributions</span><span class="p">:</span>
@@ -319,23 +313,6 @@
 
         <span class="c1"># Reshape as a tuple</span>
         <span class="n">attributions</span> <span class="o">=</span> <span class="p">(</span><span class="n">attributions</span><span class="p">,)</span>
-
-        <span class="k">if</span> <span class="n">return_covariance</span><span class="p">:</span>
-            <span class="n">covariance</span> <span class="o">=</span> <span class="n">mask_net</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">covariance</span><span class="p">()</span>
-
-            <span class="c1"># Reshape representation if temporal attributions</span>
-            <span class="k">if</span> <span class="n">return_temporal_attributions</span><span class="p">:</span>
-                <span class="n">covariance</span> <span class="o">=</span> <span class="n">covariance</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
-                    <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],)</span>
-                <span class="p">)</span>
-
-            <span class="c1"># Reshape as a tuple</span>
-            <span class="n">covariance</span> <span class="o">=</span> <span class="p">(</span><span class="n">covariance</span><span class="p">,)</span>
-
-            <span class="k">return</span> <span class="p">(</span>
-                <span class="n">_format_output</span><span class="p">(</span><span class="n">is_inputs_tuple</span><span class="p">,</span> <span class="n">attributions</span><span class="p">),</span>
-                <span class="n">_format_output</span><span class="p">(</span><span class="n">is_inputs_tuple</span><span class="p">,</span> <span class="n">covariance</span><span class="p">),</span>
-            <span class="p">)</span>
 
         <span class="c1"># Format attributions and return</span>
         <span class="k">return</span> <span class="n">_format_output</span><span class="p">(</span><span class="n">is_inputs_tuple</span><span class="p">,</span> <span class="n">attributions</span><span class="p">)</span></div></div>

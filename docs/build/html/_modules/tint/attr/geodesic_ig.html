@@ -214,6 +214,7 @@
         <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;gausslegendre&quot;</span><span class="p">,</span>
         <span class="n">internal_batch_size</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">return_convergence_delta</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="kc">False</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">distance</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;geodesic&quot;</span><span class="p">,</span>
         <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TensorOrTupleOfTensorsGeneric</span><span class="p">:</span>
@@ -233,6 +234,7 @@
         <span class="n">internal_batch_size</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">return_convergence_delta</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="kc">True</span><span class="p">],</span>
+        <span class="n">distance</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;geodesic&quot;</span><span class="p">,</span>
         <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">TensorOrTupleOfTensorsGeneric</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
@@ -251,6 +253,7 @@
         <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;gausslegendre&quot;</span><span class="p">,</span>
         <span class="n">internal_batch_size</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">return_convergence_delta</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">distance</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;geodesic&quot;</span><span class="p">,</span>
         <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span>
@@ -368,6 +371,16 @@
 <span class="sd">                is set to True convergence delta will be returned in</span>
 <span class="sd">                a tuple following attributions.</span>
 <span class="sd">                Default: False</span>
+<span class="sd">            distance (str, optional): Which distance to use with the A*</span>
+<span class="sd">                algorithm:</span>
+
+<span class="sd">                - &#39;geodesic&#39;: the geodesic distance using the gradients norms.</span>
+
+<span class="sd">                - &#39;euclidean&#39;: using the plain euclidean distance between</span>
+<span class="sd">                  points. This method amounts to the one described here:</span>
+<span class="sd">                  https://genomebiology.biomedcentral.com/articles/10.1186/s13059-020-02055-7</span>
+
+<span class="sd">                Default: &#39;geodesic&#39;</span>
 <span class="sd">            show_progress (bool, optional): Displays the progress of computation.</span>
 <span class="sd">                It will try to use tqdm if available for advanced features</span>
 <span class="sd">                (e.g. time estimation). Otherwise, it will fallback to</span>
@@ -416,6 +429,12 @@
                 <span class="k">assert</span> <span class="p">(</span>
                     <span class="nb">len</span><span class="p">(</span><span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span>
                 <span class="p">),</span> <span class="s2">&quot;Only one sample must be passed when additional_forward_args has a tensor.&quot;</span>
+
+        <span class="c1"># Check distance</span>
+        <span class="k">assert</span> <span class="n">distance</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="s2">&quot;geodesic&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;euclidean&quot;</span><span class="p">,</span>
+        <span class="p">],</span> <span class="sa">f</span><span class="s2">&quot;distance must be either &#39;geodesic&#39; or &#39;euclidean&#39;, got </span><span class="si">{</span><span class="n">distance</span><span class="si">}</span><span class="s2">&quot;</span>
 
         <span class="c1"># Fit NearestNeighbors if not provided</span>
         <span class="n">n_neighbors</span> <span class="o">=</span> <span class="n">n_neighbors</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_neighbors</span>
@@ -516,6 +535,16 @@
                 <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
             <span class="p">)</span>
 
+        <span class="c1"># Get ||xi - xj|| for all data if euclidean</span>
+        <span class="k">if</span> <span class="n">distance</span> <span class="o">==</span> <span class="s2">&quot;euclidean&quot;</span><span class="p">:</span>
+            <span class="n">grads_norm</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">knn</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="nb">id</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">knn</span><span class="p">]),</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+                    <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">knn</span><span class="p">,</span> <span class="nb">id</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">knns</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+            <span class="p">)</span>
+
         <span class="c1"># Create undirected graph for the A* algorithm</span>
         <span class="n">graphs</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">data</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">graph</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="n">knn</span><span class="p">,</span> <span class="n">attr</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">graphs</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">knns</span><span class="p">,</span> <span class="n">grads_norm</span><span class="p">):</span>
@@ -554,8 +583,6 @@
         <span class="c1"># Get paths lengths</span>
         <span class="n">paths_len</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">path</span><span class="p">]</span> <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">)</span>
 
-        <span class="n">_paths</span> <span class="o">=</span> <span class="n">paths</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
         <span class="c1"># Make them pairwise</span>
         <span class="n">paths</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
             <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">:])))</span><span class="o">.</span><span class="n">long</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">path</span><span class="p">])</span>
@@ -584,9 +611,6 @@
             <span class="k">for</span> <span class="n">grad</span><span class="p">,</span> <span class="n">path_len</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">total_grads</span><span class="p">,</span> <span class="n">paths_len</span><span class="p">)</span>
         <span class="p">)</span>
 
-        <span class="kn">import</span> <span class="nn">copy</span>
-        <span class="n">_grads</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">total_grads</span><span class="p">)</span>
-
         <span class="c1"># Sum over points and paths</span>
         <span class="c1"># and stack result</span>
         <span class="n">total_grads</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
@@ -605,7 +629,7 @@
                 <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="k">return</span> <span class="n">_format_output</span><span class="p">(</span><span class="n">is_inputs_tuple</span><span class="p">,</span> <span class="n">total_grads</span><span class="p">),</span> <span class="n">delta</span>
-        <span class="k">return</span> <span class="n">_format_output</span><span class="p">(</span><span class="n">is_inputs_tuple</span><span class="p">,</span> <span class="n">total_grads</span><span class="p">),</span> <span class="n">_paths</span><span class="p">,</span> <span class="n">_grads</span></div>
+        <span class="k">return</span> <span class="n">_format_output</span><span class="p">(</span><span class="n">is_inputs_tuple</span><span class="p">,</span> <span class="n">total_grads</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_attribute</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>

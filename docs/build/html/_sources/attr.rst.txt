@@ -14,9 +14,9 @@ Summary
     tint.attr.AugmentedOcclusion
     tint.attr.BayesKernelShap
     tint.attr.BayesLime
-    tint.attr.BayesMask
     tint.attr.DiscretetizedIntegratedGradients
     tint.attr.DynaMask
+    tint.attr.ExtremalMask
     tint.attr.FeatureAblation
     tint.attr.Fit
     tint.attr.LofKernelShap

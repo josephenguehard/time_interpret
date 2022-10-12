@@ -104,14 +104,14 @@ attribution methods. These methods are listed below:</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#tint.attr.BayesLime" title="tint.attr.BayesLime"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.BayesLime</span></code></a>(forward_func[, ...])</p></td>
 <td><p>Bayesian version of Lime.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#tint.attr.BayesMask" title="tint.attr.BayesMask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.BayesMask</span></code></a>(forward_func)</p></td>
-<td><p>Bayes masks method.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#tint.attr.DiscretetizedIntegratedGradients" title="tint.attr.DiscretetizedIntegratedGradients"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.DiscretetizedIntegratedGradients</span></code></a>(...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#tint.attr.DiscretetizedIntegratedGradients" title="tint.attr.DiscretetizedIntegratedGradients"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.DiscretetizedIntegratedGradients</span></code></a>(...)</p></td>
 <td><p>Discretetized Integrated Gradients.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#tint.attr.DynaMask" title="tint.attr.DynaMask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.DynaMask</span></code></a>(forward_func)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#tint.attr.DynaMask" title="tint.attr.DynaMask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.DynaMask</span></code></a>(forward_func)</p></td>
 <td><p>Dynamic masks method.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#tint.attr.ExtremalMask" title="tint.attr.ExtremalMask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.ExtremalMask</span></code></a>(forward_func)</p></td>
+<td><p>Extremal masks method.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#tint.attr.FeatureAblation" title="tint.attr.FeatureAblation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.FeatureAblation</span></code></a>(forward_func)</p></td>
 <td><p>A perturbation based approach to computing attribution, involving replacing each input feature with a given baseline / reference, and computing the difference in output.</p></td>
@@ -547,193 +547,6 @@ single floating point tensor.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="tint.attr.BayesMask">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tint.attr.</span></span><span class="sig-name descname"><span class="pre">BayesMask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forward_func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/bayes_mask.html#BayesMask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.BayesMask" title="Permalink to this definition"></a></dt>
-<dd><p>Bayes masks method.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><span class="target" id="tint.attr.BayesMask.params.forward_func"></span><strong>forward_func</strong><a class="paramlink headerlink reference internal" href="#tint.attr.BayesMask.params.forward_func">¶</a> (<em>callable</em>) – The forward function of the model or any
-modification of it.</p>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span> <span class="k">as</span> <span class="nn">th</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.attr</span> <span class="kn">import</span> <span class="n">BayesMask</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.models</span> <span class="kn">import</span> <span class="n">MLP</span>
-
-<span class="gp">&gt;&gt;&gt; </span><span class="n">inputs</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">mlp</span> <span class="o">=</span> <span class="n">MLP</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
-
-<span class="gp">&gt;&gt;&gt; </span><span class="n">explainer</span> <span class="o">=</span> <span class="n">BayesMask</span><span class="p">(</span><span class="n">mlp</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">attr</span> <span class="o">=</span> <span class="n">explainer</span><span class="o">.</span><span class="n">attribute</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
-</pre></div>
-</div>
-<dl class="py method">
-<dt class="sig sig-object py" id="tint.attr.BayesMask.attribute">
-<span class="sig-name descname"><span class="pre">attribute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TensorOrTupleOfTensorsGeneric</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baselines</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">additional_forward_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trainer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Trainer</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_net</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="attr_models.html#tint.attr.models.BayesMaskNet" title="tint.attr.models.bayes_mask.BayesMaskNet"><span class="pre">BayesMaskNet</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temporal_additional_forward_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_temporal_attributions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_covariance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">TensorOrTupleOfTensorsGeneric</span></span></span><a class="reference internal" href="_modules/tint/attr/bayes_mask.html#BayesMask.attribute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.BayesMask.attribute" title="Permalink to this definition"></a></dt>
-<dd><p>Attribute method.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><span class="target" id="tint.attr.BayesMask.attribute.params.inputs"></span><strong>inputs</strong><a class="paramlink headerlink reference internal" href="#tint.attr.BayesMask.attribute.params.inputs">¶</a> (<em>tensor</em><em> or </em><em>tuple of tensors</em>) – Input for which occlusion
-attributions are computed. If forward_func takes a single
-tensor as input, a single input tensor should be provided.
-If forward_func takes multiple tensors as input, a tuple
-of the input tensors should be provided. It is assumed
-that for all given input tensors, dimension 0 corresponds
-to the number of examples (aka batch size), and if
-multiple input tensors are provided, the examples must
-be aligned appropriately.</p></li>
-<li><p><span class="target" id="tint.attr.BayesMask.attribute.params.baselines"></span><strong>baselines</strong><a class="paramlink headerlink reference internal" href="#tint.attr.BayesMask.attribute.params.baselines">¶</a> (<em>scalar</em><em>, </em><em>tensor</em><em>, </em><em>tuple of scalars</em><em> or </em><em>tensors</em><em>, </em><em>optional</em>) – <p>Baselines define reference value which replaces each
-feature when occluded.
-Baselines can be provided as:</p>
-<ul>
-<li><p>a single tensor, if inputs is a single tensor, with
-exactly the same dimensions as inputs or
-broadcastable to match the dimensions of inputs</p></li>
-<li><p>a single scalar, if inputs is a single tensor, which will
-be broadcasted for each input value in input tensor.</p></li>
-<li><p>a tuple of tensors or scalars, the baseline corresponding
-to each tensor in the inputs’ tuple can be:</p>
-<ul>
-<li><p>either a tensor with matching dimensions to
-corresponding tensor in the inputs’ tuple
-or the first dimension is one and the remaining
-dimensions match with the corresponding
-input tensor.</p></li>
-<li><p>or a scalar, corresponding to a tensor in the
-inputs’ tuple. This scalar value is broadcasted
-for corresponding input tensor.</p></li>
-</ul>
-</li>
-</ul>
-<p>In the cases when <cite>baselines</cite> is not provided, we internally
-use zero scalar corresponding to each input tensor.
-Default: None</p>
-</p></li>
-<li><p><span class="target" id="tint.attr.BayesMask.attribute.params.target"></span><strong>target</strong><a class="paramlink headerlink reference internal" href="#tint.attr.BayesMask.attribute.params.target">¶</a> (<em>int</em><em>, </em><em>tuple</em><em>, </em><em>tensor</em><em> or </em><em>list</em><em>, </em><em>optional</em>) – <p>Output indices for
-which difference is computed (for classification cases,
-this is usually the target class).
-If the network returns a scalar value per example,
-no target index is necessary.
-For general 2D outputs, targets can be either:</p>
-<ul>
-<li><p>a single integer or a tensor containing a single
-integer, which is applied to all input examples</p></li>
-<li><p>a list of integers or a 1D tensor, with length matching
-the number of examples in inputs (dim 0). Each integer
-is applied as the target for the corresponding example.</p></li>
-</ul>
-<p>For outputs with &gt; 2 dimensions, targets can be either:</p>
-<ul>
-<li><p>A single tuple, which contains #output_dims - 1
-elements. This target index is applied to all examples.</p></li>
-<li><p>A list of tuples with length equal to the number of
-examples in inputs (dim 0), and each tuple containing
-#output_dims - 1 elements. Each tuple is applied as the
-target for the corresponding example.</p></li>
-</ul>
-<p>Default: None</p>
-</p></li>
-<li><p><span class="target" id="tint.attr.BayesMask.attribute.params.additional_forward_args"></span><strong>additional_forward_args</strong><a class="paramlink headerlink reference internal" href="#tint.attr.BayesMask.attribute.params.additional_forward_args">¶</a> (<em>any</em><em>, </em><em>optional</em>) – If the forward function
-requires additional arguments other than the inputs for
-which attributions should not be computed, this argument
-can be provided. It must be either a single additional
-argument of a Tensor or arbitrary (non-tuple) type or a
-tuple containing multiple additional arguments including
-tensors or any arbitrary python types. These arguments
-are provided to forward_func in order following the
-arguments in inputs.
-For a tensor, the first dimension of the tensor must
-correspond to the number of examples. For all other types,
-the given argument is used for all forward evaluations.
-Note that attributions are not computed with respect
-to these arguments.
-Default: None</p></li>
-<li><p><span class="target" id="tint.attr.BayesMask.attribute.params.trainer"></span><strong>trainer</strong><a class="paramlink headerlink reference internal" href="#tint.attr.BayesMask.attribute.params.trainer">¶</a> (<em>Trainer</em>) – Pytorch Lightning trainer. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, a
-default trainer will be provided.
-Default: None</p></li>
-<li><p><span class="target" id="tint.attr.BayesMask.attribute.params.mask_net"></span><strong>mask_net</strong><a class="paramlink headerlink reference internal" href="#tint.attr.BayesMask.attribute.params.mask_net">¶</a> (<a class="reference internal" href="attr_models.html#tint.attr.models.BayesMaskNet" title="tint.attr.models.BayesMaskNet"><em>BayesMaskNet</em></a>) – A Mask model. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, a default model
-will be provided.
-Default: None</p></li>
-<li><p><span class="target" id="tint.attr.BayesMask.attribute.params.batch_size"></span><strong>batch_size</strong><a class="paramlink headerlink reference internal" href="#tint.attr.BayesMask.attribute.params.batch_size">¶</a> (<em>int</em>) – Batch size for Mask training.
-Default: 32</p></li>
-<li><p><span class="target" id="tint.attr.BayesMask.attribute.params.temporal_additional_forward_args"></span><strong>temporal_additional_forward_args</strong><a class="paramlink headerlink reference internal" href="#tint.attr.BayesMask.attribute.params.temporal_additional_forward_args">¶</a> (<em>tuple</em>) – Set each
-additional forward arg which is temporal.
-Only used with return_temporal_attributions.
-Default: None</p></li>
-<li><p><span class="target" id="tint.attr.BayesMask.attribute.params.return_temporal_attributions"></span><strong>return_temporal_attributions</strong><a class="paramlink headerlink reference internal" href="#tint.attr.BayesMask.attribute.params.return_temporal_attributions">¶</a> (<em>bool</em>) – Whether to return
-attributions for all times or not.
-Default: False</p></li>
-<li><p><span class="target" id="tint.attr.BayesMask.attribute.params.return_covariance"></span><strong>return_covariance</strong><a class="paramlink headerlink reference internal" href="#tint.attr.BayesMask.attribute.params.return_covariance">¶</a> (<em>bool</em>) – Whether to return the covariance of the
-bayes mask network or not.
-Default: False</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>The attributions with respect to each input feature.
-Attributions will always be
-the same size as the provided inputs, with each value
-providing the attribution of the corresponding input index.
-If a single tensor is provided as inputs, a single tensor is
-returned. If a tuple is provided for inputs, a tuple of
-corresponding sized tensors is returned.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><ul class="simple">
-<li><p><strong>attributions</strong> (<em>tensor</em> or tuple of <em>tensors</em>)</p></li>
-</ul>
-</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tint.attr.BayesMask.compute_convergence_delta">
-<span class="sig-name descname"><span class="pre">compute_convergence_delta</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Callable</span></em><a class="headerlink" href="#tint.attr.BayesMask.compute_convergence_delta" title="Permalink to this definition"></a></dt>
-<dd><p>The attribution algorithms which derive <cite>Attribution</cite> class and provide
-convergence delta (aka approximation error) should implement this method.
-Convergence delta can be computed based on certain properties of the
-attribution alogrithms.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>attributions</strong> (<em>tensor</em><em> or </em><em>tuple of tensors</em>) – Attribution scores that
-are precomputed by an attribution algorithm.
-Attributions can be provided in form of a single tensor
-or a tuple of those. It is assumed that attribution
-tensor’s dimension 0 corresponds to the number of
-examples, and if multiple input tensors are provided,
-the examples must be aligned appropriately.</p></li>
-<li><p><strong>*args</strong> (<em>optional</em>) – Additonal arguments that are used by the
-sub-classes depending on the specific implementation
-of <cite>compute_convergence_delta</cite>.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><ul class="simple">
-<li><dl class="simple">
-<dt><strong>deltas</strong> (<em>tensor</em>):</dt><dd><p>Depending on specific implementaion of
-sub-classes, convergence delta can be returned per
-sample in form of a tensor or it can be aggregated
-across multuple samples and returned in form of a
-single floating point tensor.</p>
-</dd>
-</dl>
-</li>
-</ul>
-</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><em>tensor</em> of <strong>deltas</strong></p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
 <dt class="sig sig-object py" id="tint.attr.DiscretetizedIntegratedGradients">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tint.attr.</span></span><span class="sig-name descname"><span class="pre">DiscretetizedIntegratedGradients</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forward_func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiply_by_inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/discretised_ig.html#DiscretetizedIntegratedGradients"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.DiscretetizedIntegratedGradients" title="Permalink to this definition"></a></dt>
 <dd><p>Discretetized Integrated Gradients.</p>
@@ -936,6 +749,190 @@ or not. Default to <code class="docutils literal notranslate"><span class="pre">
 <dl class="py attribute">
 <dt class="sig sig-object py" id="tint.attr.DynaMask.compute_convergence_delta">
 <span class="sig-name descname"><span class="pre">compute_convergence_delta</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Callable</span></em><a class="headerlink" href="#tint.attr.DynaMask.compute_convergence_delta" title="Permalink to this definition"></a></dt>
+<dd><p>The attribution algorithms which derive <cite>Attribution</cite> class and provide
+convergence delta (aka approximation error) should implement this method.
+Convergence delta can be computed based on certain properties of the
+attribution alogrithms.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>attributions</strong> (<em>tensor</em><em> or </em><em>tuple of tensors</em>) – Attribution scores that
+are precomputed by an attribution algorithm.
+Attributions can be provided in form of a single tensor
+or a tuple of those. It is assumed that attribution
+tensor’s dimension 0 corresponds to the number of
+examples, and if multiple input tensors are provided,
+the examples must be aligned appropriately.</p></li>
+<li><p><strong>*args</strong> (<em>optional</em>) – Additonal arguments that are used by the
+sub-classes depending on the specific implementation
+of <cite>compute_convergence_delta</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><dl class="simple">
+<dt><strong>deltas</strong> (<em>tensor</em>):</dt><dd><p>Depending on specific implementaion of
+sub-classes, convergence delta can be returned per
+sample in form of a tensor or it can be aggregated
+across multuple samples and returned in form of a
+single floating point tensor.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><em>tensor</em> of <strong>deltas</strong></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tint.attr.ExtremalMask">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tint.attr.</span></span><span class="sig-name descname"><span class="pre">ExtremalMask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forward_func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/extremal_mask.html#ExtremalMask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.ExtremalMask" title="Permalink to this definition"></a></dt>
+<dd><p>Extremal masks method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><span class="target" id="tint.attr.ExtremalMask.params.forward_func"></span><strong>forward_func</strong><a class="paramlink headerlink reference internal" href="#tint.attr.ExtremalMask.params.forward_func">¶</a> (<em>callable</em>) – The forward function of the model or any
+modification of it.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span> <span class="k">as</span> <span class="nn">th</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.attr</span> <span class="kn">import</span> <span class="n">ExtremalMask</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.models</span> <span class="kn">import</span> <span class="n">MLP</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inputs</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mlp</span> <span class="o">=</span> <span class="n">MLP</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">explainer</span> <span class="o">=</span> <span class="n">ExtremalMask</span><span class="p">(</span><span class="n">mlp</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">attr</span> <span class="o">=</span> <span class="n">explainer</span><span class="o">.</span><span class="n">attribute</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="tint.attr.ExtremalMask.attribute">
+<span class="sig-name descname"><span class="pre">attribute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TensorOrTupleOfTensorsGeneric</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baselines</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">additional_forward_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trainer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Trainer</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_net</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="attr_models.html#tint.attr.models.ExtremalMaskNet" title="tint.attr.models.extremal_mask.ExtremalMaskNet"><span class="pre">ExtremalMaskNet</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temporal_additional_forward_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_temporal_attributions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">TensorOrTupleOfTensorsGeneric</span></span></span><a class="reference internal" href="_modules/tint/attr/extremal_mask.html#ExtremalMask.attribute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.ExtremalMask.attribute" title="Permalink to this definition"></a></dt>
+<dd><p>Attribute method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.attr.ExtremalMask.attribute.params.inputs"></span><strong>inputs</strong><a class="paramlink headerlink reference internal" href="#tint.attr.ExtremalMask.attribute.params.inputs">¶</a> (<em>tensor</em><em> or </em><em>tuple of tensors</em>) – Input for which occlusion
+attributions are computed. If forward_func takes a single
+tensor as input, a single input tensor should be provided.
+If forward_func takes multiple tensors as input, a tuple
+of the input tensors should be provided. It is assumed
+that for all given input tensors, dimension 0 corresponds
+to the number of examples (aka batch size), and if
+multiple input tensors are provided, the examples must
+be aligned appropriately.</p></li>
+<li><p><span class="target" id="tint.attr.ExtremalMask.attribute.params.baselines"></span><strong>baselines</strong><a class="paramlink headerlink reference internal" href="#tint.attr.ExtremalMask.attribute.params.baselines">¶</a> (<em>scalar</em><em>, </em><em>tensor</em><em>, </em><em>tuple of scalars</em><em> or </em><em>tensors</em><em>, </em><em>optional</em>) – <p>Baselines define reference value which replaces each
+feature when occluded.
+Baselines can be provided as:</p>
+<ul>
+<li><p>a single tensor, if inputs is a single tensor, with
+exactly the same dimensions as inputs or
+broadcastable to match the dimensions of inputs</p></li>
+<li><p>a single scalar, if inputs is a single tensor, which will
+be broadcasted for each input value in input tensor.</p></li>
+<li><p>a tuple of tensors or scalars, the baseline corresponding
+to each tensor in the inputs’ tuple can be:</p>
+<ul>
+<li><p>either a tensor with matching dimensions to
+corresponding tensor in the inputs’ tuple
+or the first dimension is one and the remaining
+dimensions match with the corresponding
+input tensor.</p></li>
+<li><p>or a scalar, corresponding to a tensor in the
+inputs’ tuple. This scalar value is broadcasted
+for corresponding input tensor.</p></li>
+</ul>
+</li>
+</ul>
+<p>In the cases when <cite>baselines</cite> is not provided, we internally
+use zero scalar corresponding to each input tensor.
+Default: None</p>
+</p></li>
+<li><p><span class="target" id="tint.attr.ExtremalMask.attribute.params.target"></span><strong>target</strong><a class="paramlink headerlink reference internal" href="#tint.attr.ExtremalMask.attribute.params.target">¶</a> (<em>int</em><em>, </em><em>tuple</em><em>, </em><em>tensor</em><em> or </em><em>list</em><em>, </em><em>optional</em>) – <p>Output indices for
+which difference is computed (for classification cases,
+this is usually the target class).
+If the network returns a scalar value per example,
+no target index is necessary.
+For general 2D outputs, targets can be either:</p>
+<ul>
+<li><p>a single integer or a tensor containing a single
+integer, which is applied to all input examples</p></li>
+<li><p>a list of integers or a 1D tensor, with length matching
+the number of examples in inputs (dim 0). Each integer
+is applied as the target for the corresponding example.</p></li>
+</ul>
+<p>For outputs with &gt; 2 dimensions, targets can be either:</p>
+<ul>
+<li><p>A single tuple, which contains #output_dims - 1
+elements. This target index is applied to all examples.</p></li>
+<li><p>A list of tuples with length equal to the number of
+examples in inputs (dim 0), and each tuple containing
+#output_dims - 1 elements. Each tuple is applied as the
+target for the corresponding example.</p></li>
+</ul>
+<p>Default: None</p>
+</p></li>
+<li><p><span class="target" id="tint.attr.ExtremalMask.attribute.params.additional_forward_args"></span><strong>additional_forward_args</strong><a class="paramlink headerlink reference internal" href="#tint.attr.ExtremalMask.attribute.params.additional_forward_args">¶</a> (<em>any</em><em>, </em><em>optional</em>) – If the forward function
+requires additional arguments other than the inputs for
+which attributions should not be computed, this argument
+can be provided. It must be either a single additional
+argument of a Tensor or arbitrary (non-tuple) type or a
+tuple containing multiple additional arguments including
+tensors or any arbitrary python types. These arguments
+are provided to forward_func in order following the
+arguments in inputs.
+For a tensor, the first dimension of the tensor must
+correspond to the number of examples. For all other types,
+the given argument is used for all forward evaluations.
+Note that attributions are not computed with respect
+to these arguments.
+Default: None</p></li>
+<li><p><span class="target" id="tint.attr.ExtremalMask.attribute.params.trainer"></span><strong>trainer</strong><a class="paramlink headerlink reference internal" href="#tint.attr.ExtremalMask.attribute.params.trainer">¶</a> (<em>Trainer</em>) – Pytorch Lightning trainer. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, a
+default trainer will be provided.
+Default: None</p></li>
+<li><p><span class="target" id="tint.attr.ExtremalMask.attribute.params.mask_net"></span><strong>mask_net</strong><a class="paramlink headerlink reference internal" href="#tint.attr.ExtremalMask.attribute.params.mask_net">¶</a> (<em>BayesMaskNet</em>) – A Mask model. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, a default model
+will be provided.
+Default: None</p></li>
+<li><p><span class="target" id="tint.attr.ExtremalMask.attribute.params.batch_size"></span><strong>batch_size</strong><a class="paramlink headerlink reference internal" href="#tint.attr.ExtremalMask.attribute.params.batch_size">¶</a> (<em>int</em>) – Batch size for Mask training.
+Default: 32</p></li>
+<li><p><span class="target" id="tint.attr.ExtremalMask.attribute.params.temporal_additional_forward_args"></span><strong>temporal_additional_forward_args</strong><a class="paramlink headerlink reference internal" href="#tint.attr.ExtremalMask.attribute.params.temporal_additional_forward_args">¶</a> (<em>tuple</em>) – Set each
+additional forward arg which is temporal.
+Only used with return_temporal_attributions.
+Default: None</p></li>
+<li><p><span class="target" id="tint.attr.ExtremalMask.attribute.params.return_temporal_attributions"></span><strong>return_temporal_attributions</strong><a class="paramlink headerlink reference internal" href="#tint.attr.ExtremalMask.attribute.params.return_temporal_attributions">¶</a> (<em>bool</em>) – Whether to return
+attributions for all times or not.
+Default: False</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The attributions with respect to each input feature.
+Attributions will always be
+the same size as the provided inputs, with each value
+providing the attribution of the corresponding input index.
+If a single tensor is provided as inputs, a single tensor is
+returned. If a tuple is provided for inputs, a tuple of
+corresponding sized tensors is returned.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>attributions</strong> (<em>tensor</em> or tuple of <em>tensors</em>)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tint.attr.ExtremalMask.compute_convergence_delta">
+<span class="sig-name descname"><span class="pre">compute_convergence_delta</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Callable</span></em><a class="headerlink" href="#tint.attr.ExtremalMask.compute_convergence_delta" title="Permalink to this definition"></a></dt>
 <dd><p>The attribution algorithms which derive <cite>Attribution</cite> class and provide
 convergence delta (aka approximation error) should implement this method.
 Convergence delta can be computed based on certain properties of the
@@ -1422,9 +1419,9 @@ is set to True, final sensitivity scores are being multiplied by
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="tint.attr.GeodesicIntegratedGradients.attribute">
-<span class="sig-name descname"><span class="pre">attribute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TensorOrTupleOfTensorsGeneric</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baselines</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaselineType</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TargetType</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">additional_forward_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_neighbors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_steiner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'gausslegendre'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">internal_batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_convergence_delta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="k"><span class="pre">False</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">TensorOrTupleOfTensorsGeneric</span></span></span><a class="reference internal" href="_modules/tint/attr/geodesic_ig.html#GeodesicIntegratedGradients.attribute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.GeodesicIntegratedGradients.attribute" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">attribute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TensorOrTupleOfTensorsGeneric</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baselines</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaselineType</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TargetType</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">additional_forward_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_neighbors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_steiner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'gausslegendre'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">internal_batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_convergence_delta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="k"><span class="pre">False</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'geodesic'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">TensorOrTupleOfTensorsGeneric</span></span></span><a class="reference internal" href="_modules/tint/attr/geodesic_ig.html#GeodesicIntegratedGradients.attribute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.GeodesicIntegratedGradients.attribute" title="Permalink to this definition"></a></dt>
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">attribute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TensorOrTupleOfTensorsGeneric</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baselines</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaselineType</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TargetType</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">additional_forward_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_neighbors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_steiner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'gausslegendre'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">internal_batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_convergence_delta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="k"><span class="pre">True</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">TensorOrTupleOfTensorsGeneric</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></span></dt>
+<span class="sig-name descname"><span class="pre">attribute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TensorOrTupleOfTensorsGeneric</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baselines</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaselineType</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TargetType</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">additional_forward_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_neighbors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_steiner</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'gausslegendre'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">internal_batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_convergence_delta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="k"><span class="pre">True</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'geodesic'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">TensorOrTupleOfTensorsGeneric</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></span></span></dt>
 <dd><p>This method attributes the output of the model with given target index
 (in case it is provided, otherwise it assumes that output is a
 scalar) to the inputs of the model using the approach described above.</p>
@@ -1532,6 +1529,16 @@ convergence delta or not. If <cite>return_convergence_delta</cite>
 is set to True convergence delta will be returned in
 a tuple following attributions.
 Default: False</p></li>
+<li><p><span class="target" id="tint.attr.GeodesicIntegratedGradients.attribute.params.distance"></span><strong>distance</strong><a class="paramlink headerlink reference internal" href="#tint.attr.GeodesicIntegratedGradients.attribute.params.distance">¶</a> (<em>str</em><em>, </em><em>optional</em>) – <p>Which distance to use with the A*
+algorithm:</p>
+<ul>
+<li><p>’geodesic’: the geodesic distance using the gradients norms.</p></li>
+<li><p>’euclidean’: using the plain euclidean distance between
+points. This method amounts to the one described here:
+<a class="reference external" href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-020-02055-7">https://genomebiology.biomedcentral.com/articles/10.1186/s13059-020-02055-7</a></p></li>
+</ul>
+<p>Default: ‘geodesic’</p>
+</p></li>
 <li><p><span class="target" id="tint.attr.GeodesicIntegratedGradients.attribute.params.show_progress"></span><strong>show_progress</strong><a class="paramlink headerlink reference internal" href="#tint.attr.GeodesicIntegratedGradients.attribute.params.show_progress">¶</a> (<em>bool</em><em>, </em><em>optional</em>) – Displays the progress of computation.
 It will try to use tqdm if available for advanced features
 (e.g. time estimation). Otherwise, it will fallback to

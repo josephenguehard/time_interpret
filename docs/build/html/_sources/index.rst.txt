@@ -75,9 +75,9 @@ Each of the implemented interpretability methods can be found here:
     tint.attr.AugmentedOcclusion
     tint.attr.BayesKernelShap
     tint.attr.BayesLime
-    tint.attr.BayesMask
     tint.attr.DiscretetizedIntegratedGradients
     tint.attr.DynaMask
+    tint.attr.ExtremalMask
     tint.attr.FeatureAblation
     tint.attr.Fit
     tint.attr.LofKernelShap
@@ -96,9 +96,9 @@ Some of these attributions use specific models which are listed here:
 
 .. autosummary::
 
-    tint.attr.models.BayesMaskNet
     tint.attr.models.BLRRegression
     tint.attr.models.BLRRidge
+    tint.attr.models.ExtremalMaskNet
     tint.attr.models.JointFeatureGeneratorNet
     tint.attr.models.MaskNet
     tint.attr.models.RetainNet

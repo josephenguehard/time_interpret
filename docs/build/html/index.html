@@ -145,14 +145,14 @@ corresponding true saliency:</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="attr.html#tint.attr.BayesLime" title="tint.attr.BayesLime"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.BayesLime</span></code></a>(forward_func[, ...])</p></td>
 <td><p>Bayesian version of Lime.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="attr.html#tint.attr.BayesMask" title="tint.attr.BayesMask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.BayesMask</span></code></a>(forward_func)</p></td>
-<td><p>Bayes masks method.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="attr.html#tint.attr.DiscretetizedIntegratedGradients" title="tint.attr.DiscretetizedIntegratedGradients"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.DiscretetizedIntegratedGradients</span></code></a>(...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="attr.html#tint.attr.DiscretetizedIntegratedGradients" title="tint.attr.DiscretetizedIntegratedGradients"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.DiscretetizedIntegratedGradients</span></code></a>(...)</p></td>
 <td><p>Discretetized Integrated Gradients.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="attr.html#tint.attr.DynaMask" title="tint.attr.DynaMask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.DynaMask</span></code></a>(forward_func)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="attr.html#tint.attr.DynaMask" title="tint.attr.DynaMask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.DynaMask</span></code></a>(forward_func)</p></td>
 <td><p>Dynamic masks method.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="attr.html#tint.attr.ExtremalMask" title="tint.attr.ExtremalMask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.ExtremalMask</span></code></a>(forward_func)</p></td>
+<td><p>Extremal masks method.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="attr.html#tint.attr.FeatureAblation" title="tint.attr.FeatureAblation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.FeatureAblation</span></code></a>(forward_func)</p></td>
 <td><p>A perturbation based approach to computing attribution, involving replacing each input feature with a given baseline / reference, and computing the difference in output.</p></td>
@@ -199,14 +199,14 @@ corresponding true saliency:</p>
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="attr_models.html#tint.attr.models.BayesMaskNet" title="tint.attr.models.BayesMaskNet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.models.BayesMaskNet</span></code></a>(forward_func)</p></td>
-<td><p>Bayes mask model as a Pytorch Lightning model.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="attr_models.html#tint.attr.models.BLRRegression" title="tint.attr.models.BLRRegression"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.models.BLRRegression</span></code></a>(**kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="attr_models.html#tint.attr.models.BLRRegression" title="tint.attr.models.BLRRegression"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.models.BLRRegression</span></code></a>(**kwargs)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="attr_models.html#tint.attr.models.BLRRidge" title="tint.attr.models.BLRRidge"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.models.BLRRidge</span></code></a>(**kwargs)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="attr_models.html#tint.attr.models.BLRRidge" title="tint.attr.models.BLRRidge"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.models.BLRRidge</span></code></a>(**kwargs)</p></td>
 <td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="attr_models.html#tint.attr.models.ExtremalMaskNet" title="tint.attr.models.ExtremalMaskNet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.models.ExtremalMaskNet</span></code></a>(forward_func)</p></td>
+<td><p>Extremal mask model as a Pytorch Lightning model.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="attr_models.html#tint.attr.models.JointFeatureGeneratorNet" title="tint.attr.models.JointFeatureGeneratorNet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.models.JointFeatureGeneratorNet</span></code></a>([...])</p></td>
 <td><p>Conditional generator model to predict future observations as a Pytorch Lightning module.</p></td>
