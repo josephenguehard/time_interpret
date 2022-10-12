@@ -56,6 +56,7 @@ warnings.filterwarnings("ignore")
 
 def compute_attr(
     inputs: TensorOrTupleOfTensorsGeneric,
+    classifier,
     explainer,
     baselines: BaselineType,
     target: TargetType,
@@ -68,7 +69,19 @@ def compute_attr(
             target=target,
         )
     elif isinstance(explainer, GeodesicIntegratedGradients):
-        attr = explainer.attribute(
+        x = inputs
+        b = baselines
+        if isinstance(x, tuple):
+            x = x[0]
+        if isinstance(b, tuple):
+            b = b[0]
+
+        rand = th.rand((50,) + x.shape).sort(dim=0).values.to(x.device)
+        x_aug = (x - b).unsqueeze(0) * rand + b
+        _explainer = GeodesicIntegratedGradients(
+            classifier, data=x_aug, n_neighbors=5
+        )
+        attr = _explainer.attribute(
             inputs,
             baselines=baselines,
             target=target,
@@ -315,6 +328,7 @@ def main(
                         compute_attr,
                         x.unsqueeze(0),
                         explainer=explainer,
+                        classifier=classifier,
                         baselines=baselines,
                         target=y.item(),
                         additional_forward_args=None,
@@ -325,6 +339,7 @@ def main(
                         compute_attr,
                         x.unsqueeze(0),
                         explainer=explainer,
+                        classifier=classifier,
                         baselines=baselines,
                         target=y.item(),
                         additional_forward_args=None,
@@ -426,6 +441,7 @@ def main(
                         compute_attr,
                         x_test[:100],
                         explainer=expl[k],
+                        classifier=classifier,
                         baselines=baselines,
                         target=y_test[:100],
                         additional_forward_args=seg_test[:100],
@@ -434,6 +450,7 @@ def main(
                         compute_attr,
                         x_test[:100],
                         explainer=expl[k],
+                        classifier=classifier,
                         baselines=baselines,
                         target=y_test[:100],
                         additional_forward_args=seg_test[:100],
@@ -460,7 +477,7 @@ def main(
                 acc_comp = accuracy(
                     classifier,
                     x_test,
-                    attributions=v.cpu(),
+                    attributions=v.cpu().abs(),
                     baselines=baselines,
                     topk=topk,
                     mask_largest=True,
@@ -468,7 +485,7 @@ def main(
                 acc_suff = accuracy(
                     classifier,
                     x_test,
-                    attributions=v.cpu(),
+                    attributions=v.cpu().abs(),
                     baselines=baselines,
                     topk=topk,
                     mask_largest=False,
@@ -476,14 +493,14 @@ def main(
                 comp = comprehensiveness(
                     classifier,
                     x_test,
-                    attributions=v.cpu(),
+                    attributions=v.cpu().abs(),
                     baselines=baselines,
                     topk=topk,
                 )
                 ce_comp = cross_entropy(
                     classifier,
                     x_test,
-                    attributions=v.cpu(),
+                    attributions=v.cpu().abs(),
                     baselines=baselines,
                     topk=topk,
                     mask_largest=True,
@@ -491,7 +508,7 @@ def main(
                 ce_suff = cross_entropy(
                     classifier,
                     x_test,
-                    attributions=v.cpu(),
+                    attributions=v.cpu().abs(),
                     baselines=baselines,
                     topk=topk,
                     mask_largest=False,
@@ -499,14 +516,14 @@ def main(
                 l_odds = log_odds(
                     classifier,
                     x_test,
-                    attributions=v.cpu(),
+                    attributions=v.cpu().abs(),
                     baselines=baselines,
                     topk=topk,
                 )
                 suff = sufficiency(
                     classifier,
                     x_test,
-                    attributions=v.cpu(),
+                    attributions=v.cpu().abs(),
                     baselines=baselines,
                     topk=topk,
                 )

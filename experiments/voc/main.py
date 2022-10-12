@@ -52,6 +52,7 @@ warnings.filterwarnings("ignore")
 def compute_attr(
     inputs: TensorOrTupleOfTensorsGeneric,
     explainer,
+    classifier,
     target: TargetType,
     additional_forward_args: Union[None, Tensor, Tuple[Tensor, ...]],
 ):
@@ -61,7 +62,16 @@ def compute_attr(
             target=target,
         )
     elif isinstance(explainer, GeodesicIntegratedGradients):
-        attr = explainer.attribute(
+        x = inputs
+        if isinstance(x, tuple):
+            x = x[0]
+
+        rand = th.rand((50,) + x.shape).sort(dim=0).values.to(x.device)
+        x_aug = x.unsqueeze(0) * rand
+        _explainer = GeodesicIntegratedGradients(
+            classifier, data=x_aug, n_neighbors=5
+        )
+        attr = _explainer.attribute(
             inputs,
             target=target,
             internal_batch_size=10,
@@ -275,6 +285,7 @@ def main(
                         compute_attr,
                         x.unsqueeze(0),
                         explainer=explainer,
+                        classifier=resnet,
                         target=y.item(),
                         additional_forward_args=None,
                     )
@@ -284,6 +295,7 @@ def main(
                         compute_attr,
                         x.unsqueeze(0),
                         explainer=explainer,
+                        classifier=resnet,
                         target=y.item(),
                         additional_forward_args=None,
                     )
@@ -382,6 +394,7 @@ def main(
                         compute_attr,
                         x_test[:10],
                         explainer=expl[k],
+                        classifier=resnet,
                         target=y_test[:10],
                         additional_forward_args=seg_test[:10],
                     )
@@ -389,6 +402,7 @@ def main(
                         compute_attr,
                         x_test[:10],
                         explainer=expl[k],
+                        classifier=resnet,
                         target=y_test[:10],
                         additional_forward_args=seg_test[:10],
                     )
@@ -414,47 +428,47 @@ def main(
                 acc_comp = accuracy(
                     resnet,
                     x_test,
-                    attributions=v.cpu(),
+                    attributions=v.cpu().abs(),
                     topk=topk,
                     mask_largest=True,
                 )
                 acc_suff = accuracy(
                     resnet,
                     x_test,
-                    attributions=v.cpu(),
+                    attributions=v.cpu().abs(),
                     topk=topk,
                     mask_largest=False,
                 )
                 comp = comprehensiveness(
                     resnet,
                     x_test,
-                    attributions=v.cpu(),
+                    attributions=v.cpu().abs(),
                     topk=topk,
                 )
                 ce_comp = cross_entropy(
                     resnet,
                     x_test,
-                    attributions=v.cpu(),
+                    attributions=v.cpu().abs(),
                     topk=topk,
                     mask_largest=True,
                 )
                 ce_suff = cross_entropy(
                     resnet,
                     x_test,
-                    attributions=v.cpu(),
+                    attributions=v.cpu().abs(),
                     topk=topk,
                     mask_largest=False,
                 )
                 l_odds = log_odds(
                     resnet,
                     x_test,
-                    attributions=v.cpu(),
+                    attributions=v.cpu().abs(),
                     topk=topk,
                 )
                 suff = sufficiency(
                     resnet,
                     x_test,
-                    attributions=v.cpu(),
+                    attributions=v.cpu().abs(),
                     topk=topk,
                 )
 
