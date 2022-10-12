@@ -33,6 +33,8 @@ from typing import Any, Callable, List, Tuple, Union
 
 from tint.utils import astar_path, _geodesic_batch_attribution
 
+from tqdm.notebook import tqdm
+
 
 class GeodesicIntegratedGradients(GradientAttribution):
     """
@@ -129,9 +131,11 @@ class GeodesicIntegratedGradients(GradientAttribution):
         additional_forward_args: Any = None,
         n_neighbors: Union[int, Tuple[int]] = None,
         n_steps: int = 5,
+        n_steiner: int = None,
         method: str = "gausslegendre",
         internal_batch_size: Union[None, int] = None,
         return_convergence_delta: Literal[False] = False,
+        distance: str = "geodesic",
         show_progress: bool = False,
         **kwargs,
     ) -> TensorOrTupleOfTensorsGeneric:
@@ -146,10 +150,12 @@ class GeodesicIntegratedGradients(GradientAttribution):
         additional_forward_args: Any = None,
         n_neighbors: Union[int, Tuple[int]] = None,
         n_steps: int = 5,
+        n_steiner: int = None,
         method: str = "gausslegendre",
         internal_batch_size: Union[None, int] = None,
         *,
         return_convergence_delta: Literal[True],
+        distance: str = "geodesic",
         show_progress: bool = False,
         **kwargs,
     ) -> Tuple[TensorOrTupleOfTensorsGeneric, Tensor]:
@@ -164,9 +170,11 @@ class GeodesicIntegratedGradients(GradientAttribution):
         additional_forward_args: Any = None,
         n_neighbors: Union[int, Tuple[int]] = None,
         n_steps: int = 5,
+        n_steiner: int = None,
         method: str = "gausslegendre",
         internal_batch_size: Union[None, int] = None,
         return_convergence_delta: bool = False,
+        distance: str = "geodesic",
         show_progress: bool = False,
         **kwargs,
     ) -> Union[
@@ -284,6 +292,16 @@ class GeodesicIntegratedGradients(GradientAttribution):
                 is set to True convergence delta will be returned in
                 a tuple following attributions.
                 Default: False
+            distance (str, optional): Which distance to use with the A*
+                algorithm:
+
+                - 'geodesic': the geodesic distance using the gradients norms.
+
+                - 'euclidean': using the plain euclidean distance between
+                  points. This method amounts to the one described here:
+                  https://genomebiology.biomedcentral.com/articles/10.1186/s13059-020-02055-7
+
+                Default: 'geodesic'
             show_progress (bool, optional): Displays the progress of computation.
                 It will try to use tqdm if available for advanced features
                 (e.g. time estimation). Otherwise, it will fallback to
@@ -333,6 +351,12 @@ class GeodesicIntegratedGradients(GradientAttribution):
                     len(inputs[0]) == 1
                 ), "Only one sample must be passed when additional_forward_args has a tensor."
 
+        # Check distance
+        assert distance in [
+            "geodesic",
+            "euclidean",
+        ], f"distance must be either 'geodesic' or 'euclidean', got {distance}"
+
         # Fit NearestNeighbors if not provided
         n_neighbors = n_neighbors or self.n_neighbors
         assert n_neighbors is not None, "You must provide n_neighbors"
@@ -373,6 +397,41 @@ class GeodesicIntegratedGradients(GradientAttribution):
             n_neighbors=n_neighbors,
         )
 
+        # If steiner is provided, augment inputs
+        if n_steiner is not None:
+            # Get number of points to add
+            max_dists = tuple(d.max() for d in dists)
+            n_points = tuple(
+                torch.div(d, m / n_steiner, rounding_mode="floor").long() + 1
+                for d, m in zip(dists, max_dists)
+            )
+
+            # Augment inputs
+            data = tuple(
+                torch.cat(
+                    [x]
+                    + [
+                        torch.stack(
+                            [
+                                x[id][i] + (k / n) * (x[knn][i] - x[id][i])
+                                for k in range(1, n)
+                            ]
+                        )
+                        for i, n in enumerate(n_point)
+                        if n > 1
+                    ],
+                    dim=0,
+                )
+                for x, knn, id, n_point in zip(data, knns, idx, n_points)
+            )
+
+            # Get knns
+            knns, idx, _ = self._get_knns(
+                nn=nn,
+                inputs=data,
+                n_neighbors=n_neighbors,
+            )
+
         # Compute grads for inputs and baselines
         if internal_batch_size is not None:
             grads_norm, total_grads = _geodesic_batch_attribution(
@@ -397,12 +456,22 @@ class GeodesicIntegratedGradients(GradientAttribution):
                 method=method,
             )
 
+        # Get ||xi - xj|| for all data if euclidean
+        if distance == "euclidean":
+            grads_norm = tuple(
+                torch.linalg.norm(
+                    (x[knn] - x[id]).reshape(len(x[knn]), -1),
+                    dim=1,
+                )
+                for x, knn, id in zip(data, knns, idx)
+            )
+
         # Create undirected graph for the A* algorithm
         graphs = tuple(dict() for _ in data)
         for graph, id, knn, attr in zip(graphs, idx, knns, grads_norm):
             for i, k, a in zip(id.tolist(), knn.tolist(), attr.tolist()):
-                graph[k] = graph.get(k, list()) + [(i, a)]
-                graph[i] = graph.get(i, list()) + [(k, a)]
+                graph[k] = list(set(graph.get(k, list()) + [(i, a)]))
+                graph[i] = list(set(graph.get(i, list()) + [(k, a)]))
 
         # Def heuristic for A* algorithm: euclidean distance to target
         def heuristic(u, v, d):
@@ -424,7 +493,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
 
         paths = tuple(
             [
-                astar_path(graph, i, j, heuristic=heuristic, d=d)
+                astar_path(graph, i, j, heuristic=None, d=d)
                 for i, j in zip(input_idx, baseline_idx)
             ]
             for graph, input_idx, baseline_idx, d in zip(
