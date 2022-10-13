@@ -220,8 +220,9 @@ class ExtremalMask(PerturbationAttribution):
         # Fit model
         trainer.fit(mask_net, train_dataloaders=dataloader)
 
-        # Set model to eval mode
+        # Set model to eval mode and cast it to device
         mask_net.eval()
+        mask_net.to(data.device)
 
         # Get attributions as mask representation
         attributions = mask_net.net.representation(data, baseline)
