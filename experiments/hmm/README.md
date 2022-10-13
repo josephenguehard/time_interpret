@@ -64,7 +64,7 @@ optional arguments:
   --metric              Which metric to use as benchmark. Default to 'aur'
   --device              Which device to use. Default to 'cpu'
   --seed                Seed for train val split. Default to 42
-  --n-trials            The number of trials. Default to 100
+  --n-trials            The number of trials. Default to 10
   --timeout             Stop study after the given number of second(s). Default to None
   --n-jobs              The number of parallel jobs. Default to 1
 ```

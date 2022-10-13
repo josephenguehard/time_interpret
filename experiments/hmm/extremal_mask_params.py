@@ -220,7 +220,7 @@ def parse_args():
     parser.add_argument(
         "--n-trials",
         type=int,
-        default=100,
+        default=10,
         help="The number of trials.",
     )
     parser.add_argument(
