@@ -63,6 +63,7 @@ optional arguments:
   -p, --pruning         Activate the pruning feature.
   --metric              Which metric to use as benchmark. Default to 'cross_entropy'
   --topk                Which topk to use for the metric. Default to 0.2
+  --baseline            Whether to use the average per patient or zeros as baseline.. Default to 'average'
   --device              Which device to use. Default to 'cpu'
   --seed                Seed for train val split. Default to 42
   --n-trials            The number of trials. Default to 10

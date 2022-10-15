@@ -12,7 +12,7 @@ def main(experiment: str):
             )
     elif experiment == "extremal_mask_params":
         with open("extremal_mask_params.csv", "w") as fp:
-            fp.write("Experiment,Metric,Distribution,Hard,Model,Eps\n")
+            fp.write("Experiment,Metric,Model\n")
 
     else:
         raise NotImplementedError

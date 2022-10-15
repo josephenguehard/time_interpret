@@ -8,11 +8,11 @@ def main(experiment: str):
     if experiment == "main":
         with open("results.csv", "w") as fp:
             fp.write(
-                "Seed,Fold,Topk,Explainer,Accuracy,Comprehensiveness,Cross Entropy,Log Odds,Sufficiency\n"
+                "Seed,Fold,Baseline,Topk,Explainer,Accuracy,Comprehensiveness,Cross Entropy,Log Odds,Sufficiency\n"
             )
     elif experiment == "extremal_mask_params":
         with open("extremal_mask_params.csv", "w") as fp:
-            fp.write("Metric,Topk,Distribution,Hard,Model,Eps\n")
+            fp.write("Metric,Baseline,Topk,Model\n")
     else:
         raise NotImplementedError
 

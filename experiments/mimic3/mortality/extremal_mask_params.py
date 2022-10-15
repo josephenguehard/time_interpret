@@ -28,6 +28,7 @@ def objective(
     classifier: MimicClassifierNet,
     metric: str,
     topk: float,
+    baseline: str,
     device: str,
     accelerator: str,
     device_id: Union[list, int],
@@ -92,7 +93,12 @@ def objective(
     ).to(device)
 
     # Compute x_avg for the baseline
-    x_avg = x_val.mean(1, keepdim=True).repeat(1, x_val.shape[1], 1)
+    if baseline == "average":
+        x_avg = x_val.mean(1, keepdim=True).repeat(1, x_val.shape[1], 1)
+    elif baseline == "zeros":
+        x_avg = 0
+    else:
+        raise NotImplementedError()
 
     # Compute the metric
     if metric == "accuracy":
@@ -142,6 +148,7 @@ def main(
     pruning: bool,
     metric: str,
     topk: float,
+    baseline: str,
     device: str,
     seed: int,
     n_trials: int,
@@ -216,6 +223,7 @@ def main(
             classifier=classifier,
             metric=metric,
             topk=topk,
+            baseline=baseline,
             device=device,
             accelerator=accelerator,
             device_id=device_id,
@@ -229,6 +237,7 @@ def main(
     with open("extremal_mask_params.csv", "a") as fp:
         for trial in study.trials:
             fp.write(str(trial.value) + ",")
+            fp.write(baseline + ",")
             fp.write(str(topk) + ",")
             for value in trial.params.values():
                 fp.write(str(value) + ",")
@@ -255,6 +264,12 @@ def parse_args():
         type=float,
         default=0.2,
         help="Which topk to use for the metric.",
+    )
+    parser.add_argument(
+        "--baseline",
+        type=str,
+        default="average",
+        help="Whether to use the average per patient or zeros as baseline.",
     )
     parser.add_argument(
         "--device",
@@ -295,6 +310,7 @@ if __name__ == "__main__":
         pruning=args.pruning,
         metric=args.metric,
         topk=args.topk,
+        baseline=args.baseline,
         device=args.device,
         seed=args.seed,
         n_trials=args.n_trials,

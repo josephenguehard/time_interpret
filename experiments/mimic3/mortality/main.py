@@ -294,55 +294,60 @@ def main(
     # Compute x_avg for the baseline
     x_avg = x_test.mean(1, keepdim=True).repeat(1, x_test.shape[1], 1)
 
-    with open("results.csv", "a") as fp, mp.Lock():
-        for topk in areas:
-            for k, v in attr.items():
-                acc = accuracy(
-                    classifier,
-                    x_test,
-                    attributions=v.cpu(),
-                    baselines=x_avg,
-                    topk=topk,
-                )
-                comp = comprehensiveness(
-                    classifier,
-                    x_test,
-                    attributions=v.cpu(),
-                    baselines=x_avg,
-                    topk=topk,
-                )
-                ce = cross_entropy(
-                    classifier,
-                    x_test,
-                    attributions=v.cpu(),
-                    baselines=x_avg,
-                    topk=topk,
-                )
-                l_odds = log_odds(
-                    classifier,
-                    x_test,
-                    attributions=v.cpu(),
-                    baselines=x_avg,
-                    topk=topk,
-                )
-                suff = sufficiency(
-                    classifier,
-                    x_test,
-                    attributions=v.cpu(),
-                    baselines=x_avg,
-                    topk=topk,
-                )
+    # Dict for baselines
+    baselines_dict = {0: "Average", 1: "Zeros"}
 
-                fp.write(str(seed) + ",")
-                fp.write(str(fold) + ",")
-                fp.write(str(topk) + ",")
-                fp.write(k + ",")
-                fp.write(f"{acc:.4},")
-                fp.write(f"{comp:.4},")
-                fp.write(f"{ce:.4},")
-                fp.write(f"{l_odds:.4},")
-                fp.write(f"{suff:.4}")
-                fp.write("\n")
+    with open("results.csv", "a") as fp, mp.Lock():
+        for i, baselines in enumerate([x_avg, 0.0]):
+            for topk in areas:
+                for k, v in attr.items():
+                    acc = accuracy(
+                        classifier,
+                        x_test,
+                        attributions=v.cpu(),
+                        baselines=baselines,
+                        topk=topk,
+                    )
+                    comp = comprehensiveness(
+                        classifier,
+                        x_test,
+                        attributions=v.cpu(),
+                        baselines=baselines,
+                        topk=topk,
+                    )
+                    ce = cross_entropy(
+                        classifier,
+                        x_test,
+                        attributions=v.cpu(),
+                        baselines=baselines,
+                        topk=topk,
+                    )
+                    l_odds = log_odds(
+                        classifier,
+                        x_test,
+                        attributions=v.cpu(),
+                        baselines=baselines,
+                        topk=topk,
+                    )
+                    suff = sufficiency(
+                        classifier,
+                        x_test,
+                        attributions=v.cpu(),
+                        baselines=baselines,
+                        topk=topk,
+                    )
+
+                    fp.write(str(seed) + ",")
+                    fp.write(str(fold) + ",")
+                    fp.write(baselines_dict[i] + ",")
+                    fp.write(str(topk) + ",")
+                    fp.write(k + ",")
+                    fp.write(f"{acc:.4},")
+                    fp.write(f"{comp:.4},")
+                    fp.write(f"{ce:.4},")
+                    fp.write(f"{l_odds:.4},")
+                    fp.write(f"{suff:.4}")
+                    fp.write("\n")
 
 
 def parse_args():
