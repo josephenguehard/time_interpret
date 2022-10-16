@@ -6,10 +6,12 @@ import warnings
 
 from captum.attr import (
     DeepLift,
+    GradientShap,
     InputXGradient,
     IntegratedGradients,
     KernelShap,
     Lime,
+    NoiseTunnel,
 )
 from captum.metrics import sensitivity_max
 from captum._utils.typing import (
@@ -23,7 +25,7 @@ from torch import Tensor
 from torch.utils.data import DataLoader
 from torchvision.datasets import VOCSegmentation
 from torchvision.models import resnet18
-from typing import List, Tuple, Union
+from typing import Any, List
 
 from tint.attr import (
     AugmentedOcclusion,
@@ -54,42 +56,91 @@ def compute_attr(
     explainer,
     classifier,
     target: TargetType,
-    additional_forward_args: Union[None, Tensor, Tuple[Tensor, ...]],
+    additional_forward_args: Any,
 ):
     if isinstance(explainer, DeepLift):
         attr = explainer.attribute(
             inputs,
             target=target,
         )
-    elif isinstance(explainer, GeodesicIntegratedGradients):
-        x = inputs
-        if isinstance(x, tuple):
-            x = x[0]
 
-        rand = th.rand((50,) + x.shape).sort(dim=0).values.to(x.device)
-        x_aug = x.unsqueeze(0) * rand
-        _explainer = GeodesicIntegratedGradients(
-            classifier, data=x_aug, n_neighbors=5
-        )
-        attr = _explainer.attribute(
-            inputs,
-            target=target,
-            internal_batch_size=10,
-        )
+    elif isinstance(explainer, GeodesicIntegratedGradients):
+        if isinstance(inputs, tuple):
+            inputs = inputs[0]
+        if isinstance(additional_forward_args, tuple):
+            additional_forward_args = additional_forward_args[0]
+
+        _attr = list()
+        for x in inputs:
+            rand = th.rand((50,) + x.shape).sort(dim=0).values.to(x.device)
+            x_aug = x.unsqueeze(0) * rand
+            _explainer = GeodesicIntegratedGradients(
+                classifier, data=x_aug, n_neighbors=5
+            )
+
+            _attr.append(
+                _explainer.attribute(
+                    x.unsqueeze(0),
+                    target=target,
+                    internal_batch_size=10,
+                    distance=additional_forward_args,
+                )
+            )
+        attr = th.cat(_attr)
+
+    elif isinstance(explainer, GradientShap):
+        if isinstance(inputs, tuple):
+            inputs = inputs[0]
+        if isinstance(additional_forward_args, tuple):
+            additional_forward_args = additional_forward_args[0]
+
+        _attr = list()
+        for x in inputs:
+            _attr.append(
+                explainer.attribute(
+                    x.unsqueeze(0),
+                    th.stack([x, x * 0.0]),
+                    target=target,
+                    n_samples=50,
+                    stdevs=additional_forward_args,
+                )
+            )
+        attr = th.cat(_attr)
+
     elif isinstance(explainer, IntegratedGradients):
         attr = explainer.attribute(
             inputs,
             target=target,
             internal_batch_size=200,
         )
+
     elif isinstance(explainer, InputXGradient):
         attr = explainer.attribute(inputs, target=target)
+
     elif isinstance(explainer, Lime):
         attr = explainer.attribute(
             inputs,
             target=target,
             feature_mask=additional_forward_args,
         )
+
+    elif isinstance(explainer, NoiseTunnel):
+        if isinstance(inputs, tuple):
+            inputs = inputs[0]
+
+        _attr = list()
+        for x in inputs:
+            _attr.append(
+                explainer.attribute(
+                    x.unsqueeze(0),
+                    target=target,
+                    internal_batch_size=200,
+                    nt_samples=10,
+                    stdevs=1.0,
+                )
+            )
+        attr = th.cat(_attr)
+
     elif isinstance(explainer, Occlusion):
         attr = explainer.attribute(
             inputs,
@@ -98,9 +149,12 @@ def compute_attr(
             target=target,
             attributions_fn=abs,
         )
+
     else:
         raise NotImplementedError
 
+    if isinstance(attr, Tensor):
+        attr = (attr,)
     return attr
 
 
@@ -196,9 +250,12 @@ def main(
     # Target is the model prediction
     y_test = resnet(x_test).argmax(-1).to(device)
 
-    # Create dict of attributions and explainers
+    # Create dict of attributions, explainers, sensitivity max
+    # and lipschitz max
     attr = dict()
     expl = dict()
+    sens_max_dict = dict()
+    lip_max_dict = dict()
 
     # DeepLift not supported for ResNet
     if "deep_lift" in explainers:
@@ -260,8 +317,8 @@ def main(
         _attr = list()
         _sens_max = list()
         _lip_max = list()
-        for i, (x, y, s) in get_progress_bars()(
-            enumerate(zip(x_test, y_test, seg_test)),
+        for i, (x, y) in get_progress_bars()(
+            enumerate(zip(x_test, y_test)),
             total=len(x_test),
             desc=f"{GeodesicIntegratedGradients.get_name()} attribution",
         ):
@@ -287,7 +344,7 @@ def main(
                         explainer=explainer,
                         classifier=resnet,
                         target=y.item(),
-                        additional_forward_args=None,
+                        additional_forward_args="geodesic",
                     )
                 )
                 _lip_max.append(
@@ -297,13 +354,154 @@ def main(
                         explainer=explainer,
                         classifier=resnet,
                         target=y.item(),
-                        additional_forward_args=None,
+                        additional_forward_args="geodesic",
                     )
                 )
 
         attr["geodesic_integrated_gradients"] = th.cat(_attr)
-        _sens_max = th.cat(_sens_max)
-        _lip_max = th.cat(_lip_max)
+        sens_max_dict["geodesic_integrated_gradients"] = th.cat(_sens_max)
+        lip_max_dict["geodesic_integrated_gradients"] = th.cat(_lip_max)
+
+    if "enhanced_integrated_gradients" in explainers:
+        _attr = list()
+        _sens_max = list()
+        _lip_max = list()
+        for i, (x, y) in get_progress_bars()(
+            enumerate(zip(x_test, y_test)),
+            total=len(x_test),
+            desc=f"{GeodesicIntegratedGradients.get_name()} attribution",
+        ):
+            rand = th.rand((50,) + x.shape).sort(dim=0).values.to(device)
+            x_aug = x.unsqueeze(0) * rand
+            explainer = GeodesicIntegratedGradients(
+                resnet, data=x_aug, n_neighbors=5
+            )
+
+            _attr.append(
+                explainer.attribute(
+                    x.unsqueeze(0),
+                    target=y.item(),
+                    internal_batch_size=10,
+                    distance="euclidean",
+                )
+            )
+
+            if i < 100:
+                _sens_max.append(
+                    sensitivity_max(
+                        compute_attr,
+                        x.unsqueeze(0),
+                        explainer=explainer,
+                        classifier=resnet,
+                        target=y.item(),
+                        additional_forward_args="euclidean",
+                    )
+                )
+                _lip_max.append(
+                    lipschitz_max(
+                        compute_attr,
+                        x.unsqueeze(0),
+                        explainer=explainer,
+                        classifier=resnet,
+                        target=y.item(),
+                        additional_forward_args="euclidean",
+                    )
+                )
+
+        attr["enhanced_integrated_gradients"] = th.cat(_attr)
+        sens_max_dict["enhanced_integrated_gradients"] = th.cat(_sens_max)
+        lip_max_dict["enhanced_integrated_gradients"] = th.cat(_lip_max)
+
+    if "gradient_shap" in explainers:
+        explainer = GradientShap(resnet)
+        _attr = list()
+        _sens_max = list()
+        _lip_max = list()
+        for i, (x, y) in get_progress_bars()(
+            enumerate(zip(x_test, y_test)),
+            total=len(x_test),
+            desc=f"{GradientShap.get_name()} attribution",
+        ):
+            _attr.append(
+                explainer.attribute(
+                    x.unsqueeze(0),
+                    th.stack([x, x * 0.0]),
+                    target=y.item(),
+                    n_samples=50,
+                )
+            )
+
+            if i < 100:
+                _sens_max.append(
+                    sensitivity_max(
+                        compute_attr,
+                        x.unsqueeze(0),
+                        explainer=explainer,
+                        classifier=resnet,
+                        target=y.item(),
+                        additional_forward_args=0.0,
+                    )
+                )
+                _lip_max.append(
+                    lipschitz_max(
+                        compute_attr,
+                        x.unsqueeze(0),
+                        explainer=explainer,
+                        classifier=resnet,
+                        target=y.item(),
+                        additional_forward_args=0.0,
+                    )
+                )
+
+        attr["gradient_shap"] = th.cat(_attr)
+        sens_max_dict["gradient_shap"] = th.cat(_sens_max)
+        lip_max_dict["gradient_shap"] = th.cat(_lip_max)
+
+    if "noisy_gradient_shap" in explainers:
+        explainer = GradientShap(resnet)
+        _attr = list()
+        _sens_max = list()
+        _lip_max = list()
+        for i, (x, y) in get_progress_bars()(
+            enumerate(zip(x_test, y_test)),
+            total=len(x_test),
+            desc=f"{GradientShap.get_name()} attribution",
+        ):
+            _attr.append(
+                explainer.attribute(
+                    x.unsqueeze(0),
+                    th.stack([x, x * 0.0]),
+                    target=y.item(),
+                    n_samples=50,
+                    stdevs=1.0,
+                )
+            )
+
+            if i < 100:
+                _sens_max.append(
+                    sensitivity_max(
+                        compute_attr,
+                        x.unsqueeze(0),
+                        explainer=explainer,
+                        classifier=resnet,
+                        target=y.item(),
+                        additional_forward_args=1.0,
+                    )
+                )
+                _lip_max.append(
+                    lipschitz_max(
+                        compute_attr,
+                        x.unsqueeze(0),
+                        explainer=explainer,
+                        classifier=resnet,
+                        target=y.item(),
+                        additional_forward_args=1.0,
+                    )
+                )
+
+        attr["noisy_gradient_shap"] = th.cat(_attr)
+        sens_max_dict["noisy_gradient_shap"] = th.cat(_sens_max)
+        lip_max_dict["noisy_gradient_shap"] = th.cat(_lip_max)
 
     if "input_x_gradient" in explainers:
         explainer = InputXGradient(resnet)
@@ -357,6 +555,52 @@ def main(
         attr["kernel_shap"] = th.stack(_attr)
         expl["kernel_shap"] = explainer
 
+    if "noise_tunnel" in explainers:
+        explainer = NoiseTunnel(IntegratedGradients(resnet))
+        _attr = list()
+        _sens_max = list()
+        _lip_max = list()
+        for i, (x, y) in get_progress_bars()(
+            enumerate(zip(x_test, y_test)),
+            total=len(x_test),
+            desc=f"{NoiseTunnel.get_name()} attribution",
+        ):
+            _attr.append(
+                explainer.attribute(
+                    x.unsqueeze(0),
+                    target=y.item(),
+                    internal_batch_size=200,
+                    nt_samples=10,
+                    stdevs=1.0,
+                )
+            )
+
+            if i < 100:
+                _sens_max.append(
+                    sensitivity_max(
+                        compute_attr,
+                        x.unsqueeze(0),
+                        explainer=explainer,
+                        classifier=resnet,
+                        target=y.item(),
+                        additional_forward_args=None,
+                    )
+                )
+                _lip_max.append(
+                    lipschitz_max(
+                        compute_attr,
+                        x.unsqueeze(0),
+                        explainer=explainer,
+                        classifier=resnet,
+                        target=y.item(),
+                        additional_forward_args=None,
+                    )
+                )
+
+        attr["noise_tunnel"] = th.cat(_attr)
+        sens_max_dict["noise_tunnel"] = th.cat(_sens_max)
+        lip_max_dict["noise_tunnel"] = th.cat(_lip_max)
+
     if "augmented_occlusion" in explainers:
         explainer = AugmentedOcclusion(resnet, data=x_test)
         attr["augmented_occlusion"] = explainer.attribute(
@@ -386,9 +630,15 @@ def main(
             attr.items(), desc="Attr", leave=False
         ):
             if k not in ["dyna_mask", "extremal_mask"]:
-                if k == "geodesic_integrated_gradients":
-                    sens_max = _sens_max
-                    lip_max = _lip_max
+                if k in [
+                    "geodesic_integrated_gradients",
+                    "enhanced_integrated_gradients",
+                    "gradient_shap",
+                    "noisy_gradient_shap",
+                    "noise_tunnel",
+                ]:
+                    sens_max = sens_max_dict[k]
+                    lip_max = lip_max_dict[k]
                 else:
                     sens_max = sensitivity_max(
                         compute_attr,
@@ -497,10 +747,14 @@ def parse_args():
             "dyna_mask",
             "extremal_mask",
             "geodesic_integrated_gradients",
+            "enhanced_integrated_gradients",
+            "gradient_shap",
+            "noisy_gradient_shap",
             "input_x_gradient",
             "integrated_gradients",
             "lime",
             "kernel_shap",
+            "noise_tunnel",
             "augmented_occlusion",
             "occlusion",
         ],
