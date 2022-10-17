@@ -137,6 +137,7 @@ def compute_attr(
                     internal_batch_size=200,
                     nt_samples=10,
                     stdevs=1.0,
+                    nt_type="smoothgrad_sq",
                 )
             )
         attr = th.cat(_attr)
@@ -386,7 +387,7 @@ def main(
                 )
             )
 
-            if i < 100:
+            if i < 10:
                 _sens_max.append(
                     sensitivity_max(
                         compute_attr,
@@ -431,7 +432,7 @@ def main(
                 )
             )
 
-            if i < 100:
+            if i < 10:
                 _sens_max.append(
                     sensitivity_max(
                         compute_attr,
@@ -477,7 +478,7 @@ def main(
                 )
             )
 
-            if i < 100:
+            if i < 10:
                 _sens_max.append(
                     sensitivity_max(
                         compute_attr,
@@ -572,10 +573,11 @@ def main(
                     internal_batch_size=200,
                     nt_samples=10,
                     stdevs=1.0,
+                    nt_type="smoothgrad_sq",
                 )
             )
 
-            if i < 100:
+            if i < 10:
                 _sens_max.append(
                     sensitivity_max(
                         compute_attr,
@@ -678,47 +680,47 @@ def main(
                 acc_comp = accuracy(
                     resnet,
                     x_test,
-                    attributions=v.cpu().abs(),
+                    attributions=v.cpu(),
                     topk=topk,
                     mask_largest=True,
                 )
                 acc_suff = accuracy(
                     resnet,
                     x_test,
-                    attributions=v.cpu().abs(),
+                    attributions=v.cpu(),
                     topk=topk,
                     mask_largest=False,
                 )
                 comp = comprehensiveness(
                     resnet,
                     x_test,
-                    attributions=v.cpu().abs(),
+                    attributions=v.cpu(),
                     topk=topk,
                 )
                 ce_comp = cross_entropy(
                     resnet,
                     x_test,
-                    attributions=v.cpu().abs(),
+                    attributions=v.cpu(),
                     topk=topk,
                     mask_largest=True,
                 )
                 ce_suff = cross_entropy(
                     resnet,
                     x_test,
-                    attributions=v.cpu().abs(),
+                    attributions=v.cpu(),
                     topk=topk,
                     mask_largest=False,
                 )
                 l_odds = log_odds(
                     resnet,
                     x_test,
-                    attributions=v.cpu().abs(),
+                    attributions=v.cpu(),
                     topk=topk,
                 )
                 suff = sufficiency(
                     resnet,
                     x_test,
-                    attributions=v.cpu().abs(),
+                    attributions=v.cpu(),
                     topk=topk,
                 )
 
