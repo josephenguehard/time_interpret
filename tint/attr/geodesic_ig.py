@@ -539,6 +539,15 @@ class GeodesicIntegratedGradients(GradientAttribution):
         )
         total_grads = tuple(torch.stack(grad) for grad in total_grads)
 
+        # Multiply by inputs - baselines if necessary
+        if self.multiplies_by_inputs:
+            total_grads = tuple(
+                total_grad * (input - baseline)
+                for total_grad, input, baseline in zip(
+                    total_grads, inputs, baselines
+                )
+            )
+
         if return_convergence_delta:
             start_point, end_point = baselines, inputs
             # computes approximation error based on the completeness axiom
@@ -650,15 +659,6 @@ class GeodesicIntegratedGradients(GradientAttribution):
             for (scaled_grad, grad) in zip(scaled_grads, grads)
         )
 
-        # Multiply by inputs - baselines if necessary
-        if self.multiplies_by_inputs:
-            total_grads = tuple(
-                total_grad * (input - baseline)
-                for total_grad, input, baseline in zip(
-                    total_grads, inputs, baselines
-                )
-            )
-
         return grads_norm, total_grads
 
     @staticmethod
@@ -730,18 +730,14 @@ class GeodesicIntegratedGradients(GradientAttribution):
 
         # Get dists
         dists = tuple(torch.from_numpy(graph.data) for graph in graphs)
-        dists = tuple(d[d != 0.0] for d in dists)
         dists = tuple(
             torch.cat([d, a], dim=0) if len(a) > 0 else d
             for d, a in zip(dists, add_dists)
         )
 
-        # Get nonzeros
-        nonzeros = tuple(graph.nonzero() for graph in graphs)
-
         # Get idx and knns
         idx = tuple(
-            torch.from_numpy(nonzero[0]).long() for nonzero in nonzeros
+            torch.from_numpy(graph.tocoo().row).long() for graph in graphs
         )
         idx = tuple(
             torch.cat([i, a], dim=0) if len(a) > 0 else i
@@ -749,7 +745,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
         )
 
         knns = tuple(
-            torch.from_numpy(nonzero[1]).long() for nonzero in nonzeros
+            torch.from_numpy(graph.tocoo().col).long() for graph in graphs
         )
         knns = tuple(
             torch.cat([k, a], dim=0) if len(a) > 0 else k
