@@ -31,9 +31,7 @@ from sklearn.neighbors import NearestNeighbors
 from torch import Tensor
 from typing import Any, Callable, List, Tuple, Union
 
-from tint.utils import astar_path, _geodesic_batch_attribution
-
-from tqdm.notebook import tqdm
+from tint.utils import astar_path, unsqueeze_like, _geodesic_batch_attribution
 
 
 class GeodesicIntegratedGradients(GradientAttribution):
@@ -526,6 +524,18 @@ class GeodesicIntegratedGradients(GradientAttribution):
             grad[grad_idx] for grad, grad_idx in zip(total_grads, grads_idx)
         )
 
+        # Get and apply sign to make sure we use the correct input - baseline.
+        # This is ignored if the gradients are not multiplied by inputs.
+        if self.multiplies_by_inputs:
+            sign = tuple(
+                2 * (knn[grad_idx] == path[:, 0]) - 1
+                for knn, grad_idx, path in zip(knns, grads_idx, paths)
+            )
+            total_grads = tuple(
+                grad * unsqueeze_like(s.to(grad.device), grad)
+                for grad, s in zip(total_grads, sign)
+            )
+
         # Split for each path
         total_grads = tuple(
             torch.split(grad, split_size_or_sections=path_len, dim=0)
@@ -538,15 +548,6 @@ class GeodesicIntegratedGradients(GradientAttribution):
             tuple(x.sum(0) for x in grad) for grad in total_grads
         )
         total_grads = tuple(torch.stack(grad) for grad in total_grads)
-
-        # Multiply by inputs - baselines if necessary
-        if self.multiplies_by_inputs:
-            total_grads = tuple(
-                total_grad * (input - baseline)
-                for total_grad, input, baseline in zip(
-                    total_grads, inputs, baselines
-                )
-            )
 
         if return_convergence_delta:
             start_point, end_point = baselines, inputs
@@ -658,6 +659,15 @@ class GeodesicIntegratedGradients(GradientAttribution):
             )
             for (scaled_grad, grad) in zip(scaled_grads, grads)
         )
+
+        # Multiply by inputs - baselines if necessary
+        if self.multiplies_by_inputs:
+            total_grads = tuple(
+                total_grad * (input - baseline)
+                for total_grad, input, baseline in zip(
+                    total_grads, inputs, baselines
+                )
+            )
 
         return grads_norm, total_grads
 
