@@ -2,6 +2,8 @@ import torch
 
 from captum.log import log_usage
 from captum._utils.common import (
+    _expand_additional_forward_args,
+    _expand_target,
     _format_additional_forward_args,
     _format_baseline,
     _format_tensor_into_tuples,
@@ -15,7 +17,9 @@ from captum._utils.typing import (
 )
 
 from torch import Tensor
-from typing import Any, Callable, Tuple, cast
+from typing import Any, Callable, Tuple, Union, cast
+
+from tint.utils import add_noise_to_inputs, _expand_baselines
 
 
 @log_usage()
@@ -27,6 +31,9 @@ def _base_metric(
     baselines: BaselineType = None,
     additional_forward_args: Any = None,
     target: TargetType = None,
+    n_samples: int = 1,
+    stdevs: Union[float, Tuple[float, ...]] = 0.0,
+    draw_baseline_from_distrib: bool = False,
     topk: float = 0.2,
     largest: bool = True,
     weight_fn: Callable[
@@ -35,20 +42,41 @@ def _base_metric(
     classification: bool = True,
     **kwargs,
 ) -> float:
-    # perform argument formatting
+    # Format inputs and add noise
     inputs = _format_tensor_into_tuples(inputs)  # type: ignore
+    inputs = add_noise_to_inputs(inputs, stdevs, n_samples)
+
+    # Format, validate and expand baselines
     if baselines is not None:
         baselines = _format_baseline(
             baselines, cast(Tuple[Tensor, ...], inputs)
         )
+        _validate_input(
+            inputs,
+            baselines,
+            draw_baseline_from_distrib=draw_baseline_from_distrib,
+        )
+        baselines = _expand_baselines(
+            inputs,
+            baselines,
+            n_samples,
+            draw_baseline_from_distrib,
+        )
+
+    # Format and expand additional args
     additional_forward_args = _format_additional_forward_args(
         additional_forward_args
     )
-    attributions = _format_tensor_into_tuples(attributions)  # type: ignore
+    additional_forward_args = _expand_additional_forward_args(
+        additional_forward_args, n_samples
+    )
 
-    # Validate inputs
-    if baselines is not None:
-        _validate_input(inputs, baselines)
+    # Expand target
+    target = _expand_target(target, n_samples)
+
+    # Format and expand attributions
+    attributions = _format_tensor_into_tuples(attributions)  # type: ignore
+    attributions = _expand_additional_forward_args(attributions, n_samples)
 
     # Validate topk
     assert 0 < topk < 1, "topk must be a float between 0 and 1"
