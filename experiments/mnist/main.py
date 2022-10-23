@@ -744,7 +744,7 @@ def main(
                 acc_comp = accuracy(
                     classifier,
                     x_test,
-                    attributions=v.cpu(),
+                    attributions=v.cpu().abs(),
                     baselines=baselines,
                     topk=topk,
                     mask_largest=True,
@@ -752,7 +752,7 @@ def main(
                 acc_suff = accuracy(
                     classifier,
                     x_test,
-                    attributions=v.cpu(),
+                    attributions=v.cpu().abs(),
                     baselines=baselines,
                     topk=topk,
                     mask_largest=False,
@@ -760,14 +760,14 @@ def main(
                 comp = comprehensiveness(
                     classifier,
                     x_test,
-                    attributions=v.cpu(),
+                    attributions=v.cpu().abs(),
                     baselines=baselines,
                     topk=topk,
                 )
                 ce_comp = cross_entropy(
                     classifier,
                     x_test,
-                    attributions=v.cpu(),
+                    attributions=v.cpu().abs(),
                     baselines=baselines,
                     topk=topk,
                     mask_largest=True,
@@ -775,7 +775,7 @@ def main(
                 ce_suff = cross_entropy(
                     classifier,
                     x_test,
-                    attributions=v.cpu(),
+                    attributions=v.cpu().abs(),
                     baselines=baselines,
                     topk=topk,
                     mask_largest=False,
@@ -783,14 +783,14 @@ def main(
                 l_odds = log_odds(
                     classifier,
                     x_test,
-                    attributions=v.cpu(),
+                    attributions=v.cpu().abs(),
                     baselines=baselines,
                     topk=topk,
                 )
                 suff = sufficiency(
                     classifier,
                     x_test,
-                    attributions=v.cpu(),
+                    attributions=v.cpu().abs(),
                     baselines=baselines,
                     topk=topk,
                 )

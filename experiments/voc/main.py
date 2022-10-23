@@ -680,47 +680,47 @@ def main(
                 acc_comp = accuracy(
                     resnet,
                     x_test,
-                    attributions=v.cpu(),
+                    attributions=v.cpu().abs(),
                     topk=topk,
                     mask_largest=True,
                 )
                 acc_suff = accuracy(
                     resnet,
                     x_test,
-                    attributions=v.cpu(),
+                    attributions=v.cpu().abs(),
                     topk=topk,
                     mask_largest=False,
                 )
                 comp = comprehensiveness(
                     resnet,
                     x_test,
-                    attributions=v.cpu(),
+                    attributions=v.cpu().abs(),
                     topk=topk,
                 )
                 ce_comp = cross_entropy(
                     resnet,
                     x_test,
-                    attributions=v.cpu(),
+                    attributions=v.cpu().abs(),
                     topk=topk,
                     mask_largest=True,
                 )
                 ce_suff = cross_entropy(
                     resnet,
                     x_test,
-                    attributions=v.cpu(),
+                    attributions=v.cpu().abs(),
                     topk=topk,
                     mask_largest=False,
                 )
                 l_odds = log_odds(
                     resnet,
                     x_test,
-                    attributions=v.cpu(),
+                    attributions=v.cpu().abs(),
                     topk=topk,
                 )
                 suff = sufficiency(
                     resnet,
                     x_test,
-                    attributions=v.cpu(),
+                    attributions=v.cpu().abs(),
                     topk=topk,
                 )
 
