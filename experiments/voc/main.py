@@ -661,6 +661,7 @@ def main(
 
                 fp.write(str(seed) + ",")
                 fp.write("None,")
+                fp.write("None,")
                 fp.write(k + ",")
                 fp.write("None,")
                 fp.write("None,")
@@ -673,70 +674,116 @@ def main(
                 fp.write(f"{lip_max.mean().item():.4}")
                 fp.write("\n")
 
-        for topk in get_progress_bars()(areas, desc="Topk", leave=False):
-            for k, v in get_progress_bars()(
-                attr.items(), desc="Attr", leave=False
-            ):
-                acc_comp = accuracy(
-                    resnet,
-                    x_test,
-                    attributions=v.cpu().abs(),
-                    topk=topk,
-                    mask_largest=True,
-                )
-                acc_suff = accuracy(
-                    resnet,
-                    x_test,
-                    attributions=v.cpu().abs(),
-                    topk=topk,
-                    mask_largest=False,
-                )
-                comp = comprehensiveness(
-                    resnet,
-                    x_test,
-                    attributions=v.cpu().abs(),
-                    topk=topk,
-                )
-                ce_comp = cross_entropy(
-                    resnet,
-                    x_test,
-                    attributions=v.cpu().abs(),
-                    topk=topk,
-                    mask_largest=True,
-                )
-                ce_suff = cross_entropy(
-                    resnet,
-                    x_test,
-                    attributions=v.cpu().abs(),
-                    topk=topk,
-                    mask_largest=False,
-                )
-                l_odds = log_odds(
-                    resnet,
-                    x_test,
-                    attributions=v.cpu().abs(),
-                    topk=topk,
-                )
-                suff = sufficiency(
-                    resnet,
-                    x_test,
-                    attributions=v.cpu().abs(),
-                    topk=topk,
-                )
+        for mode in get_progress_bars()(
+            ["zeros", "aug"], total=2, desc="Mode", leave=False
+        ):
+            for topk in get_progress_bars()(areas, desc="Topk", leave=False):
+                for k, v in get_progress_bars()(
+                    attr.items(), desc="Attr", leave=False
+                ):
+                    acc_comp = accuracy(
+                        resnet,
+                        x_test,
+                        attributions=v.cpu().abs(),
+                        baselines=x_test if mode == "aug" else None,
+                        n_samples=10 if mode == "aug" else 1,
+                        stdevs=0.1 if mode == "aug" else 0.0,
+                        draw_baseline_from_distrib=True
+                        if mode == "aug"
+                        else False,
+                        topk=topk,
+                        mask_largest=True,
+                    )
+                    acc_suff = accuracy(
+                        resnet,
+                        x_test,
+                        attributions=v.cpu().abs(),
+                        baselines=x_test if mode == "aug" else None,
+                        n_samples=10 if mode == "aug" else 1,
+                        stdevs=0.1 if mode == "aug" else 0.0,
+                        draw_baseline_from_distrib=True
+                        if mode == "aug"
+                        else False,
+                        topk=topk,
+                        mask_largest=False,
+                    )
+                    comp = comprehensiveness(
+                        resnet,
+                        x_test,
+                        attributions=v.cpu().abs(),
+                        baselines=x_test if mode == "aug" else None,
+                        n_samples=10 if mode == "aug" else 1,
+                        stdevs=0.1 if mode == "aug" else 0.0,
+                        draw_baseline_from_distrib=True
+                        if mode == "aug"
+                        else False,
+                        topk=topk,
+                    )
+                    ce_comp = cross_entropy(
+                        resnet,
+                        x_test,
+                        attributions=v.cpu().abs(),
+                        baselines=x_test if mode == "aug" else None,
+                        n_samples=10 if mode == "aug" else 1,
+                        stdevs=0.1 if mode == "aug" else 0.0,
+                        draw_baseline_from_distrib=True
+                        if mode == "aug"
+                        else False,
+                        topk=topk,
+                        mask_largest=True,
+                    )
+                    ce_suff = cross_entropy(
+                        resnet,
+                        x_test,
+                        attributions=v.cpu().abs(),
+                        baselines=x_test if mode == "aug" else None,
+                        n_samples=10 if mode == "aug" else 1,
+                        stdevs=0.1 if mode == "aug" else 0.0,
+                        draw_baseline_from_distrib=True
+                        if mode == "aug"
+                        else False,
+                        topk=topk,
+                        mask_largest=False,
+                    )
+                    l_odds = log_odds(
+                        resnet,
+                        x_test,
+                        attributions=v.cpu().abs(),
+                        baselines=x_test if mode == "aug" else None,
+                        n_samples=10 if mode == "aug" else 1,
+                        stdevs=0.1 if mode == "aug" else 0.0,
+                        draw_baseline_from_distrib=True
+                        if mode == "aug"
+                        else False,
+                        topk=topk,
+                    )
+                    suff = sufficiency(
+                        resnet,
+                        x_test,
+                        attributions=v.cpu().abs(),
+                        baselines=x_test if mode == "aug" else None,
+                        n_samples=10 if mode == "aug" else 1,
+                        stdevs=0.1 if mode == "aug" else 0.0,
+                        draw_baseline_from_distrib=True
+                        if mode == "aug"
+                        else False,
+                        topk=topk,
+                    )
 
-                fp.write(str(seed) + ",")
-                fp.write(str(topk) + ",")
-                fp.write(k + ",")
-                fp.write(f"{acc_comp:.4},")
-                fp.write(f"{acc_suff:.4},")
-                fp.write(f"{comp:.4},")
-                fp.write(f"{ce_comp:.4},")
-                fp.write(f"{ce_suff:.4},")
-                fp.write(f"{l_odds:.4},")
-                fp.write(f"{suff:.4},")
-                fp.write("None,")
-                fp.write("None")
-                fp.write("\n")
+                    fp.write(str(seed) + ",")
+                    fp.write(mode + ",")
+                    fp.write(str(topk) + ",")
+                    fp.write(k + ",")
+                    fp.write(f"{acc_comp:.4},")
+                    fp.write(f"{acc_suff:.4},")
+                    fp.write(f"{comp:.4},")
+                    fp.write(f"{ce_comp:.4},")
+                    fp.write(f"{ce_suff:.4},")
+                    fp.write(f"{l_odds:.4},")
+                    fp.write(f"{suff:.4},")
+                    fp.write("None,")
+                    fp.write("None")
+                    fp.write("\n")
 
 
 def parse_args():
