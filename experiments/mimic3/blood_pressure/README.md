@@ -26,7 +26,7 @@ python reset.py
 ## Usage
 
 ```
-usage: experiments/mimci3/blood_pressure/main.py [-h] [--explainers] [--accelerator] [--seed] [--deterministic]
+usage: experiments/mimci3/blood_pressure/main.py [-h] [--explainers] [--device] [--seed] [--deterministic]
 
 optional arguments:
   -h, --help            Show this help message and exit.
@@ -37,7 +37,7 @@ optional arguments:
 ```
 
 ```
-usage : experiemnts/mimci3/blood_pressure/main.sh [--processes] [--accelerator] [--seed]
+usage : experiemnts/mimci3/blood_pressure/main.sh [--processes] [--device] [--seed]
 
 optional arguments:
   --processes           Number of runners in parallel. Default to 5

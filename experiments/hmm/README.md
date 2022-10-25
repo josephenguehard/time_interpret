@@ -36,7 +36,7 @@ python extremal_mask_params.py -p
 ## Usage
 
 ```
-usage: experiments/hmm/main.py [-h] [--explainers] [--accelerator] [--seed] [--deterministic]
+usage: experiments/hmm/main.py [-h] [--explainers] [--device] [--seed] [--deterministic]
 
 optional arguments:
   -h, --help            Show this help message and exit.
@@ -47,7 +47,7 @@ optional arguments:
 ```
 
 ```
-usage : experiemnts/hmm/main.sh [--processes] [--accelerator] [--seed]
+usage : experiemnts/hmm/main.sh [--processes] [--device] [--seed]
 
 optional arguments:
   --processes           Number of runners in parallel. Default to 5
@@ -56,7 +56,7 @@ optional arguments:
 ```
 
 ```
-usage: experiments/hmm/h_params_search.py [-h] [-p] [--metric] [--accelerator] [--seed] [--n-trials] [--timeout] [--n-jobs]
+usage: experiments/hmm/h_params_search.py [-h] [-p] [--metric] [--device] [--seed] [--n-trials] [--timeout] [--n-jobs]
 
 optional arguments:
   -h, --help            Show this help message and exit.
