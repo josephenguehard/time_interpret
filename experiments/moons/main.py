@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import torch as th
+import warnings
 
 from argparse import ArgumentParser
 from matplotlib.colors import ListedColormap
@@ -16,6 +17,7 @@ from tint.models import MLP, Net
 
 
 cm_bright = ListedColormap(["#FF0000", "#0000FF"])
+warnings.filterwarnings("ignore")
 
 
 def main(
@@ -96,25 +98,23 @@ def main(
         print("acc: ", acc)
 
         # Save plots of true values and predictions
-        fig = plt.figure()
-        fig.scatter(
+        plt.scatter(
             x_test[:, 0],
             x_test[:, 1],
             c=y_test,
             cmap=cm_bright,
             edgecolors="k",
         )
-        plt.savefig(f"figures/true_labels_{str(noise)}")
+        plt.savefig(f"figures/true_labels_{str(noise)}.pdf")
 
-        fig = plt.figure()
-        fig.scatter(
+        plt.scatter(
             x_test[:, 0],
             x_test[:, 1],
             c=th.cat(pred).argmax(-1),
             cmap=cm_bright,
             edgecolors="k",
         )
-        plt.savefig(f"figures/preds_{str(noise)}")
+        plt.savefig(f"figures/preds_{str(noise)}.pdf")
 
         # Create dict of attr
         attr = dict()
@@ -169,23 +169,22 @@ def main(
 
         if "smooth_grad" in explainers:
             explainer = NoiseTunnel(IntegratedGradients(net))
-            attr["integrated_gradients"] = explainer.attribute(
+            attr["smooth_grad"] = explainer.attribute(
                 x_test,
                 baselines=x_train[
                     y_train == 1
                 ],  # We sample baselines only from one moon
                 target=y_test,
                 internal_batch_size=200,
-                nt_samples=50,
+                nt_samples=10,
                 stdevs=0.1,
                 draw_baseline_from_distrib=True,
             )
 
         # Eval
         for k, v in attr.items():
-            fig = plt.figure()
-            fig.scatter(x_test[:, 0], x_test[:, 1], c=v.abs().sum(-1))
-            plt.savefig(f"figures/{k}_{str(noise)}")
+            plt.scatter(x_test[:, 0], x_test[:, 1], c=v.abs().sum(-1))
+            plt.savefig(f"figures/{k}_{str(noise)}.pdf")
 
         with open("results.csv", "a") as fp:
             for k, v in attr.items():

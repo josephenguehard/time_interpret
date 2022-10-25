@@ -365,10 +365,9 @@ def main(
                             2: "comp",
                             3: "suff",
                         }
-                        fig = plt.figure()
                         for k, v in metric.items():
-                            fig.plot(v, label=k)
-                        fig.legend()
+                            plt.plot(v, label=k)
+                        plt.legend()
                         plt.savefig(
                             f"figures/{metric_name[m]}_{mode}_{baselines_name[i]}_{stdevs_name}_{target_name[j]}"
                         )
