@@ -6,6 +6,7 @@ captum
 datasets
 flake8
 numpy
+jupyter
 optuna
 pandas
 pytorch-lightning
