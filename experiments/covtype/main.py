@@ -127,10 +127,6 @@ def main(
     # Create dict of attr
     attr = dict()
 
-    if "deep_lift" in explainers:
-        explainer = DeepLift(classifier)
-        attr["deep_lift"] = explainer.attribute(x_test, target=y_test)
-
     if "feature_ablation" in explainers:
         explainer = FeatureAblation(classifier)
         attr["feature_ablation"] = explainer.attribute(x_test, target=y_test)
@@ -139,7 +135,7 @@ def main(
         explainer = AugmentedOcclusion(classifier, data=x_train)
         attr["augmented_occlusion"] = explainer.attribute(
             x_test,
-            sliding_window_shapes=(1, 1),
+            sliding_window_shapes=(1,),
             target=y_test,
             attributions_fn=abs,
         )
@@ -256,15 +252,28 @@ def main(
         )
 
     # Eval methods
-    for mode in get_progress_bars()(["vanilla", "abs"], total=2, leave=False):
+    for mode in get_progress_bars()(
+        ["vanilla", "abs"],
+        total=2,
+        leave=False,
+        desc="Mode",
+    ):
         for i, baselines in get_progress_bars()(
-            enumerate([0, x_train]), total=2, leave=False
+            enumerate([0, x_train]),
+            total=2,
+            leave=False,
+            desc="Baselines",
         ):
             baselines_name = {0: "zeros", 1: "aug"}
-            for stdevs in get_progress_bars()([0, 0.1], total=2, leave=False):
+            for stdevs in get_progress_bars()(
+                [0.0, 0.1], total=2, leave=False, desc="Noise"
+            ):
                 stdevs_name = str(stdevs)
                 for j, target in get_progress_bars()(
-                    enumerate([None, y_test]), total=2, leave=False
+                    enumerate([None, y_test]),
+                    total=2,
+                    leave=False,
+                    desc="Target",
                 ):
                     target_name = {0: "preds", 1: "true_labels"}
 
@@ -294,10 +303,12 @@ def main(
                                     else v.cpu(),
                                     baselines=baselines,
                                     target=target,
-                                    n_samples=1 if baselines == 0 else 50,
+                                    n_samples=1
+                                    if isinstance(baselines, int)
+                                    else 50,
                                     stdevs=stdevs,
                                     draw_baseline_from_distrib=False
-                                    if baselines == 0
+                                    if isinstance(baselines, int)
                                     else True,
                                     topk=topk,
                                     mask_largest=True,
@@ -312,10 +323,12 @@ def main(
                                     else v.cpu(),
                                     baselines=baselines,
                                     target=target,
-                                    n_samples=1 if baselines == 0 else 50,
+                                    n_samples=1
+                                    if isinstance(baselines, int)
+                                    else 50,
                                     stdevs=stdevs,
                                     draw_baseline_from_distrib=False
-                                    if baselines == 0
+                                    if isinstance(baselines, int)
                                     else True,
                                     topk=topk,
                                     mask_largest=False,
@@ -330,10 +343,12 @@ def main(
                                     else v.cpu(),
                                     baselines=baselines,
                                     target=target,
-                                    n_samples=1 if baselines == 0 else 50,
+                                    n_samples=1
+                                    if isinstance(baselines, int)
+                                    else 50,
                                     stdevs=stdevs,
                                     draw_baseline_from_distrib=False
-                                    if baselines == 0
+                                    if isinstance(baselines, int)
                                     else True,
                                     topk=topk,
                                 )
@@ -347,10 +362,12 @@ def main(
                                     else v.cpu(),
                                     baselines=baselines,
                                     target=target,
-                                    n_samples=1 if baselines == 0 else 50,
+                                    n_samples=1
+                                    if isinstance(baselines, int)
+                                    else 50,
                                     stdevs=stdevs,
                                     draw_baseline_from_distrib=False
-                                    if baselines == 0
+                                    if isinstance(baselines, int)
                                     else True,
                                     topk=topk,
                                 )
@@ -365,12 +382,17 @@ def main(
                             2: "comp",
                             3: "suff",
                         }
+                        plt.rcParams["axes.prop_cycle"] = plt.cycler(
+                            "color", plt.cm.tab20.colors
+                        )
                         for k, v in metric.items():
                             plt.plot(v, label=k)
                         plt.legend()
                         plt.savefig(
-                            f"figures/{metric_name[m]}_{mode}_{baselines_name[i]}_{stdevs_name}_{target_name[j]}"
+                            f"figures/{str(seed)}/{metric_name[m]}_{mode}_{baselines_name[i]}_"
+                            f"{stdevs_name}_{target_name[j]}.pdf"
                         )
+                        plt.close()
 
 
 def parse_args():
@@ -379,7 +401,6 @@ def parse_args():
         "--explainers",
         type=str,
         default=[
-            "deep_lift",
             "feature_ablation",
             "augmented_occlusion",
             "geodesic_integrated_gradients",

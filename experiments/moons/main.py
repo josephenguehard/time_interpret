@@ -106,6 +106,7 @@ def main(
             edgecolors="k",
         )
         plt.savefig(f"figures/true_labels_{str(noise)}.pdf")
+        plt.close()
 
         plt.scatter(
             x_test[:, 0],
@@ -115,6 +116,7 @@ def main(
             edgecolors="k",
         )
         plt.savefig(f"figures/preds_{str(noise)}.pdf")
+        plt.close()
 
         # Create dict of attr
         attr = dict()
@@ -185,6 +187,7 @@ def main(
         for k, v in attr.items():
             plt.scatter(x_test[:, 0], x_test[:, 1], c=v.abs().sum(-1))
             plt.savefig(f"figures/{k}_{str(noise)}.pdf")
+            plt.close()
 
         with open("results.csv", "a") as fp:
             for k, v in attr.items():
