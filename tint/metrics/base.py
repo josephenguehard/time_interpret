@@ -23,6 +23,7 @@ from tint.utils import add_noise_to_inputs, _expand_baselines
 
 
 @log_usage()
+@torch.no_grad()
 def _base_metric(
     metric: Callable,
     forward_func: Callable,
