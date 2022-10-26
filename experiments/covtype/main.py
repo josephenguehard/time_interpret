@@ -127,6 +127,10 @@ def main(
     # Create dict of attr
     attr = dict()
 
+    if "deep_lift" in explainers:
+        explainer = DeepLift(classifier)
+        attr["deep_lift"] = explainer.attribute(x_test, target=y_test)
+
     if "feature_ablation" in explainers:
         explainer = FeatureAblation(classifier)
         attr["feature_ablation"] = explainer.attribute(x_test, target=y_test)
@@ -401,6 +405,7 @@ def parse_args():
         "--explainers",
         type=str,
         default=[
+            "deep_lift",
             "feature_ablation",
             "augmented_occlusion",
             "geodesic_integrated_gradients",

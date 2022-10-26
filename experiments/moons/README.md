@@ -21,7 +21,7 @@ usage: experiments/moons/main.py [-h] [--explainers] [--n-samples] [--noises] [-
 
 optional arguments:
   -h, --help            Show this help message and exit.
-  --explainers          List of the explainers to use. Default to ["geodesic_integrated_gradients", "enhanced_integrated_gradients", "gradient_shap", "integrated_gradients", "smooth_grad"]
+  --explainers          List of the explainers to use. Default to ["deep_lift", "geodesic_integrated_gradients", "enhanced_integrated_gradients", "gradient_shap", "integrated_gradients", "smooth_grad"]
   --n-samples           Number of samples in the dataset. Default to 10000
   --noises              List of noises to use. Default to [0.05, 0.1, 0.15, 0.2, 0.25, 0.3]
   --device              Which device to use. Default to 'cpu'

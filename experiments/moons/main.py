@@ -10,7 +10,12 @@ from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, TensorDataset
 from typing import List
 
-from captum.attr import GradientShap, IntegratedGradients, NoiseTunnel
+from captum.attr import (
+    DeepLift,
+    GradientShap,
+    IntegratedGradients,
+    NoiseTunnel,
+)
 
 from tint.attr import GeodesicIntegratedGradients
 from tint.models import MLP, Net
@@ -121,12 +126,16 @@ def main(
         # Create dict of attr
         attr = dict()
 
+        if "deep_lift" in explainers:
+            explainer = DeepLift(net)
+            attr["deep_lift"] = explainer.attribute(x_test, target=y_test)
+
         if "geodesic_integrated_gradients" in explainers:
-            gig = GeodesicIntegratedGradients(net)
+            explainer = GeodesicIntegratedGradients(net)
             _attr = th.zeros_like(x_test)
 
             for target in range(2):
-                _attr[y_test == target] = gig.attribute(
+                _attr[y_test == target] = explainer.attribute(
                     x_test[y_test == target],
                     target=target,
                     n_neighbors=5,
@@ -136,11 +145,11 @@ def main(
             attr["geodesic_integrated_gradients"] = _attr
 
         if "enhanced_integrated_gradients" in explainers:
-            gig = GeodesicIntegratedGradients(net)
+            explainer = GeodesicIntegratedGradients(net)
             _attr = th.zeros_like(x_test)
 
             for target in range(2):
-                _attr[y_test == target] = gig.attribute(
+                _attr[y_test == target] = explainer.attribute(
                     x_test[y_test == target],
                     target=target,
                     n_neighbors=5,
@@ -213,6 +222,7 @@ def parse_args():
         "--explainers",
         type=str,
         default=[
+            "deep_lift",
             "geodesic_integrated_gradients",
             "enhanced_integrated_gradients",
             "gradient_shap",
