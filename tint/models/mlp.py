@@ -1,3 +1,4 @@
+import copy
 import torch as th
 import torch.nn as nn
 
@@ -106,17 +107,20 @@ class MLP(nn.Module):
                 f"{len(activations)} but should be {length - 1}."
             )
 
-        layers = [nn.Linear] * length
+        layers = [nn.Linear for _ in range(length)]
         if isinstance(bias, bool):
             bias = [bias] * length
         if isinstance(dropout, float):
             dropout = [dropout] * (length - 1)
         if isinstance(norm, str):
-            norm = [NORMS[norm]] * (length - 1)
+            norm = [NORMS[norm] for _ in range(length - 1)]
         if isinstance(activations, str):
-            activations = [ACTIVATIONS[activations]] * (length - 1)
+            activations = [
+                copy.deepcopy(ACTIVATIONS[activations])
+                for _ in range(length - 1)
+            ]
         if isinstance(activation_final, str):
-            activation_final = ACTIVATIONS[activation_final]
+            activation_final = copy.deepcopy(ACTIVATIONS[activation_final])
 
         model = dict()
         for i in range(length):
