@@ -21,7 +21,6 @@ from captum._utils.common import (
 )
 from captum._utils.typing import (
     BaselineType,
-    Literal,
     TargetType,
     TensorOrTupleOfTensorsGeneric,
 )
@@ -132,7 +131,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
         n_steiner: int = None,
         method: str = "gausslegendre",
         internal_batch_size: Union[None, int] = None,
-        return_convergence_delta: Literal[False] = False,
+        return_convergence_delta: bool = False,
         distance: str = "geodesic",
         show_progress: bool = False,
         **kwargs,
@@ -152,7 +151,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
         method: str = "gausslegendre",
         internal_batch_size: Union[None, int] = None,
         *,
-        return_convergence_delta: Literal[True],
+        return_convergence_delta: bool,
         distance: str = "geodesic",
         show_progress: bool = False,
         **kwargs,
@@ -268,8 +267,17 @@ class GeodesicIntegratedGradients(GradientAttribution):
                 Note that attributions are not computed with respect
                 to these arguments.
                 Default: None
+            n_neighbors (int, optional): Number of neighbors to use by default.
+                Must be provided if it has not been set in the init.
+                Can be an integer (same for every inputs) or a tuple.
+                Default: None
             n_steps (int, optional): The number of steps used by the approximation
                 method. Default: 5.
+            n_steiner (int, optional): Add a certain number of steiner points
+                into the graph. These points are added following the fixed
+                scheme. For more information, please refer to the section 4.1.3
+                of https://arxiv.org/pdf/2007.10430.
+                Default: None
             method (string, optional): Method for approximating the integral,
                 one of `riemann_right`, `riemann_left`, `riemann_middle`,
                 `riemann_trapezoid` or `gausslegendre`.
