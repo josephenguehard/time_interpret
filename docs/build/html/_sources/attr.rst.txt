@@ -19,6 +19,7 @@ Summary
     tint.attr.ExtremalMask
     tint.attr.FeatureAblation
     tint.attr.Fit
+    tint.attr.GeodesicIntegratedGradients
     tint.attr.LofKernelShap
     tint.attr.LofLime
     tint.attr.Occlusion

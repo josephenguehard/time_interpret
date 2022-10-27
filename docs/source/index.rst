@@ -80,6 +80,7 @@ Each of the implemented interpretability methods can be found here:
     tint.attr.ExtremalMask
     tint.attr.FeatureAblation
     tint.attr.Fit
+    tint.attr.GeodesicIntegratedGradients
     tint.attr.LofKernelShap
     tint.attr.LofLime
     tint.attr.Occlusion
