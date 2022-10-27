@@ -687,6 +687,7 @@ def main(
                         attributions=v.cpu().abs(),
                         baselines=x_test if mode == "aug" else None,
                         n_samples=10 if mode == "aug" else 1,
+                        n_samples_batch_size=1 if mode == "aug" else None,
                         stdevs=0.1 if mode == "aug" else 0.0,
                         draw_baseline_from_distrib=True
                         if mode == "aug"
@@ -700,6 +701,7 @@ def main(
                         attributions=v.cpu().abs(),
                         baselines=x_test if mode == "aug" else None,
                         n_samples=10 if mode == "aug" else 1,
+                        n_samples_batch_size=1 if mode == "aug" else None,
                         stdevs=0.1 if mode == "aug" else 0.0,
                         draw_baseline_from_distrib=True
                         if mode == "aug"
@@ -713,6 +715,7 @@ def main(
                         attributions=v.cpu().abs(),
                         baselines=x_test if mode == "aug" else None,
                         n_samples=10 if mode == "aug" else 1,
+                        n_samples_batch_size=1 if mode == "aug" else None,
                         stdevs=0.1 if mode == "aug" else 0.0,
                         draw_baseline_from_distrib=True
                         if mode == "aug"
@@ -725,6 +728,7 @@ def main(
                         attributions=v.cpu().abs(),
                         baselines=x_test if mode == "aug" else None,
                         n_samples=10 if mode == "aug" else 1,
+                        n_samples_batch_size=1 if mode == "aug" else None,
                         stdevs=0.1 if mode == "aug" else 0.0,
                         draw_baseline_from_distrib=True
                         if mode == "aug"
@@ -738,6 +742,7 @@ def main(
                         attributions=v.cpu().abs(),
                         baselines=x_test if mode == "aug" else None,
                         n_samples=10 if mode == "aug" else 1,
+                        n_samples_batch_size=1 if mode == "aug" else None,
                         stdevs=0.1 if mode == "aug" else 0.0,
                         draw_baseline_from_distrib=True
                         if mode == "aug"
@@ -751,6 +756,7 @@ def main(
                         attributions=v.cpu().abs(),
                         baselines=x_test if mode == "aug" else None,
                         n_samples=10 if mode == "aug" else 1,
+                        n_samples_batch_size=1 if mode == "aug" else None,
                         stdevs=0.1 if mode == "aug" else 0.0,
                         draw_baseline_from_distrib=True
                         if mode == "aug"
@@ -763,6 +769,7 @@ def main(
                         attributions=v.cpu().abs(),
                         baselines=x_test if mode == "aug" else None,
                         n_samples=10 if mode == "aug" else 1,
+                        n_samples_batch_size=1 if mode == "aug" else None,
                         stdevs=0.1 if mode == "aug" else 0.0,
                         draw_baseline_from_distrib=True
                         if mode == "aug"
