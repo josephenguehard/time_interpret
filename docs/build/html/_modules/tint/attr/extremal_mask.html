@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>tint.attr.extremal_mask &mdash; Time Interpret 0.1.0 documentation</title>
+  <title>tint.attr.extremal_mask &mdash; Time Interpret 0.2.0 documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
@@ -299,8 +299,9 @@
         <span class="c1"># Fit model</span>
         <span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">mask_net</span><span class="p">,</span> <span class="n">train_dataloaders</span><span class="o">=</span><span class="n">dataloader</span><span class="p">)</span>
 
-        <span class="c1"># Set model to eval mode</span>
+        <span class="c1"># Set model to eval mode and cast it to device</span>
         <span class="n">mask_net</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+        <span class="n">mask_net</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
 
         <span class="c1"># Get attributions as mask representation</span>
         <span class="n">attributions</span> <span class="o">=</span> <span class="n">mask_net</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">representation</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">baseline</span><span class="p">)</span>
