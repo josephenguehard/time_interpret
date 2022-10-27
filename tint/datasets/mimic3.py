@@ -73,6 +73,8 @@ class Mimic3(DataModule):
         for more information.
 
     Args:
+        task (str): Name of the task to perform. Either ``'mortality'`` or
+            ``'blood_pressure'``. Default to ``'mortality'``
         data_dir (str): Where to download files.
         batch_size (int): Batch size. Default to 32
         n_folds (int): Number of folds for cross validation. If ``None``,
@@ -99,6 +101,7 @@ class Mimic3(DataModule):
 
     def __init__(
         self,
+        task: str = "mortality",
         data_dir: str = os.path.join(
             os.path.split(file_dir)[0],
             "data",
@@ -120,6 +123,12 @@ class Mimic3(DataModule):
             num_workers=num_workers,
             seed=seed,
         )
+
+        assert task in [
+            "mortality",
+            "blood_pressure",
+        ], f"task must be either mortality or blood_pressure, got {task}."
+        self.task = task
 
         # Init mean and std
         self._mean = None
@@ -722,12 +731,17 @@ class Mimic3(DataModule):
             data = pkl.load(fp)
 
         features = th.Tensor([x for (x, y, z) in data]).transpose(1, 2)
-        labels = th.Tensor([y for (x, y, z) in data])
+
+        if self.task == "mortality":
+            labels = th.Tensor([y for (x, y, z) in data])
+        else:
+            labels = features[..., 22]
+            features = th.cat([features[..., :20], features[..., 23:]], dim=-1)
 
         # Compute mean and std
         if split == "train":
-            self._mean = features.reshape(-1, features.shape[-1]).mean(0)
-            self._std = features.reshape(-1, features.shape[-1]).mean(0)
+            self._mean = features.mean(dim=(0, 1), keepdim=True)
+            self._std = features.std(dim=(0, 1), keepdim=True)
         else:
             assert split == "test", "split must be train or test"
 
@@ -736,13 +750,11 @@ class Mimic3(DataModule):
         ), "You must call preprocess('train') first"
 
         # Normalise
-        mean = self._mean.unsqueeze(0).unsqueeze(0)
-        std = self._std.unsqueeze(0).unsqueeze(0)
-        features = (features - mean) / (std + EPS)
+        features = (features - self._mean) / (self._std + EPS)
 
         return {
             "x": features.float(),
-            "y": labels.long(),
+            "y": labels.long() if self.task == "mortality" else labels.float(),
         }
 
 

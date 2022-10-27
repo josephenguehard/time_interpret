@@ -73,17 +73,19 @@ Each of the implemented interpretability methods can be found here:
 .. autosummary::
 
     tint.attr.AugmentedOcclusion
+    tint.attr.BayesKernelShap
     tint.attr.BayesLime
-    tint.attr.BayesMask
-    tint.attr.BayesShap
     tint.attr.DiscretetizedIntegratedGradients
     tint.attr.DynaMask
+    tint.attr.ExtremalMask
+    tint.attr.FeatureAblation
     tint.attr.Fit
     tint.attr.LofKernelShap
     tint.attr.LofLime
     tint.attr.Occlusion
     tint.attr.Retain
     tint.attr.SmoothGrad
+    tint.attr.SequentialIntegratedGradients
     tint.attr.TemporalAugmentedOcclusion
     tint.attr.TemporalIntegratedGradients
     tint.attr.TemporalOcclusion
@@ -94,7 +96,9 @@ Some of these attributions use specific models which are listed here:
 
 .. autosummary::
 
-    tint.attr.models.BayesMaskNet
+    tint.attr.models.BLRRegression
+    tint.attr.models.BLRRidge
+    tint.attr.models.ExtremalMaskNet
     tint.attr.models.JointFeatureGeneratorNet
     tint.attr.models.MaskNet
     tint.attr.models.RetainNet
@@ -122,6 +126,8 @@ These metrics differ depending on if the true saliency is known:
     tint.metrics.cross_entropy
     tint.metrics.lipschitz_max
     tint.metrics.log_odds
+    tint.metrics.mae
+    tint.metrics.mse
     tint.metrics.sufficiency
 
 
@@ -132,6 +138,9 @@ These metrics differ depending on if the true saliency is known:
     tint.metrics.white_box.aur
     tint.metrics.white_box.entropy
     tint.metrics.white_box.information
+    tint.metrics.white_box.mae
+    tint.metrics.white_box.mse
+    tint.metrics.white_box.rmse
     tint.metrics.white_box.roc_auc
 
 
@@ -142,10 +151,12 @@ These models can easily be used and trained with this framework.
 .. autosummary::
 
     tint.models.Bert
+    tint.models.DistilBert
     tint.models.CNN
     tint.models.MLP
     tint.models.Net
     tint.models.RNN
+    tint.models.Roberta
     tint.models.TransformerEncoder
 
 

@@ -14,6 +14,7 @@ class MimicClassifierNet(Net):
         n_state: int,
         hidden_size: int,
         rnn: str = "GRU",
+        dropout: float = 0.5,
         regres: bool = True,
         bidirectional: bool = False,
         loss: Union[str, Callable] = "mse",
@@ -28,6 +29,7 @@ class MimicClassifierNet(Net):
             n_state=n_state,
             hidden_size=hidden_size,
             rnn=rnn,
+            dropout=dropout,
             regres=regres,
             bidirectional=bidirectional,
         )
@@ -41,6 +43,7 @@ class MimicClassifierNet(Net):
             lr_scheduler_args=lr_scheduler_args,
             l2=l2,
         )
+        self.save_hyperparameters()
 
         for stage in ["train", "val", "test"]:
             setattr(self, stage + "_acc", Accuracy())

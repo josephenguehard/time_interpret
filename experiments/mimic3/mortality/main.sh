@@ -1,7 +1,7 @@
 #!/bin/bash
 
 processes=${processes:-5}
-accelerator=${accelerator:-cpu}
+device=${device:-cpu}
 seed=${seed:-42}
 
 while [ $# -gt 0 ]
@@ -23,7 +23,7 @@ function ctrl_c() {
 
 for fold in $(seq 0 4)
 do
-  python main.py --accelerator "$accelerator" --fold "$fold" --seed "$seed"
+  python main.py --device "$device" --fold "$fold" --seed "$seed" &
 
   # allow to execute up to $processes jobs in parallel
   if [[ $(jobs -r -p | wc -l) -ge $processes ]]

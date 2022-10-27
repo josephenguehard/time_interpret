@@ -1,37 +1,19 @@
-import numpy as np
+import multiprocessing as mp
+import random
 import torch as th
 
 from argparse import ArgumentParser
-from captum.attr import DeepLift, GradientShap, IntegratedGradients, Lime
-from pytorch_lightning import Trainer
+from captum.attr import DeepLift, GradientShap, IntegratedGradients
+from pytorch_lightning import Trainer, seed_everything
+from pytorch_lightning.loggers import TensorBoardLogger
 from typing import List
 
 from tint.attr import (
-    BayesMask,
-    DynaMask,
-    Fit,
-    LofLime,
-    Retain,
-    TemporalAugmentedOcclusion,
     TemporalIntegratedGradients,
-    TemporalOcclusion,
     TimeForwardTunnel,
 )
-from tint.attr.models import (
-    BayesMaskNet,
-    JointFeatureGeneratorNet,
-    MaskNet,
-    RetainNet,
-)
 from tint.datasets import Hawkes
-from tint.metrics.white_box import (
-    aup,
-    aur,
-    information,
-    entropy,
-    roc_auc,
-    auprc,
-)
+from tint.metrics.white_box import mae, mse, rmse
 
 
 from experiments.hawkes.classifier import HawkesClassifierNet
@@ -39,16 +21,27 @@ from experiments.hawkes.classifier import HawkesClassifierNet
 
 def main(
     explainers: List[str],
-    accelerator: str = "cpu",
+    device: str = "cpu",
     fold: int = 0,
     seed: int = 42,
+    deterministic: bool = False,
 ):
+    # If deterministic, seed everything
+    if deterministic:
+        seed_everything(seed=seed, workers=True)
+
+    # Get accelerator and device
+    accelerator = device.split(":")[0]
+    device_id = 1
+    if len(device.split(":")) > 1:
+        device_id = [int(device.split(":")[1])]
+
     # Load data
     hawkes = Hawkes(n_folds=5, fold=fold, seed=seed)
 
     # Create classifier
     classifier = HawkesClassifierNet(
-        feature_size=1,
+        feature_size=3,
         n_state=2,
         hidden_size=200,
         regres=True,
@@ -58,206 +51,143 @@ def main(
     )
 
     # Train classifier
-    trainer = Trainer(max_epochs=50, accelerator=accelerator)
+    trainer = Trainer(
+        max_epochs=250,
+        accelerator=accelerator,
+        devices=device_id,
+        deterministic=deterministic,
+        logger=TensorBoardLogger(
+            save_dir=".",
+            version=random.getrandbits(128),
+        ),
+    )
     trainer.fit(classifier, datamodule=hawkes)
 
     # Get data for explainers
-    x_train = hawkes.preprocess(split="train")["x"].to(accelerator)
-    x_test = hawkes.preprocess(split="test")["x"].to(accelerator)
-    y_test = hawkes.preprocess(split="test")["y"].to(accelerator)
+    with mp.Lock():
+        x_train = hawkes.preprocess(split="train")["x"].to(device)
+        x_test = hawkes.preprocess(split="test")["x"].to(device)
+        y_test = hawkes.preprocess(split="test")["y"].to(device)
+        true_saliency = hawkes.true_saliency(split="test").to(device)
+
+    # Create x out of x_test and y_test
+    idx = (x_test > 0).sum(1, keepdim=True)
+    window = hawkes.window * th.ones_like(x_test, device=x_test.device)
+
+    x = th.cat(
+        [
+            x_test,
+            th.zeros_like(x_test[:, 0, :].unsqueeze(1), device=x_test.device),
+        ],
+        dim=1,
+    )
+    x.scatter_(1, idx, window)
+    x = th.cat([x[:, :-1], x[:, 1:], y_test.unsqueeze(-1)], dim=-1)
+
+    # Reshape y_test
+    y_test = (
+        y_test.unsqueeze(-1).unsqueeze(-1).repeat(1, 1, y_test.shape[-1], 1)
+    )
 
     # Switch to eval
     classifier.eval()
 
-    # Set model to accelerator
-    classifier.to(accelerator)
+    # Set model to device
+    classifier.to(device)
+
+    # Disable cudnn if using cuda accelerator.
+    # Please see https://captum.ai/docs/faq#how-can-i-resolve-cudnn-rnn-backward-error-for-rnn-or-lstm-network
+    # for more information.
+    if accelerator == "cuda":
+        th.backends.cudnn.enabled = False
 
     # Create dict of attributions
     attr = dict()
 
-    if "bayes_mask" in explainers:
-        trainer = Trainer(max_epochs=500, accelerator=accelerator, devices=1)
-        mask = BayesMaskNet(
-            forward_func=classifier,
-            distribution="normal",
-            eps=1e-1,
-            optim="adam",
-            lr=0.01,
-        )
-        explainer = BayesMask(classifier)
-        _attr = explainer.attribute(
-            x_test,
-            trainer=trainer,
-            mask_net=mask,
-            batch_size=50,
-            return_temporal_attributions=True,
-        )
-        attr["dyna_mask"] = _attr
-
     if "deep_lift" in explainers:
         explainer = TimeForwardTunnel(DeepLift(classifier))
-        attr["deep_lift"] = explainer.attribute(
-            x_test,
-            baselines=x_test * 0,
-            task="binary",
-            return_temporal_attributions=True,
-            show_progress=True,
-        ).abs()
-
-    if "dyna_mask" in explainers:
-        trainer = Trainer(max_epochs=1000, accelerator=accelerator, devices=1)
-        mask = MaskNet(
-            forward_func=classifier,
-            perturbation="gaussian_blur",
-            keep_ratio=list(np.arange(0.25, 0.35, 0.01)),
-            size_reg_factor_init=0.1,
-            size_reg_factor_dilation=100,
-            time_reg_factor=1.0,
-        )
-        explainer = DynaMask(classifier)
-        _attr = explainer.attribute(
-            x_test,
-            additional_forward_args=(True,),
-            trainer=trainer,
-            mask_net=mask,
-            batch_size=100,
-            return_temporal_attributions=True,
-            return_best_ratio=True,
-        )
-        print(f"Best keep ratio is {_attr[1]}")
-        attr["dyna_mask"] = _attr[0]
-
-    if "fit" in explainers:
-        generator = JointFeatureGeneratorNet(rnn_hidden_size=6)
-        trainer = Trainer(
-            max_epochs=1000,
-            accelerator=accelerator,
-            log_every_n_steps=10,
-        )
-        explainer = Fit(
-            classifier,
-            generator=generator,
-            datamodule=hawkes,
-            trainer=trainer,
-        )
-        attr["fit"] = explainer.attribute(
-            x_test,
-            return_temporal_attributions=True,
-            show_progress=True,
-        )
+        _attr = list()
+        for target in [0, 1]:
+            _attr.append(
+                explainer.attribute(
+                    x,
+                    baselines=x * 0,
+                    target=target,
+                    return_temporal_attributions=True,
+                    show_progress=True,
+                ).abs()
+            )
+        _attr = th.cat(_attr, dim=-1).gather(-1, y_test).abs()
+        _attr /= _attr.sum(2, keepdim=True)
+        attr["deep_lift"] = _attr * (true_saliency.sum(2, keepdim=True) > 0)
 
     if "gradient_shap" in explainers:
         explainer = TimeForwardTunnel(GradientShap(classifier))
-        attr["gradient_shap"] = explainer.attribute(
-            x_test,
-            baselines=th.cat([x_test * 0, x_test]),
-            n_samples=50,
-            stdevs=0.0001,
-            task="binary",
-            return_temporal_attributions=True,
-            show_progress=True,
-        ).abs()
+        _attr = list()
+        for target in [0, 1]:
+            _attr.append(
+                explainer.attribute(
+                    x,
+                    baselines=th.cat([x * 0, x]),
+                    target=target,
+                    n_samples=50,
+                    stdevs=0.0001,
+                    return_temporal_attributions=True,
+                    show_progress=True,
+                ).abs()
+            )
+        _attr = th.cat(_attr, dim=-1).gather(-1, y_test).abs()
+        _attr /= _attr.sum(2, keepdim=True)
+        attr["gradient_shap"] = _attr * (
+            true_saliency.sum(2, keepdim=True) > 0
+        )
 
     if "integrated_gradients" in explainers:
         explainer = TimeForwardTunnel(IntegratedGradients(classifier))
-        attr["integrated_gradients"] = explainer.attribute(
-            x_test,
-            baselines=x_test * 0,
-            task="binary",
-            return_temporal_attributions=True,
-            show_progress=True,
-        ).abs()
-
-    if "lime" in explainers:
-        explainer = TimeForwardTunnel(Lime(classifier))
-        attr["lime"] = explainer.attribute(
-            x_test,
-            task="binary",
-            return_temporal_attributions=True,
-            show_progress=True,
-        ).abs()
-
-    if "lof_lime" in explainers:
-        explainer = TimeForwardTunnel(LofLime(classifier, embeddings=x_train))
-        attr["lof_lime"] = explainer.attribute(
-            x_test,
-            task="binary",
-            return_temporal_attributions=True,
-            show_progress=True,
-        ).abs()
-
-    if "augmented_occlusion" in explainers:
-        explainer = TimeForwardTunnel(
-            TemporalAugmentedOcclusion(
-                classifier, data=x_train, n_sampling=10, is_temporal=True
+        _attr = list()
+        for target in [0, 1]:
+            _attr.append(
+                explainer.attribute(
+                    x,
+                    baselines=x * 0,
+                    target=target,
+                    return_temporal_attributions=True,
+                    show_progress=True,
+                ).abs()
             )
+        _attr = th.cat(_attr, dim=-1).gather(-1, y_test).abs()
+        _attr /= _attr.sum(2, keepdim=True)
+        attr["integrated_gradients"] = _attr * (
+            true_saliency.sum(2, keepdim=True) > 0
         )
-        attr["augmented_occlusion"] = explainer.attribute(
-            x_test,
-            sliding_window_shapes=(1,),
-            attributions_fn=abs,
-            task="binary",
-            return_temporal_attributions=True,
-            show_progress=True,
-        ).abs()
-
-    if "occlusion" in explainers:
-        explainer = TimeForwardTunnel(TemporalOcclusion(classifier))
-        attr["occlusion"] = explainer.attribute(
-            x_test,
-            sliding_window_shapes=(1,),
-            baselines=x_train.mean(0, keepdim=True),
-            attributions_fn=abs,
-            task="binary",
-            return_temporal_attributions=True,
-            show_progress=True,
-        ).abs()
-
-    if "retain" in explainers:
-        retain = RetainNet(
-            dim_emb=128,
-            dropout_emb=0.4,
-            dim_alpha=8,
-            dim_beta=8,
-            dropout_context=0.4,
-            dim_output=2,
-            loss="cross_entropy",
-        )
-        explainer = Retain(
-            datamodule=hawkes,
-            retain=retain,
-            trainer=Trainer(max_epochs=50, accelerator=accelerator),
-        )
-        attr["retain"] = explainer.attribute(
-            x_test,
-            target=y_test,
-            return_temporal_attributions=True,
-        ).abs()
 
     if "temporal_integrated_gradients" in explainers:
         explainer = TemporalIntegratedGradients(classifier)
-        attr["temporal_integrated_gradients"] = explainer.attribute(
-            x_test,
-            baselines=x_test * 0,
-            n_steps=2,
-            return_temporal_attributions=True,
-            show_progress=True,
-        ).abs()
+        _attr = list()
+        for target in [0, 1]:
+            _attr.append(
+                explainer.attribute(
+                    x,
+                    baselines=x * 0,
+                    target=target,
+                    return_temporal_attributions=True,
+                    show_progress=True,
+                ).abs()
+            )
+        _attr = th.cat(_attr, dim=-1).gather(-1, y_test).abs()
+        _attr /= _attr.sum(2, keepdim=True)
+        attr["temporal_integrated_gradients"] = _attr * (
+            true_saliency.sum(2, keepdim=True) > 0
+        )
 
-    # Get true saliency
-    true_saliency = hawkes.true_saliency(split="test").to(accelerator)
-
-    with open("results.csv", "a") as fp:
+    with open("results.csv", "a") as fp, mp.Lock():
         for k, v in attr.items():
             fp.write(str(seed) + ",")
             fp.write(str(fold) + ",")
             fp.write(k + ",")
-            fp.write(f"{aup(v, true_saliency):.4},")
-            fp.write(f"{aur(v, true_saliency):.4},")
-            fp.write(f"{information(v, true_saliency):.4},")
-            fp.write(f"{entropy(v, true_saliency):.4}")
-            fp.write(f"{roc_auc(v, true_saliency):.4},")
-            fp.write(f"{auprc(v, true_saliency):.4},")
+            fp.write(f"{mae(v, true_saliency, normalize=False):.4},")
+            fp.write(f"{mse(v, true_saliency, normalize=False):.4},")
+            fp.write(f"{rmse(v, true_saliency, normalize=False):.4}")
             fp.write("\n")
 
 
@@ -267,17 +197,9 @@ def parse_args():
         "--explainers",
         type=str,
         default=[
-            "bayes_mask",
             "deep_lift",
-            "dyna_mask",
-            "fit",
             "gradient_shap",
             "integrated_gradients",
-            "lime",
-            "lof_lime",
-            "augmented_occlusion",
-            "occlusion",
-            "retain",
             "temporal_integrated_gradients",
         ],
         nargs="+",
@@ -285,10 +207,10 @@ def parse_args():
         help="List of explainer to use.",
     )
     parser.add_argument(
-        "--accelerator",
+        "--device",
         type=str,
         default="cpu",
-        help="Which accelerator to use.",
+        help="Which device to use.",
     )
     parser.add_argument(
         "--fold",
@@ -302,6 +224,11 @@ def parse_args():
         default=42,
         help="Random seed for data generation.",
     )
+    parser.add_argument(
+        "--deterministic",
+        action="store_true",
+        help="Whether to make training deterministic or not.",
+    )
     return parser.parse_args()
 
 
@@ -309,7 +236,8 @@ if __name__ == "__main__":
     args = parse_args()
     main(
         explainers=args.explainers,
-        accelerator=args.accelerator,
+        device=args.device,
         fold=args.fold,
         seed=args.seed,
+        deterministic=args.deterministic,
     )

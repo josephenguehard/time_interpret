@@ -14,6 +14,7 @@ class StateClassifier(nn.Module):
         n_state: int,
         hidden_size: int,
         rnn: str = "GRU",
+        dropout: float = 0.5,
         regres: bool = True,
         bidirectional: bool = False,
     ):
@@ -41,7 +42,7 @@ class StateClassifier(nn.Module):
         self.regressor = nn.Sequential(
             nn.BatchNorm1d(num_features=self.hidden_size),
             nn.ReLU(),
-            nn.Dropout(0.5),
+            nn.Dropout(dropout),
             nn.Linear(self.hidden_size, self.n_state),
         )
 
@@ -70,6 +71,7 @@ class StateClassifierNet(Net):
         n_state: int,
         hidden_size: int,
         rnn: str = "GRU",
+        dropout: float = 0.5,
         regres: bool = True,
         bidirectional: bool = False,
         loss: Union[str, Callable] = "mse",
@@ -84,6 +86,7 @@ class StateClassifierNet(Net):
             n_state=n_state,
             hidden_size=hidden_size,
             rnn=rnn,
+            dropout=dropout,
             regres=regres,
             bidirectional=bidirectional,
         )
@@ -97,6 +100,7 @@ class StateClassifierNet(Net):
             lr_scheduler_args=lr_scheduler_args,
             l2=l2,
         )
+        self.save_hyperparameters()
 
         for stage in ["train", "val", "test"]:
             setattr(self, stage + "_acc", Accuracy())
@@ -122,7 +126,5 @@ class StateClassifierNet(Net):
         return loss
 
     def predict_step(self, batch, batch_idx, dataloader_idx=0):
-        t = batch[1].shape[-1] - 1
         x, y = batch
-        x = x[:, : t + 1]
         return self(x)

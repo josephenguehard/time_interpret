@@ -221,17 +221,19 @@ class Mask(nn.Module):
             (self.reg_ref.to(self.mask.device) - mask_sorted) ** 2
         ).mean()
 
-        # Get time regularisation
-        mask = self.mask.reshape(
-            (len(self.mask) // len(self.keep_ratio), len(self.keep_ratio))
-            + self.mask.shape[1:]
-        )
-        time_reg = (
-            th.abs(
-                mask[:, :, 1 : self.mask.shape[TIME_DIM] - 1, ...]
-                - mask[:, :, : self.mask.shape[TIME_DIM] - 2, ...]
+        # Get time regularisation if factor is positive
+        time_reg = 0.0
+        if self.time_reg_factor > 0:
+            mask = self.mask.reshape(
+                (len(self.mask) // len(self.keep_ratio), len(self.keep_ratio))
+                + self.mask.shape[1:]
             )
-        ).mean()
+            time_reg = (
+                th.abs(
+                    mask[:, :, 1 : self.mask.shape[TIME_DIM] - 1, ...]
+                    - mask[:, :, : self.mask.shape[TIME_DIM] - 2, ...]
+                )
+            ).mean()
 
         # Return loss plus regularisation
         return (

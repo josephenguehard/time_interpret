@@ -218,7 +218,7 @@ class AugmentedOcclusion(Occlusion):
             # sampling to expand tensors along the first dim
             perturbations_per_eval=perturbations_per_eval * self.n_sampling,
             attributions_fn=attributions_fn,
-            show_progress=False,
+            show_progress=show_progress,
         )
 
     def _construct_ablated_input(

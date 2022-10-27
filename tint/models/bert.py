@@ -6,6 +6,7 @@ try:
     )
 except ImportError:
     BertConfig = None
+    BertTokenizer = None
     BertForSequenceClassification = None
 
 
@@ -13,12 +14,12 @@ def Bert(
     pretrained_model_name_or_path: str = None,
     config=None,
     vocab_file=None,
+    cache_dir=None,
     **kwargs
 ):
     r"""
     Get Bert model for sentence classification, either as a pre-trained model
-    or from scratch. Any transformers model could theoretically be used, this
-    method is provided as an example.
+    or from scratch.
 
     Args:
         pretrained_model_name_or_path: Path of the pre-trained model.
@@ -27,10 +28,15 @@ def Bert(
             model, otherwise unused. Default to ``None``
         vocab_file: Path to a vocab file for the tokenizer.
             Default to ``None``
+        cache_dir: Where to save pretrained model. Default to ``None``
         kwargs: Additional arguments for the tokenizer if not pretrained.
 
     Returns:
-        BertForSequenceClassification: Bert model for sentence classification.
+        2-element tuple of **Bert Tokenizer**, **Bert Model**:
+        - **Bert Tokenizer** (*BertTokenizer*):
+            Bert Tokenizer.
+        - **Bert Model** (*BertForSequenceClassification*):
+            Bert model for sentence classification.
 
     References:
         https://huggingface.co/docs/transformers/main/en/model_doc/bert
@@ -53,9 +59,13 @@ def Bert(
 
     # Otherwise return untrained bert model
     return (
-        BertTokenizer.from_pretrained(pretrained_model_name_or_path),
+        BertTokenizer.from_pretrained(
+            pretrained_model_name_or_path,
+            cache_dir=cache_dir,
+        ),
         BertForSequenceClassification.from_pretrained(
             pretrained_model_name_or_path,
+            cache_dir=cache_dir,
             return_dict=False,
         ),
     )

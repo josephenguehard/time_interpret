@@ -1,12 +1,15 @@
 from .augmented_occlusion import AugmentedOcclusion
-from .bayes import BayesLime, BayesShap
-from .bayes_mask import BayesMask
+from .bayes import BayesLime, BayesKernelShap
 from .discretised_ig import DiscretetizedIntegratedGradients
 from .dynamic_masks import DynaMask
+from .extremal_mask import ExtremalMask
+from .feature_ablation import FeatureAblation
 from .fit import Fit
+from .geodesic_ig import GeodesicIntegratedGradients
 from .lof import LofKernelShap, LofLime
 from .occlusion import Occlusion
 from .retain import Retain
+from .seq_ig import SequentialIntegratedGradients
 from .smooth_grad import SmoothGrad
 from .temporal_augmented_occlusion import TemporalAugmentedOcclusion
 from .temporal_ig import TemporalIntegratedGradients
@@ -15,16 +18,19 @@ from .time_forward_tunnel import TimeForwardTunnel
 
 __all__ = [
     "AugmentedOcclusion",
+    "BayesKernelShap",
     "BayesLime",
-    "BayesMask",
-    "BayesShap",
     "DiscretetizedIntegratedGradients",
     "DynaMask",
+    "ExtremalMask",
+    "FeatureAblation",
     "Fit",
+    "GeodesicIntegratedGradients",
     "LofKernelShap",
     "LofLime",
     "Occlusion",
     "Retain",
+    "SequentialIntegratedGradients",
     "SmoothGrad",
     "TemporalAugmentedOcclusion",
     "TemporalIntegratedGradients",

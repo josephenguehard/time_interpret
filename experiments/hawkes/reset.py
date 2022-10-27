@@ -4,9 +4,7 @@ import shutil
 
 def main():
     with open("results.csv", "w") as fp:
-        fp.write(
-            "Seed,Fold,Explainer,AUP,AUR,Information,Entropy,AUROC,AUPRC\n"
-        )
+        fp.write("Seed,Fold,Explainer,MAE,MSE,RMSE\n")
 
     if os.path.exists("lightning_logs"):
         shutil.rmtree("lightning_logs")

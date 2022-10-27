@@ -1,3 +1,4 @@
+import copy
 import torch as th
 import torch.nn as nn
 
@@ -69,7 +70,9 @@ class CNN(nn.Module):
         activations (list, str): Activation functions. Either a list or a
             string. Default to ``'relu'``
         pooling (list, str): Pooling module. Either a list or a string.
-            Default t0 ``None``
+            Default to ``None``
+        flatten (bool): Whether to flatten the output of the model or not.
+            Default to ``True``
 
     References:
         https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html#torch.nn.Conv2d
@@ -97,6 +100,7 @@ class CNN(nn.Module):
         norm: Union[list, str] = None,
         activations: Union[list, str] = "relu",
         pooling: Union[list, str] = None,
+        flatten: bool = True,
     ):
         super().__init__()
 
@@ -124,7 +128,7 @@ class CNN(nn.Module):
                 f"{len(pooling)} but should be {length - 1}."
             )
 
-        layers = [nn.Conv2d] * length
+        layers = [nn.Conv2d for _ in range(length)]
         if isinstance(kernel_size, int):
             kernel_size = [kernel_size] * length
         if isinstance(stride, int):
@@ -142,11 +146,16 @@ class CNN(nn.Module):
         if isinstance(dropout, float):
             dropout = [dropout] * (length - 1)
         if isinstance(norm, str):
-            norm = [NORMS[norm]] * (length - 1)
+            norm = [copy.deepcopy(NORMS[norm]) for _ in range(length - 1)]
         if isinstance(activations, str):
-            activations = [ACTIVATIONS[activations]] * (length - 1)
+            activations = [
+                copy.deepcopy(ACTIVATIONS[activations])
+                for _ in range(length - 1)
+            ]
         if isinstance(pooling, str):
-            pooling = [POOLS[pooling]] * (length - 1)
+            pooling = [
+                copy.deepcopy(POOLS[pooling]) for _ in range(length - 1)
+            ]
 
         model = dict()
         for i in range(length):
@@ -187,7 +196,7 @@ class CNN(nn.Module):
                 name = pooling[i].__class__.__name__
                 model[f"{name}_{i}"] = pooling[i]
 
-            if final_layer:
+            if final_layer and flatten:
                 name = nn.Flatten.__name__
                 model[f"{name}_{i}"] = nn.Flatten(1)
 

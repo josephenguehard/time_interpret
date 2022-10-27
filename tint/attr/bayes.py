@@ -2,7 +2,7 @@ from captum.attr import Lime, KernelShap
 from captum._utils.models import Model
 from typing import Callable
 
-from .models import SkLearnBayesianRidge
+from .models import BLRRidge
 
 
 class BayesLime(Lime):
@@ -62,13 +62,13 @@ class BayesLime(Lime):
     ) -> None:
         super().__init__(
             forward_func=forward_func,
-            interpretable_model=interpretable_model or SkLearnBayesianRidge(),
+            interpretable_model=interpretable_model or BLRRidge(),
             similarity_func=None,
             perturb_func=None,
         )
 
 
-class BayesShap(KernelShap):
+class BayesKernelShap(KernelShap):
     """
     Bayesian version of KernelShap.
 
@@ -108,13 +108,13 @@ class BayesShap(KernelShap):
 
     Examples:
         >>> import torch as th
-        >>> from tint.attr import BayesShap
+        >>> from tint.attr import BayesKernelShap
         >>> from tint.models import MLP
         <BLANKLINE>
         >>> inputs = th.rand(8, 5)
         >>> mlp = MLP([5, 3, 1])
         <BLANKLINE>
-        >>> explainer = BayesShap(mlp)
+        >>> explainer = BayesKernelShap(mlp)
         >>> attr = explainer.attribute(inputs)
     """
 
@@ -125,6 +125,4 @@ class BayesShap(KernelShap):
     ) -> None:
         super().__init__(forward_func=forward_func)
 
-        self.interpretable_model = (
-            interpretable_model or SkLearnBayesianRidge()
-        )
+        self.interpretable_model = interpretable_model or BLRRidge()

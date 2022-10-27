@@ -6,8 +6,11 @@ captum
 datasets
 flake8
 numpy
+jupyter
 optuna
 pandas
 pytorch-lightning
+scikit-image
 scikit-learn
+scipy
 transformers

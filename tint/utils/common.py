@@ -1,5 +1,5 @@
 import copy
-
+import numpy as np
 import torch
 
 from captum._utils.common import (
@@ -10,7 +10,10 @@ from captum._utils.common import (
     _format_additional_forward_args,
     _run_forward,
 )
-from captum._utils.typing import TensorOrTupleOfTensorsGeneric
+from captum._utils.typing import (
+    BaselineType,
+    TensorOrTupleOfTensorsGeneric,
+)
 
 from torch import Tensor
 from typing import Any, Callable, Tuple
@@ -176,6 +179,39 @@ def _slice_to_time(
     )
 
 
+def _expand_baselines(
+    inputs: Tuple[Tensor, ...],
+    baselines: BaselineType,
+    n_samples: int,
+    draw_baseline_from_distrib: bool = False,
+):
+    # WARNING We assume inputs has already been expanded
+    # bsz is actually bsz * n_samples here
+    def get_random_baseline_indices(bsz, baseline):
+        num_ref_samples = baseline.shape[0]
+        return np.random.choice(num_ref_samples, bsz).tolist()
+
+    if draw_baseline_from_distrib:
+        bsz = inputs[0].shape[0]
+        baselines = tuple(
+            baseline[get_random_baseline_indices(bsz, baseline)]
+            if isinstance(baseline, torch.Tensor)
+            else baseline
+            for baseline in baselines
+        )
+    else:
+        baselines = tuple(
+            baseline.repeat_interleave(n_samples, dim=0)
+            if isinstance(baseline, torch.Tensor)
+            and baseline.shape[0] == input.shape[0]
+            and baseline.shape[0] > 1
+            else baseline
+            for input, baseline in zip(inputs, baselines)
+        )
+
+    return baselines
+
+
 def _validate_input(
     inputs: Tuple[Tensor, ...],
     data: Tuple[Tensor, ...],
@@ -203,3 +239,57 @@ def _validate_input(
                 " input tensor must be a scalar."
                 " Found data: {} and input: {} ".format(d.shape, input.shape)
             )
+
+
+def unsqueeze_like(tensor: torch.Tensor, like: torch.Tensor):
+    """
+    Unsqueeze last dimensions of tensor to match another tensor's number of dimensions.
+
+    Args:
+        tensor (torch.Tensor): tensor to unsqueeze
+        like (torch.Tensor): tensor whose dimensions to match
+    """
+    n_unsqueezes = like.ndim - tensor.ndim
+    if n_unsqueezes < 0:
+        raise ValueError(f"tensor.ndim={tensor.ndim} > like.ndim={like.ndim}")
+    elif n_unsqueezes == 0:
+        return tensor
+    else:
+        return tensor[(...,) + (None,) * n_unsqueezes]
+
+
+def add_noise_to_inputs(inputs, stdevs, nt_samples: int) -> Tuple[Tensor, ...]:
+    if isinstance(stdevs, tuple):
+        assert len(stdevs) == len(inputs), (
+            "The number of input tensors "
+            "in {} must be equal to the number of stdevs values {}".format(
+                len(inputs), len(stdevs)
+            )
+        )
+    else:
+        assert isinstance(
+            stdevs, float
+        ), "stdevs must be type float. " "Given: {}".format(type(stdevs))
+        stdevs = (stdevs,) * len(inputs)
+    return tuple(
+        add_noise_to_input(input, stdev, nt_samples)
+        for (input, stdev) in zip(inputs, stdevs)
+    )
+
+
+def add_noise_to_input(input: Tensor, stdev: float, nt_samples: int) -> Tensor:
+    # batch size
+    bsz = input.shape[0]
+
+    # expand input size by the number of drawn samples
+    input_expanded_size = (bsz * nt_samples,) + input.shape[1:]
+
+    # expand stdev for the shape of the input and number of drawn samples
+    stdev_expanded = torch.tensor(stdev, device=input.device).repeat(
+        input_expanded_size
+    )
+
+    # draws `np.prod(input_expanded_size)` samples from normal distribution
+    # with given input parametrization
+    noise = torch.normal(0, stdev_expanded)
+    return input.repeat_interleave(nt_samples, dim=0) + noise

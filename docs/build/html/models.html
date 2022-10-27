@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Models &mdash; Time Interpret 0.0.1 documentation</title>
+  <title>Models &mdash; Time Interpret 0.2.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
@@ -101,14 +101,20 @@ framework. These models are listed here:</p>
 <tr class="row-even"><td><p><a class="reference internal" href="#tint.models.CNN" title="tint.models.CNN"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.models.CNN</span></code></a>(units, kernel_size[, ...])</p></td>
 <td><p>Base CNN class.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#tint.models.MLP" title="tint.models.MLP"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.models.MLP</span></code></a>(units[, bias, dropout, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#tint.models.DistilBert" title="tint.models.DistilBert"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.models.DistilBert</span></code></a>([...])</p></td>
+<td><p>Get DistilBert model for sentence classification, either as a pre-trained model or from scratch.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#tint.models.MLP" title="tint.models.MLP"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.models.MLP</span></code></a>(units[, bias, dropout, ...])</p></td>
 <td><p>Base MLP class.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#tint.models.Net" title="tint.models.Net"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.models.Net</span></code></a>(layers[, loss, optim, lr, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#tint.models.Net" title="tint.models.Net"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.models.Net</span></code></a>(layers[, loss, optim, lr, ...])</p></td>
 <td><p>Base Net class.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#tint.models.RNN" title="tint.models.RNN"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.models.RNN</span></code></a>(input_size[, rnn, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#tint.models.RNN" title="tint.models.RNN"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.models.RNN</span></code></a>(input_size[, rnn, ...])</p></td>
 <td><p>A base recurrent model class.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#tint.models.Roberta" title="tint.models.Roberta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.models.Roberta</span></code></a>([...])</p></td>
+<td><p>Get Roberta model for sentence classification, either as a pre-trained model or from scratch.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#tint.models.TransformerEncoder" title="tint.models.TransformerEncoder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.models.TransformerEncoder</span></code></a>(d_model[, ...])</p></td>
 <td><p>A base transformer encoder model class.</p></td>
@@ -120,10 +126,9 @@ framework. These models are listed here:</p>
 <span id="detailed-classes-and-methods"></span><h2>Detailed classes and methods<a class="headerlink" href="#module-tint.models" title="Permalink to this heading"></a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="tint.models.Bert">
-<span class="sig-prename descclassname"><span class="pre">tint.models.</span></span><span class="sig-name descname"><span class="pre">Bert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained_model_name_or_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vocab_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/models/bert.html#Bert"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.models.Bert" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">tint.models.</span></span><span class="sig-name descname"><span class="pre">Bert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained_model_name_or_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vocab_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/models/bert.html#Bert"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.models.Bert" title="Permalink to this definition"></a></dt>
 <dd><p>Get Bert model for sentence classification, either as a pre-trained model
-or from scratch. Any transformers model could theoretically be used, this
-method is provided as an example.</p>
+or from scratch.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -133,14 +138,27 @@ If <code class="docutils literal notranslate"><span class="pre">None</span></cod
 model, otherwise unused. Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
 <li><p><span class="target" id="tint.models.Bert.params.vocab_file"></span><strong>vocab_file</strong><a class="paramlink headerlink reference internal" href="#tint.models.Bert.params.vocab_file">¶</a> – Path to a vocab file for the tokenizer.
 Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.models.Bert.params.cache_dir"></span><strong>cache_dir</strong><a class="paramlink headerlink reference internal" href="#tint.models.Bert.params.cache_dir">¶</a> – Where to save pretrained model. Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
 <li><p><span class="target" id="tint.models.Bert.params.kwargs"></span><strong>kwargs</strong><a class="paramlink headerlink reference internal" href="#tint.models.Bert.params.kwargs">¶</a> – Additional arguments for the tokenizer if not pretrained.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Bert model for sentence classification.</p>
+<dd class="field-even"><p><ul class="simple">
+<li><dl class="simple">
+<dt><strong>Bert Tokenizer</strong> (<em>BertTokenizer</em>):</dt><dd><p>Bert Tokenizer.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Bert Model</strong> (<em>BertForSequenceClassification</em>):</dt><dd><p>Bert model for sentence classification.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>BertForSequenceClassification</p>
+<dd class="field-odd"><p>2-element tuple of <strong>Bert Tokenizer</strong>, <strong>Bert Model</strong></p>
 </dd>
 </dl>
 <p class="rubric">References</p>
@@ -155,7 +173,7 @@ Default to <code class="docutils literal notranslate"><span class="pre">None</sp
 
 <dl class="py class">
 <dt class="sig sig-object py" id="tint.models.CNN">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tint.models.</span></span><span class="sig-name descname"><span class="pre">CNN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dilation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">groups</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'zeros'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'relu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pooling</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/models/cnn.html#CNN"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.models.CNN" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tint.models.</span></span><span class="sig-name descname"><span class="pre">CNN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dilation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">groups</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'zeros'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'relu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pooling</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flatten</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/models/cnn.html#CNN"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.models.CNN" title="Permalink to this definition"></a></dt>
 <dd><p>Base CNN class.</p>
 <p>The following batch norms are available:</p>
 <ul class="simple">
@@ -193,7 +211,9 @@ Default to <code class="docutils literal notranslate"><span class="pre">None</sp
 <li><p><span class="target" id="tint.models.CNN.params.activations"></span><strong>activations</strong><a class="paramlink headerlink reference internal" href="#tint.models.CNN.params.activations">¶</a> (<em>list</em><em>, </em><em>str</em>) – Activation functions. Either a list or a
 string. Default to <code class="docutils literal notranslate"><span class="pre">'relu'</span></code></p></li>
 <li><p><span class="target" id="tint.models.CNN.params.pooling"></span><strong>pooling</strong><a class="paramlink headerlink reference internal" href="#tint.models.CNN.params.pooling">¶</a> (<em>list</em><em>, </em><em>str</em>) – Pooling module. Either a list or a string.
-Default t0 <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.models.CNN.params.flatten"></span><strong>flatten</strong><a class="paramlink headerlink reference internal" href="#tint.models.CNN.params.flatten">¶</a> (<em>bool</em>) – Whether to flatten the output of the model or not.
+Default to <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
 </ul>
 </dd>
 </dl>
@@ -222,6 +242,54 @@ registered hooks while the latter silently ignores them.</p>
 </div>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tint.models.DistilBert">
+<span class="sig-prename descclassname"><span class="pre">tint.models.</span></span><span class="sig-name descname"><span class="pre">DistilBert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained_model_name_or_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vocab_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/models/distilbert.html#DistilBert"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.models.DistilBert" title="Permalink to this definition"></a></dt>
+<dd><p>Get DistilBert model for sentence classification, either as a pre-trained
+model or from scratch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.models.DistilBert.params.pretrained_model_name_or_path"></span><strong>pretrained_model_name_or_path</strong><a class="paramlink headerlink reference internal" href="#tint.models.DistilBert.params.pretrained_model_name_or_path">¶</a> – Path of the pre-trained model.
+If <code class="docutils literal notranslate"><span class="pre">None</span></code>, return an untrained DistilBert model.
+Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.models.DistilBert.params.config"></span><strong>config</strong><a class="paramlink headerlink reference internal" href="#tint.models.DistilBert.params.config">¶</a> – Config of the DistilBert. Required when not loading a
+pre-trained model, otherwise unused. Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.models.DistilBert.params.vocab_file"></span><strong>vocab_file</strong><a class="paramlink headerlink reference internal" href="#tint.models.DistilBert.params.vocab_file">¶</a> – Path to a vocab file for the tokenizer.
+Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.models.DistilBert.params.cache_dir"></span><strong>cache_dir</strong><a class="paramlink headerlink reference internal" href="#tint.models.DistilBert.params.cache_dir">¶</a> – Where to save pretrained model. Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.models.DistilBert.params.kwargs"></span><strong>kwargs</strong><a class="paramlink headerlink reference internal" href="#tint.models.DistilBert.params.kwargs">¶</a> – Additional arguments for the tokenizer if not pretrained.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><dl class="simple">
+<dt><strong>DistilBert Tokenizer</strong> (<em>DistilBertTokenizer</em>):</dt><dd><p>DistilBert Tokenizer.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>DistilBert Model</strong> (<em>DistilBertForSequenceClassification</em>):</dt><dd><p>DistilBert model for sentence classification.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>2-element tuple of <strong>DistilBert Tokenizer</strong>, <strong>DistilBert Model</strong></p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p><a class="reference external" href="https://huggingface.co/docs/transformers/main/en/model_doc/distilbert">https://huggingface.co/docs/transformers/main/en/model_doc/distilbert</a></p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.models</span> <span class="kn">import</span> <span class="n">DistilBert</span>
+
+<span class="go"> &gt;&gt;&gt; tokenizer, model = DistilBert(&quot;distilbert-base-uncased&quot;)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py class">
@@ -874,6 +942,54 @@ registered hooks while the latter silently ignores them.</p>
 </div>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tint.models.Roberta">
+<span class="sig-prename descclassname"><span class="pre">tint.models.</span></span><span class="sig-name descname"><span class="pre">Roberta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained_model_name_or_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vocab_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/models/roberta.html#Roberta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.models.Roberta" title="Permalink to this definition"></a></dt>
+<dd><p>Get Roberta model for sentence classification, either as a pre-trained
+model or from scratch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.models.Roberta.params.pretrained_model_name_or_path"></span><strong>pretrained_model_name_or_path</strong><a class="paramlink headerlink reference internal" href="#tint.models.Roberta.params.pretrained_model_name_or_path">¶</a> – Path of the pre-trained model.
+If <code class="docutils literal notranslate"><span class="pre">None</span></code>, return an untrained Roberta model.
+Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.models.Roberta.params.config"></span><strong>config</strong><a class="paramlink headerlink reference internal" href="#tint.models.Roberta.params.config">¶</a> – Config of the Roberta. Required when not loading a
+pre-trained model, otherwise unused. Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.models.Roberta.params.vocab_file"></span><strong>vocab_file</strong><a class="paramlink headerlink reference internal" href="#tint.models.Roberta.params.vocab_file">¶</a> – Path to a vocab file for the tokenizer.
+Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.models.Roberta.params.cache_dir"></span><strong>cache_dir</strong><a class="paramlink headerlink reference internal" href="#tint.models.Roberta.params.cache_dir">¶</a> – Where to save pretrained model. Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.models.Roberta.params.kwargs"></span><strong>kwargs</strong><a class="paramlink headerlink reference internal" href="#tint.models.Roberta.params.kwargs">¶</a> – Additional arguments for the tokenizer if not pretrained.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><dl class="simple">
+<dt><strong>Roberta Tokenizer</strong> (<em>RobertaTokenizer</em>):</dt><dd><p>Roberta Tokenizer.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Roberta Model</strong> (<em>RobertaForSequenceClassification</em>):</dt><dd><p>Roberta model for sentence classification.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>2-element tuple of <strong>Roberta Tokenizer</strong>, <strong>Roberta Model</strong></p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p><a class="reference external" href="https://huggingface.co/docs/transformers/main/en/model_doc/roberta">https://huggingface.co/docs/transformers/main/en/model_doc/roberta</a></p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.models</span> <span class="kn">import</span> <span class="n">Roberta</span>
+
+<span class="go"> &gt;&gt;&gt; tokenizer, model = Roberta(&quot;roberta-base&quot;)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py class">

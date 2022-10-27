@@ -67,4 +67,5 @@ def aur(
         attributions=attributions,
         true_attributions=true_attributions,
         normalize=normalize,
+        hard_labels=True,
     )

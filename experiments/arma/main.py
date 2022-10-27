@@ -1,5 +1,8 @@
+import multiprocessing as mp
 import numpy as np
+import random
 import torch as th
+import torch.nn as nn
 
 from argparse import ArgumentParser
 from captum.attr import (
@@ -8,23 +11,24 @@ from captum.attr import (
     ShapleyValueSampling,
 )
 from pytorch_lightning import Trainer, seed_everything
+from pytorch_lightning.loggers import TensorBoardLogger
 from typing import List
 
 from tint.attr import (
-    BayesMask,
     DynaMask,
+    ExtremalMask,
     Occlusion,
-    TemporalIntegratedGradients,
 )
-from tint.attr.models import BayesMaskNet, MaskNet
+from tint.attr.models import ExtremalMaskNet, MaskNet
 from tint.datasets import Arma
 from tint.metrics.white_box import aup, aur, information, entropy
+from tint.models import MLP, RNN
 
 
 def main(
     rare_dim: int,
     explainers: List[str],
-    accelerator: str = "cpu",
+    device: str = "cpu",
     fold: int = 0,
     seed: int = 42,
     deterministic: bool = False,
@@ -33,48 +37,34 @@ def main(
     if deterministic:
         seed_everything(seed=seed, workers=True)
 
+    # Get accelerator and device
+    accelerator = device.split(":")[0]
+    device_id = 1
+    if len(device.split(":")) > 1:
+        device_id = [int(device.split(":")[1])]
+
     # Load data
     arma = Arma(n_folds=5, fold=fold, seed=seed)
     arma.download()
 
     # Only use the first 10 data points
-    x = arma.preprocess()["x"][:10].to(accelerator)
-    true_saliency = arma.true_saliency(dim=rare_dim)[:10].to(accelerator)
+    with mp.Lock():
+        x = arma.preprocess()["x"][:10].to(device)
+        true_saliency = arma.true_saliency(dim=rare_dim)[:10].to(device)
 
     # Create dict of attributions
     attr = dict()
-
-    if "bayes_mask" in explainers:
-        trainer = Trainer(
-            max_epochs=2000,
-            accelerator=accelerator,
-            devices=1,
-            log_every_n_steps=2,
-            deterministic=deterministic,
-        )
-        mask = BayesMaskNet(
-            forward_func=arma.get_white_box,
-            distribution="normal",
-            eps=1e-5,
-            optim="adam",
-            lr=0.01,
-        )
-        explainer = BayesMask(arma.get_white_box)
-        _attr = explainer.attribute(
-            x,
-            trainer=trainer,
-            mask_net=mask,
-            batch_size=50,
-            additional_forward_args=(true_saliency,),
-        )
-        attr["bayes_mask"] = _attr
 
     if "dyna_mask" in explainers:
         trainer = Trainer(
             max_epochs=1000,
             accelerator=accelerator,
-            devices=1,
+            devices=device_id,
             deterministic=deterministic,
+            logger=TensorBoardLogger(
+                save_dir=".",
+                version=random.getrandbits(128),
+            ),
         )
         mask = MaskNet(
             forward_func=arma.get_white_box,
@@ -96,6 +86,42 @@ def main(
         )
         print(f"Best keep ratio is {_attr[1]}")
         attr["dyna_mask"] = _attr[0]
+
+    if "extremal_mask" in explainers:
+        trainer = Trainer(
+            max_epochs=2000,
+            accelerator=accelerator,
+            devices=device_id,
+            log_every_n_steps=2,
+            deterministic=deterministic,
+            logger=TensorBoardLogger(
+                save_dir=".",
+                version=random.getrandbits(128),
+            ),
+        )
+        mask = ExtremalMaskNet(
+            forward_func=arma.get_white_box,
+            model=nn.Sequential(
+                RNN(
+                    input_size=x.shape[-1],
+                    rnn="gru",
+                    hidden_size=x.shape[-1],
+                    bidirectional=True,
+                ),
+                MLP([2 * x.shape[-1], x.shape[-1]]),
+            ),
+            optim="adam",
+            lr=0.01,
+        )
+        explainer = ExtremalMask(arma.get_white_box)
+        _attr = explainer.attribute(
+            x,
+            trainer=trainer,
+            mask_net=mask,
+            batch_size=50,
+            additional_forward_args=(true_saliency,),
+        )
+        attr["extremal_mask"] = _attr
 
     if "integrated_gradients" in explainers:
         attr["integrated_gradients"] = th.zeros_like(x)
@@ -140,21 +166,7 @@ def main(
                 additional_forward_args=(saliency,),
             ).abs()
 
-    if "temporal_integrated_gradients" in explainers:
-        attr["temporal_integrated_gradients"] = th.zeros_like(x)
-        for i, (inputs, saliency) in enumerate(zip(x, true_saliency)):
-            explainer = TemporalIntegratedGradients(
-                forward_func=arma.get_white_box
-            )
-            baseline = inputs * 0
-            attr["temporal_integrated_gradients"][i] = explainer.attribute(
-                inputs,
-                baselines=baseline,
-                additional_forward_args=(saliency,),
-                temporal_additional_forward_args=(True,),
-            ).abs()
-
-    with open("results.csv", "a") as fp:
+    with open("results.csv", "a") as fp, mp.Lock():
         for k, v in attr.items():
             fp.write("rare-feature" if rare_dim == 1 else "rare-time")
             fp.write("," + str(seed) + ",")
@@ -179,23 +191,22 @@ def parse_args():
         "--explainers",
         type=str,
         default=[
-            "bayes_mask",
             "dyna_mask",
+            "extremal_mask",
             "integrated_gradients",
             "occlusion",
             "permutation",
             "shapley_values_sampling",
-            "temporal_integrated_gradients",
         ],
         nargs="+",
         metavar="N",
         help="List of explainer to use.",
     )
     parser.add_argument(
-        "--accelerator",
+        "--device",
         type=str,
         default="cpu",
-        help="Which accelerator to use.",
+        help="Which device to use.",
     )
     parser.add_argument(
         "--fold",
@@ -222,7 +233,7 @@ if __name__ == "__main__":
     main(
         rare_dim=args.rare_dim,
         explainers=args.explainers,
-        accelerator=args.accelerator,
+        device=args.device,
         fold=args.fold,
         seed=args.seed,
         deterministic=args.deterministic,

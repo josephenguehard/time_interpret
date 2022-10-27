@@ -17,7 +17,9 @@ dependencies:
   - optuna
   - pandas
   - pip
+  - scikit-image
   - scikit-learn
+  - scipy
   - pytorch-lightning
   - torchmetrics
   - torchvision

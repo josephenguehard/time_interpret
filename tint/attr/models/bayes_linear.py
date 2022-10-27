@@ -1,348 +1,289 @@
-import math
+import numpy as np
+import time
 import torch as th
 import torch.nn as nn
-import torch.nn.functional as F
 
-from captum._utils.models import LinearModel
-from captum._utils.models.linear_model.train import (
-    sgd_train_linear_model,
-    sklearn_train_linear_model,
-    l2_loss,
-)
+from captum._utils.models.linear_model import LinearModel
+
+from scipy.stats import invgamma
+from scipy.stats import multivariate_normal
 from torch.utils.data import DataLoader
-from typing import Callable
+from typing import Any, Dict
 
 
-class BayesLinearModel(LinearModel):
-    r"""
-    Bayesian Linear model.
-
-    Built on top of the captum linear layer to be integrated in this library.
+class BayesianLinearRegression:
+    """
+    Bayesian Linear Regression model.
 
     Args:
-        train_fn (callable): The function to train with.
-
-    References:
-        https://github.com/Harry24k/bayesian-neural-network-pytorch
-        https://arxiv.org/abs/2107.02425
+        percent (int): Percentage for the credible intervals.
+            Default to 95
+        l2 (bool): Whether to use l2 regularisation.
+            Default to ``True``
     """
 
-    def __init__(self, train_fn: Callable, **kwargs) -> None:
-        super().__init__(train_fn=train_fn, **kwargs)
+    def __init__(self, percent=95, l2=True):
+        self.percent = percent
+        self.l2 = l2
 
-        self.prior_log_sigma = None
-        self.register_parameter("weight_log_sigma", None)
-        self.register_parameter("bias_log_sigma", None)
-
-    def _construct_model_params(
+    def fit(
         self,
-        prior_sigma: float = 0.1,
-        in_features: int = None,
-        out_features: int = None,
-        norm_type: str = None,
-        affine_norm: bool = False,
-        bias: bool = True,
-        weight_values: th.Tensor = None,
-        bias_value: th.Tensor = None,
-        classes: th.Tensor = None,
+        X: np.ndarray,
+        y: np.ndarray,
+        sample_weight: np.ndarray,
+        compute_creds=True,
     ):
-        r"""
-        Lazily initializes a linear model. This will be called for you in a
-        train method.
-
-        Args:
-            in_features (int):
-                The number of input features
-            out_features (int):
-                The number of output features.
-            norm_type (str):
-                The type of normalization that can occur. Please assign this
-                to one of `PyTorchLinearModel.SUPPORTED_NORMS`.
-            affine_norm (bool):
-                Whether or not to learn an affine transformation of the
-                normalization parameters used.
-            bias (bool):
-                Whether to add a bias term. Not needed if normalized input.
-            weight_values (th.Tensor):
-                The values to initialize the linear model with. This must be a
-                1D or 2D tensor, and of the form `(num_outputs, num_features)`
-                or `(num_features,)`. Additionally, if this is provided you
-                need not to provide `in_features` or `out_features`.
-            bias_value (th.Tensor): The bias value to initialize the model
-                with. Default to ``None``
-            classes (th.Tensor):
-                The list of prediction classes supported by the model in case
-                it performs classification. In case of regression it is set to
-                None. Default to ``None``
         """
-        super()._construct_model_params(
-            in_features=in_features,
-            out_features=out_features,
-            norm_type=norm_type,
-            affine_norm=affine_norm,
-            bias=bias,
-            weight_values=weight_values,
-            bias_value=bias_value,
-            classes=classes,
-        )
+        Fit the bayesian linear regression.
 
-        self.prior_log_sigma = math.log(prior_sigma)
-        self._freeze = False
+        Arguments:
+            X (np.ndarray): Data.
+            y (np.ndarray): Target.
+            sample_weight (np.ndarray): Sample weights.
+            compute_creds (bool): Whether to compute credible intervals.
+                Default to ``True``
+        """
 
-        if weight_values is not None:
-            in_features = weight_values.shape[-1]
-            out_features = (
-                1 if len(weight_values.shape) == 1 else weight_values.shape[0]
+        # store weights
+        weights = sample_weight
+
+        # add intercept
+        X = np.concatenate((np.ones(X.shape[0])[:, None], X), axis=1)
+        diag_pi_z = np.zeros((len(weights), len(weights)))
+        np.fill_diagonal(diag_pi_z, weights)
+
+        if self.l2:
+            V_Phi = np.linalg.inv(
+                X.transpose().dot(diag_pi_z).dot(X) + np.eye(X.shape[1])
             )
+        else:
+            V_Phi = np.linalg.inv(X.transpose().dot(diag_pi_z).dot(X))
 
-        self.weight_log_sigma = nn.Parameter(
-            th.Tensor(out_features, in_features)
+        Phi_hat = V_Phi.dot(X.transpose()).dot(diag_pi_z).dot(y)
+
+        N = X.shape[0]
+        Y_m_Phi_hat = y - X.dot(Phi_hat)
+
+        s_2 = (1.0 / N) * (
+            Y_m_Phi_hat.dot(diag_pi_z).dot(Y_m_Phi_hat)
+            + Phi_hat.transpose().dot(Phi_hat)
         )
 
-        if bias:
-            self.bias_log_sigma = nn.Parameter(th.Tensor(out_features))
+        self.score = s_2
+
+        self.s_2 = s_2
+        self.N = N
+        self.V_Phi = V_Phi
+        self.Phi_hat = Phi_hat
+        self.coef_ = Phi_hat[1:]
+        self.intercept_ = Phi_hat[0]
+        self.weights = weights
+
+        if compute_creds:
+            self.creds = self.get_creds(percent=self.percent)
         else:
-            self.register_parameter("bias_log_sigma", None)
+            self.creds = "NA"
 
-        self.weight_log_sigma.data.fill_(self.prior_log_sigma)
-        self.bias_log_sigma.data.fill_(self.prior_log_sigma)
+        self.crit_params = {
+            "s_2": self.s_2,
+            "N": self.N,
+            "V_Phi": self.V_Phi,
+            "Phi_hat": self.Phi_hat,
+            "creds": self.creds,
+        }
 
-        self.has_bias = bias
+        return self
 
-    def freeze(self):
-        self._freeze = True
-
-    def unfreeze(self):
-        self._freeze = False
-
-    def forward(self, x: th.Tensor) -> th.Tensor:
-        assert self.linear is not None
-
-        if self.norm is not None:
-            x = self.norm(x)
-
-        if self._freeze:
-            return F.linear(x, self.linear.weight, self.linear.bias)
-
-        weight = self.linear.weight + th.exp(
-            self.weight_log_sigma
-        ) * th.randn_like(self.weight_log_sigma)
-
-        if self.has_bias:
-            bias = self.linear.bias + th.exp(
-                self.bias_log_sigma
-            ) * th.randn_like(self.bias_log_sigma)
-        else:
-            bias = None
-
-        return F.linear(x.float(), weight, bias)
-
-    def kl_loss(self, reduction: str = "mean") -> th.Tensor:
+    def predict(self, data):
         """
-        Compute KL loss for the BayesLinear layer.
-
-        Args:
-            reduction: Which type of reduction to apply. Either ``'mean'`` or
-                ``'sum'``. Default to ``'mean'``
-
-        Returns:
-            th.Tensor: The loss.
+        The predictive distribution.
+        Arguments:
+            data: The data to predict
         """
-        kl = _kl_loss(
-            self.linear.weight,
-            self.weight_log_sigma,
-            0.0,
-            self.prior_log_sigma,
+        q_1 = np.eye(data.shape[0])
+        data_ones = np.concatenate(
+            (np.ones(data.shape[0])[:, None], data), axis=1
         )
-        n = len(self.linear.weight.view(-1))
 
-        if hasattr(self, "bias"):
-            kl += _kl_loss(
-                self.linear.bias,
-                self.bias_log_sigma,
-                0.0,
-                self.prior_log_sigma,
+        # Get response
+        response = np.matmul(data, self.coef_)
+        response += self.intercept_
+
+        # Compute var
+        temp = np.matmul(data_ones, self.V_Phi)
+        mat = np.matmul(temp, data_ones.transpose())
+        var = self.s_2 * (q_1 + mat)
+        diag = np.diagonal(var)
+
+        return response, np.sqrt(diag)
+
+    def get_ptg(self, desired_width):
+        """
+        Compute the ptg perturbations.
+        """
+        cert = (desired_width / 1.96) ** 2
+        S = self.coef_.shape[0] * self.s_2
+        T = np.mean(self.weights)
+        return 4 * S / (self.coef_.shape[0] * T * cert)
+
+    def get_creds(self, percent=95, n_samples=10_000, get_intercept=False):
+        """
+        Get the credible intervals.
+        Arguments:
+            percent: the percent cutoff for the credible interval, i.e., 95 is 95% credible interval
+            n_samples: the number of samples to compute the credible interval
+            get_intercept: whether to include the intercept in the credible interval
+        """
+        samples = self.draw_posterior_samples(
+            n_samples, get_intercept=get_intercept
+        )
+        creds = np.percentile(
+            np.abs(samples - (self.Phi_hat if get_intercept else self.coef_)),
+            percent,
+            axis=0,
+        )
+        return creds
+
+    def draw_posterior_samples(self, num_samples, get_intercept=False):
+        """
+        Sample from the posterior.
+
+        Arguments:
+            num_samples: number of samples to draw from the posterior
+            get_intercept: whether to include the intercept
+        """
+
+        sigma_2 = invgamma.rvs(
+            self.N / 2, scale=(self.N * self.s_2) / 2, size=num_samples
+        )
+
+        phi_samples = []
+        for sig in sigma_2:
+            sample = multivariate_normal.rvs(
+                mean=self.Phi_hat, cov=self.V_Phi * sig, size=1
             )
-            n += len(self.linear.bias.view(-1))
+            phi_samples.append(sample)
 
-        if reduction == "mean":
-            return kl / n
-        elif reduction == "sum":
-            return kl
+        phi_samples = np.vstack(phi_samples)
+
+        if get_intercept:
+            return phi_samples
         else:
-            raise ValueError(reduction + " is not valid")
+            return phi_samples[:, 1:]
 
 
-def _kl_loss(mu_0, log_sigma_0, mu_1, log_sigma_1):
+class NormLayer(nn.Module):
+    def __init__(self, mean, std, n=None, eps=1e-8) -> None:
+        super().__init__()
+        self.mean = mean
+        self.std = std
+        self.eps = eps
+
+    def forward(self, x):
+        return (x - self.mean) / (self.std + self.eps)
+
+
+def train_bayes_model(
+    model: LinearModel,
+    dataloader: DataLoader,
+    construct_kwargs: Dict[str, Any],
+    norm_input: bool = False,
+    **fit_kwargs,
+):
+    r"""
+    Fit a BayesianLinearRegression model.
+
+    Args
+        model
+            The model to train.
+        dataloader
+            The data to use. This will be exhausted and converted to numpy
+            arrays. Therefore please do not feed an infinite dataloader.
+        norm_input
+            Whether or not to normalize the input
+        construct_kwargs
+            Additional arguments provided to the `sklearn_trainer` constructor
+        fit_kwargs
+            Other arguments to send to `sklearn_trainer`'s `.fit` method
     """
-    An method for calculating KL divergence between two Normal distribution.
+    num_batches = 0
+    xs, ys, ws = [], [], []
+    for data in dataloader:
+        if len(data) == 3:
+            x, y, w = data
+        else:
+            assert len(data) == 2
+            x, y = data
+            w = None
 
-    Arguments:
-        mu_0 (Float) : mean of normal distribution.
-        log_sigma_0 (Float): log(standard deviation of normal distribution).
-        mu_1 (Float): mean of normal distribution.
-        log_sigma_1 (Float): log(standard deviation of normal distribution).
+        xs.append(x.cpu().numpy())
+        ys.append(y.cpu().numpy())
+        if w is not None:
+            ws.append(w.cpu().numpy())
+        num_batches += 1
 
-    """
-    kl = (
-        log_sigma_1
-        - log_sigma_0
-        + (th.exp(log_sigma_0) ** 2 + (mu_0 - mu_1) ** 2)
-        / (2 * math.exp(log_sigma_1) ** 2)
-        - 0.5
+    x = np.concatenate(xs, axis=0)
+    y = np.concatenate(ys, axis=0)
+    if len(ws) > 0:
+        w = np.concatenate(ws, axis=0)
+    else:
+        w = None
+
+    if norm_input:
+        mean, std = x.mean(0), x.std(0)
+        x -= mean
+        x /= std
+
+    t1 = time.time()
+    blr = BayesianLinearRegression(**construct_kwargs)
+    blr.fit(x, y, sample_weight=w, **fit_kwargs)
+
+    t2 = time.time()
+
+    # extract model device
+    device = model.device if hasattr(model, "device") else "cpu"
+
+    num_outputs = blr.coef_.shape[0] if blr.coef_.ndim > 1 else 1
+    weight_values = th.FloatTensor(blr.coef_).to(device)
+    bias_values = th.FloatTensor([blr.intercept_]).to(device)
+    model._construct_model_params(
+        norm_type=None,
+        weight_values=weight_values.view(num_outputs, -1),
+        bias_value=bias_values.squeeze().unsqueeze(0),
+        classes=None,
     )
-    return kl.sum()
+
+    if norm_input:
+        model.norm = NormLayer(mean, std)
+
+    return {"train_time": t2 - t1}
 
 
-class SGDBayesLinearModel(BayesLinearModel):
-    def __init__(self, **kwargs) -> None:
+class BLRLinearModel(LinearModel):
+    def __init__(self, l2: bool, **kwargs) -> None:
         r"""
-        Factory class. Construct a `BayesLinearModel` with the
-        `sgd_train_linear_model` as the train method
+        Factory class to construct a `LinearModel` with BLR training method.
 
         Args:
-            kwargs
-                Arguments send to `self._construct_model_params` after
-                `self.fit` is called. Please refer to that method for parameter
-                documentation.
-        """
-        super().__init__(train_fn=sgd_train_linear_model, **kwargs)
-
-
-class SGDBayesLasso(SGDBayesLinearModel):
-    def __init__(self, kl_weight: float = 0.1, **kwargs) -> None:
-        r"""
-        Factory class to train a `LinearModel` with SGD
-        (`sgd_train_linear_model`) whilst setting appropriate parameters to
-        optimize for ridge regression loss. This optimizes L2 loss + alpha * L1
-        regularization.
-
-        Please note that with SGD it is not guaranteed that weights will
-        converge to 0.
-        """
-        super().__init__(**kwargs)
-
-        self.kl_weight = kl_weight
-
-    def fit(self, train_data: DataLoader, **kwargs):
-        return super().fit(
-            train_data=train_data,
-            loss_fn=lambda *args: l2_loss(*args)
-            + self.kl_weight * self.kl_loss(),
-            reg_term=1,
-            **kwargs,
-        )
-
-
-class SGDBayesRidge(SGDBayesLinearModel):
-    def __init__(self, kl_weight: float = 0.1, **kwargs) -> None:
-        r"""
-        Factory class to train a `LinearModel` with SGD
-        (`sgd_train_linear_model`) whilst setting appropriate parameters to
-        optimize for ridge regression loss. This optimizes L2 loss + alpha *
-        L2 regularization.
-        """
-        super().__init__(**kwargs)
-
-        self.kl_weight = kl_weight
-
-    def fit(self, train_data: DataLoader, **kwargs):
-        return super().fit(
-            train_data=train_data,
-            loss_fn=lambda *args: l2_loss(*args)
-            + self.kl_weight * self.kl_loss(),
-            reg_term=2,
-            **kwargs,
-        )
-
-
-class SGDBayesLinearRegression(SGDBayesLinearModel):
-    def __init__(self, kl_weight: float = 0.1, **kwargs) -> None:
-        r"""
-        Factory class to train a `LinearModel` with SGD
-        (`sgd_train_linear_model`). For linear regression this assigns the loss
-        to L2 and no regularization.
-        """
-        super().__init__(**kwargs)
-
-        self.kl_weight = kl_weight
-
-    def fit(self, train_data: DataLoader, **kwargs):
-        return super().fit(
-            train_data=train_data,
-            loss_fn=lambda *args: l2_loss(*args)
-            + self.kl_weight * self.kl_loss(),
-            reg_term=None,
-            **kwargs,
-        )
-
-
-class SkLearnBayesLinearModel(BayesLinearModel):
-    def __init__(self, sklearn_module: str, **kwargs) -> None:
-        r"""
-        Factory class to construct a `LinearModel` with sklearn training method.
-
-        Please note that this assumes:
-
-        0. You have sklearn and numpy installed
-        1. The dataset can fit into memory
-
-        SkLearn support does introduce some slight overhead as we convert the
-        tensors to numpy and then convert the resulting trained model to a
-        `LinearModel` object. However, this conversion should be negligible.
-
-        Args:
-            sklearn_module
-                The module under sklearn to construct and use for training, e.g.
-                use "svm.LinearSVC" for an SVM or "linear_model.Lasso" for Lasso.
-
-                There are factory classes defined for you for common use cases,
-                such as `SkLearnLasso`.
+            l2
+                L2 regularisation
             kwargs
                 The kwargs to pass to the construction of the sklearn model
         """
-        super().__init__(train_fn=sklearn_train_linear_model, **kwargs)
-
-        self.sklearn_module = sklearn_module
-
-    def fit(self, train_data: DataLoader, **kwargs):
-        r"""
-        Args:
-            train_data
-                Train data to use
-            kwargs
-                Arguments to feed to `.fit` method for sklearn
-        """
-        return super().fit(
-            train_data=train_data,
-            sklearn_trainer=self.sklearn_module,
-            **kwargs,
-        )
+        super().__init__(train_fn=train_bayes_model, l2=l2, **kwargs)
 
 
-class SkLearnARDRegression(SkLearnBayesLinearModel):
+class BLRRegression(BLRLinearModel):
     def __init__(self, **kwargs) -> None:
         r"""
-        Factory class. Trains a model with `sklearn.linear_model.ARDRegression`.
-
-        Any arguments provided to the sklearn constructor can be provided
-        as kwargs here.
+        Factory class. Trains a model with BayesianLinearRegression(l2=False).
         """
-        super().__init__(sklearn_module="linear_model.ARDRegression", **kwargs)
-
-    def fit(self, train_data: DataLoader, **kwargs):
-        return super().fit(train_data=train_data, **kwargs)
+        super().__init__(l2=False, **kwargs)
 
 
-class SkLearnBayesianRidge(SkLearnBayesLinearModel):
+class BLRRidge(BLRLinearModel):
     def __init__(self, **kwargs) -> None:
         r"""
-        Factory class. Trains a model with `sklearn.linear_model.BayesianRidge`.
-
-        Any arguments provided to the sklearn constructor can be provided
-        as kwargs here.
+        Factory class. Trains a model with BayesianLinearRegression(l2=False).
         """
-        super().__init__(sklearn_module="linear_model.BayesianRidge", **kwargs)
-
-    def fit(self, train_data: DataLoader, **kwargs):
-        return super().fit(train_data=train_data, **kwargs)
+        super().__init__(l2=True, **kwargs)

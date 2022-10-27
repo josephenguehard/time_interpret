@@ -48,6 +48,17 @@ class TemporalIntegratedGradients(IntegratedGradients):
             In case of integrated gradients, if `multiply_by_inputs`
             is set to True, final sensitivity scores are being multiplied by
             (inputs - baselines).
+
+    Examples:
+        >>> import torch as th
+        >>> from tint.attr import TemporalIntegratedGradients
+        >>> from tint.models import MLP
+        <BLANKLINE>
+        >>> inputs = th.rand(8, 7, 5)
+        >>> mlp = MLP([5, 3, 1])
+        <BLANKLINE>
+        >>> explainer = TemporalIntegratedGradients(mlp)
+        >>> attr = explainer.attribute(inputs, target=0)
     """
 
     def __init__(
@@ -71,8 +82,10 @@ class TemporalIntegratedGradients(IntegratedGradients):
         baselines: BaselineType = None,
         target: TargetType = None,
         additional_forward_args: Any = None,
+        times: Tensor = None,
         n_steps: int = 50,
         method: str = "gausslegendre",
+        strategy: str = "fixed",
         internal_batch_size: Union[None, int] = None,
         return_convergence_delta: Literal[False] = False,
         temporal_target: bool = False,
@@ -89,8 +102,10 @@ class TemporalIntegratedGradients(IntegratedGradients):
         baselines: BaselineType = None,
         target: TargetType = None,
         additional_forward_args: Any = None,
+        times: Tensor = None,
         n_steps: int = 50,
         method: str = "gausslegendre",
+        strategy: str = "fixed",
         internal_batch_size: Union[None, int] = None,
         *,
         return_convergence_delta: Literal[True],
@@ -108,8 +123,10 @@ class TemporalIntegratedGradients(IntegratedGradients):
         baselines: BaselineType = None,
         target: TargetType = None,
         additional_forward_args: Any = None,
+        times: Tensor = None,
         n_steps: int = 50,
         method: str = "gausslegendre",
+        strategy: str = "fixed",
         internal_batch_size: Union[None, int] = None,
         return_convergence_delta: bool = False,
         temporal_target: bool = False,
@@ -203,12 +220,18 @@ class TemporalIntegratedGradients(IntegratedGradients):
                 Note that attributions are not computed with respect
                 to these arguments.
                 Default: None
+            times (Tensor, optional): Tensor of times. If not provided, it is
+                assumed that the points are temporally equally spaced.
+                Default: None
             n_steps (int, optional): The number of steps used by the approximation
                 method. Default: 50.
             method (string, optional): Method for approximating the integral,
                 one of `riemann_right`, `riemann_left`, `riemann_middle`,
                 `riemann_trapezoid` or `gausslegendre`.
                 Default: `gausslegendre` if no method is provided.
+            strategy (str, optinal): Strategy to distribute gradients
+                evaluations over time. Either ``'fixed'`` or ``'interval'``
+                Default: 'fixed'
             internal_batch_size (int, optional): Divides total #steps * #examples
                 data points into chunks of size at most internal_batch_size,
                 which are computed (forward / backward passes)
@@ -272,6 +295,22 @@ class TemporalIntegratedGradients(IntegratedGradients):
             x.shape[1] == inputs[0].shape[1] for x in inputs
         ), "All inputs must have the same time dimension. (dimension 1)"
 
+        # Get n_steps depending on strategy
+        n_steps = [n_steps] * inputs[0].shape[1]
+        assert strategy in [
+            "fixed",
+            "interval",
+        ], f"strategy must be either fixed or interval, got {strategy}."
+        if strategy == "interval" and times is not None:
+            max_interval = (times[1:] - times[:-1]).max().item()
+            n_steps = [
+                torch.div(t, max_interval / n_steps[0], rounding_mode="floor")
+                .long()
+                .item()
+                + 1
+                for t in times[1:] - times[:-1]
+            ]
+
         attributions_partial_list = list()
         delta_partial_list = list()
         is_attrib_tuple = True
@@ -315,7 +354,7 @@ class TemporalIntegratedGradients(IntegratedGradients):
                 baselines=partial_baselines,
                 target=partial_target,
                 additional_forward_args=partial_additional_forward_args,
-                n_steps=n_steps,
+                n_steps=n_steps[time - 1],
                 method=method,
                 internal_batch_size=internal_batch_size,
                 return_convergence_delta=return_convergence_delta,
@@ -445,6 +484,12 @@ class TemporalIntegratedGradients(IntegratedGradients):
         baselines: Tuple[Union[Tensor, int, float], ...],
         alphas: List[float],
     ) -> Tuple[Tensor]:
+        # Get last time of baseline if Tensor
+        baselines = tuple(
+            baseline[:, -1, ...] if isinstance(baseline, Tensor) else baseline
+            for baseline in baselines
+        )
+
         # Only rescale the last time of the inputs
         scaled_features_tpl = tuple(
             torch.cat(
@@ -453,9 +498,8 @@ class TemporalIntegratedGradients(IntegratedGradients):
                         [
                             input[:, :-1, ...],
                             (
-                                baseline[:, -1, ...]
-                                + alpha
-                                * (input[:, -1, ...] - baseline[:, -1, ...])
+                                baseline
+                                + alpha * (input[:, -1, ...] - baseline)
                             ).unsqueeze(1),
                         ],
                         dim=1,
@@ -467,7 +511,7 @@ class TemporalIntegratedGradients(IntegratedGradients):
             for input, baseline in zip(inputs, baselines)
         )
 
-        return scaled_features_tpl
+        return cast(Tuple[Tensor, ...], scaled_features_tpl)
 
     def compute_partial_attribution(
         self,

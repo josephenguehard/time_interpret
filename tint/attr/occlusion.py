@@ -16,7 +16,7 @@ from captum.attr._utils.common import (
 from captum.log import log_usage
 from torch import Tensor
 
-from .base import FeatureAblation
+from .feature_ablation import FeatureAblation
 
 
 class Occlusion(FeatureAblation):

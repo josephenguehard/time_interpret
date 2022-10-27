@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>tint.attr.bayes &mdash; Time Interpret 0.0.1 documentation</title>
+  <title>tint.attr.bayes &mdash; Time Interpret 0.2.0 documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
@@ -81,7 +81,7 @@
 <span class="kn">from</span> <span class="nn">captum._utils.models</span> <span class="kn">import</span> <span class="n">Model</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span>
 
-<span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="n">SkLearnBayesianRidge</span>
+<span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="n">BLRRidge</span>
 
 
 <div class="viewcode-block" id="BayesLime"><a class="viewcode-back" href="../../../attr.html#tint.attr.BayesLime">[docs]</a><span class="k">class</span> <span class="nc">BayesLime</span><span class="p">(</span><span class="n">Lime</span><span class="p">):</span>
@@ -141,13 +141,13 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">forward_func</span><span class="o">=</span><span class="n">forward_func</span><span class="p">,</span>
-            <span class="n">interpretable_model</span><span class="o">=</span><span class="n">interpretable_model</span> <span class="ow">or</span> <span class="n">SkLearnBayesianRidge</span><span class="p">(),</span>
+            <span class="n">interpretable_model</span><span class="o">=</span><span class="n">interpretable_model</span> <span class="ow">or</span> <span class="n">BLRRidge</span><span class="p">(),</span>
             <span class="n">similarity_func</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">perturb_func</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="BayesShap"><a class="viewcode-back" href="../../../attr.html#tint.attr.BayesShap">[docs]</a><span class="k">class</span> <span class="nc">BayesShap</span><span class="p">(</span><span class="n">KernelShap</span><span class="p">):</span>
+<div class="viewcode-block" id="BayesKernelShap"><a class="viewcode-back" href="../../../attr.html#tint.attr.BayesKernelShap">[docs]</a><span class="k">class</span> <span class="nc">BayesKernelShap</span><span class="p">(</span><span class="n">KernelShap</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Bayesian version of KernelShap.</span>
 
@@ -187,13 +187,13 @@
 
 <span class="sd">    Examples:</span>
 <span class="sd">        &gt;&gt;&gt; import torch as th</span>
-<span class="sd">        &gt;&gt;&gt; from tint.attr import BayesShap</span>
+<span class="sd">        &gt;&gt;&gt; from tint.attr import BayesKernelShap</span>
 <span class="sd">        &gt;&gt;&gt; from tint.models import MLP</span>
 <span class="sd">        &lt;BLANKLINE&gt;</span>
 <span class="sd">        &gt;&gt;&gt; inputs = th.rand(8, 5)</span>
 <span class="sd">        &gt;&gt;&gt; mlp = MLP([5, 3, 1])</span>
 <span class="sd">        &lt;BLANKLINE&gt;</span>
-<span class="sd">        &gt;&gt;&gt; explainer = BayesShap(mlp)</span>
+<span class="sd">        &gt;&gt;&gt; explainer = BayesKernelShap(mlp)</span>
 <span class="sd">        &gt;&gt;&gt; attr = explainer.attribute(inputs)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -204,9 +204,7 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">forward_func</span><span class="o">=</span><span class="n">forward_func</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">interpretable_model</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">interpretable_model</span> <span class="ow">or</span> <span class="n">SkLearnBayesianRidge</span><span class="p">()</span>
-        <span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interpretable_model</span> <span class="o">=</span> <span class="n">interpretable_model</span> <span class="ow">or</span> <span class="n">BLRRidge</span><span class="p">()</span></div>
 </pre></div>
 
            </div>

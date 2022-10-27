@@ -1,24 +1,26 @@
+import multiprocessing as mp
 import numpy as np
+import random
 import torch as th
+import torch.nn as nn
 
 from argparse import ArgumentParser
 from captum.attr import DeepLift, GradientShap, IntegratedGradients, Lime
 from pytorch_lightning import Trainer, seed_everything
+from pytorch_lightning.loggers import TensorBoardLogger
 from typing import List
 
 from tint.attr import (
-    BayesMask,
     DynaMask,
+    ExtremalMask,
     Fit,
-    LofLime,
     Retain,
     TemporalAugmentedOcclusion,
-    TemporalIntegratedGradients,
     TemporalOcclusion,
     TimeForwardTunnel,
 )
 from tint.attr.models import (
-    BayesMaskNet,
+    ExtremalMaskNet,
     JointFeatureGeneratorNet,
     MaskNet,
     RetainNet,
@@ -32,6 +34,7 @@ from tint.metrics.white_box import (
     roc_auc,
     auprc,
 )
+from tint.models import MLP, RNN
 
 
 from experiments.hmm.classifier import StateClassifierNet
@@ -39,7 +42,7 @@ from experiments.hmm.classifier import StateClassifierNet
 
 def main(
     explainers: List[str],
-    accelerator: str = "cpu",
+    device: str = "cpu",
     fold: int = 0,
     seed: int = 42,
     deterministic: bool = False,
@@ -47,6 +50,12 @@ def main(
     # If deterministic, seed everything
     if deterministic:
         seed_everything(seed=seed, workers=True)
+
+    # Get accelerator and device
+    accelerator = device.split(":")[0]
+    device_id = 1
+    if len(device.split(":")) > 1:
+        device_id = [int(device.split(":")[1])]
 
     # Load data
     hmm = HMM(n_folds=5, fold=fold, seed=seed)
@@ -64,20 +73,29 @@ def main(
 
     # Train classifier
     trainer = Trainer(
-        max_epochs=50, accelerator=accelerator, deterministic=deterministic
+        max_epochs=50,
+        accelerator=accelerator,
+        devices=device_id,
+        deterministic=deterministic,
+        logger=TensorBoardLogger(
+            save_dir=".",
+            version=random.getrandbits(128),
+        ),
     )
     trainer.fit(classifier, datamodule=hmm)
 
     # Get data for explainers
-    x_train = hmm.preprocess(split="train")["x"].to(accelerator)
-    x_test = hmm.preprocess(split="test")["x"].to(accelerator)
-    y_test = hmm.preprocess(split="test")["y"].to(accelerator)
+    with mp.Lock():
+        x_train = hmm.preprocess(split="train")["x"].to(device)
+        x_test = hmm.preprocess(split="test")["x"].to(device)
+        y_test = hmm.preprocess(split="test")["y"].to(device)
+        true_saliency = hmm.true_saliency(split="test").to(device)
 
     # Switch to eval
     classifier.eval()
 
-    # Set model to accelerator
-    classifier.to(accelerator)
+    # Set model to device
+    classifier.to(device)
 
     # Disable cudnn if using cuda accelerator.
     # Please see https://captum.ai/docs/faq#how-can-i-resolve-cudnn-rnn-backward-error-for-rnn-or-lstm-network
@@ -87,32 +105,6 @@ def main(
 
     # Create dict of attributions
     attr = dict()
-
-    if "bayes_mask" in explainers:
-        trainer = Trainer(
-            max_epochs=500,
-            accelerator=accelerator,
-            devices=1,
-            log_every_n_steps=2,
-            deterministic=deterministic,
-        )
-        mask = BayesMaskNet(
-            forward_func=classifier,
-            distribution="normal",
-            hard=False,
-            eps=1e-5,
-            optim="adam",
-            lr=0.01,
-        )
-        explainer = BayesMask(classifier)
-        _attr = explainer.attribute(
-            x_test,
-            additional_forward_args=(True,),
-            trainer=trainer,
-            mask_net=mask,
-            batch_size=100,
-        )
-        attr["bayes_mask"] = _attr.to(accelerator)
 
     if "deep_lift" in explainers:
         explainer = TimeForwardTunnel(DeepLift(classifier))
@@ -127,9 +119,13 @@ def main(
         trainer = Trainer(
             max_epochs=1000,
             accelerator=accelerator,
-            devices=1,
+            devices=device_id,
             log_every_n_steps=2,
             deterministic=deterministic,
+            logger=TensorBoardLogger(
+                save_dir=".",
+                version=random.getrandbits(128),
+            ),
         )
         mask = MaskNet(
             forward_func=classifier,
@@ -150,15 +146,56 @@ def main(
             return_best_ratio=True,
         )
         print(f"Best keep ratio is {_attr[1]}")
-        attr["dyna_mask"] = _attr[0].to(accelerator)
+        attr["dyna_mask"] = _attr[0].to(device)
+
+    if "extremal_mask" in explainers:
+        trainer = Trainer(
+            max_epochs=500,
+            accelerator=accelerator,
+            devices=device_id,
+            log_every_n_steps=2,
+            deterministic=deterministic,
+            logger=TensorBoardLogger(
+                save_dir=".",
+                version=random.getrandbits(128),
+            ),
+        )
+        mask = ExtremalMaskNet(
+            forward_func=classifier,
+            model=nn.Sequential(
+                RNN(
+                    input_size=x_test.shape[-1],
+                    rnn="gru",
+                    hidden_size=x_test.shape[-1],
+                    bidirectional=True,
+                ),
+                MLP([2 * x_test.shape[-1], x_test.shape[-1]]),
+            ),
+            optim="adam",
+            lr=0.01,
+        )
+        explainer = ExtremalMask(classifier)
+        _attr = explainer.attribute(
+            x_test,
+            additional_forward_args=(True,),
+            trainer=trainer,
+            mask_net=mask,
+            batch_size=100,
+        )
+        attr["extremal_mask"] = _attr.to(device)
 
     if "fit" in explainers:
         generator = JointFeatureGeneratorNet(rnn_hidden_size=6)
         trainer = Trainer(
             max_epochs=300,
             accelerator=accelerator,
+            devices=device_id,
             log_every_n_steps=10,
             deterministic=deterministic,
+            logger=TensorBoardLogger(
+                save_dir=".",
+                version=random.getrandbits(128),
+            ),
         )
         explainer = Fit(
             classifier,
@@ -178,7 +215,7 @@ def main(
             task="binary",
             show_progress=True,
         ).abs()
-        classifier.to(accelerator)
+        classifier.to(device)
 
     if "integrated_gradients" in explainers:
         explainer = TimeForwardTunnel(IntegratedGradients(classifier))
@@ -193,14 +230,6 @@ def main(
     if "lime" in explainers:
         explainer = TimeForwardTunnel(Lime(classifier))
         attr["lime"] = explainer.attribute(
-            x_test,
-            task="binary",
-            show_progress=True,
-        ).abs()
-
-    if "lof_lime" in explainers:
-        explainer = TimeForwardTunnel(LofLime(classifier, embeddings=x_train))
-        attr["lof_lime"] = explainer.attribute(
             x_test,
             task="binary",
             show_progress=True,
@@ -247,28 +276,19 @@ def main(
             trainer=Trainer(
                 max_epochs=50,
                 accelerator=accelerator,
+                devices=device_id,
                 deterministic=deterministic,
+                logger=TensorBoardLogger(
+                    save_dir=".",
+                    version=random.getrandbits(128),
+                ),
             ),
         )
         attr["retain"] = (
-            explainer.attribute(x_test, target=y_test).abs().to(accelerator)
+            explainer.attribute(x_test, target=y_test).abs().to(device)
         )
 
-    if "temporal_integrated_gradients" in explainers:
-        explainer = TimeForwardTunnel(TemporalIntegratedGradients(classifier))
-        attr["temporal_integrated_gradients"] = explainer.attribute(
-            x_test,
-            baselines=x_test * 0,
-            internal_batch_size=200,
-            n_steps=2,
-            task="binary",
-            show_progress=True,
-        ).abs()
-
-    # Get true saliency
-    true_saliency = hmm.true_saliency(split="test").to(accelerator)
-
-    with open("results.csv", "a") as fp:
+    with open("results.csv", "a") as fp, mp.Lock():
         for k, v in attr.items():
             fp.write(str(seed) + ",")
             fp.write(str(fold) + ",")
@@ -288,28 +308,26 @@ def parse_args():
         "--explainers",
         type=str,
         default=[
-            "bayes_mask",
             "deep_lift",
             "dyna_mask",
+            "extremal_mask",
             "fit",
             "gradient_shap",
             "integrated_gradients",
             "lime",
-            "lof_lime",
             "augmented_occlusion",
             "occlusion",
             "retain",
-            "temporal_integrated_gradients",
         ],
         nargs="+",
         metavar="N",
         help="List of explainer to use.",
     )
     parser.add_argument(
-        "--accelerator",
+        "--device",
         type=str,
         default="cpu",
-        help="Which accelerator to use.",
+        help="Which device to use.",
     )
     parser.add_argument(
         "--fold",
@@ -335,7 +353,7 @@ if __name__ == "__main__":
     args = parse_args()
     main(
         explainers=args.explainers,
-        accelerator=args.accelerator,
+        device=args.device,
         fold=args.fold,
         seed=args.seed,
         deterministic=args.deterministic,

@@ -1,5 +1,3 @@
-import torch
-
 from captum.log import log_usage
 from captum._utils.common import (
     _is_tuple,
@@ -20,6 +18,7 @@ def _base_white_box_metric(
     attributions: TensorOrTupleOfTensorsGeneric,
     true_attributions: TensorOrTupleOfTensorsGeneric,
     normalize: bool = True,
+    hard_labels: bool = True,
 ) -> Tuple[float]:
     # Convert attributions into tuple
     is_inputs_tuple = _is_tuple(attributions)
@@ -52,11 +51,15 @@ def _base_white_box_metric(
             for attr, min_, max_ in zip(attributions, min_tpl, max_tpl)
         )
 
-    # Reshape attributions and get a subset corresponding to the true ones
+    # Reshape attributions
     attributions = tuple(attr.reshape(-1) for attr in attributions)
-    true_attributions = tuple(
-        attr.reshape(-1).int() for attr in true_attributions
-    )
+    true_attributions = tuple(attr.reshape(-1) for attr in true_attributions)
+
+    # Get int value if necessary
+    if hard_labels:
+        true_attributions = tuple(attr.int() for attr in true_attributions)
+
+    # Get a subset corresponding to the true attributions
     attributions_subset = tuple(
         attr[true_attr != 0]
         for attr, true_attr in zip(attributions, true_attributions)
