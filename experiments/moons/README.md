@@ -1,14 +1,21 @@
 # Moons experiment
 
-This is the Moons experiment. To get the results, run:
+This is the Moons experiment. To run the whole script with 
+relu and softplus activations, on 5 different seeds run:
 
 ```shell script
-python main.py
+bash ./main.sh
 ```
 
-The results are saved in the `figures` folder.
+To get results on one seed, run:
 
-To reset the figures folders, run:
+```shell script
+python main.py --seed 12
+```
+
+The results are saved in the `figures` folder on on the `results.csv` file.
+
+To reset the figures folder and the results file, run:
 
 ```shell script
 python reset.py
@@ -24,9 +31,17 @@ optional arguments:
   --explainers          List of the explainers to use. Default to ["deep_lift", "geodesic_integrated_gradients", "enhanced_integrated_gradients", "gradient_shap", "integrated_gradients", "smooth_grad"]
   --n-samples           Number of samples in the dataset. Default to 10000
   --noises              List of noises to use. Default to [0.05, 0.1, 0.15, 0.2, 0.25, 0.3]
+  --softplus            Whether to replace relu with softplus or not. Default to False
   --device              Which device to use. Default to 'cpu'
   --seed                Which seed to use to generate the data. Default to 42
   --deterministic       Whether to make training deterministic or not. Default to False
+```
+
+```
+usage : experiemnts/moons/main.sh [--device]
+
+optional arguments:
+  --device              Which device to use. Default to 'cpu'
 ```
 
 ```

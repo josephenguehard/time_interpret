@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import os
 import torch as th
 import warnings
 
@@ -29,6 +30,7 @@ def main(
     explainers: List[str],
     n_samples: int,
     noises: List[float],
+    softplus: bool = False,
     device: str = "cpu",
     seed: int = 42,
     deterministic: bool = False,
@@ -77,6 +79,14 @@ def main(
         )
         trainer.fit(net, train_loader)
 
+        if softplus:
+            _net = Net(
+                MLP(units=[2, 10, 10, 2], activations="softplus"),
+                loss="cross_entropy",
+            )
+            _net.load_state_dict(net.state_dict())
+            net = _net
+
         # Set model to eval
         net.eval()
 
@@ -102,25 +112,29 @@ def main(
         acc = (th.cat(pred).argmax(-1) == y_test).float().mean()
         print("acc: ", acc)
 
+        # Create dir to save figures
+        path = f"figures/{'softplus' if softplus else 'relu'}/{str(seed)}"
+        os.makedirs(path, exist_ok=True)
+
         # Save plots of true values and predictions
         plt.scatter(
-            x_test[:, 0],
-            x_test[:, 1],
-            c=y_test,
+            x_test[:, 0].cpu(),
+            x_test[:, 1].cpu(),
+            c=y_test.cpu(),
             cmap=cm_bright,
             edgecolors="k",
         )
-        plt.savefig(f"figures/true_labels_{str(noise)}.pdf")
+        plt.savefig(f"{path}/true_labels_{str(noise)}.pdf")
         plt.close()
 
         plt.scatter(
-            x_test[:, 0],
-            x_test[:, 1],
-            c=th.cat(pred).argmax(-1),
+            x_test[:, 0].cpu(),
+            x_test[:, 1].cpu(),
+            c=th.cat(pred).argmax(-1).cpu(),
             cmap=cm_bright,
             edgecolors="k",
         )
-        plt.savefig(f"figures/preds_{str(noise)}.pdf")
+        plt.savefig(f"{path}/preds_{str(noise)}.pdf")
         plt.close()
 
         # Create dict of attr
@@ -194,8 +208,12 @@ def main(
 
         # Eval
         for k, v in attr.items():
-            plt.scatter(x_test[:, 0], x_test[:, 1], c=v.abs().sum(-1))
-            plt.savefig(f"figures/{k}_{str(noise)}.pdf")
+            plt.scatter(
+                x_test[:, 0].cpu(),
+                x_test[:, 1].cpu(),
+                c=v.abs().sum(-1).detach().cpu(),
+            )
+            plt.savefig(f"{path}/{k}_{str(noise)}.pdf")
             plt.close()
 
         with open("results.csv", "a") as fp:
@@ -209,6 +227,7 @@ def main(
 
                 fp.write(str(seed) + ",")
                 fp.write(str(noise) + ",")
+                fp.write("softplus," if softplus else "relu,")
                 fp.write(k + ",")
                 fp.write(
                     f"{th.cat(pred).argmax(-1)[topk_idx].float().mean():.4}"
@@ -248,6 +267,11 @@ def parse_args():
         help="List of noises to use.",
     )
     parser.add_argument(
+        "--softplus",
+        action="store_true",
+        help="Whether to replace relu with softplus or not.",
+    )
+    parser.add_argument(
         "--device",
         type=str,
         default="cpu",
@@ -273,6 +297,7 @@ if __name__ == "__main__":
         explainers=args.explainers,
         n_samples=args.n_samples,
         noises=args.noises,
+        softplus=args.softplus,
         device=args.device,
         seed=args.seed,
         deterministic=args.deterministic,
