@@ -156,7 +156,33 @@ def main(
                     internal_batch_size=200,
                 ).float()
 
-            attr["geodesic_integrated_gradients"] = _attr
+            attr["geodesic_integrated_gradients_5"] = _attr
+
+            explainer = GeodesicIntegratedGradients(net)
+            _attr = th.zeros_like(x_test)
+
+            for target in range(2):
+                _attr[y_test == target] = explainer.attribute(
+                    x_test[y_test == target],
+                    target=target,
+                    n_neighbors=10,
+                    internal_batch_size=200,
+                ).float()
+
+            attr["geodesic_integrated_gradients_10"] = _attr
+
+            explainer = GeodesicIntegratedGradients(net)
+            _attr = th.zeros_like(x_test)
+
+            for target in range(2):
+                _attr[y_test == target] = explainer.attribute(
+                    x_test[y_test == target],
+                    target=target,
+                    n_neighbors=15,
+                    internal_batch_size=200,
+                ).float()
+
+            attr["geodesic_integrated_gradients_15"] = _attr
 
         if "enhanced_integrated_gradients" in explainers:
             explainer = GeodesicIntegratedGradients(net)
@@ -171,7 +197,35 @@ def main(
                     distance="euclidean",
                 ).float()
 
-            attr["enhanced_integrated_gradients"] = _attr
+            attr["enhanced_integrated_gradients_5"] = _attr
+
+            explainer = GeodesicIntegratedGradients(net)
+            _attr = th.zeros_like(x_test)
+
+            for target in range(2):
+                _attr[y_test == target] = explainer.attribute(
+                    x_test[y_test == target],
+                    target=target,
+                    n_neighbors=10,
+                    internal_batch_size=200,
+                    distance="euclidean",
+                ).float()
+
+            attr["enhanced_integrated_gradients_10"] = _attr
+
+            explainer = GeodesicIntegratedGradients(net)
+            _attr = th.zeros_like(x_test)
+
+            for target in range(2):
+                _attr[y_test == target] = explainer.attribute(
+                    x_test[y_test == target],
+                    target=target,
+                    n_neighbors=15,
+                    internal_batch_size=200,
+                    distance="euclidean",
+                ).float()
+
+            attr["enhanced_integrated_gradients_15"] = _attr
 
         if "gradient_shap" in explainers:
             explainer = GradientShap(net)
@@ -217,6 +271,15 @@ def main(
             plt.close()
 
         with open("results.csv", "a") as fp:
+            # Write acc
+            fp.write(str(seed) + ",")
+            fp.write(str(noise) + ",")
+            fp.write("softplus," if softplus else "relu,")
+            fp.write("acc,")
+            fp.write(f"{acc:.4}")
+            fp.write("\n")
+
+            # Write purity
             for k, v in attr.items():
                 topk_idx = th.topk(
                     v.abs().sum(-1),
