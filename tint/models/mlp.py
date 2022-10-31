@@ -19,7 +19,7 @@ ACTIVATIONS = {
     "relu6": nn.ReLU6(),
     "sigmoid": nn.Sigmoid(),
     "softmax": nn.Softmax(dim=-1),
-    "softplus": nn.Softplus(beta=5),
+    "softplus": nn.Softplus(beta=10),
     "softsign": nn.Softsign(),
     "tanh": nn.Tanh(),
     "tanhshrink": nn.Tanhshrink(),
