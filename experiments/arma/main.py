@@ -43,12 +43,15 @@ def main(
     if len(device.split(":")) > 1:
         device_id = [int(device.split(":")[1])]
 
+    # Create lock
+    lock = mp.Lock()
+
     # Load data
     arma = Arma(n_folds=5, fold=fold, seed=seed)
     arma.download()
 
     # Only use the first 10 data points
-    with mp.Lock():
+    with lock:
         x = arma.preprocess()["x"][:10].to(device)
         true_saliency = arma.true_saliency(dim=rare_dim)[:10].to(device)
 
@@ -166,7 +169,7 @@ def main(
                 additional_forward_args=(saliency,),
             ).abs()
 
-    with open("results.csv", "a") as fp, mp.Lock():
+    with open("results.csv", "a") as fp, lock:
         for k, v in attr.items():
             fp.write("rare-feature" if rare_dim == 1 else "rare-time")
             fp.write("," + str(seed) + ",")

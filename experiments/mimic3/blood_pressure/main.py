@@ -40,6 +40,9 @@ def main(
     if len(device.split(":")) > 1:
         device_id = [int(device.split(":")[1])]
 
+    # Create lock
+    lock = mp.Lock()
+
     # Load data
     mimic3 = Mimic3(task="blood_pressure", n_folds=5, fold=fold, seed=seed)
 
@@ -69,7 +72,7 @@ def main(
     trainer.fit(regressor, datamodule=mimic3)
 
     # Get data for explainers
-    with mp.Lock():
+    with lock:
         x_train = mimic3.preprocess(split="train")["x"].to(device)
         x_test = mimic3.preprocess(split="test")["x"].to(device)
 
@@ -187,7 +190,7 @@ def main(
 
     # Compute metrics for each topk in areas.
     # We also get metrics for data up to each tim and average.
-    with open("results.csv", "a") as fp, mp.Lock():
+    with open("results.csv", "a") as fp, lock:
         for topk in areas:
             for k, v in attr.items():
 

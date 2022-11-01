@@ -36,6 +36,9 @@ def main(
     if len(device.split(":")) > 1:
         device_id = [int(device.split(":")[1])]
 
+    # Create lock
+    lock = mp.Lock()
+
     # Load data
     hawkes = Hawkes(n_folds=5, fold=fold, seed=seed)
 
@@ -64,7 +67,7 @@ def main(
     trainer.fit(classifier, datamodule=hawkes)
 
     # Get data for explainers
-    with mp.Lock():
+    with lock:
         x_train = hawkes.preprocess(split="train")["x"].to(device)
         x_test = hawkes.preprocess(split="test")["x"].to(device)
         y_test = hawkes.preprocess(split="test")["y"].to(device)
@@ -180,7 +183,7 @@ def main(
             true_saliency.sum(2, keepdim=True) > 0
         )
 
-    with open("results.csv", "a") as fp, mp.Lock():
+    with open("results.csv", "a") as fp, lock:
         for k, v in attr.items():
             fp.write(str(seed) + ",")
             fp.write(str(fold) + ",")

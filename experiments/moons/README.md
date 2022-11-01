@@ -1,7 +1,7 @@
 # Moons experiment
 
 This is the Moons experiment. To run the whole script with 
-relu and softplus activations, on 5 different seeds run:
+relu and softplus activations, on 10 different seeds run:
 
 ```shell script
 bash ./main.sh
@@ -38,14 +38,15 @@ optional arguments:
 ```
 
 ```
-usage : experiemnts/moons/main.sh [--device]
+usage : experiemnts/moons/main.sh [--processes] [--device]
 
 optional arguments:
+  --processes           Number of runners in parallel. Default to 1
   --device              Which device to use. Default to 'cpu'
 ```
 
 ```
-usage: experiments/covtype/reset.py [-h]
+usage: experiments/moons/reset.py [-h]
 
 optional arguments:
   -h, --help            Show this help message and exit.

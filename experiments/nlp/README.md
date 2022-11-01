@@ -1,6 +1,6 @@
-# Mimic III Experiments
+# NLP Experiments
 
-This is the SST2 experiments section. You can use this
+This is the NLP experiments section. You can use this
 section to reproduce the results from the 
 [DIG paper](https://arxiv.org/abs/2108.13654).
 

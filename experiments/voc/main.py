@@ -176,6 +176,9 @@ def main(
     if len(device.split(":")) > 1:
         device_id = [int(device.split(":")[1])]
 
+    # Create lock
+    lock = mp.Lock()
+
     # Get data transform
     transform = T.Compose(
         [
@@ -627,7 +630,7 @@ def main(
         )
         expl["occlusion"] = explainer
 
-    with open("results.csv", "a") as fp, mp.Lock():
+    with open("results.csv", "a") as fp, lock:
         for k, v in get_progress_bars()(
             attr.items(), desc="Attr", leave=False
         ):

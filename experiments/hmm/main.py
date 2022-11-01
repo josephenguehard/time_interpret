@@ -57,6 +57,9 @@ def main(
     if len(device.split(":")) > 1:
         device_id = [int(device.split(":")[1])]
 
+    # Create lock
+    lock = mp.Lock()
+
     # Load data
     hmm = HMM(n_folds=5, fold=fold, seed=seed)
 
@@ -85,7 +88,7 @@ def main(
     trainer.fit(classifier, datamodule=hmm)
 
     # Get data for explainers
-    with mp.Lock():
+    with lock:
         x_train = hmm.preprocess(split="train")["x"].to(device)
         x_test = hmm.preprocess(split="test")["x"].to(device)
         y_test = hmm.preprocess(split="test")["y"].to(device)
@@ -288,7 +291,7 @@ def main(
             explainer.attribute(x_test, target=y_test).abs().to(device)
         )
 
-    with open("results.csv", "a") as fp, mp.Lock():
+    with open("results.csv", "a") as fp, lock:
         for k, v in attr.items():
             fp.write(str(seed) + ",")
             fp.write(str(fold) + ",")

@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import multiprocessing as mp
 import os
 import torch as th
 import warnings
@@ -44,6 +45,9 @@ def main(
     device_id = 1
     if len(device.split(":")) > 1:
         device_id = [int(device.split(":")[1])]
+
+    # Create lock
+    lock = mp.Lock()
 
     # Loop over noises
     for noise in noises:
@@ -113,29 +117,30 @@ def main(
         print("acc: ", acc)
 
         # Create dir to save figures
-        path = f"figures/{'softplus' if softplus else 'relu'}/{str(seed)}"
-        os.makedirs(path, exist_ok=True)
+        with lock:
+            path = f"figures/{'softplus' if softplus else 'relu'}/{str(seed)}"
+            os.makedirs(path, exist_ok=True)
 
-        # Save plots of true values and predictions
-        plt.scatter(
-            x_test[:, 0].cpu(),
-            x_test[:, 1].cpu(),
-            c=y_test.cpu(),
-            cmap=cm_bright,
-            edgecolors="k",
-        )
-        plt.savefig(f"{path}/true_labels_{str(noise)}.pdf")
-        plt.close()
+            # Save plots of true values and predictions
+            plt.scatter(
+                x_test[:, 0].cpu(),
+                x_test[:, 1].cpu(),
+                c=y_test.cpu(),
+                cmap=cm_bright,
+                edgecolors="k",
+            )
+            plt.savefig(f"{path}/true_labels_{str(noise)}.pdf")
+            plt.close()
 
-        plt.scatter(
-            x_test[:, 0].cpu(),
-            x_test[:, 1].cpu(),
-            c=th.cat(pred).argmax(-1).cpu(),
-            cmap=cm_bright,
-            edgecolors="k",
-        )
-        plt.savefig(f"{path}/preds_{str(noise)}.pdf")
-        plt.close()
+            plt.scatter(
+                x_test[:, 0].cpu(),
+                x_test[:, 1].cpu(),
+                c=th.cat(pred).argmax(-1).cpu(),
+                cmap=cm_bright,
+                edgecolors="k",
+            )
+            plt.savefig(f"{path}/preds_{str(noise)}.pdf")
+            plt.close()
 
         # Create dict of attr
         attr = dict()
@@ -261,16 +266,17 @@ def main(
             )
 
         # Eval
-        for k, v in attr.items():
-            plt.scatter(
-                x_test[:, 0].cpu(),
-                x_test[:, 1].cpu(),
-                c=v.abs().sum(-1).detach().cpu(),
-            )
-            plt.savefig(f"{path}/{k}_{str(noise)}.pdf")
-            plt.close()
+        with lock:
+            for k, v in attr.items():
+                plt.scatter(
+                    x_test[:, 0].cpu(),
+                    x_test[:, 1].cpu(),
+                    c=v.abs().sum(-1).detach().cpu(),
+                )
+                plt.savefig(f"{path}/{k}_{str(noise)}.pdf")
+                plt.close()
 
-        with open("results.csv", "a") as fp:
+        with open("results.csv", "a") as fp, lock:
             # Write acc
             fp.write(str(seed) + ",")
             fp.write(str(noise) + ",")

@@ -56,6 +56,9 @@ def main(
     if len(device.split(":")) > 1:
         device_id = [int(device.split(":")[1])]
 
+    # Create lock
+    lock = mp.Lock()
+
     # Load data
     mimic3 = Mimic3(n_folds=5, fold=fold, seed=seed)
 
@@ -84,7 +87,7 @@ def main(
     trainer.fit(classifier, datamodule=mimic3)
 
     # Get data for explainers
-    with mp.Lock():
+    with lock:
         x_train = mimic3.preprocess(split="train")["x"].to(device)
         x_test = mimic3.preprocess(split="test")["x"].to(device)
         y_test = mimic3.preprocess(split="test")["y"].to(device)
@@ -297,7 +300,7 @@ def main(
     # Dict for baselines
     baselines_dict = {0: "Average", 1: "Zeros"}
 
-    with open("results.csv", "a") as fp, mp.Lock():
+    with open("results.csv", "a") as fp, lock:
         for i, baselines in enumerate([x_avg, 0.0]):
             for topk in areas:
                 for k, v in attr.items():
