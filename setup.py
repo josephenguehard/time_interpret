@@ -27,7 +27,7 @@ setup(
         "scikit-image",
         "scikit-learn",
         "scipy",
-        "torch",
+        "torch==1.13",
         "torchmetrics",
         "torchvision",
     ],

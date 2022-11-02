@@ -19,7 +19,7 @@ dependencies:
   - scikit-image
   - scikit-learn
   - scipy
-  - pytorch
+  - pytorch==1.13
   - pytorch-lightning
   - torchmetrics
   - torchvision
