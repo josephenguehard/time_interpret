@@ -20,7 +20,6 @@ setup(
     url="https://github.com/babylonhealth/time_interpret",
     python_requires=">=3.7, <3.11",
     install_requires=[
-        "torch==1.12.1",
         "captum",
         "numpy",
         "pandas",
@@ -28,6 +27,7 @@ setup(
         "scikit-image",
         "scikit-learn",
         "scipy",
+        "torch",
         "torchmetrics",
         "torchvision",
     ],
