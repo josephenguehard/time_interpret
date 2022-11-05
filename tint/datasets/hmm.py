@@ -10,6 +10,8 @@ file_dir = os.path.dirname(__file__)
 
 
 def logit(x):
+    # The real logit should be '1.0 / (1 + np.exp(-x))', but we use -2 as in
+    # https://github.com/JonathanCrabbe/Dynamask for fair comparison.
     return 1.0 / (1 + np.exp(-2 * x))
 
 
