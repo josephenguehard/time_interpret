@@ -92,7 +92,7 @@ def construct_input_ref_pos_id_pair(model, model_name, input_ids, device):
         position_ids = torch.arange(
             seq_length, dtype=torch.long, device=device
         )
-        ref_position_ids = torch.zeros(
+        ref_position_ids = torch.arange(
             seq_length, dtype=torch.long, device=device
         )
         position_ids = position_ids.unsqueeze(0).expand_as(input_ids)

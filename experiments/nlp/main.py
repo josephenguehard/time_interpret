@@ -150,10 +150,15 @@ def main(
             device=device,
         )
 
+        # We do not use ref_position_embed or ref_type_embed below
+        # as they are identical to position_embed and type_embed
+        # respectively.
+
         if "deep_lift" in explainers:
             explainer = DeepLift(nn_forward_func)
             _attr = explainer.attribute(
                 input_embed,
+                baselines=ref_input_embed,
                 additional_forward_args=(
                     attention_mask,
                     position_embed,
@@ -191,7 +196,7 @@ def main(
             explainer = GradientShap(nn_forward_func)
             _attr = explainer.attribute(
                 input_embed,
-                baselines=torch.cat([input_embed * 0, input_embed]),
+                baselines=torch.cat([ref_input_embed, input_embed]),
                 additional_forward_args=(
                     attention_mask,
                     position_embed,
@@ -218,6 +223,7 @@ def main(
             explainer = IntegratedGradients(nn_forward_func)
             _attr = explainer.attribute(
                 input_embed,
+                baselines=ref_input_embed,
                 additional_forward_args=(
                     attention_mask,
                     position_embed,
@@ -231,6 +237,7 @@ def main(
             explainer = SequentialIntegratedGradients(nn_forward_func)
             _attr = explainer.attribute(
                 input_embed,
+                baselines=ref_input_embed,
                 additional_forward_args=(
                     attention_mask,
                     position_embed,
@@ -407,7 +414,7 @@ def parse_args():
         "--strategy",
         default="greedy",
         type=str,
-        choices=["greedy", "maxcount"],
+        choices=["greedy", "maxcount", "non_monotonic"],
         help="The algorithm to find the next anchor point.",
     )
     parser.add_argument(
