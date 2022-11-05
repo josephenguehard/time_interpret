@@ -154,7 +154,7 @@ def sufficiency(
             tuple. In this case, each stdev value in the stdevs tuple
             corresponds to the input with the same index in the inputs
             tuple.
-            Default: 1.0
+            Default: 0.0
         draw_baseline_from_distrib (bool, optional): Indicates whether to
             randomly draw baseline samples from the `baselines`
             distribution provided as an input tensor.
