@@ -44,8 +44,8 @@ def DistilBert(
 
     Examples:
         >>> from tint.models import DistilBert
-         <BLANKLINE>
-         >>> tokenizer, model = DistilBert("distilbert-base-uncased")
+        <BLANKLINE>
+        >>> tokenizer, model = DistilBert("distilbert-base-uncased")
     """
     assert DistilBertConfig is not None, "transformers is not installed."
 
