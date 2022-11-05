@@ -106,6 +106,12 @@ def find_next_wrd(
                 ret="count",
             )
             anchor_map[j] = [non_mono_count]
+        elif strategy == "non_monotonic":
+            # Here we just use the distance between the reference
+            # and the proposed word
+            anchor_map[j] = [
+                distance(word_features[ref_idx], word_features[j])
+            ]
         else:
             raise NotImplementedError
 
@@ -256,14 +262,19 @@ def scale_inputs(
             steps=steps,
             strategy=strategy,
         )
-        monotonic_embs = make_monotonic_path(
-            word_path,
-            ref_input_ids[idx],
-            word_features=word_features,
-            steps=steps,
-            factor=factor,
-        )
-        all_path_embs.append(monotonic_embs)
+        if strategy != "non_monotonic":
+            embs = make_monotonic_path(
+                word_path,
+                ref_input_ids[idx],
+                word_features=word_features,
+                steps=steps,
+                factor=factor,
+            )
+        else:
+            embs = [word_features[idx] for idx in word_path]
+            embs += [word_features[ref_input_ids[idx]]]
+            embs.reverse()  # baseline --> input
+        all_path_embs.append(embs)
     all_path_embs = torch.tensor(
         np.stack(all_path_embs, axis=1),
         dtype=torch.float,
