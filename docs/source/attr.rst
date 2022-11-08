@@ -22,6 +22,7 @@ Summary
     tint.attr.GeodesicIntegratedGradients
     tint.attr.LofKernelShap
     tint.attr.LofLime
+    tint.attr.NonLinearitiesTunnel
     tint.attr.Occlusion
     tint.attr.Retain
     tint.attr.SequentialIntegratedGradients

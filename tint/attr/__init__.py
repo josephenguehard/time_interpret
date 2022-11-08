@@ -7,6 +7,7 @@ from .feature_ablation import FeatureAblation
 from .fit import Fit
 from .geodesic_ig import GeodesicIntegratedGradients
 from .lof import LofKernelShap, LofLime
+from .non_linearities_tunnel import NonLinearitiesTunnel
 from .occlusion import Occlusion
 from .retain import Retain
 from .seq_ig import SequentialIntegratedGradients
@@ -28,6 +29,7 @@ __all__ = [
     "GeodesicIntegratedGradients",
     "LofKernelShap",
     "LofLime",
+    "NonLinearitiesTunnel",
     "Occlusion",
     "Retain",
     "SequentialIntegratedGradients",
