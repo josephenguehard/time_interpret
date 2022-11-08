@@ -90,7 +90,7 @@
 <span class="kn">from</span> <span class="nn">captum._utils.typing</span> <span class="kn">import</span> <span class="n">TensorOrTupleOfTensorsGeneric</span>
 
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">cast</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">cast</span>
 
 
 <div class="viewcode-block" id="NonLinearitiesTunnel"><a class="viewcode-back" href="../../../attr.html#tint.attr.NonLinearitiesTunnel">[docs]</a><span class="k">class</span> <span class="nc">NonLinearitiesTunnel</span><span class="p">(</span><span class="n">Attribution</span><span class="p">):</span>
@@ -98,6 +98,13 @@
 <span class="sd">    Replace non linearities (or any module) with other before running</span>
 <span class="sd">    an attribution method. This tunnel is originally intended to</span>
 <span class="sd">    replace ReLU activations with Softplus to smooth the explanations.</span>
+
+<span class="sd">    .. warning::</span>
+<span class="sd">        This module only replace ``layers`` such as `nn.ReLU()`,</span>
+<span class="sd">        not functional methods such as `F.relu` or `F.relu_`</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        This module only works when ``forward_func`` is a PyTorch nn.Module</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        attribution_method (Attribution): An instance of any attribution algorithm</span>
@@ -149,7 +156,6 @@
         <span class="n">replace_by</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Softplus</span><span class="p">(</span>
             <span class="n">beta</span><span class="o">=</span><span class="mi">10</span>
         <span class="p">),</span>
-        <span class="n">replace_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span>
         <span class="n">Union</span><span class="p">[</span>
@@ -181,9 +187,6 @@
 <span class="sd">            replace_by (nn.Module, list, optional): List of non linearities</span>
 <span class="sd">                to replace non linearities listed in ``to_replace``.</span>
 <span class="sd">                Default: nn.Softplus(beta=10)</span>
-<span class="sd">            replace_dict (dict, optional): A dictionary where each key is</span>
-<span class="sd">                replaced by the corresponding value.</span>
-<span class="sd">                Default: None</span>
 <span class="sd">            **kwargs: (Any, optional): Contains a list of arguments that are</span>
 <span class="sd">                passed  to `attribution_method` attribution algorithm.</span>
 <span class="sd">                Any additional arguments that should be used for the</span>
@@ -230,17 +233,10 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">replace_by</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
             <span class="n">replace_by</span> <span class="o">=</span> <span class="p">(</span><span class="n">replace_by</span><span class="p">,)</span>
 
-        <span class="n">_replaced_layers_tpl</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">_replaced_layers_tpl</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
             <span class="n">replace_layers</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attribution_method</span><span class="o">.</span><span class="n">forward_func</span><span class="p">,</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">to_replace</span><span class="p">,</span> <span class="n">replace_by</span><span class="p">)</span>
         <span class="p">)</span>
-
-        <span class="c1"># If replace_dict is provided</span>
-        <span class="k">if</span> <span class="n">replace_dict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">_replaced_layers_tpl</span> <span class="o">+=</span> <span class="p">(</span>
-                <span class="n">replace_layers</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attribution_method</span><span class="o">.</span><span class="n">forward_func</span><span class="p">,</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span> <span class="ow">in</span> <span class="n">replace_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-            <span class="p">)</span>
 
         <span class="c1"># Get attributions</span>
         <span class="n">attributions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attribution_method</span><span class="o">.</span><span class="n">attribute</span><span class="o">.</span><span class="n">__wrapped__</span><span class="p">(</span>
