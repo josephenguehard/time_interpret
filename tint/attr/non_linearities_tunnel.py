@@ -11,7 +11,7 @@ from captum._utils.common import (
 from captum._utils.typing import TensorOrTupleOfTensorsGeneric
 
 from torch import Tensor
-from typing import Any, Dict, Tuple, Union, cast
+from typing import Any, Tuple, Union, cast
 
 
 class NonLinearitiesTunnel(Attribution):
@@ -70,7 +70,6 @@ class NonLinearitiesTunnel(Attribution):
         replace_by: Union[nn.Module, Tuple[nn.Module, ...]] = nn.Softplus(
             beta=10
         ),
-        replace_dict: Dict[nn.Module, nn.Module] = None,
         **kwargs: Any,
     ) -> Union[
         Union[
@@ -102,9 +101,6 @@ class NonLinearitiesTunnel(Attribution):
             replace_by (nn.Module, list, optional): List of non linearities
                 to replace non linearities listed in ``to_replace``.
                 Default: nn.Softplus(beta=10)
-            replace_dict (dict, optional): A dictionary where each key is
-                replaced by the corresponding value.
-                Default: None
             **kwargs: (Any, optional): Contains a list of arguments that are
                 passed  to `attribution_method` attribution algorithm.
                 Any additional arguments that should be used for the
@@ -151,17 +147,10 @@ class NonLinearitiesTunnel(Attribution):
         if not isinstance(replace_by, tuple):
             replace_by = (replace_by,)
 
-        _replaced_layers_tpl = (
+        _replaced_layers_tpl = tuple(
             replace_layers(self.attribution_method.forward_func, old, new)
             for old, new in zip(to_replace, replace_by)
         )
-
-        # If replace_dict is provided
-        if replace_dict is not None:
-            _replaced_layers_tpl += (
-                replace_layers(self.attribution_method.forward_func, old, new)
-                for old, new in replace_dict.items()
-            )
 
         # Get attributions
         attributions = self.attribution_method.attribute.__wrapped__(
