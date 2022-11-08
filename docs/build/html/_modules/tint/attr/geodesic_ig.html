@@ -408,6 +408,7 @@
 <span class="sd">                (e.g. time estimation). Otherwise, it will fallback to</span>
 <span class="sd">                a simple output of progress.</span>
 <span class="sd">                Default: False</span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            **attributions** or 2-element tuple of **attributions**, **delta**:</span>
 <span class="sd">            - **attributions** (*tensor* or tuple of *tensors*):</span>
@@ -904,7 +905,7 @@
 
         <span class="k">return</span> <span class="n">idx</span><span class="p">,</span> <span class="n">knns</span><span class="p">,</span> <span class="n">dists</span>
 
-    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="GeodesicIntegratedGradients.compute_curvature"><a class="viewcode-back" href="../../../attr.html#tint.attr.GeodesicIntegratedGradients.compute_curvature">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">compute_curvature</span><span class="p">(</span>
         <span class="n">inputs</span><span class="p">:</span> <span class="n">TensorOrTupleOfTensorsGeneric</span><span class="p">,</span>
         <span class="n">baselines</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="o">...</span><span class="p">],</span>
@@ -914,6 +915,12 @@
         <span class="n">grads_idx</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
         <span class="n">paths_len</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]],</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the curvature of the input space, as the difference between</span>
+<span class="sd">        the euclidean distance along the path computed by the A* algorithm</span>
+<span class="sd">        and the euclidean distance between the inputs and baseline.</span>
+<span class="sd">        The curvature is always positive.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Compute euclidean distances for each neighbors</span>
         <span class="n">distances_tpl</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
             <span class="n">torch</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span>
@@ -957,7 +964,7 @@
             <span class="k">for</span> <span class="n">dist</span><span class="p">,</span> <span class="n">euclidean</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">distances_tpl</span><span class="p">,</span> <span class="n">euclidean_tpl</span><span class="p">)</span>
         <span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">curvature</span>
+        <span class="k">return</span> <span class="n">curvature</span></div>
 
 <div class="viewcode-block" id="GeodesicIntegratedGradients.has_convergence_delta"><a class="viewcode-back" href="../../../attr.html#tint.attr.GeodesicIntegratedGradients.has_convergence_delta">[docs]</a>    <span class="k">def</span> <span class="nf">has_convergence_delta</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">True</span></div>

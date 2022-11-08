@@ -102,8 +102,8 @@ methods specifically designed to handle time series data.</p>
 </div>
 <p>We then load some test data from the dataset and the
 corresponding true saliency:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">arma</span><span class="o">.</span><span class="n">preprocess</span><span class="p">()[</span><span class="s2">&quot;x&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">true_saliency</span> <span class="o">=</span> <span class="n">arma</span><span class="o">.</span><span class="n">true_saliency</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="n">rare_dim</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">inputs</span> <span class="o">=</span> <span class="n">arma</span><span class="o">.</span><span class="n">preprocess</span><span class="p">()[</span><span class="s2">&quot;x&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">true_saliency</span> <span class="o">=</span> <span class="n">arma</span><span class="o">.</span><span class="n">true_saliency</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>We can now load an attribution method and use it to compute the saliency:</p>
@@ -111,10 +111,10 @@ corresponding true saliency:</p>
 
 <span class="n">explainer</span> <span class="o">=</span> <span class="n">TemporalIntegratedGradients</span><span class="p">(</span><span class="n">arma</span><span class="o">.</span><span class="n">get_white_box</span><span class="p">)</span>
 
-<span class="n">baseline</span> <span class="o">=</span> <span class="n">inputs</span> <span class="o">*</span> <span class="mi">0</span>
+<span class="n">baselines</span> <span class="o">=</span> <span class="n">inputs</span> <span class="o">*</span> <span class="mi">0</span>
 <span class="n">attr</span> <span class="o">=</span> <span class="n">explainer</span><span class="o">.</span><span class="n">attribute</span><span class="p">(</span>
     <span class="n">inputs</span><span class="p">,</span>
-    <span class="n">baselines</span><span class="o">=</span><span class="n">inputs</span> <span class="o">*</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">baselines</span><span class="o">=</span><span class="n">baselines</span><span class="p">,</span>
     <span class="n">additional_forward_args</span><span class="o">=</span><span class="p">(</span><span class="n">true_saliency</span><span class="p">,),</span>
     <span class="n">temporal_additional_forward_args</span><span class="o">=</span><span class="p">(</span><span class="kc">True</span><span class="p">,),</span>
 <span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span>
