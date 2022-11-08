@@ -20,6 +20,13 @@ class NonLinearitiesTunnel(Attribution):
     an attribution method. This tunnel is originally intended to
     replace ReLU activations with Softplus to smooth the explanations.
 
+    .. warning::
+        This module only replace ``layers`` such as `nn.ReLU()`,
+        not functional methods such as `F.relu` or `F.relu_`
+
+    .. note::
+        This module only works when ``forward_func`` is a PyTorch nn.Module
+
     Args:
         attribution_method (Attribution): An instance of any attribution algorithm
             of type `Attribution`. E.g. Integrated Gradients,
