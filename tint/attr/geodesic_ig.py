@@ -835,6 +835,12 @@ class GeodesicIntegratedGradients(GradientAttribution):
         grads_idx: Tuple[List, ...],
         paths_len: Tuple[List[int]],
     ) -> Tuple[Tensor, ...]:
+        """
+        Compute the curvature of the input space, as the difference between
+        the euclidean distance along the path computed by the A* algorithm
+        and the euclidean distance between the inputs and baseline.
+        The curvature is always positive.
+        """
         # Compute euclidean distances for each neighbors
         distances_tpl = tuple(
             torch.linalg.norm(
