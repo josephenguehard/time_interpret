@@ -78,6 +78,7 @@
              
   <h1>Source code for tint.attr.non_linearities_tunnel</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
 
 <span class="kn">from</span> <span class="nn">captum.attr._utils.attribution</span> <span class="kn">import</span> <span class="n">Attribution</span><span class="p">,</span> <span class="n">GradientAttribution</span>
 <span class="kn">from</span> <span class="nn">captum.log</span> <span class="kn">import</span> <span class="n">log_usage</span>
@@ -95,20 +96,24 @@
 
 <div class="viewcode-block" id="NonLinearitiesTunnel"><a class="viewcode-back" href="../../../attr.html#tint.attr.NonLinearitiesTunnel">[docs]</a><span class="k">class</span> <span class="nc">NonLinearitiesTunnel</span><span class="p">(</span><span class="n">Attribution</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Replace non linearities (or any module) with other before running</span>
+<span class="sd">    Replace non linearities (or any module) with others before running</span>
 <span class="sd">    an attribution method. This tunnel is originally intended to</span>
 <span class="sd">    replace ReLU activations with Softplus to smooth the explanations.</span>
 
 <span class="sd">    .. warning::</span>
-<span class="sd">        This module only replace ``layers`` such as `nn.ReLU()`,</span>
-<span class="sd">        not functional methods such as `F.relu` or `F.relu_`</span>
+<span class="sd">        This method will break if the forward_func contains functional</span>
+<span class="sd">        non linearities with additional arguments that need to be replaced.</span>
+<span class="sd">        For instance, replacing ``F.softmax(x, dim=-1)`` is not possible due</span>
+<span class="sd">        to the presence of the extra argument ``dim``.</span>
 
-<span class="sd">    .. note::</span>
-<span class="sd">        This module only works when ``forward_func`` is a PyTorch nn.Module</span>
+<span class="sd">    .. hint::</span>
+<span class="sd">        In order to replace any layer, a nn.Module must be passed as</span>
+<span class="sd">        forward_func. In particular, passing ``model.forward`` will result</span>
+<span class="sd">        in not replacing any layer in ``model``.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        attribution_method (Attribution): An instance of any attribution algorithm</span>
-<span class="sd">            of type `Attribution`. E.g. Integrated Gradients,</span>
+<span class="sd">        attribution_method (Attribution): An instance of any attribution</span>
+<span class="sd">            algorithm of type `Attribution`. E.g. Integrated Gradients,</span>
 <span class="sd">            Conductance or Saliency.</span>
 
 <span class="sd">    References:</span>
@@ -153,9 +158,7 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">inputs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]],</span>
         <span class="n">to_replace</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
-        <span class="n">replace_by</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Softplus</span><span class="p">(</span>
-            <span class="n">beta</span><span class="o">=</span><span class="mi">10</span>
-        <span class="p">),</span>
+        <span class="n">replace_with</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Softplus</span><span class="p">(),</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span>
         <span class="n">Union</span><span class="p">[</span>
@@ -179,14 +182,15 @@
 <span class="sd">                dimension 1 corresponds to the time dimension, and if</span>
 <span class="sd">                multiple input tensors are provided, the examples must</span>
 <span class="sd">                be aligned appropriately.</span>
-<span class="sd">            to_replace (nn.Module, list, optional): List of non linearities</span>
+<span class="sd">            to_replace (nn.Module, tuple, optional): Non linearities</span>
 <span class="sd">                to be  replaced. The linearities of type listed here will be</span>
 <span class="sd">                replaced by ``replaced_by`` non linearities before running</span>
-<span class="sd">                the attribution method.</span>
+<span class="sd">                the attribution method. This can be an instance or a class.</span>
+<span class="sd">                If a class is passed, default attributes are used.</span>
 <span class="sd">                Default: nn.ReLU()</span>
-<span class="sd">            replace_by (nn.Module, list, optional): List of non linearities</span>
-<span class="sd">                to replace non linearities listed in ``to_replace``.</span>
-<span class="sd">                Default: nn.Softplus(beta=10)</span>
+<span class="sd">            replace_with (nn.Module, tuple, optional): Non linearities</span>
+<span class="sd">                to replace the ones listed in ``to_replace``.</span>
+<span class="sd">                Default: nn.Softplus()</span>
 <span class="sd">            **kwargs: (Any, optional): Contains a list of arguments that are</span>
 <span class="sd">                passed  to `attribution_method` attribution algorithm.</span>
 <span class="sd">                Any additional arguments that should be used for the</span>
@@ -222,41 +226,60 @@
             <span class="ow">and</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;return_convergence_delta&quot;</span><span class="p">]</span>
         <span class="p">)</span>
 
-        <span class="c1"># forward_func must be a PyTorch module</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">attribution_method</span><span class="o">.</span><span class="n">forward_func</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span>
-        <span class="p">),</span> <span class="s2">&quot;forward_func must be a PyTorch module with this method.&quot;</span>
+        <span class="n">_replaced_layers_tpl</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">_replaced_functions</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Replace layers using to_replace and replace_with</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">to_replace</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                <span class="n">to_replace</span> <span class="o">=</span> <span class="p">(</span><span class="n">to_replace</span><span class="p">,)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">replace_with</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                <span class="n">replace_with</span> <span class="o">=</span> <span class="p">(</span><span class="n">replace_with</span><span class="p">,)</span>
 
-        <span class="c1"># Replace layers using to_replace and replaced_by</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">to_replace</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
-            <span class="n">to_replace</span> <span class="o">=</span> <span class="p">(</span><span class="n">to_replace</span><span class="p">,)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">replace_by</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
-            <span class="n">replace_by</span> <span class="o">=</span> <span class="p">(</span><span class="n">replace_by</span><span class="p">,)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attribution_method</span><span class="o">.</span><span class="n">forward_func</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+                <span class="n">_replaced_layers_tpl</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+                    <span class="n">replace_layers</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">attribution_method</span><span class="o">.</span><span class="n">forward_func</span><span class="p">,</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span>
+                    <span class="p">)</span>
+                    <span class="k">for</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">to_replace</span><span class="p">,</span> <span class="n">replace_with</span><span class="p">)</span>
+                <span class="p">)</span>
 
-        <span class="n">_replaced_layers_tpl</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
-            <span class="n">replace_layers</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attribution_method</span><span class="o">.</span><span class="n">forward_func</span><span class="p">,</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">to_replace</span><span class="p">,</span> <span class="n">replace_by</span><span class="p">)</span>
-        <span class="p">)</span>
+            <span class="c1"># Replace functional using to_replace and replace_with</span>
+            <span class="k">for</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">to_replace</span><span class="p">,</span> <span class="n">replace_with</span><span class="p">):</span>
+                <span class="n">name</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_functional</span><span class="p">(</span><span class="n">old</span><span class="p">)</span>
+                <span class="n">_</span><span class="p">,</span> <span class="n">func</span> <span class="o">=</span> <span class="n">get_functional</span><span class="p">(</span><span class="n">new</span><span class="p">)</span>
+                <span class="n">_replaced_functions</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">func</span><span class="p">)</span>
 
-        <span class="c1"># Get attributions</span>
-        <span class="n">attributions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attribution_method</span><span class="o">.</span><span class="n">attribute</span><span class="o">.</span><span class="n">__wrapped__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">attribution_method</span><span class="p">,</span>  <span class="c1"># self</span>
-            <span class="n">inputs</span> <span class="k">if</span> <span class="n">is_inputs_tuple</span> <span class="k">else</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-        <span class="p">)</span>
+            <span class="c1"># Get attributions</span>
+            <span class="n">attributions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attribution_method</span><span class="o">.</span><span class="n">attribute</span><span class="o">.</span><span class="n">__wrapped__</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">attribution_method</span><span class="p">,</span>  <span class="c1"># self</span>
+                <span class="n">inputs</span> <span class="k">if</span> <span class="n">is_inputs_tuple</span> <span class="k">else</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+            <span class="p">)</span>
 
-        <span class="c1"># Get delta if required</span>
-        <span class="n">delta</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_delta_supported</span> <span class="ow">and</span> <span class="n">return_convergence_delta</span><span class="p">:</span>
-            <span class="n">attributions</span><span class="p">,</span> <span class="n">delta</span> <span class="o">=</span> <span class="n">attributions</span>
+            <span class="c1"># Get delta if required</span>
+            <span class="n">delta</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_delta_supported</span> <span class="ow">and</span> <span class="n">return_convergence_delta</span><span class="p">:</span>
+                <span class="n">attributions</span><span class="p">,</span> <span class="n">delta</span> <span class="o">=</span> <span class="n">attributions</span>
 
-        <span class="c1"># Format attributions</span>
-        <span class="n">is_attrib_tuple</span> <span class="o">=</span> <span class="n">_is_tuple</span><span class="p">(</span><span class="n">attributions</span><span class="p">)</span>
-        <span class="n">attributions</span> <span class="o">=</span> <span class="n">_format_tensor_into_tuples</span><span class="p">(</span><span class="n">attributions</span><span class="p">)</span>
+            <span class="c1"># Format attributions</span>
+            <span class="n">is_attrib_tuple</span> <span class="o">=</span> <span class="n">_is_tuple</span><span class="p">(</span><span class="n">attributions</span><span class="p">)</span>
+            <span class="n">attributions</span> <span class="o">=</span> <span class="n">_format_tensor_into_tuples</span><span class="p">(</span><span class="n">attributions</span><span class="p">)</span>
 
-        <span class="c1"># Restore non linearities</span>
-        <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">_replaced_layers_tpl</span><span class="p">:</span>
-            <span class="n">reverse_replace_layers</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attribution_method</span><span class="o">.</span><span class="n">forward_func</span><span class="p">,</span> <span class="n">layer</span><span class="p">)</span>
+        <span class="c1"># Even if any error is raised, restore layers and functions</span>
+        <span class="c1"># before raising</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="c1"># Restore layers</span>
+            <span class="k">if</span> <span class="n">_replaced_layers_tpl</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">_replaced_layers_tpl</span><span class="p">:</span>
+                    <span class="n">reverse_replace_layers</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">attribution_method</span><span class="o">.</span><span class="n">forward_func</span><span class="p">,</span>
+                        <span class="n">layer</span><span class="p">,</span>
+                    <span class="p">)</span>
+
+            <span class="c1"># Restore functions</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">_replaced_functions</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">func</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_checks_and_return_attributions</span><span class="p">(</span>
             <span class="n">attributions</span><span class="p">,</span>
@@ -303,27 +326,103 @@
 <span class="sd">    References:</span>
 <span class="sd">        https://discuss.pytorch.org/t/how-to-modify-a-pretrained-model/60509/12</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">replaced_names</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="n">replaced_layers</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">named_children</span><span class="p">():</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">children</span><span class="p">()))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">replaced_names</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">replace_layers</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span><span class="p">)</span>
+            <span class="n">replaced_layers</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">replace_layers</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">old</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">old</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span> <span class="k">else</span> <span class="nb">type</span><span class="p">(</span><span class="n">old</span><span class="p">)):</span>
-            <span class="n">replaced_names</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+            <span class="n">replaced_layers</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
             <span class="nb">setattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">new</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">replaced_names</span>
+    <span class="k">return</span> <span class="n">replaced_layers</span>
 
 
-<span class="k">def</span> <span class="nf">reverse_replace_layers</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">replaced_names</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">reverse_replace_layers</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">replaced_layers</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Reverse the layer replacement using the ``replaced_names``</span>
+<span class="sd">    Reverse the layer replacement using the ``replaced_layers``</span>
 <span class="sd">    dictionary created when running ``replace_layers``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">replaced_names</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">replaced_layers</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
             <span class="n">reverse_replace_layers</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">k</span><span class="p">),</span> <span class="n">v</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="nb">setattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">get_functional</span><span class="p">(</span><span class="n">module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Map a nn Non linearity to a corresponding function.</span>
+<span class="sd">    It returns the name of the function to be replaced and the function</span>
+<span class="sd">    to replace it with.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Get default instance if ony type provided</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">module</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">:</span>
+        <span class="n">module</span> <span class="o">=</span> <span class="n">module</span><span class="p">()</span>
+
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">),</span> <span class="s2">&quot;You must provide a PyTorch Module.&quot;</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Threshold</span><span class="p">):</span>
+        <span class="n">threshold</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">threshold</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">inplace</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">inplace</span>
+        <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;threshold_&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">F</span><span class="o">.</span><span class="n">threshold_</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">&quot;threshold&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">F</span><span class="o">.</span><span class="n">threshold</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">):</span>
+        <span class="n">inplace</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">inplace</span>
+        <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;relu_&quot;</span><span class="p">,</span> <span class="n">F</span><span class="o">.</span><span class="n">relu_</span>
+        <span class="k">return</span> <span class="s2">&quot;relu&quot;</span><span class="p">,</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">ReLU6</span><span class="p">):</span>
+        <span class="n">inplace</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">inplace</span>
+        <span class="k">return</span> <span class="s2">&quot;relu6&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">F</span><span class="o">.</span><span class="n">relu6</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">inplace</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">ELU</span><span class="p">):</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">alpha</span>
+        <span class="n">inplace</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">inplace</span>
+        <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;elu_&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">F</span><span class="o">.</span><span class="n">elu_</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">&quot;elu&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">F</span><span class="o">.</span><span class="n">elu</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">CELU</span><span class="p">):</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">alpha</span>
+        <span class="n">inplace</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">inplace</span>
+        <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;celu_&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">F</span><span class="o">.</span><span class="n">celu_</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">&quot;celu&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">F</span><span class="o">.</span><span class="n">celu</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">LeakyReLU</span><span class="p">):</span>
+        <span class="n">negative_slope</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">negative_slope</span>
+        <span class="n">inplace</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">inplace</span>
+        <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;leaky_relu_&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">F</span><span class="o">.</span><span class="n">leaky_relu_</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">negative_slope</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">&quot;leaky_relu&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">F</span><span class="o">.</span><span class="n">leaky_relu</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">negative_slope</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Softplus</span><span class="p">):</span>
+        <span class="n">beta</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">beta</span>
+        <span class="n">threshold</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">threshold</span>
+        <span class="k">return</span> <span class="s2">&quot;softplus&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">F</span><span class="o">.</span><span class="n">softplus</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Softmax</span><span class="p">):</span>
+        <span class="n">dim</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">dim</span>
+        <span class="k">return</span> <span class="s2">&quot;softmax&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">F</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">LogSoftmax</span><span class="p">):</span>
+        <span class="n">dim</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">dim</span>
+        <span class="k">return</span> <span class="s2">&quot;log_softmax&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">F</span><span class="o">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sigmoid</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;sigmoid&quot;</span><span class="p">,</span> <span class="n">F</span><span class="o">.</span><span class="n">sigmoid</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Tanh</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;tanh&quot;</span><span class="p">,</span> <span class="n">F</span><span class="o">.</span><span class="n">tanh</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Tanhshrink</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;tanhshrink&quot;</span><span class="p">,</span> <span class="n">F</span><span class="o">.</span><span class="n">tanhshrink</span>
+
+    <span class="k">return</span> <span class="kc">None</span>
 </pre></div>
 
            </div>

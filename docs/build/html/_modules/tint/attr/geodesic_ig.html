@@ -210,6 +210,7 @@
         <span class="n">n_steiner</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;gausslegendre&quot;</span><span class="p">,</span>
         <span class="n">internal_batch_size</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">return_curvature</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">return_convergence_delta</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">distance</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;geodesic&quot;</span><span class="p">,</span>
         <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -230,6 +231,7 @@
         <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;gausslegendre&quot;</span><span class="p">,</span>
         <span class="n">internal_batch_size</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
+        <span class="n">return_curvature</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">return_convergence_delta</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
         <span class="n">distance</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;geodesic&quot;</span><span class="p">,</span>
         <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -249,6 +251,7 @@
         <span class="n">n_steiner</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;gausslegendre&quot;</span><span class="p">,</span>
         <span class="n">internal_batch_size</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">return_curvature</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">return_convergence_delta</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">distance</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;geodesic&quot;</span><span class="p">,</span>
         <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -256,6 +259,12 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span>
         <span class="n">TensorOrTupleOfTensorsGeneric</span><span class="p">,</span>
         <span class="n">Tuple</span><span class="p">[</span><span class="n">TensorOrTupleOfTensorsGeneric</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">],</span>
+        <span class="n">Tuple</span><span class="p">[</span><span class="n">TensorOrTupleOfTensorsGeneric</span><span class="p">,</span> <span class="n">TensorOrTupleOfTensorsGeneric</span><span class="p">],</span>
+        <span class="n">Tuple</span><span class="p">[</span>
+            <span class="n">TensorOrTupleOfTensorsGeneric</span><span class="p">,</span>
+            <span class="n">Tensor</span><span class="p">,</span>
+            <span class="n">TensorOrTupleOfTensorsGeneric</span><span class="p">,</span>
+        <span class="p">],</span>
     <span class="p">]:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method attributes the output of the model with given target index</span>
@@ -265,6 +274,8 @@
 <span class="sd">        In addition to that it also returns, if `return_convergence_delta` is</span>
 <span class="sd">        set to True, integral approximation delta based on the completeness</span>
 <span class="sd">        property of integrated gradients.</span>
+
+<span class="sd">        It also returns the curvature if `return_curvature` is set to True.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            inputs (tensor or tuple of tensors):  Input for which integrated</span>
@@ -372,6 +383,11 @@
 <span class="sd">                If internal_batch_size is None, then all evaluations are</span>
 <span class="sd">                processed in one batch.</span>
 <span class="sd">                Default: None</span>
+<span class="sd">            return_curvature (bool, optional): Indicates whether to return</span>
+<span class="sd">                the curvature or not. If `return_curvature`</span>
+<span class="sd">                is set to True curvature will be returned in a tuple following</span>
+<span class="sd">                attributions and optionally convergence delta.</span>
+<span class="sd">                Default: False</span>
 <span class="sd">            return_convergence_delta (bool, optional): Indicates whether to return</span>
 <span class="sd">                convergence delta or not. If `return_convergence_delta`</span>
 <span class="sd">                is set to True convergence delta will be returned in</span>
@@ -411,6 +427,19 @@
 <span class="sd">                Delta is calculated per example, meaning that the number of</span>
 <span class="sd">                elements in returned delta tensor is equal to the number of</span>
 <span class="sd">                examples in inputs.</span>
+<span class="sd">            - **curvature** (*tensor*, returned if return_curvature=True):</span>
+<span class="sd">                The difference between the distance along the path computed</span>
+<span class="sd">                by the A* algorithm and the euclidean distance between</span>
+<span class="sd">                inputs and baselines. This value, always positive,</span>
+<span class="sd">                returns a measure of the curvature of the input space, with</span>
+<span class="sd">                the inner product of the gradient of the model:</span>
+
+<span class="sd">                .. math::</span>
+<span class="sd">                    &lt;\nabla F(x)^T, \nabla F(x)&gt;</span>
+
+<span class="sd">                as a metric. A higher value indicates a higher curvature.</span>
+<span class="sd">                This value however depends on the path and is as such only</span>
+<span class="sd">                an indication of the true curvature of the input space.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Keeps track whether original input is a tuple or not before</span>
         <span class="c1"># converting it into a tuple.</span>
@@ -636,6 +665,19 @@
         <span class="p">)</span>
         <span class="n">total_grads</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">grad</span><span class="p">)</span> <span class="k">for</span> <span class="n">grad</span> <span class="ow">in</span> <span class="n">total_grads</span><span class="p">)</span>
 
+        <span class="c1"># Optionally compute curvature</span>
+        <span class="n">curvature</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">return_curvature</span><span class="p">:</span>
+            <span class="n">curvature</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_curvature</span><span class="p">(</span>
+                <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span>
+                <span class="n">baselines</span><span class="o">=</span><span class="n">baselines</span><span class="p">,</span>
+                <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+                <span class="n">knns</span><span class="o">=</span><span class="n">knns</span><span class="p">,</span>
+                <span class="n">idx</span><span class="o">=</span><span class="n">idx</span><span class="p">,</span>
+                <span class="n">grads_idx</span><span class="o">=</span><span class="n">grads_idx</span><span class="p">,</span>
+                <span class="n">paths_len</span><span class="o">=</span><span class="n">paths_len</span><span class="p">,</span>
+            <span class="p">)</span>
+
         <span class="k">if</span> <span class="n">return_convergence_delta</span><span class="p">:</span>
             <span class="n">start_point</span><span class="p">,</span> <span class="n">end_point</span> <span class="o">=</span> <span class="n">baselines</span><span class="p">,</span> <span class="n">inputs</span>
             <span class="c1"># computes approximation error based on the completeness axiom</span>
@@ -646,7 +688,18 @@
                 <span class="n">additional_forward_args</span><span class="o">=</span><span class="n">additional_forward_args</span><span class="p">,</span>
                 <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
             <span class="p">)</span>
+            <span class="k">if</span> <span class="n">curvature</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">(</span>
+                    <span class="n">_format_output</span><span class="p">(</span><span class="n">is_inputs_tuple</span><span class="p">,</span> <span class="n">total_grads</span><span class="p">),</span>
+                    <span class="n">delta</span><span class="p">,</span>
+                    <span class="n">_format_output</span><span class="p">(</span><span class="n">is_inputs_tuple</span><span class="p">,</span> <span class="n">curvature</span><span class="p">),</span>
+                <span class="p">)</span>
             <span class="k">return</span> <span class="n">_format_output</span><span class="p">(</span><span class="n">is_inputs_tuple</span><span class="p">,</span> <span class="n">total_grads</span><span class="p">),</span> <span class="n">delta</span>
+
+        <span class="k">if</span> <span class="n">curvature</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_format_output</span><span class="p">(</span>
+                <span class="n">is_inputs_tuple</span><span class="p">,</span> <span class="n">total_grads</span>
+            <span class="p">),</span> <span class="n">_format_output</span><span class="p">(</span><span class="n">is_inputs_tuple</span><span class="p">,</span> <span class="n">curvature</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">_format_output</span><span class="p">(</span><span class="n">is_inputs_tuple</span><span class="p">,</span> <span class="n">total_grads</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_attribute</span><span class="p">(</span>
@@ -850,6 +903,61 @@
         <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">idx</span><span class="p">,</span> <span class="n">knns</span><span class="p">,</span> <span class="n">dists</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">compute_curvature</span><span class="p">(</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">TensorOrTupleOfTensorsGeneric</span><span class="p">,</span>
+        <span class="n">baselines</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="o">...</span><span class="p">],</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+        <span class="n">knns</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+        <span class="n">idx</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+        <span class="n">grads_idx</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+        <span class="n">paths_len</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+        <span class="c1"># Compute euclidean distances for each neighbors</span>
+        <span class="n">distances_tpl</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">knn</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="nb">id</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">knn</span><span class="p">]),</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+                <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">knn</span><span class="p">,</span> <span class="nb">id</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">knns</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Get distance of each path</span>
+        <span class="n">distances_tpl</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">dist</span><span class="p">[</span><span class="n">grad_idx</span><span class="p">]</span> <span class="k">for</span> <span class="n">dist</span><span class="p">,</span> <span class="n">grad_idx</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">distances_tpl</span><span class="p">,</span> <span class="n">grads_idx</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Split for each path</span>
+        <span class="n">distances_tpl</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">grad</span><span class="p">,</span> <span class="n">split_size_or_sections</span><span class="o">=</span><span class="n">path_len</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">grad</span><span class="p">,</span> <span class="n">path_len</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">distances_tpl</span><span class="p">,</span> <span class="n">paths_len</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Sum over points and paths</span>
+        <span class="c1"># and stack result</span>
+        <span class="n">distances_tpl</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="nb">tuple</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">dist</span><span class="p">)</span> <span class="k">for</span> <span class="n">dist</span> <span class="ow">in</span> <span class="n">distances_tpl</span>
+        <span class="p">)</span>
+        <span class="n">distances_tpl</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">dist</span><span class="p">)</span> <span class="k">for</span> <span class="n">dist</span> <span class="ow">in</span> <span class="n">distances_tpl</span><span class="p">)</span>
+
+        <span class="c1"># Compute euclidean distance between inputs and baselines</span>
+        <span class="n">euclidean_tpl</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span>
+                <span class="p">(</span><span class="nb">input</span> <span class="o">-</span> <span class="n">baseline</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">input</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+                <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="nb">input</span><span class="p">,</span> <span class="n">baseline</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">baselines</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="c1"># The curvature is the diff between path-based distance and euclidean</span>
+        <span class="c1"># distance.</span>
+        <span class="n">curvature</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">dist</span> <span class="o">-</span> <span class="n">euclidean</span>
+            <span class="k">for</span> <span class="n">dist</span><span class="p">,</span> <span class="n">euclidean</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">distances_tpl</span><span class="p">,</span> <span class="n">euclidean_tpl</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">curvature</span>
 
 <div class="viewcode-block" id="GeodesicIntegratedGradients.has_convergence_delta"><a class="viewcode-back" href="../../../attr.html#tint.attr.GeodesicIntegratedGradients.has_convergence_delta">[docs]</a>    <span class="k">def</span> <span class="nf">has_convergence_delta</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">True</span></div>
