@@ -131,6 +131,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
         n_steiner: int = None,
         method: str = "gausslegendre",
         internal_batch_size: Union[None, int] = None,
+        return_curvature: bool = False,
         return_convergence_delta: bool = False,
         distance: str = "geodesic",
         show_progress: bool = False,
@@ -151,6 +152,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
         method: str = "gausslegendre",
         internal_batch_size: Union[None, int] = None,
         *,
+        return_curvature: bool = False,
         return_convergence_delta: bool,
         distance: str = "geodesic",
         show_progress: bool = False,
@@ -170,6 +172,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
         n_steiner: int = None,
         method: str = "gausslegendre",
         internal_batch_size: Union[None, int] = None,
+        return_curvature: bool = False,
         return_convergence_delta: bool = False,
         distance: str = "geodesic",
         show_progress: bool = False,
@@ -177,6 +180,12 @@ class GeodesicIntegratedGradients(GradientAttribution):
     ) -> Union[
         TensorOrTupleOfTensorsGeneric,
         Tuple[TensorOrTupleOfTensorsGeneric, Tensor],
+        Tuple[TensorOrTupleOfTensorsGeneric, TensorOrTupleOfTensorsGeneric],
+        Tuple[
+            TensorOrTupleOfTensorsGeneric,
+            Tensor,
+            TensorOrTupleOfTensorsGeneric,
+        ],
     ]:
         r"""
         This method attributes the output of the model with given target index
@@ -186,6 +195,8 @@ class GeodesicIntegratedGradients(GradientAttribution):
         In addition to that it also returns, if `return_convergence_delta` is
         set to True, integral approximation delta based on the completeness
         property of integrated gradients.
+
+        It also returns the curvature if `return_curvature` is set to True.
 
         Args:
             inputs (tensor or tuple of tensors):  Input for which integrated
@@ -293,6 +304,11 @@ class GeodesicIntegratedGradients(GradientAttribution):
                 If internal_batch_size is None, then all evaluations are
                 processed in one batch.
                 Default: None
+            return_curvature (bool, optional): Indicates whether to return
+                the curvature or not. If `return_curvature`
+                is set to True curvature will be returned in a tuple following
+                attributions and optionally convergence delta.
+                Default: False
             return_convergence_delta (bool, optional): Indicates whether to return
                 convergence delta or not. If `return_convergence_delta`
                 is set to True convergence delta will be returned in
@@ -332,6 +348,19 @@ class GeodesicIntegratedGradients(GradientAttribution):
                 Delta is calculated per example, meaning that the number of
                 elements in returned delta tensor is equal to the number of
                 examples in inputs.
+            - **curvature** (*tensor*, returned if return_curvature=True):
+                The difference between the distance along the path computed
+                by the A* algorithm and the euclidean distance between
+                inputs and baselines. This value, always positive,
+                returns a measure of the curvature of the input space, with
+                the inner product of the gradient of the model:
+
+                .. math::
+                    <\nabla F(x)^T, \nabla F(x)>
+
+                as a metric. A higher value indicates a higher curvature.
+                This value however depends on the path and is as such only
+                an indication of the true curvature of the input space.
         """
         # Keeps track whether original input is a tuple or not before
         # converting it into a tuple.
@@ -557,6 +586,19 @@ class GeodesicIntegratedGradients(GradientAttribution):
         )
         total_grads = tuple(torch.stack(grad) for grad in total_grads)
 
+        # Optionally compute curvature
+        curvature = None
+        if return_curvature:
+            curvature = self.compute_curvature(
+                inputs=inputs,
+                baselines=baselines,
+                data=data,
+                knns=knns,
+                idx=idx,
+                grads_idx=grads_idx,
+                paths_len=paths_len,
+            )
+
         if return_convergence_delta:
             start_point, end_point = baselines, inputs
             # computes approximation error based on the completeness axiom
@@ -567,7 +609,18 @@ class GeodesicIntegratedGradients(GradientAttribution):
                 additional_forward_args=additional_forward_args,
                 target=target,
             )
+            if curvature is not None:
+                return (
+                    _format_output(is_inputs_tuple, total_grads),
+                    delta,
+                    _format_output(is_inputs_tuple, curvature),
+                )
             return _format_output(is_inputs_tuple, total_grads), delta
+
+        if curvature is not None:
+            return _format_output(
+                is_inputs_tuple, total_grads
+            ), _format_output(is_inputs_tuple, curvature)
         return _format_output(is_inputs_tuple, total_grads)
 
     def _attribute(
@@ -771,6 +824,61 @@ class GeodesicIntegratedGradients(GradientAttribution):
         )
 
         return idx, knns, dists
+
+    @staticmethod
+    def compute_curvature(
+        inputs: TensorOrTupleOfTensorsGeneric,
+        baselines: Tuple[Union[Tensor, int, float], ...],
+        data: Tuple[Tensor, ...],
+        knns: Tuple[Tensor, ...],
+        idx: Tuple[Tensor, ...],
+        grads_idx: Tuple[List, ...],
+        paths_len: Tuple[List[int]],
+    ) -> Tuple[Tensor, ...]:
+        # Compute euclidean distances for each neighbors
+        distances_tpl = tuple(
+            torch.linalg.norm(
+                (x[knn] - x[id]).reshape(len(x[knn]), -1),
+                dim=1,
+            )
+            for x, knn, id in zip(data, knns, idx)
+        )
+
+        # Get distance of each path
+        distances_tpl = tuple(
+            dist[grad_idx] for dist, grad_idx in zip(distances_tpl, grads_idx)
+        )
+
+        # Split for each path
+        distances_tpl = tuple(
+            torch.split(grad, split_size_or_sections=path_len, dim=0)
+            for grad, path_len in zip(distances_tpl, paths_len)
+        )
+
+        # Sum over points and paths
+        # and stack result
+        distances_tpl = tuple(
+            tuple(x.sum(0) for x in dist) for dist in distances_tpl
+        )
+        distances_tpl = tuple(torch.stack(dist) for dist in distances_tpl)
+
+        # Compute euclidean distance between inputs and baselines
+        euclidean_tpl = tuple(
+            torch.linalg.norm(
+                (input - baseline).reshape(len(input), -1),
+                dim=1,
+            )
+            for input, baseline in zip(inputs, baselines)
+        )
+
+        # The curvature is the diff between path-based distance and euclidean
+        # distance.
+        curvature = tuple(
+            dist - euclidean
+            for dist, euclidean in zip(distances_tpl, euclidean_tpl)
+        )
+
+        return curvature
 
     def has_convergence_delta(self) -> bool:
         return True
