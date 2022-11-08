@@ -329,6 +329,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
                 (e.g. time estimation). Otherwise, it will fallback to
                 a simple output of progress.
                 Default: False
+
         Returns:
             **attributions** or 2-element tuple of **attributions**, **delta**:
             - **attributions** (*tensor* or tuple of *tensors*):
