@@ -35,7 +35,7 @@ def test_init(forward_func, fails):
         "target",
         "additional_forward_args",
         "to_replace",
-        "replace_by",
+        "replace_with",
         "fails",
     ],
     [
@@ -61,7 +61,7 @@ def test_time_forward_tunnel(
     target,
     additional_forward_args,
     to_replace,
-    replace_by,
+    replace_with,
     fails,
 ):
     with pytest.raises(Exception) if fails else nullcontext():
@@ -72,6 +72,6 @@ def test_time_forward_tunnel(
             target=target,
             additional_forward_args=additional_forward_args,
             to_replace=to_replace,
-            replace_by=replace_by,
+            replace_with=replace_with,
         )
         assert attr.shape == inputs.shape
