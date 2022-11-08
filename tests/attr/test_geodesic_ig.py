@@ -42,6 +42,7 @@ def test_init(forward_func, nn, data, n_neighbors, multiply_by_inputs, fails):
         "n_steiner",
         "method",
         "internal_batch_size",
+        "return_curvature",
         "return_convergence_delta",
         "distance",
         "show_progress",
@@ -61,6 +62,7 @@ def test_init(forward_func, nn, data, n_neighbors, multiply_by_inputs, fails):
             "gausslegendre",
             None,
             False,
+            False,
             "geodesic",
             False,
             False,
@@ -78,6 +80,7 @@ def test_init(forward_func, nn, data, n_neighbors, multiply_by_inputs, fails):
             "gausslegendre",
             None,
             False,
+            False,
             "geodesic",
             False,
             False,
@@ -94,6 +97,7 @@ def test_init(forward_func, nn, data, n_neighbors, multiply_by_inputs, fails):
             None,
             "gausslegendre",
             None,
+            False,
             False,
             "geodesic",
             False,
@@ -111,6 +115,7 @@ def test_init(forward_func, nn, data, n_neighbors, multiply_by_inputs, fails):
             None,
             "gausslegendre",
             None,
+            False,
             False,
             "geodesic",
             False,
@@ -129,6 +134,7 @@ def test_init(forward_func, nn, data, n_neighbors, multiply_by_inputs, fails):
             "gausslegendre",
             None,
             False,
+            False,
             "geodesic",
             False,
             False,
@@ -145,6 +151,7 @@ def test_init(forward_func, nn, data, n_neighbors, multiply_by_inputs, fails):
             None,
             "gausslegendre",
             None,
+            False,
             False,
             "geodesic",
             False,
@@ -163,6 +170,7 @@ def test_init(forward_func, nn, data, n_neighbors, multiply_by_inputs, fails):
             "riemann_trapezoid",
             None,
             False,
+            False,
             "geodesic",
             False,
             False,
@@ -180,6 +188,7 @@ def test_init(forward_func, nn, data, n_neighbors, multiply_by_inputs, fails):
             "gausslegendre",
             8,
             False,
+            False,
             "geodesic",
             False,
             False,
@@ -197,6 +206,7 @@ def test_init(forward_func, nn, data, n_neighbors, multiply_by_inputs, fails):
             "gausslegendre",
             None,
             True,
+            False,
             "geodesic",
             False,
             False,
@@ -213,6 +223,43 @@ def test_init(forward_func, nn, data, n_neighbors, multiply_by_inputs, fails):
             None,
             "gausslegendre",
             None,
+            False,
+            True,
+            "geodesic",
+            False,
+            False,
+        ),
+        (
+            BasicModel(),
+            True,
+            th.rand(8, 5, 3),
+            None,
+            None,
+            None,
+            5,
+            10,
+            None,
+            "gausslegendre",
+            None,
+            True,
+            True,
+            "geodesic",
+            False,
+            False,
+        ),
+        (
+            BasicModel(),
+            True,
+            th.rand(8, 5, 3),
+            None,
+            None,
+            None,
+            5,
+            10,
+            None,
+            "gausslegendre",
+            None,
+            False,
             False,
             "euclidean",
             False,
@@ -230,6 +277,7 @@ def test_init(forward_func, nn, data, n_neighbors, multiply_by_inputs, fails):
             None,
             "gausslegendre",
             None,
+            False,
             False,
             "geodesic",
             True,
@@ -249,6 +297,7 @@ def test_time_forward_tunnel(
     n_steiner,
     method,
     internal_batch_size,
+    return_curvature,
     return_convergence_delta,
     distance,
     show_progress,
@@ -267,13 +316,25 @@ def test_time_forward_tunnel(
             n_steiner=n_steiner,
             method=method,
             internal_batch_size=internal_batch_size,
+            return_curvature=return_curvature,
             return_convergence_delta=return_convergence_delta,
             distance=distance,
             show_progress=show_progress,
         )
 
         if return_convergence_delta:
-            attr, delta = attr
-            assert tuple(delta.shape) == (8,)
+            if return_curvature:
+                attr, delta, curvature = attr
+                assert tuple(curvature.shape) == (8,)
+                assert all(curvature >= 0.0)
+                assert tuple(delta.shape) == (8,)
+            else:
+                attr, delta = attr
+                assert tuple(delta.shape) == (8,)
+        else:
+            if return_curvature:
+                attr, curvature = attr
+                assert tuple(curvature.shape) == (8,)
+                assert all(curvature >= 0.0)
 
         assert attr.shape == inputs.shape
