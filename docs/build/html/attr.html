@@ -128,28 +128,31 @@ attribution methods. These methods are listed below:</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#tint.attr.LofLime" title="tint.attr.LofLime"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.LofLime</span></code></a>(forward_func, embeddings)</p></td>
 <td><p>Local Outlier Factor Lime.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#tint.attr.Occlusion" title="tint.attr.Occlusion"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.Occlusion</span></code></a>(forward_func)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#tint.attr.NonLinearitiesTunnel" title="tint.attr.NonLinearitiesTunnel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.NonLinearitiesTunnel</span></code></a>(...)</p></td>
+<td><p>Replace non linearities (or any module) with other before running an attribution method.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#tint.attr.Occlusion" title="tint.attr.Occlusion"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.Occlusion</span></code></a>(forward_func)</p></td>
 <td><p>A perturbation based approach to compute attribution, involving replacing each contiguous rectangular region with a given baseline / reference, and computing the difference in output.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#tint.attr.Retain" title="tint.attr.Retain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.Retain</span></code></a>([forward_func, retain, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#tint.attr.Retain" title="tint.attr.Retain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.Retain</span></code></a>([forward_func, retain, ...])</p></td>
 <td><p>Retain explainer method.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#tint.attr.SequentialIntegratedGradients" title="tint.attr.SequentialIntegratedGradients"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.SequentialIntegratedGradients</span></code></a>(...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#tint.attr.SequentialIntegratedGradients" title="tint.attr.SequentialIntegratedGradients"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.SequentialIntegratedGradients</span></code></a>(...)</p></td>
 <td><p>Sequential Integrated Gradients.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#tint.attr.SmoothGrad" title="tint.attr.SmoothGrad"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.SmoothGrad</span></code></a>(forward_func)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#tint.attr.SmoothGrad" title="tint.attr.SmoothGrad"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.SmoothGrad</span></code></a>(forward_func)</p></td>
 <td><p>Wrapper combining Saliency and NoiseTunnel to recover SmoothGrad.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#tint.attr.TemporalAugmentedOcclusion" title="tint.attr.TemporalAugmentedOcclusion"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.TemporalAugmentedOcclusion</span></code></a>(...[, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#tint.attr.TemporalAugmentedOcclusion" title="tint.attr.TemporalAugmentedOcclusion"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.TemporalAugmentedOcclusion</span></code></a>(...[, ...])</p></td>
 <td><p>Temporal Augmented Occlusion</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#tint.attr.TemporalIntegratedGradients" title="tint.attr.TemporalIntegratedGradients"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.TemporalIntegratedGradients</span></code></a>(...[, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#tint.attr.TemporalIntegratedGradients" title="tint.attr.TemporalIntegratedGradients"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.TemporalIntegratedGradients</span></code></a>(...[, ...])</p></td>
 <td><p>Temporal Integrated Gradients.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#tint.attr.TemporalOcclusion" title="tint.attr.TemporalOcclusion"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.TemporalOcclusion</span></code></a>(forward_func)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#tint.attr.TemporalOcclusion" title="tint.attr.TemporalOcclusion"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.TemporalOcclusion</span></code></a>(forward_func)</p></td>
 <td><p>Temporal Occlusion</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#tint.attr.TimeForwardTunnel" title="tint.attr.TimeForwardTunnel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.TimeForwardTunnel</span></code></a>(attribution_method)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#tint.attr.TimeForwardTunnel" title="tint.attr.TimeForwardTunnel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.TimeForwardTunnel</span></code></a>(attribution_method)</p></td>
 <td><p>Performs interpretation method by iteratively retrieving the input data up to a time, and computing the predictions using this data and the forward_func.</p></td>
 </tr>
 </tbody>
@@ -1824,6 +1827,165 @@ single floating point tensor.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><em>tensor</em> of <strong>deltas</strong></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tint.attr.NonLinearitiesTunnel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tint.attr.</span></span><span class="sig-name descname"><span class="pre">NonLinearitiesTunnel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attribution_method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Attribution</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/non_linearities_tunnel.html#NonLinearitiesTunnel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.NonLinearitiesTunnel" title="Permalink to this definition"></a></dt>
+<dd><p>Replace non linearities (or any module) with other before running
+an attribution method. This tunnel is originally intended to
+replace ReLU activations with Softplus to smooth the explanations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><span class="target" id="tint.attr.NonLinearitiesTunnel.params.attribution_method"></span><strong>attribution_method</strong><a class="paramlink headerlink reference internal" href="#tint.attr.NonLinearitiesTunnel.params.attribution_method">¶</a> (<em>Attribution</em>) – An instance of any attribution algorithm
+of type <cite>Attribution</cite>. E.g. Integrated Gradients,
+Conductance or Saliency.</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p><a class="reference external" href="https://arxiv.org/abs/1906.07983">https://arxiv.org/abs/1906.07983</a></p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span> <span class="k">as</span> <span class="nn">th</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">captum.attr</span> <span class="kn">import</span> <span class="n">Saliency</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.attr</span> <span class="kn">import</span> <span class="n">NonLinearitiesTunnel</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.models</span> <span class="kn">import</span> <span class="n">MLP</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inputs</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mlp</span> <span class="o">=</span> <span class="n">MLP</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">explainer</span> <span class="o">=</span> <span class="n">NonLinearitiesTunnel</span><span class="p">(</span><span class="n">Saliency</span><span class="p">(</span><span class="n">mlp</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">attr</span> <span class="o">=</span> <span class="n">explainer</span><span class="o">.</span><span class="n">attribute</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="tint.attr.NonLinearitiesTunnel.attribute">
+<span class="sig-name descname"><span class="pre">attribute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_replace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Module</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Module</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">ReLU()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replace_by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Module</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Module</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Softplus(beta=10,</span> <span class="pre">threshold=20)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replace_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Module</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Module</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/tint/attr/non_linearities_tunnel.html#NonLinearitiesTunnel.attribute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.NonLinearitiesTunnel.attribute" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.attr.NonLinearitiesTunnel.attribute.params.inputs"></span><strong>inputs</strong><a class="paramlink headerlink reference internal" href="#tint.attr.NonLinearitiesTunnel.attribute.params.inputs">¶</a> (<em>tensor</em><em> or </em><em>tuple of tensors</em>) – Input for which integrated
+gradients are computed. If forward_func takes a single
+tensor as input, a single input tensor should be provided.
+If forward_func takes multiple tensors as input, a tuple
+of the input tensors should be provided. It is assumed
+that for all given input tensors, dimension 0 corresponds
+to the number of examples, and if multiple input tensors
+are provided, the examples must be aligned appropriately.
+It is also assumed that for all given input tensors,
+dimension 1 corresponds to the time dimension, and if
+multiple input tensors are provided, the examples must
+be aligned appropriately.</p></li>
+<li><p><span class="target" id="tint.attr.NonLinearitiesTunnel.attribute.params.to_replace"></span><strong>to_replace</strong><a class="paramlink headerlink reference internal" href="#tint.attr.NonLinearitiesTunnel.attribute.params.to_replace">¶</a> (<em>nn.Module</em><em>, </em><em>list</em><em>, </em><em>optional</em>) – List of non linearities
+to be  replaced. The linearities of type listed here will be
+replaced by <code class="docutils literal notranslate"><span class="pre">replaced_by</span></code> non linearities before running
+the attribution method.
+Default: nn.ReLU()</p></li>
+<li><p><span class="target" id="tint.attr.NonLinearitiesTunnel.attribute.params.replace_by"></span><strong>replace_by</strong><a class="paramlink headerlink reference internal" href="#tint.attr.NonLinearitiesTunnel.attribute.params.replace_by">¶</a> (<em>nn.Module</em><em>, </em><em>list</em><em>, </em><em>optional</em>) – List of non linearities
+to replace non linearities listed in <code class="docutils literal notranslate"><span class="pre">to_replace</span></code>.
+Default: nn.Softplus(beta=10)</p></li>
+<li><p><span class="target" id="tint.attr.NonLinearitiesTunnel.attribute.params.replace_dict"></span><strong>replace_dict</strong><a class="paramlink headerlink reference internal" href="#tint.attr.NonLinearitiesTunnel.attribute.params.replace_dict">¶</a> (<em>dict</em><em>, </em><em>optional</em>) – A dictionary where each key is
+replaced by the corresponding value.
+Default: None</p></li>
+<li><p><span class="target" id="tint.attr.NonLinearitiesTunnel.attribute.params.**kwargs"></span><strong>**kwargs</strong><a class="paramlink headerlink reference internal" href="#tint.attr.NonLinearitiesTunnel.attribute.params.**kwargs">¶</a> – (Any, optional): Contains a list of arguments that are
+passed  to <cite>attribution_method</cite> attribution algorithm.
+Any additional arguments that should be used for the
+chosen attribution method should be included here.
+For instance, such arguments include
+<cite>additional_forward_args</cite> and <cite>baselines</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><dl class="simple">
+<dt><strong>attributions</strong> (<em>tensor</em> or tuple of <em>tensors</em>):</dt><dd><p>Attribution with
+respect to each input feature. attributions will always be
+the same size as the provided inputs, with each value
+providing the attribution of the corresponding input index.
+If a single tensor is provided as inputs, a single tensor
+is returned. If a tuple is provided for inputs, a tuple of
+corresponding sized tensors is returned.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>delta</strong> (<em>float</em>, returned if return_convergence_delta=True):</dt><dd><p>Approximation error computed by the
+attribution algorithm. Not all attribution algorithms
+return delta value. It is computed only for some
+algorithms, e.g. integrated gradients.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><strong>attributions</strong> or 2-element tuple of <strong>attributions</strong>, <strong>delta</strong></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tint.attr.NonLinearitiesTunnel.compute_convergence_delta">
+<span class="sig-name descname"><span class="pre">compute_convergence_delta</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Callable</span></em><a class="headerlink" href="#tint.attr.NonLinearitiesTunnel.compute_convergence_delta" title="Permalink to this definition"></a></dt>
+<dd><p>The attribution algorithms which derive <cite>Attribution</cite> class and provide
+convergence delta (aka approximation error) should implement this method.
+Convergence delta can be computed based on certain properties of the
+attribution alogrithms.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>attributions</strong> (<em>tensor</em><em> or </em><em>tuple of tensors</em>) – Attribution scores that
+are precomputed by an attribution algorithm.
+Attributions can be provided in form of a single tensor
+or a tuple of those. It is assumed that attribution
+tensor’s dimension 0 corresponds to the number of
+examples, and if multiple input tensors are provided,
+the examples must be aligned appropriately.</p></li>
+<li><p><strong>*args</strong> (<em>optional</em>) – Additonal arguments that are used by the
+sub-classes depending on the specific implementation
+of <cite>compute_convergence_delta</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><dl class="simple">
+<dt><strong>deltas</strong> (<em>tensor</em>):</dt><dd><p>Depending on specific implementaion of
+sub-classes, convergence delta can be returned per
+sample in form of a tensor or it can be aggregated
+across multuple samples and returned in form of a
+single floating point tensor.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><em>tensor</em> of <strong>deltas</strong></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tint.attr.NonLinearitiesTunnel.has_convergence_delta">
+<span class="sig-name descname"><span class="pre">has_convergence_delta</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/tint/attr/non_linearities_tunnel.html#NonLinearitiesTunnel.has_convergence_delta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.NonLinearitiesTunnel.has_convergence_delta" title="Permalink to this definition"></a></dt>
+<dd><p>This method informs the user whether the attribution algorithm provides
+a convergence delta (aka an approximation error) or not. Convergence
+delta may serve as a proxy of correctness of attribution algorithm’s
+approximation. If deriving attribution class provides a
+<cite>compute_convergence_delta</cite> method, it should
+override both <cite>compute_convergence_delta</cite> and <cite>has_convergence_delta</cite> methods.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Returns whether the attribution algorithm
+provides a convergence delta (aka approximation error) or not.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>bool</p>
 </dd>
 </dl>
 </dd></dl>

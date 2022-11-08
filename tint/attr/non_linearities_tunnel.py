@@ -22,8 +22,8 @@ class NonLinearitiesTunnel(Attribution):
 
     Args:
         attribution_method (Attribution): An instance of any attribution algorithm
-                    of type `Attribution`. E.g. Integrated Gradients,
-                    Conductance or Saliency.
+            of type `Attribution`. E.g. Integrated Gradients,
+            Conductance or Saliency.
 
     References:
         https://arxiv.org/abs/1906.07983
@@ -81,7 +81,6 @@ class NonLinearitiesTunnel(Attribution):
         ]
     ]:
         r"""
-
         Args:
             inputs (tensor or tuple of tensors):  Input for which integrated
                 gradients are computed. If forward_func takes a single
@@ -97,7 +96,7 @@ class NonLinearitiesTunnel(Attribution):
                 be aligned appropriately.
             to_replace (nn.Module, list, optional): List of non linearities
                 to be  replaced. The linearities of type listed here will be
-                replaced by ``replaced_by` non linearities before running
+                replaced by ``replaced_by`` non linearities before running
                 the attribution method.
                 Default: nn.ReLU()
             replace_by (nn.Module, list, optional): List of non linearities

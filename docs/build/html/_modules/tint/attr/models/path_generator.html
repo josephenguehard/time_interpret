@@ -185,6 +185,12 @@
                 <span class="n">ret</span><span class="o">=</span><span class="s2">&quot;count&quot;</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="n">anchor_map</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">non_mono_count</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">strategy</span> <span class="o">==</span> <span class="s2">&quot;non_monotonic&quot;</span><span class="p">:</span>
+            <span class="c1"># Here we just use the distance between the reference</span>
+            <span class="c1"># and the proposed word</span>
+            <span class="n">anchor_map</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">distance</span><span class="p">(</span><span class="n">word_features</span><span class="p">[</span><span class="n">ref_idx</span><span class="p">],</span> <span class="n">word_features</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+            <span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
@@ -335,14 +341,19 @@
             <span class="n">steps</span><span class="o">=</span><span class="n">steps</span><span class="p">,</span>
             <span class="n">strategy</span><span class="o">=</span><span class="n">strategy</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">monotonic_embs</span> <span class="o">=</span> <span class="n">make_monotonic_path</span><span class="p">(</span>
-            <span class="n">word_path</span><span class="p">,</span>
-            <span class="n">ref_input_ids</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span>
-            <span class="n">word_features</span><span class="o">=</span><span class="n">word_features</span><span class="p">,</span>
-            <span class="n">steps</span><span class="o">=</span><span class="n">steps</span><span class="p">,</span>
-            <span class="n">factor</span><span class="o">=</span><span class="n">factor</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">all_path_embs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">monotonic_embs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">strategy</span> <span class="o">!=</span> <span class="s2">&quot;non_monotonic&quot;</span><span class="p">:</span>
+            <span class="n">embs</span> <span class="o">=</span> <span class="n">make_monotonic_path</span><span class="p">(</span>
+                <span class="n">word_path</span><span class="p">,</span>
+                <span class="n">ref_input_ids</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span>
+                <span class="n">word_features</span><span class="o">=</span><span class="n">word_features</span><span class="p">,</span>
+                <span class="n">steps</span><span class="o">=</span><span class="n">steps</span><span class="p">,</span>
+                <span class="n">factor</span><span class="o">=</span><span class="n">factor</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">embs</span> <span class="o">=</span> <span class="p">[</span><span class="n">word_features</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">word_path</span><span class="p">]</span>
+            <span class="n">embs</span> <span class="o">+=</span> <span class="p">[</span><span class="n">word_features</span><span class="p">[</span><span class="n">ref_input_ids</span><span class="p">[</span><span class="n">idx</span><span class="p">]]]</span>
+            <span class="n">embs</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>  <span class="c1"># baseline --&gt; input</span>
+        <span class="n">all_path_embs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">embs</span><span class="p">)</span>
     <span class="n">all_path_embs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span>
         <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">all_path_embs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
         <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">,</span>
