@@ -35,8 +35,8 @@ corresponding true saliency:
 
 .. code-block:: python
 
-    x = arma.preprocess()["x"][0]
-    true_saliency = arma.true_saliency(dim=rare_dim)[0]
+    inputs = arma.preprocess()["x"][0]
+    true_saliency = arma.true_saliency(dim=1)[0]
 
 
 We can now load an attribution method and use it to compute the saliency:
@@ -47,10 +47,10 @@ We can now load an attribution method and use it to compute the saliency:
 
     explainer = TemporalIntegratedGradients(arma.get_white_box)
 
-    baseline = inputs * 0
+    baselines = inputs * 0
     attr = explainer.attribute(
         inputs,
-        baselines=inputs * 0,
+        baselines=baselines,
         additional_forward_args=(true_saliency,),
         temporal_additional_forward_args=(True,),
     ).abs()

@@ -11,7 +11,17 @@ Time Interpret can be installed with pip:
 pip install time_interpret
 ```
 
-or from source with conda:
+or from source:
+
+with pip:
+
+```shell script
+git clone git@github.com:babylonhealth/time_interpret.git
+cd time_interpret
+pip install -e .
+```
+
+or conda:
 
 ```shell script
 git clone git@github.com:babylonhealth/time_interpret.git
@@ -37,8 +47,8 @@ We then load some test data from the dataset and the
 corresponding true saliency:
 
 ```python
-x = arma.preprocess()["x"][0]
-true_saliency = arma.true_saliency(dim=rare_dim)[0]
+inputs = arma.preprocess()["x"][0]
+true_saliency = arma.true_saliency(dim=1)[0]
 ```
 
 We can now load an attribution method and use it to compute the saliency:
@@ -48,10 +58,10 @@ from tint.attr import TemporalIntegratedGradients
 
 explainer = TemporalIntegratedGradients(arma.get_white_box)
 
-baseline = inputs * 0
+baselines = inputs * 0
 attr = explainer.attribute(
     inputs,
-    baselines=inputs * 0,
+    baselines=baselines,
     additional_forward_args=(true_saliency,),
     temporal_additional_forward_args=(True,),
 ).abs()
