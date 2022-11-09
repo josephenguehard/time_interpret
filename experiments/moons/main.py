@@ -122,23 +122,25 @@ def main(
             os.makedirs(path, exist_ok=True)
 
             # Save plots of true values and predictions
-            plt.scatter(
+            scatter = plt.scatter(
                 x_test[:, 0].cpu(),
                 x_test[:, 1].cpu(),
                 c=y_test.cpu(),
                 cmap=cm_bright,
                 edgecolors="k",
             )
+            plt.legend(*scatter.legend_elements())
             plt.savefig(f"{path}/true_labels_{str(noise)}.pdf")
             plt.close()
 
-            plt.scatter(
+            scatter = plt.scatter(
                 x_test[:, 0].cpu(),
                 x_test[:, 1].cpu(),
                 c=th.cat(pred).argmax(-1).cpu(),
                 cmap=cm_bright,
                 edgecolors="k",
             )
+            plt.legend(*scatter.legend_elements())
             plt.savefig(f"{path}/preds_{str(noise)}.pdf")
             plt.close()
 
@@ -268,11 +270,12 @@ def main(
         # Eval
         with lock:
             for k, v in attr.items():
-                plt.scatter(
+                scatter = plt.scatter(
                     x_test[:, 0].cpu(),
                     x_test[:, 1].cpu(),
                     c=v.abs().sum(-1).detach().cpu(),
                 )
+                plt.colorbar(scatter)
                 plt.savefig(f"{path}/{k}_{str(noise)}.pdf")
                 plt.close()
 
