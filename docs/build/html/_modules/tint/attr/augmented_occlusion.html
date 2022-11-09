@@ -99,6 +99,11 @@
 <span class="sd">    Augmented Occlusion by sampling the baseline from a bootstrapped</span>
 <span class="sd">    distribution.</span>
 
+<span class="sd">    Instead of replacing occulted data by zero, this method samples data from</span>
+<span class="sd">    a distribution, which replace occulted data. The resulted occulted data</span>
+<span class="sd">    should be closer to the actual data as a result, limiting the amount of</span>
+<span class="sd">    out of distribution samples.</span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        forward_func (callable): The forward function of the model or</span>
 <span class="sd">            any modification of it.</span>
@@ -106,10 +111,11 @@
 <span class="sd">            The shape of the data must be the same as the inputs, except</span>
 <span class="sd">            on the first dimension.</span>
 <span class="sd">        n_sampling (int): Number of sampling to run for each occlusion.</span>
-<span class="sd">            Default to 1</span>
+<span class="sd">            Default: 1</span>
 <span class="sd">        is_temporal (bool): Whether the data is temporal or not.</span>
 <span class="sd">            If ``True``, the data will be ablated to the inputs</span>
-<span class="sd">            on the temporal dimension (dimension 1). Default to ``False``</span>
+<span class="sd">            on the temporal dimension (dimension 1).</span>
+<span class="sd">            Default: False</span>
 
 <span class="sd">    References:</span>
 <span class="sd">        https://arxiv.org/abs/2003.02821</span>

@@ -105,11 +105,21 @@
 
 <div class="viewcode-block" id="ExtremalMask"><a class="viewcode-back" href="../../../attr.html#tint.attr.ExtremalMask">[docs]</a><span class="k">class</span> <span class="nc">ExtremalMask</span><span class="p">(</span><span class="n">PerturbationAttribution</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Extremal masks method.</span>
+<span class="sd">    Extremal masks.</span>
+
+<span class="sd">    This method extends the work of Fong et al. and Crabbé et al. by allowing</span>
+<span class="sd">    the perturbation function to be learnt. This is in addition to the learnt</span>
+<span class="sd">    mask. For instance, this perturbation function can be learnt with a RNN</span>
+<span class="sd">    while Crabbé et al. only consider fixed perturbations: Gaussian blur</span>
+<span class="sd">    and fade to moving average.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        forward_func (callable): The forward function of the model or any</span>
 <span class="sd">            modification of it.</span>
+
+<span class="sd">    References:</span>
+<span class="sd">        https://arxiv.org/pdf/2106.05303</span>
+<span class="sd">        https://arxiv.org/pdf/1910.08485</span>
 
 <span class="sd">    Examples:</span>
 <span class="sd">        &gt;&gt;&gt; import torch as th</span>

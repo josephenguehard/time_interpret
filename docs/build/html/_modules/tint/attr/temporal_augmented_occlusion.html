@@ -94,10 +94,12 @@
 
 <div class="viewcode-block" id="TemporalAugmentedOcclusion"><a class="viewcode-back" href="../../../attr.html#tint.attr.TemporalAugmentedOcclusion">[docs]</a><span class="k">class</span> <span class="nc">TemporalAugmentedOcclusion</span><span class="p">(</span><span class="n">AugmentedOcclusion</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Temporal Augmented Occlusion</span>
+<span class="sd">    Temporal Augmented Occlusion.</span>
 
-<span class="sd">    This method modifies the original augmented occlusion by only</span>
-<span class="sd">    perturbing the last time, leaving the previous times unchanged.</span>
+<span class="sd">    This method modifies the original augmented occlusion by only perturbing</span>
+<span class="sd">    the last time, leaving the previous times unchanged. It can be used</span>
+<span class="sd">    together with ``time_forward_tunnel`` to compute attributions on time</span>
+<span class="sd">    series.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        forward_func (callable): The forward function of the model or</span>

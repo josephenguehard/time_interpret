@@ -26,7 +26,6 @@ Summary
     tint.attr.Occlusion
     tint.attr.Retain
     tint.attr.SequentialIntegratedGradients
-    tint.attr.SmoothGrad
     tint.attr.TemporalAugmentedOcclusion
     tint.attr.TemporalIntegratedGradients
     tint.attr.TemporalOcclusion

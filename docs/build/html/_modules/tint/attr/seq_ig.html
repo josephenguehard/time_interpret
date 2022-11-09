@@ -114,6 +114,20 @@
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Sequential Integrated Gradients.</span>
 
+<span class="sd">    This method is the regular Integrated Gradients (IG) applied on each</span>
+<span class="sd">    component of a sequence. However, the baseline is specific to each</span>
+<span class="sd">    component: it keeps fixed the rest of the sequence while only setting the</span>
+<span class="sd">    component of interest to a reference baseline.</span>
+
+<span class="sd">    For instance, on a setence of m words, the attribution of each word is</span>
+<span class="sd">    computed by running IG with a specific baseline: fixing every other word</span>
+<span class="sd">    to their current value, and replacing the word of interest with &quot;&lt;pad&gt;&quot;,</span>
+<span class="sd">    an uninformative baseline.</span>
+
+<span class="sd">    This method can be computationally expensive on long sequences, as it</span>
+<span class="sd">    needs to compute IG on each component individually. It is therefore</span>
+<span class="sd">    suggested to reduce ``n_steps`` when using this method on long sequences.</span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        forward_func (callable):  The forward function of the model or any</span>
 <span class="sd">            modification of it</span>

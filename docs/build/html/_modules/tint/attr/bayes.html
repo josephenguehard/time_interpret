@@ -88,6 +88,10 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Bayesian version of Lime.</span>
 
+<span class="sd">    This method replace the linear regression of the original Lime with a</span>
+<span class="sd">    bayesian linear regression, allowing to model uncertainty in</span>
+<span class="sd">    explainability.</span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        forward_func (callable): The forward function of the model or any</span>
 <span class="sd">            modification of it.</span>
@@ -150,6 +154,10 @@
 <div class="viewcode-block" id="BayesKernelShap"><a class="viewcode-back" href="../../../attr.html#tint.attr.BayesKernelShap">[docs]</a><span class="k">class</span> <span class="nc">BayesKernelShap</span><span class="p">(</span><span class="n">KernelShap</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Bayesian version of KernelShap.</span>
+
+<span class="sd">    This method replace the linear regression of the original KernelShap with</span>
+<span class="sd">    a bayesian linear regression, allowing to model uncertainty in</span>
+<span class="sd">    explainability.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        forward_func (callable): The forward function of the model or any</span>

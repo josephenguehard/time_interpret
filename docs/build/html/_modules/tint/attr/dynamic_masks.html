@@ -99,7 +99,18 @@
 
 <div class="viewcode-block" id="DynaMask"><a class="viewcode-back" href="../../../attr.html#tint.attr.DynaMask">[docs]</a><span class="k">class</span> <span class="nc">DynaMask</span><span class="p">(</span><span class="n">PerturbationAttribution</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Dynamic masks method.</span>
+<span class="sd">    Dynamic masks.</span>
+
+<span class="sd">    This method aims to explain time series data, by learning a mask</span>
+<span class="sd">    representing features importance. This method was inspired from</span>
+<span class="sd">    Fong et al., and can be used in &quot;preservation game&quot; mode: trying to keep</span>
+<span class="sd">    the closest predictions, compared with unperturebed data, with the</span>
+<span class="sd">    minimal number of features, or in &quot;deletion game&quot; mode, trying to get the</span>
+<span class="sd">    furthest predictions by removing the minimal number of features.</span>
+
+<span class="sd">    This implementation batchify the original method by leanrning in parallel</span>
+<span class="sd">    multiple inputs and multiple ``keep_ratio`` (called ``mask_group`` in the</span>
+<span class="sd">    original implementation.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        forward_func (callable): The forward function of the model or any</span>
@@ -107,6 +118,7 @@
 
 <span class="sd">    References:</span>
 <span class="sd">        https://arxiv.org/pdf/2106.05303</span>
+<span class="sd">        https://arxiv.org/pdf/1910.08485</span>
 
 <span class="sd">    Examples:</span>
 <span class="sd">        &gt;&gt;&gt; import torch as th</span>

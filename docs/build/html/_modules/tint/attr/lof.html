@@ -145,6 +145,16 @@
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Local Outlier Factor Lime.</span>
 
+<span class="sd">    This method compute a Local Outlier Factor score for every perturbed data.</span>
+<span class="sd">    This score is then used to update the weight given by the similarity</span>
+<span class="sd">    function:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        new_weight(x) = similarity(x) * \frac{-1}{lof_score(x)}</span>
+
+<span class="sd">    If the perturbed data is considered more out of sample, the weight of</span>
+<span class="sd">    this data will be reduced.</span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        forward_func (Callable): The forward function of the model or any</span>
 <span class="sd">            modification of it.</span>
@@ -273,8 +283,18 @@
 
 
 <div class="viewcode-block" id="LofKernelShap"><a class="viewcode-back" href="../../../attr.html#tint.attr.LofKernelShap">[docs]</a><span class="k">class</span> <span class="nc">LofKernelShap</span><span class="p">(</span><span class="n">KernelShap</span><span class="p">,</span> <span class="n">LOF</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Local Outlier Factor Kernel Shap.</span>
+
+<span class="sd">    This method compute a Local Outlier Factor score for every perturbed data.</span>
+<span class="sd">    This score is then used to update the weight given by the similarity</span>
+<span class="sd">    function:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        new_weight(x) = similarity(x) * \frac{-1}{lof_score(x)}</span>
+
+<span class="sd">    If the perturbed data is considered more out of sample, the weight of</span>
+<span class="sd">    this data will be reduced.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        forward_func (Callable): The forward function of the model or any</span>

@@ -86,7 +86,6 @@ Each of the implemented interpretability methods can be found here:
     tint.attr.NonLinearitiesTunnel
     tint.attr.Occlusion
     tint.attr.Retain
-    tint.attr.SmoothGrad
     tint.attr.SequentialIntegratedGradients
     tint.attr.TemporalAugmentedOcclusion
     tint.attr.TemporalIntegratedGradients
