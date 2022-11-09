@@ -108,7 +108,7 @@ class TemporalIntegratedGradients(IntegratedGradients):
         strategy: str = "fixed",
         internal_batch_size: Union[None, int] = None,
         *,
-        return_convergence_delta: Literal[True],
+        return_convergence_delta: Literal[True] = True,
         temporal_target: bool = False,
         temporal_additional_forward_args: Tuple[bool] = None,
         return_temporal_attributions: bool = False,
