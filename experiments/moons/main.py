@@ -121,6 +121,10 @@ def main(
             path = f"figures/{'softplus' if softplus else 'relu'}/{str(seed)}"
             os.makedirs(path, exist_ok=True)
 
+            # Set ticks size
+            plt.rc("xtick", labelsize=20)
+            plt.rc("ytick", labelsize=20)
+
             # Save plots of true values and predictions
             scatter = plt.scatter(
                 x_test[:, 0].cpu(),
@@ -129,7 +133,7 @@ def main(
                 cmap=cm_bright,
                 edgecolors="k",
             )
-            plt.legend(*scatter.legend_elements())
+            plt.legend(*scatter.legend_elements(), fontsize=20)
             plt.savefig(f"{path}/true_labels_{str(noise)}.pdf")
             plt.close()
 
@@ -140,7 +144,7 @@ def main(
                 cmap=cm_bright,
                 edgecolors="k",
             )
-            plt.legend(*scatter.legend_elements())
+            plt.legend(*scatter.legend_elements(), fontsize=20)
             plt.savefig(f"{path}/preds_{str(noise)}.pdf")
             plt.close()
 
@@ -275,7 +279,8 @@ def main(
                     x_test[:, 1].cpu(),
                     c=v.abs().sum(-1).detach().cpu(),
                 )
-                plt.colorbar(scatter)
+                cbar = plt.colorbar(scatter)
+                cbar.ax.tick_params(labelsize=20)
                 plt.savefig(f"{path}/{k}_{str(noise)}.pdf")
                 plt.close()
 
