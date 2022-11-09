@@ -27,6 +27,8 @@ from torch import Tensor, dtype
 
 class FeatureAblation(PerturbationAttribution):
     r"""
+    Feature ablation.
+
     A perturbation based approach to computing attribution, involving
     replacing each input feature with a given baseline / reference, and
     computing the difference in output. By default, each scalar value within

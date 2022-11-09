@@ -11,7 +11,6 @@ from .non_linearities_tunnel import NonLinearitiesTunnel
 from .occlusion import Occlusion
 from .retain import Retain
 from .seq_ig import SequentialIntegratedGradients
-from .smooth_grad import SmoothGrad
 from .temporal_augmented_occlusion import TemporalAugmentedOcclusion
 from .temporal_ig import TemporalIntegratedGradients
 from .temporal_occlusion import TemporalOcclusion

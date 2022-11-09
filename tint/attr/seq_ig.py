@@ -35,6 +35,20 @@ class SequentialIntegratedGradients(GradientAttribution):
     r"""
     Sequential Integrated Gradients.
 
+    This method is the regular Integrated Gradients (IG) applied on each
+    component of a sequence. However, the baseline is specific to each
+    component: it keeps fixed the rest of the sequence while only setting the
+    component of interest to a reference baseline.
+
+    For instance, on a setence of m words, the attribution of each word is
+    computed by running IG with a specific baseline: fixing every other word
+    to their current value, and replacing the word of interest with "<pad>",
+    an uninformative baseline.
+
+    This method can be computationally expensive on long sequences, as it
+    needs to compute IG on each component individually. It is therefore
+    suggested to reduce ``n_steps`` when using this method on long sequences.
+
     Args:
         forward_func (callable):  The forward function of the model or any
             modification of it

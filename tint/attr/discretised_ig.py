@@ -28,6 +28,10 @@ class DiscretetizedIntegratedGradients(GradientAttribution):
     """
     Discretetized Integrated Gradients.
 
+    This method discretizes the path between an input and a reference
+    baseline. It was developed for text data and language models, to handle
+    the discreteness of the word embedding space.
+
     Args:
         forward_func (callable):  The forward function of the model or any
             modification of it

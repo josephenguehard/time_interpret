@@ -20,7 +20,18 @@ from .models import MaskNet
 
 class DynaMask(PerturbationAttribution):
     """
-    Dynamic masks method.
+    Dynamic masks.
+
+    This method aims to explain time series data, by learning a mask
+    representing features importance. This method was inspired from
+    Fong et al., and can be used in "preservation game" mode: trying to keep
+    the closest predictions, compared with unperturebed data, with the
+    minimal number of features, or in "deletion game" mode, trying to get the
+    furthest predictions by removing the minimal number of features.
+
+    This implementation batchify the original method by leanrning in parallel
+    multiple inputs and multiple ``keep_ratio`` (called ``mask_group`` in the
+    original implementation.
 
     Args:
         forward_func (callable): The forward function of the model or any
@@ -28,6 +39,7 @@ class DynaMask(PerturbationAttribution):
 
     References:
         https://arxiv.org/pdf/2106.05303
+        https://arxiv.org/pdf/1910.08485
 
     Examples:
         >>> import torch as th

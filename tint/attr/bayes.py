@@ -9,6 +9,10 @@ class BayesLime(Lime):
     """
     Bayesian version of Lime.
 
+    This method replace the linear regression of the original Lime with a
+    bayesian linear regression, allowing to model uncertainty in
+    explainability.
+
     Args:
         forward_func (callable): The forward function of the model or any
             modification of it.
@@ -71,6 +75,10 @@ class BayesLime(Lime):
 class BayesKernelShap(KernelShap):
     """
     Bayesian version of KernelShap.
+
+    This method replace the linear regression of the original KernelShap with
+    a bayesian linear regression, allowing to model uncertainty in
+    explainability.
 
     Args:
         forward_func (callable): The forward function of the model or any

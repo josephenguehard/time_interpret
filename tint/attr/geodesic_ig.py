@@ -34,8 +34,27 @@ from tint.utils import astar_path, unsqueeze_like, _geodesic_batch_attribution
 
 
 class GeodesicIntegratedGradients(GradientAttribution):
-    """
+    r"""
     Geodesic Integrated Gradients.
+
+    This method uses K Nearest Neighbors on the input data to approximate the
+    geodesic path between inputs and reference baselines. The input space is
+    seen here as a Riemannian manifold, whose metric is the inner product of
+    the gradient of the model:
+
+    .. math::
+        <\nabla F(x)^T, \nabla F(x)>
+
+    Using this path reduces the risk of creating artifacts compared with
+    the original Integrated Gradients (IG). It also supports
+    ``internal_batch_size`` for faster compute. The number of steps is also
+    set by default to 5, as less steps are required between two neighbors.
+    With this setting, and the number of neighbors set to 10, the number of
+    gradients to compute is 10 * 5 = 50, the same number as the original IG.
+
+    The shortest path is computed using Dijkstra or A* algorithms. This can
+    be computationally expensive for a number of inputs greater than a few
+    thousands.
 
     Args:
         forward_func (callable):  The forward function of the model or any

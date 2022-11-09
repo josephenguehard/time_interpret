@@ -15,10 +15,12 @@ from tint.attr import AugmentedOcclusion
 
 class TemporalAugmentedOcclusion(AugmentedOcclusion):
     """
-    Temporal Augmented Occlusion
+    Temporal Augmented Occlusion.
 
-    This method modifies the original augmented occlusion by only
-    perturbing the last time, leaving the previous times unchanged.
+    This method modifies the original augmented occlusion by only perturbing
+    the last time, leaving the previous times unchanged. It can be used
+    together with ``time_forward_tunnel`` to compute attributions on time
+    series.
 
     Args:
         forward_func (callable): The forward function of the model or

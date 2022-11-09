@@ -26,11 +26,21 @@ from .models import ExtremalMaskNet
 
 class ExtremalMask(PerturbationAttribution):
     """
-    Extremal masks method.
+    Extremal masks.
+
+    This method extends the work of Fong et al. and Crabbé et al. by allowing
+    the perturbation function to be learnt. This is in addition to the learnt
+    mask. For instance, this perturbation function can be learnt with a RNN
+    while Crabbé et al. only consider fixed perturbations: Gaussian blur
+    and fade to moving average.
 
     Args:
         forward_func (callable): The forward function of the model or any
             modification of it.
+
+    References:
+        https://arxiv.org/pdf/2106.05303
+        https://arxiv.org/pdf/1910.08485
 
     Examples:
         >>> import torch as th

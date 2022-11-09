@@ -20,6 +20,11 @@ class AugmentedOcclusion(Occlusion):
     Augmented Occlusion by sampling the baseline from a bootstrapped
     distribution.
 
+    Instead of replacing occulted data by zero, this method samples data from
+    a distribution, which replace occulted data. The resulted occulted data
+    should be closer to the actual data as a result, limiting the amount of
+    out of distribution samples.
+
     Args:
         forward_func (callable): The forward function of the model or
             any modification of it.
@@ -27,10 +32,11 @@ class AugmentedOcclusion(Occlusion):
             The shape of the data must be the same as the inputs, except
             on the first dimension.
         n_sampling (int): Number of sampling to run for each occlusion.
-            Default to 1
+            Default: 1
         is_temporal (bool): Whether the data is temporal or not.
             If ``True``, the data will be ablated to the inputs
-            on the temporal dimension (dimension 1). Default to ``False``
+            on the temporal dimension (dimension 1).
+            Default: False
 
     References:
         https://arxiv.org/abs/2003.02821

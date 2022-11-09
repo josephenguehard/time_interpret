@@ -66,6 +66,16 @@ class LofLime(Lime, LOF):
     r"""
     Local Outlier Factor Lime.
 
+    This method compute a Local Outlier Factor score for every perturbed data.
+    This score is then used to update the weight given by the similarity
+    function:
+
+    .. math::
+        new_weight(x) = similarity(x) * \frac{-1}{lof_score(x)}
+
+    If the perturbed data is considered more out of sample, the weight of
+    this data will be reduced.
+
     Args:
         forward_func (Callable): The forward function of the model or any
             modification of it.
@@ -194,8 +204,18 @@ class LofLime(Lime, LOF):
 
 
 class LofKernelShap(KernelShap, LOF):
-    """
+    r"""
     Local Outlier Factor Kernel Shap.
+
+    This method compute a Local Outlier Factor score for every perturbed data.
+    This score is then used to update the weight given by the similarity
+    function:
+
+    .. math::
+        new_weight(x) = similarity(x) * \frac{-1}{lof_score(x)}
+
+    If the perturbed data is considered more out of sample, the weight of
+    this data will be reduced.
 
     Args:
         forward_func (Callable): The forward function of the model or any
