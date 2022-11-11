@@ -148,52 +148,34 @@ def main(
 
     if "geodesic_integrated_gradients" in explainers:
         _attr = list()
+        explainer = GeodesicIntegratedGradients(classifier)
+        _attr = th.zeros_like(x_test)
 
-        for x, y in get_progress_bars()(
-            zip(x_test, y_test), total=len(x_test)
-        ):
-            rand = (
-                th.rand((50,) + x.shape).sort(dim=0).values.to(x_test.device)
-            )
-            x_aug = x.unsqueeze(0) * rand
-            gig = GeodesicIntegratedGradients(
-                classifier, data=x_aug, n_neighbors=15
-            )
+        for target in range(7):
+            _attr[y_test == target] = explainer.attribute(
+                x_test[y_test == target],
+                target=target,
+                n_neighbors=min(15, len(x_test[y_test == target]) - 1),
+                internal_batch_size=200,
+            ).float()
 
-            _attr.append(
-                gig.attribute(
-                    x.unsqueeze(0),
-                    target=y,
-                    n_steps=5,
-                    internal_batch_size=200,
-                )
-            )
-        attr["geodesic_integrated_gradients"] = th.cat(_attr)
+        attr["geodesic_integrated_gradients"] = _attr
 
     if "enhanced_integrated_gradients" in explainers:
         _attr = list()
+        explainer = GeodesicIntegratedGradients(classifier)
+        _attr = th.zeros_like(x_test)
 
-        for x, y in get_progress_bars()(
-            zip(x_test, y_test), total=len(x_test)
-        ):
-            rand = (
-                th.rand((50,) + x.shape).sort(dim=0).values.to(x_test.device)
-            )
-            x_aug = x.unsqueeze(0) * rand
-            gig = GeodesicIntegratedGradients(
-                classifier, data=x_aug, n_neighbors=15
-            )
+        for target in range(7):
+            _attr[y_test == target] = explainer.attribute(
+                x_test[y_test == target],
+                target=target,
+                n_neighbors=min(15, len(x_test[y_test == target]) - 1),
+                internal_batch_size=200,
+                distance="euclidean",
+            ).float()
 
-            _attr.append(
-                gig.attribute(
-                    x.unsqueeze(0),
-                    target=y,
-                    n_steps=5,
-                    internal_batch_size=200,
-                    distance="euclidean",
-                )
-            )
-        attr["enhanced_integrated_gradients"] = th.cat(_attr)
+        attr["enhanced_integrated_gradients"] = _attr
 
     if "gradient_shap" in explainers:
         explainer = GradientShap(classifier)
