@@ -72,7 +72,10 @@ def main(
         test_loader = DataLoader(test, batch_size=32, shuffle=False)
 
         # Create model
-        net = Net(MLP(units=[2, 10, 10, 2]), loss="cross_entropy")
+        net = Net(
+            MLP(units=[2, 10, 10, 2], activation_final="log_softmax"),
+            loss="nll",
+        )
 
         # Fit model
         trainer = Trainer(
@@ -85,8 +88,12 @@ def main(
 
         if softplus:
             _net = Net(
-                MLP(units=[2, 10, 10, 2], activations="softplus"),
-                loss="cross_entropy",
+                MLP(
+                    units=[2, 10, 10, 2],
+                    activations="softplus",
+                    activation_final="log_softmax",
+                ),
+                loss="nll",
             )
             _net.load_state_dict(net.state_dict())
             net = _net
@@ -104,8 +111,6 @@ def main(
             th.backends.cudnn.enabled = False
 
         # Set data to device
-        x_train = x_train.to(device)
-
         x_test = x_test.to(device)
         y_test = y_test.to(device)
 
@@ -115,6 +120,11 @@ def main(
         # Print accuracy
         acc = (th.cat(pred).argmax(-1) == y_test).float().mean()
         print("acc: ", acc)
+
+        # If acc lower than .9, continue
+        if acc < 0.91:
+            print("Accuracy too low, skipping...")
+            continue
 
         # Create dir to save figures
         with lock:
@@ -151,100 +161,51 @@ def main(
         # Create dict of attr
         attr = dict()
 
-        if "deep_lift" in explainers:
-            explainer = DeepLift(net)
-            attr["deep_lift"] = explainer.attribute(x_test, target=y_test)
+        # Set baseline as (0, 0.5)
+        baselines = th.zeros_like(x_test).to(device)
+        baselines[:, 0] = 0.0
+        baselines[:, 1] = 0.5
 
         if "geodesic_integrated_gradients" in explainers:
-            explainer = GeodesicIntegratedGradients(net)
-            _attr = th.zeros_like(x_test)
+            for n in range(5, 20, 5):
+                explainer = GeodesicIntegratedGradients(net)
+                _attr = th.zeros_like(x_test)
 
-            for target in range(2):
-                _attr[y_test == target] = explainer.attribute(
-                    x_test[y_test == target],
-                    target=target,
-                    n_neighbors=5,
-                    internal_batch_size=200,
-                ).float()
+                for target in range(2):
+                    _attr[y_test == target] = explainer.attribute(
+                        x_test[y_test == target],
+                        baselines=baselines[y_test == target],
+                        target=target,
+                        n_neighbors=n,
+                        internal_batch_size=200,
+                    ).float()
 
-            attr["geodesic_integrated_gradients_5"] = _attr
-
-            explainer = GeodesicIntegratedGradients(net)
-            _attr = th.zeros_like(x_test)
-
-            for target in range(2):
-                _attr[y_test == target] = explainer.attribute(
-                    x_test[y_test == target],
-                    target=target,
-                    n_neighbors=10,
-                    internal_batch_size=200,
-                ).float()
-
-            attr["geodesic_integrated_gradients_10"] = _attr
-
-            explainer = GeodesicIntegratedGradients(net)
-            _attr = th.zeros_like(x_test)
-
-            for target in range(2):
-                _attr[y_test == target] = explainer.attribute(
-                    x_test[y_test == target],
-                    target=target,
-                    n_neighbors=15,
-                    internal_batch_size=200,
-                ).float()
-
-            attr["geodesic_integrated_gradients_15"] = _attr
+                attr[f"geodesic_integrated_gradients_{str(n)}"] = _attr
 
         if "enhanced_integrated_gradients" in explainers:
-            explainer = GeodesicIntegratedGradients(net)
-            _attr = th.zeros_like(x_test)
+            for n in range(5, 20, 5):
+                explainer = GeodesicIntegratedGradients(net)
+                _attr = th.zeros_like(x_test)
 
-            for target in range(2):
-                _attr[y_test == target] = explainer.attribute(
-                    x_test[y_test == target],
-                    target=target,
-                    n_neighbors=5,
-                    internal_batch_size=200,
-                    distance="euclidean",
-                ).float()
+                for target in range(2):
+                    _attr[y_test == target] = explainer.attribute(
+                        x_test[y_test == target],
+                        baselines=baselines[y_test == target],
+                        target=target,
+                        n_neighbors=n,
+                        internal_batch_size=200,
+                        distance="euclidean",
+                    ).float()
 
-            attr["enhanced_integrated_gradients_5"] = _attr
-
-            explainer = GeodesicIntegratedGradients(net)
-            _attr = th.zeros_like(x_test)
-
-            for target in range(2):
-                _attr[y_test == target] = explainer.attribute(
-                    x_test[y_test == target],
-                    target=target,
-                    n_neighbors=10,
-                    internal_batch_size=200,
-                    distance="euclidean",
-                ).float()
-
-            attr["enhanced_integrated_gradients_10"] = _attr
-
-            explainer = GeodesicIntegratedGradients(net)
-            _attr = th.zeros_like(x_test)
-
-            for target in range(2):
-                _attr[y_test == target] = explainer.attribute(
-                    x_test[y_test == target],
-                    target=target,
-                    n_neighbors=15,
-                    internal_batch_size=200,
-                    distance="euclidean",
-                ).float()
-
-            attr["enhanced_integrated_gradients_15"] = _attr
+                attr[f"enhanced_integrated_gradients_{n}"] = _attr
 
         if "gradient_shap" in explainers:
             explainer = GradientShap(net)
             attr["gradient_shap"] = explainer.attribute(
                 x_test,
                 target=y_test,
-                baselines=x_train[
-                    y_train == 1
+                baselines=x_test[
+                    y_test == 1
                 ],  # We sample baselines only from one moon
                 n_samples=50,
             )
@@ -253,6 +214,7 @@ def main(
             explainer = IntegratedGradients(net)
             attr["integrated_gradients"] = explainer.attribute(
                 x_test,
+                baselines=baselines,
                 target=y_test,
                 internal_batch_size=200,
             )
@@ -261,8 +223,8 @@ def main(
             explainer = NoiseTunnel(IntegratedGradients(net))
             attr["smooth_grad"] = explainer.attribute(
                 x_test,
-                baselines=x_train[
-                    y_train == 1
+                baselines=x_test[
+                    y_test == 1
                 ],  # We sample baselines only from one moon
                 target=y_test,
                 internal_batch_size=200,
@@ -307,8 +269,10 @@ def main(
                 fp.write("softplus," if softplus else "relu,")
                 fp.write(k + ",")
                 fp.write(
-                    f"{th.cat(pred).argmax(-1)[topk_idx].float().mean():.4}"
+                    f"{th.cat(pred).argmax(-1)[topk_idx].float().mean():.4},"
                 )
+                fp.write(f"{v.abs().sum(-1)[y_test == 0].std():.4},")
+                fp.write(f"{v.abs().sum(-1)[y_test == 1].std():.4}")
                 fp.write("\n")
 
 
@@ -318,7 +282,6 @@ def parse_args():
         "--explainers",
         type=str,
         default=[
-            "deep_lift",
             "geodesic_integrated_gradients",
             "enhanced_integrated_gradients",
             "gradient_shap",

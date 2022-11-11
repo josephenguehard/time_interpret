@@ -1,7 +1,7 @@
 # Moons experiment
 
 This is the Moons experiment. To run the whole script with 
-relu and softplus activations, on 10 different seeds run:
+relu and softplus activations, on 5 different seeds run:
 
 ```shell script
 bash ./main.sh
@@ -13,7 +13,7 @@ To get results on one seed, run:
 python main.py --seed 12
 ```
 
-The results are saved in the `figures` folder on on the `results.csv` file.
+The results are saved in the `figures` folder on the `results.csv` file.
 
 To reset the figures folder and the results file, run:
 

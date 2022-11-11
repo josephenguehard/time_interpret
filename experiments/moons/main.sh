@@ -22,7 +22,7 @@ function ctrl_c() {
 
 for softplus in false true
 do
-  for seed in $(seq 12 12 120)
+  for seed in $(seq 12 12 60)
   do
     if $softplus
     then
