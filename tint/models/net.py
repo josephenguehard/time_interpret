@@ -115,7 +115,7 @@ class Net(pl.LightningModule):
         inputs = inputs.reshape(-1, inputs.shape[-1])
         target = target.reshape(-1, target.shape[-1])
 
-        if isinstance(self._loss, nn.CrossEntropyLoss):
+        if isinstance(self._loss, (nn.CrossEntropyLoss, nn.NLLLoss)):
             if self._soft_labels:
                 target = target.softmax(-1)
             else:
