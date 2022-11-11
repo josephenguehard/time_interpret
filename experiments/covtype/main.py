@@ -83,7 +83,11 @@ def main(
     )
 
     # Def model
-    classifier = Net(MLP([54, 100, 50, 10, 7]), lr=0.001, loss="cross_entropy")
+    classifier = Net(
+        MLP([54, 100, 50, 10, 7], activation_final="log_softmax"),
+        lr=0.001,
+        loss="nll",
+    )
 
     # Fit model
     trainer = Trainer(
@@ -107,8 +111,6 @@ def main(
         th.backends.cudnn.enabled = False
 
     # Set data to device
-    x_train = x_train.to(device)
-
     x_test = x_test.to(device)
     y_test = y_test.to(device)
 
@@ -136,7 +138,7 @@ def main(
         attr["feature_ablation"] = explainer.attribute(x_test, target=y_test)
 
     if "augmented_occlusion" in explainers:
-        explainer = AugmentedOcclusion(classifier, data=x_train)
+        explainer = AugmentedOcclusion(classifier, data=x_test)
         attr["augmented_occlusion"] = explainer.attribute(
             x_test,
             sliding_window_shapes=(1,),
@@ -197,7 +199,7 @@ def main(
         explainer = GradientShap(classifier)
         attr["gradient_shap"] = explainer.attribute(
             x_test,
-            baselines=x_train,
+            baselines=x_test,
             target=y_test,
             n_samples=50,
             stdevs=0.1,
@@ -234,7 +236,7 @@ def main(
         explainer = NoiseTunnel(IntegratedGradients(classifier))
         attr["smooth_grad"] = explainer.attribute(
             x_test,
-            baselines=x_train,
+            baselines=x_test,
             target=y_test,
             nt_samples=50,
             n_steps=5,
@@ -246,7 +248,7 @@ def main(
         explainer = NoiseTunnel(IntegratedGradients(classifier))
         attr["smooth_grad_square"] = explainer.attribute(
             x_test,
-            baselines=x_train,
+            baselines=x_test,
             target=y_test,
             n_steps=5,
             nt_samples=50,
@@ -254,6 +256,9 @@ def main(
             stdevs=0.1,
             draw_baseline_from_distrib=True,
         )
+
+    # Create figure path
+    os.makedirs(f"figures/{str(seed)}", exist_ok=True)
 
     # Eval methods
     for mode in get_progress_bars()(
