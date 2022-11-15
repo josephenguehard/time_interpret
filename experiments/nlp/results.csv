@@ -46,7 +46,7 @@ imdb,distilbert,discretized_integrated_gradients,-0.8122,0.2972,0.1526
 imdb,distilbert,gradient_shap,-0.3149,0.1167,0.3021
 imdb,distilbert,input_x_gradient,-0.1886,0.0815,0.2094
 imdb,distilbert,integrated_gradients,-0.4743,0.1858,0.2005
-
+imdb,distilbert,sequential_integrated_gradients,-2.157,0.5847,0.006171
 imdb,bert,deep_lift,-0.519,0.02708,0.465
 imdb,bert,discretized_integrated_gradients,-0.9707,0.192,0.2287
 imdb,bert,gradient_shap,-0.6222,0.08756,0.3579
@@ -58,4 +58,4 @@ imdb,roberta,discretized_integrated_gradients,-0.626,0.1866,0.09882
 imdb,roberta,gradient_shap,-0.3511,0.11,0.2134
 imdb,roberta,input_x_gradient,-0.2159,0.04742,0.3145
 imdb,roberta,integrated_gradients,-0.4993,0.169,0.1139
-
+imdb,roberta,sequential_integrated_gradients,-0.856,0.2912,0.0207
