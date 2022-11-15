@@ -24,7 +24,6 @@ from pytorch_lightning import Trainer, seed_everything
 from torch import Tensor
 from torch.utils.data import DataLoader
 from torchvision.datasets import VOCSegmentation
-from torchvision.models import resnet18
 from typing import Any, List
 
 from tint.attr import (
@@ -45,6 +44,8 @@ from tint.metrics import (
 )
 from tint.models import CNN
 from tint.utils import get_progress_bars
+
+from experiments.voc.classifier import VocClassifier
 
 
 file_dir = os.path.dirname(__file__)
@@ -213,7 +214,7 @@ def main(
     voc_loader = DataLoader(voc, batch_size=1, shuffle=True)
 
     # Load model
-    resnet = resnet18(pretrained=True)
+    resnet = VocClassifier()
 
     # Switch to eval
     resnet.eval()

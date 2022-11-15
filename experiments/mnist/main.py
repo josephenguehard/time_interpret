@@ -225,7 +225,7 @@ def main(
 
     # Create classifier
     classifier = MnistClassifierNet(
-        loss="cross_entropy",
+        loss="nll",
         lr=0.0001,
         l2=1e-3,
     )

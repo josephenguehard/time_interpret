@@ -18,6 +18,8 @@ from tint.utils import get_progress_bars, _slice_to_time
 
 class TimeForwardTunnel(Attribution):
     r"""
+    Time Forward Tunnel.
+
     Performs interpretation method by iteratively retrieving the input data
     up to a time, and computing the predictions using this data and the
     forward_func.

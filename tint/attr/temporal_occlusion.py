@@ -16,10 +16,11 @@ from .occlusion import Occlusion
 
 class TemporalOcclusion(Occlusion):
     """
-    Temporal Occlusion
+    Temporal Occlusion.
 
-    This method modifies the original occlusion by only perturbing the
-    last time, leaving the previous times unchanged.
+    This method modifies the original occlusion by only perturbing the last
+    time, leaving the previous times unchanged. It can be used together with
+    ``time_forward_tunnel`` to compute attributions on time series.
 
     Args:
         forward_func (callable): The forward function of the model or

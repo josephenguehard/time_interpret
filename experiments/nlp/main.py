@@ -53,6 +53,7 @@ def main(
     steps: int,
     factor: int,
     strategy: str,
+    ref_token: str,
     knns_path: str,
     n_neighbors: int,
     n_jobs: int,
@@ -112,9 +113,17 @@ def main(
             model=model,
         )
 
+    # Get ref token
+    if ref_token == "mask":
+        ref_token = tokenizer.mask_token_id
+    elif ref_token == "pad":
+        ref_token = tokenizer.pad_token_id
+    else:
+        raise NotImplementedError
+
     # Get ref token embedding
     base_token_emb = get_base_token_emb(
-        tokenizer=tokenizer, model=model, model_name=model_name, device=device
+        model=model, model_name=model_name, ref_token=ref_token, device=device
     )
 
     # Prepare forward model
@@ -146,6 +155,7 @@ def main(
             tokenizer=tokenizer,
             model=model,
             model_name=model_name,
+            ref_token=ref_token,
             text=row[0],
             device=device,
         )
@@ -418,6 +428,13 @@ def parse_args():
         help="The algorithm to find the next anchor point.",
     )
     parser.add_argument(
+        "--ref-token",
+        default="mask",
+        type=str,
+        choices=["mask", "pad"],
+        help="Which token to choose as ref.",
+    )
+    parser.add_argument(
         "--knns-path",
         type=str,
         default="knns/sst2_bert.pkl",
@@ -460,6 +477,7 @@ if __name__ == "__main__":
         steps=args.steps,
         factor=args.factor,
         strategy=args.strategy,
+        ref_token=args.ref_token,
         knns_path=args.knns_path,
         n_neighbors=args.n_neighbors,
         n_jobs=args.n_jobs,

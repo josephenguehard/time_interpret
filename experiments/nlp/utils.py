@@ -189,11 +189,11 @@ def construct_sub_embedding(
     )
 
 
-def get_base_token_emb(tokenizer, model, model_name, device):
+def get_base_token_emb(model, model_name, ref_token, device):
     return construct_word_embedding(
         model,
         model_name,
-        torch.tensor([tokenizer.pad_token_id], device=device),
+        torch.tensor([ref_token], device=device),
     )
 
 
@@ -201,8 +201,8 @@ def get_tokens(tokenizer, text_ids):
     return tokenizer.convert_ids_to_tokens(text_ids.squeeze())
 
 
-def get_inputs(tokenizer, model, model_name, text, device):
-    ref_token_id = tokenizer.pad_token_id
+def get_inputs(tokenizer, model, model_name, ref_token, text, device):
+    ref_token_id = ref_token
     sep_token_id = tokenizer.sep_token_id
     cls_token_id = tokenizer.cls_token_id
 
