@@ -48,7 +48,7 @@ def Bert(
     """
     assert BertConfig is not None, "transformers is not installed."
 
-    # Load pretrained model if path provided
+    # Return untrained bert model if path not provided
     if pretrained_model_name_or_path is None:
         assert config is not None, "Bert config must be provided."
         assert vocab_file is not None, "vocab file must be provided."
@@ -57,7 +57,7 @@ def Bert(
             BertForSequenceClassification(config=config),
         )
 
-    # Otherwise return untrained bert model
+    # Otherwise load pretrained model
     return (
         BertTokenizer.from_pretrained(
             pretrained_model_name_or_path,

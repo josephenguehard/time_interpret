@@ -49,7 +49,7 @@ def DistilBert(
     """
     assert DistilBertConfig is not None, "transformers is not installed."
 
-    # Load pretrained model if path provided
+    # Return untrained bert model if path not provided
     if pretrained_model_name_or_path is None:
         assert config is not None, "DistilBert config must be provided."
         assert vocab_file is not None, "vocab file must be provided."
@@ -58,7 +58,7 @@ def DistilBert(
             DistilBertForSequenceClassification(config=config),
         )
 
-    # Otherwise return untrained distilbert model
+    # Otherwise load pretrained model
     return (
         DistilBertTokenizer.from_pretrained(
             pretrained_model_name_or_path,
