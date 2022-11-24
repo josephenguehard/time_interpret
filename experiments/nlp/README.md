@@ -35,6 +35,7 @@ optional arguments:
   --steps               Number of steps for the DIG attributions. Default to 30
   --factor              Factor for the DIG attributions steps. Default to 0
   --strategy            The algorithm to find the next anchor point. Either 'greedy' or 'maxcount'. Default to 'greedy'
+  --ref-token           Which token to choose as ref. Default to "mask"
   --knns_path           Where the knns are stored. If not provided, compute them. Default to 'knns/bert_sst2.pkl'
   --n_neighbors         Number of neighbors for the knns. Default to 500
   --n_jobs              Number of jobs for the knns. Default to 1
