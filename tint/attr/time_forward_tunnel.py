@@ -24,11 +24,8 @@ class TimeForwardTunnel(Attribution):
     up to a time, and computing the predictions using this data and the
     forward_func.
 
-    This method allows to use interpretation methods in a setting which is
-    not retrospective: the true label is not yet known.
-
-    The target will be ignored when using this method, as it will be
-    computed internally.
+    The true target can be passed, otherwise it will be inferred depending on
+    the task.
 
     Args:
         attribution_method (Attribution): An instance of any attribution algorithm

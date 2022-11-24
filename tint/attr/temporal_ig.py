@@ -32,6 +32,15 @@ class TemporalIntegratedGradients(IntegratedGradients):
     """
     Temporal Integrated Gradients.
 
+    This method computes gradients iteratively on a time series as such:
+    it crops the sequence up to a time, and only moves this last time from
+    a baseline to its original value.
+
+    The number of steps per time depends on the strategy. If it is
+    ``'fixed'``, then n_steps gradients are computed for each time.
+    If it is ``'interval'``, the number of steps depends on the interval
+    between two times: the larger, the greater number of points.
+
     Args:
         forward_func (callable): The forward function of the model or
             any modification of it.
