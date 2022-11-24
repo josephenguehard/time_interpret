@@ -111,6 +111,15 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Temporal Integrated Gradients.</span>
 
+<span class="sd">    This method computes gradients iteratively on a time series as such:</span>
+<span class="sd">    it crops the sequence up to a time, and only moves this last time from</span>
+<span class="sd">    a baseline to its original value.</span>
+
+<span class="sd">    The number of steps per time depends on the strategy. If it is</span>
+<span class="sd">    ``&#39;fixed&#39;``, then n_steps gradients are computed for each time.</span>
+<span class="sd">    If it is ``&#39;interval&#39;``, the number of steps depends on the interval</span>
+<span class="sd">    between two times: the larger, the greater number of points.</span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        forward_func (callable): The forward function of the model or</span>
 <span class="sd">            any modification of it.</span>

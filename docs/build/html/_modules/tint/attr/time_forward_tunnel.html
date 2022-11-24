@@ -97,15 +97,14 @@
 
 <div class="viewcode-block" id="TimeForwardTunnel"><a class="viewcode-back" href="../../../attr.html#tint.attr.TimeForwardTunnel">[docs]</a><span class="k">class</span> <span class="nc">TimeForwardTunnel</span><span class="p">(</span><span class="n">Attribution</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Time Forward Tunnel.</span>
+
 <span class="sd">    Performs interpretation method by iteratively retrieving the input data</span>
 <span class="sd">    up to a time, and computing the predictions using this data and the</span>
 <span class="sd">    forward_func.</span>
 
-<span class="sd">    This method allows to use interpretation methods in a setting which is</span>
-<span class="sd">    not retrospective: the true label is not yet known.</span>
-
-<span class="sd">    The target will be ignored when using this method, as it will be</span>
-<span class="sd">    computed internally.</span>
+<span class="sd">    The true target can be passed, otherwise it will be inferred depending on</span>
+<span class="sd">    the task.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        attribution_method (Attribution): An instance of any attribution algorithm</span>

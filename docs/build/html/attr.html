@@ -148,10 +148,10 @@ attribution methods. These methods are listed below:</p>
 <td><p>Temporal Integrated Gradients.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#tint.attr.TemporalOcclusion" title="tint.attr.TemporalOcclusion"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.TemporalOcclusion</span></code></a>(forward_func)</p></td>
-<td><p>Temporal Occlusion</p></td>
+<td><p>Temporal Occlusion.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#tint.attr.TimeForwardTunnel" title="tint.attr.TimeForwardTunnel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tint.attr.TimeForwardTunnel</span></code></a>(attribution_method)</p></td>
-<td><p>Performs interpretation method by iteratively retrieving the input data up to a time, and computing the predictions using this data and the forward_func.</p></td>
+<td><p>Time Forward Tunnel.</p></td>
 </tr>
 </tbody>
 </table>
@@ -2906,6 +2906,13 @@ single floating point tensor.</p>
 <dt class="sig sig-object py" id="tint.attr.TemporalIntegratedGradients">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tint.attr.</span></span><span class="sig-name descname"><span class="pre">TemporalIntegratedGradients</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forward_func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiply_by_inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/temporal_ig.html#TemporalIntegratedGradients"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.TemporalIntegratedGradients" title="Permalink to this definition"></a></dt>
 <dd><p>Temporal Integrated Gradients.</p>
+<p>This method computes gradients iteratively on a time series as such:
+it crops the sequence up to a time, and only moves this last time from
+a baseline to its original value.</p>
+<p>The number of steps per time depends on the strategy. If it is
+<code class="docutils literal notranslate"><span class="pre">'fixed'</span></code>, then n_steps gradients are computed for each time.
+If it is <code class="docutils literal notranslate"><span class="pre">'interval'</span></code>, the number of steps depends on the interval
+between two times: the larger, the greater number of points.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -3106,9 +3113,10 @@ of examples in inputs.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="tint.attr.TemporalOcclusion">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tint.attr.</span></span><span class="sig-name descname"><span class="pre">TemporalOcclusion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forward_func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/temporal_occlusion.html#TemporalOcclusion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.TemporalOcclusion" title="Permalink to this definition"></a></dt>
-<dd><p>Temporal Occlusion</p>
-<p>This method modifies the original occlusion by only perturbing the
-last time, leaving the previous times unchanged.</p>
+<dd><p>Temporal Occlusion.</p>
+<p>This method modifies the original occlusion by only perturbing the last
+time, leaving the previous times unchanged. It can be used together with
+<code class="docutils literal notranslate"><span class="pre">time_forward_tunnel</span></code> to compute attributions on time series.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><span class="target" id="tint.attr.TemporalOcclusion.params.forward_func"></span><strong>forward_func</strong><a class="paramlink headerlink reference internal" href="#tint.attr.TemporalOcclusion.params.forward_func">¶</a> (<em>callable</em>) – The forward function of the model or
@@ -3327,13 +3335,12 @@ single floating point tensor.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="tint.attr.TimeForwardTunnel">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tint.attr.</span></span><span class="sig-name descname"><span class="pre">TimeForwardTunnel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attribution_method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Attribution</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/time_forward_tunnel.html#TimeForwardTunnel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.TimeForwardTunnel" title="Permalink to this definition"></a></dt>
-<dd><p>Performs interpretation method by iteratively retrieving the input data
+<dd><p>Time Forward Tunnel.</p>
+<p>Performs interpretation method by iteratively retrieving the input data
 up to a time, and computing the predictions using this data and the
 forward_func.</p>
-<p>This method allows to use interpretation methods in a setting which is
-not retrospective: the true label is not yet known.</p>
-<p>The target will be ignored when using this method, as it will be
-computed internally.</p>
+<p>The true target can be passed, otherwise it will be inferred depending on
+the task.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><span class="target" id="tint.attr.TimeForwardTunnel.params.attribution_method"></span><strong>attribution_method</strong><a class="paramlink headerlink reference internal" href="#tint.attr.TimeForwardTunnel.params.attribution_method">¶</a> (<em>Attribution</em>) – An instance of any attribution algorithm
