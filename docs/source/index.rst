@@ -171,5 +171,6 @@ More details about each of these categories can be found here:
     attr_models
     datasets
     metrics
+    metrics_weights
     white_box_metrics
     models
