@@ -48,6 +48,7 @@
 <li class="toctree-l1"><a class="reference internal" href="attr_models.html">Attribution Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="datasets.html">Datasets</a></li>
 <li class="toctree-l1"><a class="reference internal" href="metrics.html">Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="metrics_weights.html">Metrics Weights</a></li>
 <li class="toctree-l1"><a class="reference internal" href="white_box_metrics.html">White Box Metrics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="models.html">Models</a></li>
 </ul>
@@ -125,6 +126,8 @@
         <li><a href="attr.html#tint.attr.TimeForwardTunnel.attribute.params.**kwargs">(tint.attr.TimeForwardTunnel.attribute parameter)</a>
 </li>
         <li><a href="index.html#tint.metrics.lipschitz_max.params.**kwargs">(tint.metrics.lipschitz_max parameter)</a>, <a href="metrics.html#tint.metrics.lipschitz_max.params.**kwargs">[1]</a>, <a href="metrics.html#tint.metrics.lipschitz_max.params.**kwargs">[2]</a>
+</li>
+        <li><a href="metrics_weights.html#tint.metrics.weights.lof_weights.params.**kwargs">(tint.metrics.weights.lof_weights parameter)</a>, <a href="metrics_weights.html#tint.metrics.weights.lof_weights.params.**kwargs">[1]</a>
 </li>
         <li><a href="models.html#tint.models.Net.forward.params.**kwargs">(tint.models.Net.forward parameter)</a>
 </li>
@@ -524,6 +527,8 @@
 </li>
         <li><a href="attr.html#tint.attr.TemporalAugmentedOcclusion.params.data">(tint.attr.TemporalAugmentedOcclusion parameter)</a>, <a href="attr.html#tint.attr.TemporalAugmentedOcclusion.params.data">[1]</a>, <a href="index.html#tint.attr.TemporalAugmentedOcclusion.params.data">[2]</a>
 </li>
+        <li><a href="metrics_weights.html#tint.metrics.weights.lof_weights.params.data">(tint.metrics.weights.lof_weights parameter)</a>, <a href="metrics_weights.html#tint.metrics.weights.lof_weights.params.data">[1]</a>
+</li>
       </ul></li>
       <li><a href="datasets.html#tint.datasets.Arma.params.data_dir">data_dir (tint.datasets.Arma parameter)</a>, <a href="datasets.html#tint.datasets.Arma.params.data_dir">[1]</a>, <a href="index.html#tint.datasets.Arma.params.data_dir">[2]</a>
 
@@ -625,6 +630,8 @@
         <li><a href="attr.html#tint.attr.Fit.representation.params.distance_metric">(tint.attr.Fit.representation parameter)</a>
 </li>
       </ul></li>
+      <li><a href="metrics_weights.html#tint.metrics.weights.lime_weights.params.distance_mode">distance_mode (tint.metrics.weights.lime_weights parameter)</a>, <a href="metrics_weights.html#tint.metrics.weights.lime_weights.params.distance_mode">[1]</a>
+</li>
       <li><a href="models.html#tint.models.DistilBert">DistilBert() (in module tint.models)</a>
 </li>
       <li><a href="index.html#tint.metrics.accuracy.params.draw_baseline_from_distrib">draw_baseline_from_distrib (tint.metrics.accuracy parameter)</a>, <a href="metrics.html#tint.metrics.accuracy.params.draw_baseline_from_distrib">[1]</a>, <a href="metrics.html#tint.metrics.accuracy.params.draw_baseline_from_distrib">[2]</a>
@@ -1005,6 +1012,8 @@
         <li><a href="attr_models.html#tint.attr.models.MaskNet.params.keep_ratio">(tint.attr.models.MaskNet parameter)</a>, <a href="attr_models.html#tint.attr.models.MaskNet.params.keep_ratio">[1]</a>, <a href="index.html#tint.attr.models.MaskNet.params.keep_ratio">[2]</a>
 </li>
       </ul></li>
+      <li><a href="metrics_weights.html#tint.metrics.weights.lime_weights.params.kernel_width">kernel_width (tint.metrics.weights.lime_weights parameter)</a>, <a href="metrics_weights.html#tint.metrics.weights.lime_weights.params.kernel_width">[1]</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="index.html#tint.models.Bert.params.kwargs">kwargs (tint.models.Bert parameter)</a>, <a href="models.html#tint.models.Bert.params.kwargs">[1]</a>, <a href="models.html#tint.models.Bert.params.kwargs">[2]</a>
@@ -1043,7 +1052,11 @@
 </li>
       <li><a href="index.html#tint.models.Net.params.layers">layers (tint.models.Net parameter)</a>, <a href="models.html#tint.models.Net.params.layers">[1]</a>, <a href="models.html#tint.models.Net.params.layers">[2]</a>
 </li>
+      <li><a href="metrics_weights.html#tint.metrics.weights.lime_weights">lime_weights() (in module tint.metrics.weights)</a>
+</li>
       <li><a href="metrics.html#tint.metrics.lipschitz_max">lipschitz_max() (in module tint.metrics)</a>
+</li>
+      <li><a href="metrics_weights.html#tint.metrics.weights.lof_weights">lof_weights() (in module tint.metrics.weights)</a>
 </li>
       <li><a href="attr.html#tint.attr.LofKernelShap">LofKernelShap (class in tint.attr)</a>
 </li>
@@ -1155,14 +1168,14 @@
 </li>
       <li><a href="models.html#tint.models.MLP">MLP (class in tint.models)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="attr_models.html#tint.attr.models.ExtremalMask.params.model">model (tint.attr.models.ExtremalMask parameter)</a>
 
       <ul>
         <li><a href="attr_models.html#tint.attr.models.ExtremalMaskNet.params.model">(tint.attr.models.ExtremalMaskNet parameter)</a>, <a href="attr_models.html#tint.attr.models.ExtremalMaskNet.params.model">[1]</a>, <a href="index.html#tint.attr.models.ExtremalMaskNet.params.model">[2]</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     module
 
@@ -1174,6 +1187,8 @@
         <li><a href="datasets.html#module-tint.datasets">tint.datasets</a>
 </li>
         <li><a href="metrics.html#module-tint.metrics">tint.metrics</a>
+</li>
+        <li><a href="metrics_weights.html#module-tint.metrics.weights">tint.metrics.weights</a>
 </li>
         <li><a href="white_box_metrics.html#module-tint.metrics.white_box">tint.metrics.white_box</a>
 </li>
@@ -1238,6 +1253,8 @@
         <li><a href="attr.html#tint.attr.LofKernelShap.params.n_neighbors">(tint.attr.LofKernelShap parameter)</a>, <a href="attr.html#tint.attr.LofKernelShap.params.n_neighbors">[1]</a>, <a href="index.html#tint.attr.LofKernelShap.params.n_neighbors">[2]</a>
 </li>
         <li><a href="attr.html#tint.attr.LofLime.params.n_neighbors">(tint.attr.LofLime parameter)</a>, <a href="attr.html#tint.attr.LofLime.params.n_neighbors">[1]</a>, <a href="index.html#tint.attr.LofLime.params.n_neighbors">[2]</a>
+</li>
+        <li><a href="metrics_weights.html#tint.metrics.weights.lof_weights.params.n_neighbors">(tint.metrics.weights.lof_weights parameter)</a>, <a href="metrics_weights.html#tint.metrics.weights.lof_weights.params.n_neighbors">[1]</a>
 </li>
       </ul></li>
       <li><a href="index.html#tint.metrics.lipschitz_max.params.n_perturb_samples">n_perturb_samples (tint.metrics.lipschitz_max parameter)</a>, <a href="metrics.html#tint.metrics.lipschitz_max.params.n_perturb_samples">[1]</a>, <a href="metrics.html#tint.metrics.lipschitz_max.params.n_perturb_samples">[2]</a>
@@ -1812,6 +1829,13 @@
 
       <ul>
         <li><a href="metrics.html#module-tint.metrics">module</a>
+</li>
+      </ul></li>
+      <li>
+    tint.metrics.weights
+
+      <ul>
+        <li><a href="metrics_weights.html#module-tint.metrics.weights">module</a>
 </li>
       </ul></li>
       <li>

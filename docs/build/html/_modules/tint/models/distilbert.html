@@ -48,6 +48,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../attr_models.html">Attribution Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../datasets.html">Datasets</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../metrics.html">Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../metrics_weights.html">Metrics Weights</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../white_box_metrics.html">White Box Metrics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../models.html">Models</a></li>
 </ul>
@@ -128,7 +129,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="n">DistilBertConfig</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;transformers is not installed.&quot;</span>
 
-    <span class="c1"># Load pretrained model if path provided</span>
+    <span class="c1"># Return untrained bert model if path not provided</span>
     <span class="k">if</span> <span class="n">pretrained_model_name_or_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">assert</span> <span class="n">config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;DistilBert config must be provided.&quot;</span>
         <span class="k">assert</span> <span class="n">vocab_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;vocab file must be provided.&quot;</span>
@@ -137,7 +138,7 @@
             <span class="n">DistilBertForSequenceClassification</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">),</span>
         <span class="p">)</span>
 
-    <span class="c1"># Otherwise return untrained distilbert model</span>
+    <span class="c1"># Otherwise load pretrained model</span>
     <span class="k">return</span> <span class="p">(</span>
         <span class="n">DistilBertTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span>
             <span class="n">pretrained_model_name_or_path</span><span class="p">,</span>
