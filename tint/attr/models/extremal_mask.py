@@ -8,9 +8,9 @@ from typing import Callable, Union
 from tint.models import Net
 
 
-class ExtremalMask(nn.Module):
+class ExtremalMaskNN(nn.Module):
     """
-    Extremal Mask model.
+    Extremal Mask NN model.
 
     Args:
         forward_func (callable): The forward function of the model or any
@@ -152,7 +152,7 @@ class ExtremalMaskNet(Net):
         lr_scheduler_args: dict = None,
         l2: float = 0.0,
     ):
-        mask = ExtremalMask(
+        mask = ExtremalMaskNN(
             forward_func=forward_func,
             model=model,
             batch_size=batch_size,

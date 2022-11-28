@@ -1,5 +1,5 @@
 from .bayes_linear import BLRRegression, BLRRidge
-from .extremal_mask import ExtremalMask, ExtremalMaskNet
+from .extremal_mask import ExtremalMaskNN, ExtremalMaskNet
 from .joint_features_generator import (
     JointFeatureGenerator,
     JointFeatureGeneratorNet,
@@ -11,7 +11,7 @@ from .retain import Retain, RetainNet
 __all__ = [
     "BLRRegression",
     "BLRRidge",
-    "ExtremalMask",
+    "ExtremalMaskNN",
     "ExtremalMaskNet",
     "JointFeatureGenerator",
     "JointFeatureGeneratorNet",
