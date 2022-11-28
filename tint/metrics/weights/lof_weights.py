@@ -22,6 +22,27 @@ def lof_weights(
     Returns:
         Callable: A function to compute weights given original and
             perturbed inputs.
+
+    Examples:
+        >>> import torch as th
+        >>> from captum.attr import Saliency
+        >>> from tint.metrics import accuracy
+        >>> from tint.metrics.weights import lof_weights
+        >>> from tint.models import MLP
+        <BLANKLINE>
+        >>> inputs = th.rand(8, 7, 5)
+        >>> mlp = MLP([5, 3, 1])
+        <BLANKLINE>
+        >>> explainer = Saliency(mlp)
+        >>> attr = explainer.attribute(inputs, target=0)
+        <BLANKLINE>
+        >>> acc = accuracy(
+        ...     mlp,
+        ...     inputs,
+        ...     attr,
+        ...     target=0,
+        ...     weight_fn=lof_weights(th.rand(20, 7, 5), 5)
+        ... )
     """
     # Format data
     data = _format_tensor_into_tuples(data)
