@@ -85,7 +85,6 @@ print(f"{aup(attr, true_saliency):.4})
 - [Fit](https://arxiv.org/abs/2003.02821)
 - [Occlusion](https://arxiv.org/abs/1311.2901)
 - [Retain](https://arxiv.org/pdf/1608.05745)
-- [SmoothGrad](https://arxiv.org/abs/1810.03292)
 
 
 ## Acknowledgment
