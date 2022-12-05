@@ -103,13 +103,13 @@ sst2,roberta,integrated_gradients,-1.449,0.4051,0.226
 sst2,roberta,sequential_integrated_gradients,-1.615,0.4402,0.2165
 sst2,roberta,sequential_discretized_integrated_gradients,-1.229,0.3722,0.2364
 imdb,distilbert,deep_lift,-0.2687,0.1171,0.1592
-
+imdb,distilbert,discretized_integrated_gradients,-0.7791,0.3041,0.1329
 imdb,distilbert,gradient_shap,-0.8315,0.2891,0.1374
 imdb,distilbert,input_x_gradient,-0.1528,0.07655,0.2096
 imdb,distilbert,integrated_gradients,-1.503,0.5344,0.04275
 imdb,distilbert,sequential_integrated_gradients,-1.953,0.5637,0.004095
 imdb,roberta,deep_lift,-0.124,0.05572,0.2694
-
+imdb,roberta,discretized_integrated_gradients,-0.6634,0.1858,0.1083
 imdb,roberta,gradient_shap,-0.6059,0.2042,0.144
 imdb,roberta,input_x_gradient,-0.08925,0.04317,0.3
 imdb,roberta,integrated_gradients,-1.348,0.4413,0.03268
