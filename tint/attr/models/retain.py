@@ -3,7 +3,6 @@ import torch.nn as nn
 
 from torch.autograd import Variable
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
-from torchmetrics import AUROC
 from typing import Callable, Union
 
 from tint.models import Net
@@ -223,10 +222,6 @@ class RetainNet(Net):
             l2=l2,
         )
 
-        if loss == "cross_entropy":
-            for stage in ["train", "val", "test"]:
-                setattr(self, stage + "_auroc", AUROC())
-
     def step(self, batch, batch_idx, stage):
         x, y = batch
 
@@ -238,9 +233,5 @@ class RetainNet(Net):
         if self.net.temporal_labels:
             y = y[th.arange(len(x)), lengths - 1, ...]
         loss = self.loss(y_hat, y)
-
-        if isinstance(self._loss, nn.CrossEntropyLoss):
-            getattr(self, stage + "_auroc")(y_hat[:, 1], y.long())
-            self.log(stage + "_auroc", getattr(self, stage + "_auroc"))
 
         return loss
