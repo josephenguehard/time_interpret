@@ -115,7 +115,7 @@ imdb,roberta,input_x_gradient,-0.08925,0.04317,0.3
 imdb,roberta,integrated_gradients,-1.348,0.4413,0.03268
 imdb,roberta,sequential_integrated_gradients,-1.37,0.4037,-3.314e-05
 imdb,bert,deep_lift,-0.2854,0.07009,0.3664
-
+imdb,bert,discretized_integrated_gradients,-1.056,0.2074,0.2315
 imdb,bert,gradient_shap,-0.8743,0.1723,0.3081
 imdb,bert,input_x_gradient,-0.2907,0.08868,0.2984
 imdb,bert,integrated_gradients,-1.584,0.3018,0.2235
