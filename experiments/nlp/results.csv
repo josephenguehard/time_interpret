@@ -62,6 +62,8 @@ imdb,roberta,sequential_integrated_gradients,-0.856,0.2912,0.0207
 
 sst2,distilbert,deep_lift,-0.6243,0.1696,0.2706
 sst2,distilbert,discretized_integrated_gradients,-1.69,0.3844,0.167
+sst2,distilbert,enhanced_integrated_gradients,-2.01,0.4618,0.1314
+sst2,distilbert,geodesic_integrated_gradients,-2.032,0.4581,0.1342
 sst2,distilbert,gradient_shap,-1.318,0.3028,0.2585
 sst2,distilbert,input_x_gradient,-0.4115,0.112,0.3754
 sst2,distilbert,integrated_gradients,-1.957,0.4452,0.151
@@ -69,6 +71,8 @@ sst2,distilbert,sequential_integrated_gradients,-2.021,0.4733,0.09921
 sst2,distilbert,sequential_discretized_integrated_gradients,-2.03,0.4753,0.09917
 sst2,bert,deep_lift,-0.2439,0.08983,0.4377
 sst2,bert,discretized_integrated_gradients,-0.7768,0.2874,0.3454
+sst2,bert,enhanced_integrated_gradients,-0.9776,0.3441,0.3503
+sst2,bert,geodesic_integrated_gradients,-0.9543,0.3469,0.3449
 sst2,bert,gradient_shap,-0.6222,0.2197,0.3881
 sst2,bert,input_x_gradient,-0.2632,0.09228,0.4385
 sst2,bert,integrated_gradients,-0.9809,0.3447,0.3518
@@ -97,6 +101,8 @@ rotten,bert,sequential_integrated_gradients,-1.518,0.3895,0.349
 rotten,bert,sequential_discretized_integrated_gradients,-1.54,0.3709,0.3467
 sst2,roberta,deep_lift,-0.2609,0.09322,0.4077
 sst2,roberta,discretized_integrated_gradients,-0.824,0.2625,0.2784
+sst2,roberta,enhanced_integrated_gradients,-1.414,0.4075,0.2177
+sst2,roberta,geodesic_integrated_gradients,-1.467,0.4079,0.2127
 sst2,roberta,gradient_shap,-0.8955,0.2612,0.3144
 sst2,roberta,input_x_gradient,-0.1997,0.07602,0.4263
 sst2,roberta,integrated_gradients,-1.449,0.4051,0.226

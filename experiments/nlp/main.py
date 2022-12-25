@@ -13,6 +13,7 @@ from typing import List
 
 from tint.attr import (
     DiscretetizedIntegratedGradients,
+    GeodesicIntegratedGradients,
     SequentialIntegratedGradients,
 )
 from tint.attr.models import scale_inputs
@@ -201,6 +202,59 @@ def main(
             )
             _attr = summarize_attributions(_attr)
             attr["discretized_integrated_gradients"] = _attr
+
+        if "enhanced_integrated_gradients" in explainers:
+            rand = (
+                torch.rand((50,) + input_embed.shape[1:])
+                .sort(dim=0)
+                .values.to(device)
+            )
+            input_aug = (
+                input_embed - ref_input_embed
+            ) * rand + ref_input_embed
+
+            explainer = GeodesicIntegratedGradients(
+                nn_forward_func, data=input_aug.detach(), n_neighbors=5
+            )
+            _attr = explainer.attribute(
+                input_embed,
+                baselines=ref_input_embed,
+                additional_forward_args=(
+                    attention_mask.detach(),
+                    position_embed.detach(),
+                    None if type_embed is None else type_embed.detach(),
+                ),
+                internal_batch_size=200,
+                distance="euclidean",
+            )
+            _attr = summarize_attributions(_attr)
+            attr["enhanced_integrated_gradients"] = _attr
+
+        if "geodesic_integrated_gradients" in explainers:
+            rand = (
+                torch.rand((50,) + input_embed.shape[1:])
+                .sort(dim=0)
+                .values.to(device)
+            )
+            input_aug = (
+                input_embed - ref_input_embed
+            ) * rand + ref_input_embed
+
+            explainer = GeodesicIntegratedGradients(
+                nn_forward_func, data=input_aug.detach(), n_neighbors=5
+            )
+            _attr = explainer.attribute(
+                input_embed,
+                baselines=ref_input_embed,
+                additional_forward_args=(
+                    attention_mask.detach(),
+                    position_embed.detach(),
+                    None if type_embed is None else type_embed.detach(),
+                ),
+                internal_batch_size=200,
+            )
+            _attr = summarize_attributions(_attr)
+            attr["geodesic_integrated_gradients"] = _attr
 
         if "gradient_shap" in explainers:
             explainer = GradientShap(nn_forward_func)
