@@ -2,7 +2,6 @@ import multiprocessing as mp
 import numpy as np
 import random
 import torch as th
-import torch.nn as nn
 
 from argparse import ArgumentParser
 from captum.attr import (
@@ -22,7 +21,6 @@ from tint.attr import (
 from tint.attr.models import ExtremalMaskNet, MaskNet
 from tint.datasets import Arma
 from tint.metrics.white_box import aup, aur, information, entropy
-from tint.models import MLP, RNN
 
 
 def main(
@@ -104,15 +102,6 @@ def main(
         )
         mask = ExtremalMaskNet(
             forward_func=arma.get_white_box,
-            model=nn.Sequential(
-                RNN(
-                    input_size=x.shape[-1],
-                    rnn="gru",
-                    hidden_size=x.shape[-1],
-                    bidirectional=True,
-                ),
-                MLP([2 * x.shape[-1], x.shape[-1]]),
-            ),
             optim="adam",
             lr=0.01,
         )

@@ -60,12 +60,12 @@ class ExtremalMaskNN(nn.Module):
             self.batch_size * batch_idx : self.batch_size * (batch_idx + 1)
         ]
 
-        # We forward model if provided
-        if self.model is not None:
-            mask = mask + self.model(x - baselines)
-
         # We clamp the mask
         mask = mask.clamp(0, 1)
+
+        # If model is provided, we use it as the baselines
+        if self.model is not None:
+            baselines = self.model(x - baselines)
 
         # Mask data according to samples
         # We eventually cut samples up to x time dimension
@@ -91,15 +91,8 @@ class ExtremalMaskNN(nn.Module):
             ),
         )
 
-    def representation(self, data, baselines):
-        if self.model is None:
-            return self.mask.detach().cpu().clamp(0, 1)
-        return (
-            (self.mask + self.model(data - baselines))
-            .detach()
-            .cpu()
-            .clamp(0, 1)
-        )
+    def representation(self):
+        return self.mask.detach().cpu().clamp(0, 1)
 
 
 class ExtremalMaskNet(Net):
@@ -216,15 +209,15 @@ class ExtremalMaskNet(Net):
         )
 
         # Add L1 loss
-        mask_ = self.net.mask
+        mask_ = self.net.mask.abs()
         if self.net.model is not None:
             mask_ = mask_[
                 self.net.batch_size
                 * batch_idx : self.net.batch_size
                 * (batch_idx + 1)
             ]
-            mask_ = mask_ + self.net.model(x - baselines)
-        reg_loss = mask_.abs().mean()
+            mask_ = mask_ + self.net.model(x - baselines).abs()
+        reg_loss = mask_.mean()
 
         # Compute and return loss
         if self.comp_loss:

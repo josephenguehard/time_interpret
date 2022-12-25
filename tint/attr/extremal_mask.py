@@ -235,7 +235,7 @@ class ExtremalMask(PerturbationAttribution):
         mask_net.to(data.device)
 
         # Get attributions as mask representation
-        attributions = mask_net.net.representation(data, baseline)
+        attributions = mask_net.net.representation()
 
         # Reshape representation if temporal attributions
         if return_temporal_attributions:

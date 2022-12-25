@@ -301,7 +301,7 @@ def main(
             fp.write(f"{information(v, true_saliency):.4},")
             fp.write(f"{entropy(v, true_saliency):.4},")
             fp.write(f"{roc_auc(v, true_saliency):.4},")
-            fp.write(f"{auprc(v, true_saliency):.4},")
+            fp.write(f"{auprc(v, true_saliency):.4}")
             fp.write("\n")
 
 

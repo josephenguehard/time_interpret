@@ -25,7 +25,6 @@ def objective(
 ):
     # Create several models
     input_shape = x.shape[-1]
-    mlp = MLP([input_shape, input_shape])
     gru = RNN(
         input_size=input_shape,
         rnn="gru",
@@ -41,15 +40,12 @@ def objective(
     bi_gru = nn.Sequential(_bi_gru, _bi_mlp)
     model_dict = {
         "none": None,
-        "mlp": mlp,
         "gru": gru,
         "bi_gru": bi_gru,
     }
 
     # Select a set of hyperparameters to test
-    model = trial.suggest_categorical(
-        "model", ["none", "mlp", "gru", "bi_gru"]
-    )
+    model = trial.suggest_categorical("model", ["none", "gru", "bi_gru"])
 
     # Define model and trainer given the hyperparameters
     version = trial.study.study_name + "_" + str(trial._trial_id)
