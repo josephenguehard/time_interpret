@@ -163,8 +163,8 @@ def main(
 
         # Set baseline as (0, 0.5)
         baselines = th.zeros_like(x_test).to(device)
-        baselines[:, 0] = 0.0
-        baselines[:, 1] = 0.5
+        baselines[:, 0] = -0.5
+        baselines[:, 1] = -0.5
 
         if "geodesic_integrated_gradients" in explainers:
             for n in range(5, 20, 5):
