@@ -6,7 +6,7 @@ from captum.log import log_usage
 from captum._utils.common import (
     _expand_additional_forward_args,
     _expand_target,
-    _format_input,
+    _format_inputs,
     _format_additional_forward_args,
     _format_baseline,
     _is_tuple,

@@ -1,7 +1,7 @@
 import torch
 
 from captum.log import log_usage
-from captum._utils.common import _format_input
+from captum._utils.common import _format_inputs
 from captum._utils.typing import (
     TensorOrTupleOfTensorsGeneric,
     BaselineType,
@@ -200,7 +200,7 @@ class TemporalOcclusion(Occlusion):
                             corresponding sized tensors is returned.
         """
 
-        inputs_tpl = _format_input(inputs)
+        inputs_tpl = _format_inputs(inputs)
 
         assert all(
             x.shape[1] == inputs_tpl[0].shape[1] for x in inputs_tpl

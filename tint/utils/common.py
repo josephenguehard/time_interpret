@@ -5,7 +5,7 @@ import torch
 from captum._utils.common import (
     _expand_additional_forward_args,
     _format_baseline,
-    _format_input,
+    _format_inputs,
     _format_output,
     _format_additional_forward_args,
     _run_forward,
@@ -27,7 +27,7 @@ def _add_temporal_mask(
     temporal_additional_forward_args: Tuple[bool] = None,
 ):
     # Format input data
-    inputs = _format_input(inputs)
+    inputs = _format_inputs(inputs)
     additional_forward_args = _format_additional_forward_args(
         additional_forward_args
     )
@@ -89,7 +89,7 @@ def _slice_to_time(
 
     # Format inputs
     is_inputs_tuple = isinstance(inputs, tuple)
-    inputs = _format_input(inputs)
+    inputs = _format_inputs(inputs)
 
     # Slice inputs
     partial_inputs = tuple(x[:, :time, ...].clone() for x in inputs)
@@ -97,7 +97,7 @@ def _slice_to_time(
     # Format and slice args
     args_copy = copy.deepcopy(args)
     is_args_tuple = tuple(isinstance(arg, tuple) for arg in args_copy)
-    args_copy = tuple(_format_input(arg) for arg in args_copy)
+    args_copy = tuple(_format_inputs(arg) for arg in args_copy)
     args_copy = tuple(
         tuple(x[:, :time, ...] for x in arg) for arg in args_copy
     )

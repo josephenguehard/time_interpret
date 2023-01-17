@@ -8,7 +8,7 @@ from captum._utils.common import (
     _expand_additional_forward_args,
     _expand_target,
     _format_additional_forward_args,
-    _format_input,
+    _format_inputs,
     _format_output,
     _is_tuple,
     _run_forward,
@@ -263,7 +263,7 @@ class FeatureAblation(PerturbationAttribution):
         )
         num_examples = inputs[0].shape[0]
         feature_mask = (
-            _format_input(feature_mask) if feature_mask is not None else None
+            _format_inputs(feature_mask) if feature_mask is not None else None
         )
         assert (
             isinstance(perturbations_per_eval, int)

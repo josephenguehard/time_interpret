@@ -2,7 +2,7 @@ import numpy as np
 import torch
 
 from captum.log import log_usage
-from captum._utils.common import _format_input
+from captum._utils.common import _format_inputs
 from captum._utils.typing import (
     TargetType,
     TensorOrTupleOfTensorsGeneric,
@@ -62,7 +62,7 @@ class AugmentedOcclusion(Occlusion):
         is_temporal: bool = False,
     ):
         super().__init__(forward_func=forward_func)
-        self.data = _format_input(data)
+        self.data = _format_inputs(data)
         self.n_sampling = n_sampling
         self.is_temporal = is_temporal
 
@@ -203,7 +203,7 @@ class AugmentedOcclusion(Occlusion):
         # Change input to tuple and check that its length is the same as data.
         # Also check that each dimension between inputs and self.data matches
         # except on the first one.
-        formatted_inputs = _format_input(inputs)
+        formatted_inputs = _format_inputs(inputs)
         _validate_input(
             inputs=formatted_inputs,
             data=self.data,

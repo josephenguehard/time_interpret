@@ -6,7 +6,7 @@ import warnings
 from captum.attr._utils.approximation_methods import approximation_parameters
 from captum.attr._utils.attribution import GradientAttribution
 from captum.attr._utils.common import (
-    _format_input,
+    _format_inputs,
     _format_input_baseline,
     _reshape_and_sum,
     _validate_input,
@@ -110,7 +110,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
 
         # Fit NearestNeighbors if data is provided
         if data is not None:
-            data = _format_input(data)
+            data = _format_inputs(data)
 
             assert n_neighbors is not None, "You must provide n_neighbors"
             if isinstance(n_neighbors, int):

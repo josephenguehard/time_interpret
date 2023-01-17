@@ -1,7 +1,7 @@
 from captum.log import log_usage
 from captum._utils.common import (
     _is_tuple,
-    _format_input,
+    _format_inputs,
     _format_output,
     _validate_input,
 )
@@ -22,8 +22,8 @@ def _base_white_box_metric(
 ) -> Tuple[float]:
     # Convert attributions into tuple
     is_inputs_tuple = _is_tuple(attributions)
-    attributions = _format_input(attributions)
-    true_attributions = _format_input(true_attributions)
+    attributions = _format_inputs(attributions)
+    true_attributions = _format_inputs(true_attributions)
 
     # Validate input
     _validate_input(attributions, true_attributions)
