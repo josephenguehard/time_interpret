@@ -295,7 +295,7 @@ class TemporalIntegratedGradients(IntegratedGradients):
         # converting it into a tuple.
         is_inputs_tuple = isinstance(inputs, tuple)
 
-        inputs = _format_input(inputs)
+        inputs = _format_inputs(inputs)
 
         # Get baselines
         baselines = _format_baseline(baselines, inputs)

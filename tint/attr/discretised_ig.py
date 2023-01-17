@@ -5,6 +5,7 @@ from captum._utils.common import (
     _expand_additional_forward_args,
     _expand_target,
     _format_additional_forward_args,
+    _format_inputs,
     _format_output,
     _is_tuple,
 )
@@ -13,7 +14,7 @@ from captum._utils.typing import (
     TensorOrTupleOfTensorsGeneric,
 )
 from captum.attr._utils.attribution import GradientAttribution
-from captum.attr._utils.common import _reshape_and_sum, _format_inputs
+from captum.attr._utils.common import _reshape_and_sum
 
 from torch import Tensor
 from typing import Any, Callable, Tuple, Union

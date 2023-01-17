@@ -6,7 +6,6 @@ import warnings
 from captum.attr._utils.approximation_methods import approximation_parameters
 from captum.attr._utils.attribution import GradientAttribution
 from captum.attr._utils.common import (
-    _format_inputs,
     _format_input_baseline,
     _reshape_and_sum,
     _validate_input,
@@ -16,6 +15,7 @@ from captum._utils.common import (
     _expand_additional_forward_args,
     _expand_target,
     _format_additional_forward_args,
+    _format_inputs,
     _format_output,
     _is_tuple,
 )
