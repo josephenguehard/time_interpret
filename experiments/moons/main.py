@@ -160,7 +160,7 @@ def main(
         # Create dict of attr
         attr = dict()
 
-        # Set baseline as (0, 0.5)
+        # Set baseline as (-0.5, -0.5)
         baselines = th.zeros_like(x_test).to(device)
         baselines[:, 0] = -0.5
         baselines[:, 1] = -0.5
