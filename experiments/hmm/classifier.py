@@ -103,10 +103,10 @@ class StateClassifierNet(Net):
         self.save_hyperparameters()
 
         for stage in ["train", "val", "test"]:
-            setattr(self, stage + "_acc", Accuracy())
-            setattr(self, stage + "_pre", Precision())
-            setattr(self, stage + "_rec", Recall())
-            setattr(self, stage + "_auroc", AUROC())
+            setattr(self, stage + "_acc", Accuracy(task="binary"))
+            setattr(self, stage + "_pre", Precision(task="binary"))
+            setattr(self, stage + "_rec", Recall(task="binary"))
+            setattr(self, stage + "_auroc", AUROC(task="binary"))
 
     def forward(self, *args, **kwargs) -> th.Tensor:
         return self.net(*args, **kwargs)
