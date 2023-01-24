@@ -83,6 +83,20 @@ class GeodesicIntegratedGradients(GradientAttribution):
             In case of integrated gradients, if `multiply_by_inputs`
             is set to True, final sensitivity scores are being multiplied by
             (inputs - baselines).
+
+    Examples:
+        >>> import torch as th
+        >>> from tint.attr import GeodesicIntegratedGradients
+        >>> from tint.models import MLP
+        <BLANKLINE>
+        >>> inputs = th.rand(50, 5)
+        >>> data = th.rand(100, 5)
+        >>> mlp = MLP([5, 3, 1])
+        <BLANKLINE>
+        >>> explainer = GeodesicIntegratedGradients(
+        ...     mlp, data=data, n_neighbors=10,
+        ... )
+        >>> attr = explainer.attribute(inputs)
     """
 
     def __init__(
