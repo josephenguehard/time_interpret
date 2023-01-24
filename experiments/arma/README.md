@@ -49,6 +49,7 @@ optional arguments:
   --rare-dim            Which type of experiment to run. 1 is for rare-feature, 2 is for rare-time. Default to 1
   --explainers          List of the explainers to use. Default to ["dyna_mask", "extremal_mask", "integrated_gradients", "occlusion", "permutation", "shapley_values_sampling"]
   --device              Which device to use. Default to 'cpu'
+  --fold                Fold of the cross-validation. Default to 0
   --seed                Which seed to use to generate the data. Default to 42
   --deterministic       Whether to make training deterministic or not. Default to False
 ```

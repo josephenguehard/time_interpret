@@ -32,6 +32,7 @@ optional arguments:
   -h, --help            Show this help message and exit.
   --explainers          List of the explainers to use. Default to ["deep_lift", "gradient_shap", "integrated_gradients", "augmented_occlusion", "occlusion", "temporal_integrated_gradients"]
   --device              Which device to use. Default to 'cpu'
+  --fold                Fold of the cross-validation. Default to 0
   --seed                Which seed to use to generate the data. Default to 42
   --deterministic       Whether to make training deterministic or not. Default to False
 ```
