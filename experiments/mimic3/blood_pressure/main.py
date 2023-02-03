@@ -193,7 +193,6 @@ def main(
     with open("results.csv", "a") as fp, lock:
         for topk in areas:
             for k, v in attr.items():
-
                 mae_comp = list()
                 mae_suff = list()
                 mse_comp = list()

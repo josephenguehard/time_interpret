@@ -50,7 +50,6 @@ def main(
 
     # Loop over noises
     for noise in noises:
-
         # Create dataset
         x, y = make_moons(n_samples=n_samples, noise=noise, random_state=seed)
         x_train, x_test, y_train, y_test = train_test_split(

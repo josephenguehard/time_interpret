@@ -66,7 +66,6 @@ class Retain(PerturbationAttribution):
         # If forward_func is not provided,
         # train retain model
         if forward_func is None:
-
             # Create dataloader if not provided
             dataloader = None
             if datamodule is None:

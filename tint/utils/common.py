@@ -141,7 +141,6 @@ def _slice_to_time(
     # If forward_func is provided, compute partial predictions
     # according to task
     if forward_func is not None and task != "none":
-
         # Get additional args
         additional_forward_args = None
         if "additional_forward_args" in kwargs_copy:
