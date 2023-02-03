@@ -83,6 +83,7 @@ print(f"{aup(attr, true_saliency):.4})
 - [DynaMask](https://arxiv.org/pdf/2106.05303)
 - [Discretised Integrated Gradients](https://arxiv.org/abs/2108.13654)
 - [Fit](https://arxiv.org/abs/2003.02821)
+- [Non-linearities Tunnel](https://arxiv.org/abs/1906.07983)
 - [Occlusion](https://arxiv.org/abs/1311.2901)
 - [Retain](https://arxiv.org/pdf/1608.05745)
 
