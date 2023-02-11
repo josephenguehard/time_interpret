@@ -6,7 +6,6 @@ import warnings
 from captum.attr._utils.approximation_methods import approximation_parameters
 from captum.attr._utils.attribution import GradientAttribution
 from captum.attr._utils.common import (
-    _format_input,
     _format_input_baseline,
     _reshape_and_sum,
     _validate_input,
@@ -16,6 +15,7 @@ from captum._utils.common import (
     _expand_additional_forward_args,
     _expand_target,
     _format_additional_forward_args,
+    _format_inputs,
     _format_output,
     _is_tuple,
 )
@@ -83,6 +83,20 @@ class GeodesicIntegratedGradients(GradientAttribution):
             In case of integrated gradients, if `multiply_by_inputs`
             is set to True, final sensitivity scores are being multiplied by
             (inputs - baselines).
+
+    Examples:
+        >>> import torch as th
+        >>> from tint.attr import GeodesicIntegratedGradients
+        >>> from tint.models import MLP
+        <BLANKLINE>
+        >>> inputs = th.rand(50, 5)
+        >>> data = th.rand(100, 5)
+        >>> mlp = MLP([5, 3, 1])
+        <BLANKLINE>
+        >>> explainer = GeodesicIntegratedGradients(
+        ...     mlp, data=data, n_neighbors=10,
+        ... )
+        >>> attr = explainer.attribute(inputs)
     """
 
     def __init__(
@@ -110,7 +124,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
 
         # Fit NearestNeighbors if data is provided
         if data is not None:
-            data = _format_input(data)
+            data = _format_inputs(data)
 
             assert n_neighbors is not None, "You must provide n_neighbors"
             if isinstance(n_neighbors, int):

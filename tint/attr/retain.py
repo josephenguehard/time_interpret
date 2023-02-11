@@ -5,7 +5,7 @@ import torch as th
 from captum.attr._utils.attribution import PerturbationAttribution
 from captum.log import log_usage
 from captum._utils.common import (
-    _format_input,
+    _format_inputs,
     _format_output,
     _is_tuple,
 )
@@ -66,7 +66,6 @@ class Retain(PerturbationAttribution):
         # If forward_func is not provided,
         # train retain model
         if forward_func is None:
-
             # Create dataloader if not provided
             dataloader = None
             if datamodule is None:
@@ -135,7 +134,7 @@ class Retain(PerturbationAttribution):
         # Keeps track whether original input is a tuple or not before
         # converting it into a tuple.
         is_inputs_tuple = _is_tuple(inputs)
-        inputs = _format_input(inputs)
+        inputs = _format_inputs(inputs)
 
         # Assert only one input, as the Retain only accepts one
         assert (

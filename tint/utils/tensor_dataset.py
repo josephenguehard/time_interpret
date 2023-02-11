@@ -1,5 +1,5 @@
 from torch import Tensor
-from torch.utils.data import Dataset, default_collate
+from torch.utils.data import Dataset
 from typing import Tuple
 
 

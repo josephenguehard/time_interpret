@@ -24,7 +24,7 @@ python reset.py
 ## Usage
 
 ```
-usage: experiments/moons/main.py [-h] [--explainers] [--n-samples] [--noises] [--device] [--seed] [--deterministic]
+usage: experiments/moons/main.py [-h] [--explainers] [--n-samples] [--noises] [--softplus] [--device] [--seed] [--deterministic]
 
 optional arguments:
   -h, --help            Show this help message and exit.

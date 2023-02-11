@@ -41,7 +41,9 @@ usage: experiments/mimci3/mortality/main.py [-h] [--explainers] [--device] [--se
 optional arguments:
   -h, --help            Show this help message and exit.
   --explainers          List of the explainers to use. Default to ["deep_lift", "dyna_mask", "extremal_mask", "fit", "gradient_shap", "integrated_gradients", "lime", "retain", "augmented_occlusion", "occlusion"]
+  --areas               List of areas to use. Default to [0.1, 0.2, 0.3, 0.4, 0.5, 0.6]
   --device              Which device to use. Default to 'cpu'
+  --fold                Fold of the cross-validation. Default to 0
   --seed                Which seed to use to generate the data. Default to 42
   --deterministic       Whether to make training deterministic or not. Default to False
 ```

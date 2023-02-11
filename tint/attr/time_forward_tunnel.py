@@ -3,7 +3,7 @@ import torch
 from captum.attr._utils.attribution import Attribution, GradientAttribution
 from captum.log import log_usage
 from captum._utils.common import (
-    _format_input,
+    _format_inputs,
     _is_tuple,
     _format_tensor_into_tuples,
     _format_output,
@@ -150,7 +150,7 @@ class TimeForwardTunnel(Attribution):
         # converting it into a tuple.
         is_inputs_tuple = isinstance(inputs, tuple)
 
-        inputs = _format_input(inputs)
+        inputs = _format_inputs(inputs)
 
         assert all(
             x.shape[1] == inputs[0].shape[1] for x in inputs

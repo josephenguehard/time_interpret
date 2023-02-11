@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from captum.attr._utils.attribution import Attribution, GradientAttribution
 from captum.log import log_usage
 from captum._utils.common import (
-    _format_input,
+    _format_inputs,
     _is_tuple,
     _format_tensor_into_tuples,
     _format_output,
@@ -139,7 +139,7 @@ class NonLinearitiesTunnel(Attribution):
         # converting it into a tuple.
         is_inputs_tuple = isinstance(inputs, tuple)
 
-        inputs = _format_input(inputs)
+        inputs = _format_inputs(inputs)
 
         # Check if needs to return convergence delta
         return_convergence_delta = (

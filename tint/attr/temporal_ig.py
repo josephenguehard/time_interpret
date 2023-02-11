@@ -6,7 +6,7 @@ from captum.log import log_usage
 from captum._utils.common import (
     _expand_additional_forward_args,
     _expand_target,
-    _format_input,
+    _format_inputs,
     _format_additional_forward_args,
     _format_baseline,
     _is_tuple,
@@ -295,7 +295,7 @@ class TemporalIntegratedGradients(IntegratedGradients):
         # converting it into a tuple.
         is_inputs_tuple = isinstance(inputs, tuple)
 
-        inputs = _format_input(inputs)
+        inputs = _format_inputs(inputs)
 
         # Get baselines
         baselines = _format_baseline(baselines, inputs)

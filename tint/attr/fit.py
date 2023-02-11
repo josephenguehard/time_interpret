@@ -5,7 +5,7 @@ import torch.nn.functional as F
 from captum.attr._utils.attribution import PerturbationAttribution
 from captum.log import log_usage
 from captum._utils.common import (
-    _format_input,
+    _format_inputs,
     _format_output,
     _is_tuple,
     _run_forward,
@@ -166,7 +166,7 @@ class Fit(PerturbationAttribution):
         # Keeps track whether original input is a tuple or not before
         # converting it into a tuple.
         is_inputs_tuple = _is_tuple(inputs)
-        inputs = _format_input(inputs)
+        inputs = _format_inputs(inputs)
 
         # Assert only one input, as the Retain only accepts one
         assert (

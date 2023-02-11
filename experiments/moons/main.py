@@ -13,7 +13,6 @@ from torch.utils.data import DataLoader, TensorDataset
 from typing import List
 
 from captum.attr import (
-    DeepLift,
     GradientShap,
     IntegratedGradients,
     NoiseTunnel,
@@ -51,7 +50,6 @@ def main(
 
     # Loop over noises
     for noise in noises:
-
         # Create dataset
         x, y = make_moons(n_samples=n_samples, noise=noise, random_state=seed)
         x_train, x_test, y_train, y_test = train_test_split(
@@ -161,7 +159,7 @@ def main(
         # Create dict of attr
         attr = dict()
 
-        # Set baseline as (0, 0.5)
+        # Set baseline as (-0.5, -0.5)
         baselines = th.zeros_like(x_test).to(device)
         baselines[:, 0] = -0.5
         baselines[:, 1] = -0.5
@@ -204,9 +202,7 @@ def main(
             attr["gradient_shap"] = explainer.attribute(
                 x_test,
                 target=y_test,
-                baselines=x_test[
-                    y_test == 1
-                ],  # We sample baselines only from one moon
+                baselines=baselines,
                 n_samples=50,
             )
 
@@ -223,14 +219,11 @@ def main(
             explainer = NoiseTunnel(IntegratedGradients(net))
             attr["smooth_grad"] = explainer.attribute(
                 x_test,
-                baselines=x_test[
-                    y_test == 1
-                ],  # We sample baselines only from one moon
+                baselines=baselines,
                 target=y_test,
                 internal_batch_size=200,
                 nt_samples=10,
                 stdevs=0.1,
-                draw_baseline_from_distrib=True,
             )
 
         # Eval

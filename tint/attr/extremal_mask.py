@@ -5,7 +5,7 @@ from captum.attr._utils.attribution import PerturbationAttribution
 from captum.log import log_usage
 from captum._utils.common import (
     _format_baseline,
-    _format_input,
+    _format_inputs,
     _format_output,
     _is_tuple,
     _validate_input,
@@ -181,7 +181,7 @@ class ExtremalMask(PerturbationAttribution):
         # Keeps track whether original input is a tuple or not before
         # converting it into a tuple.
         is_inputs_tuple = _is_tuple(inputs)
-        inputs = _format_input(inputs)
+        inputs = _format_inputs(inputs)
 
         # Format and validate baselines
         baselines = _format_baseline(baselines, inputs)

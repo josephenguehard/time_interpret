@@ -5,6 +5,7 @@ from captum._utils.common import (
     _expand_additional_forward_args,
     _expand_target,
     _format_additional_forward_args,
+    _format_inputs,
     _format_output,
     _is_tuple,
 )
@@ -13,7 +14,7 @@ from captum._utils.typing import (
     TensorOrTupleOfTensorsGeneric,
 )
 from captum.attr._utils.attribution import GradientAttribution
-from captum.attr._utils.common import _reshape_and_sum, _format_input
+from captum.attr._utils.common import _reshape_and_sum
 
 from torch import Tensor
 from typing import Any, Callable, Tuple, Union
@@ -170,7 +171,7 @@ class DiscretetizedIntegratedGradients(GradientAttribution):
         # Keeps track whether original input is a tuple or not before
         # converting it into a tuple.
         is_inputs_tuple = _is_tuple(scaled_features)
-        scaled_features_tpl = _format_input(scaled_features)
+        scaled_features_tpl = _format_inputs(scaled_features)
 
         # Set requires_grad = True to inputs
         scaled_features_tpl = tuple(
@@ -187,9 +188,9 @@ class DiscretetizedIntegratedGradients(GradientAttribution):
             assert (
                 len(scaled_features_tpl) == 1
             ), "More than one tuple not supported in this code!"
-            start_point, end_point = _format_input(
+            start_point, end_point = _format_inputs(
                 scaled_features_tpl[0][0].unsqueeze(0)
-            ), _format_input(
+            ), _format_inputs(
                 scaled_features_tpl[0][-1].unsqueeze(0)
             )  # baselines, inputs (only works for one input, len(tuple) == 1)
             # computes approximation error based on the completeness axiom

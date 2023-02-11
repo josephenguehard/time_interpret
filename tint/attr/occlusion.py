@@ -3,7 +3,7 @@ from typing import Any, Callable, Tuple, Union
 
 import numpy as np
 import torch
-from captum._utils.common import _format_input
+from captum._utils.common import _format_inputs
 from captum._utils.typing import (
     BaselineType,
     TargetType,
@@ -237,7 +237,7 @@ class Occlusion(FeatureAblation):
             >>> # shifting in each direction by the default of 1.
             >>> attr = ablator.attribute(input, target=1, sliding_window_shapes=(3,3))
         """
-        formatted_inputs = _format_input(inputs)
+        formatted_inputs = _format_inputs(inputs)
 
         # Formatting strides
         strides = _format_and_verify_strides(strides, formatted_inputs)
