@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>tint.attr.geodesic_ig &mdash; Time Interpret 0.2.0 documentation</title>
+  <title>tint.attr.geodesic_ig &mdash; Time Interpret 0.2.1 documentation</title>
   
 
   
@@ -254,6 +254,20 @@
 <span class="sd">            In case of integrated gradients, if `multiply_by_inputs`</span>
 <span class="sd">            is set to True, final sensitivity scores are being multiplied by</span>
 <span class="sd">            (inputs - baselines).</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import torch as th</span>
+<span class="sd">        &gt;&gt;&gt; from tint.attr import GeodesicIntegratedGradients</span>
+<span class="sd">        &gt;&gt;&gt; from tint.models import MLP</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+<span class="sd">        &gt;&gt;&gt; inputs = th.rand(50, 5)</span>
+<span class="sd">        &gt;&gt;&gt; data = th.rand(100, 5)</span>
+<span class="sd">        &gt;&gt;&gt; mlp = MLP([5, 3, 1])</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+<span class="sd">        &gt;&gt;&gt; explainer = GeodesicIntegratedGradients(</span>
+<span class="sd">        ...     mlp, data=data, n_neighbors=10,</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; attr = explainer.attribute(inputs)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
