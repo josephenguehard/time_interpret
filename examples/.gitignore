@@ -3,3 +3,4 @@ lightning_logs
 Test.ipynb
 Test2.ipynb
 MNIST
+*.pdf
