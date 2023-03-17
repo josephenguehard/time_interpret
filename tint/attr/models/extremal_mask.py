@@ -107,6 +107,8 @@ class ExtremalMaskNet(Net):
         model (nnn.Module): A model used to recreate the original
             predictions, in addition to the mask. Default to ``None``
         batch_size (int): Batch size of the model. Default to 32
+        lambda_1 (float): Weighting for the mask loss. Default to 1.
+        lambda_2 (float): Weighting for the model output loss. Default to 1.
         loss (str, callable): Which loss to use. Default to ``'mse'``
         optim (str): Which optimizer to use. Default to ``'adam'``
         lr (float): Learning rate. Default to 1e-3
@@ -138,6 +140,8 @@ class ExtremalMaskNet(Net):
         comp_loss: bool = False,
         model: nn.Module = None,
         batch_size: int = 32,
+        lambda_1: float = 1.0,
+        lambda_2: float = 1.0,
         loss: Union[str, Callable] = "mse",
         optim: str = "adam",
         lr: float = 0.001,
@@ -162,6 +166,8 @@ class ExtremalMaskNet(Net):
         )
 
         self.comp_loss = comp_loss
+        self.lambda_1 = lambda_1
+        self.lambda_2 = lambda_2
 
     def forward(self, *args, **kwargs) -> th.Tensor:
         return self.net(*args, **kwargs)
@@ -209,14 +215,14 @@ class ExtremalMaskNet(Net):
         )
 
         # Add L1 loss
-        mask_ = self.net.mask.abs()
+        mask_ = self.lambda_1 * self.net.mask.abs()
         if self.net.model is not None:
             mask_ = mask_[
                 self.net.batch_size
                 * batch_idx : self.net.batch_size
                 * (batch_idx + 1)
             ]
-            mask_ = mask_ + self.net.model(x - baselines).abs()
+            mask_ = mask_ + self.lambda_2 * self.net.model(x - baselines).abs()
         reg_loss = mask_.mean()
 
         # Compute and return loss
