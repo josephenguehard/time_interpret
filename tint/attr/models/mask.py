@@ -416,7 +416,7 @@ class MaskNet(Net):
 
         return step_output
 
-    def training_epoch_end(self, outputs) -> None:
+    def on_train_epoch_end(self) -> None:
         # Increase the regulator coefficient
         self.net.size_reg_factor *= self.net.reg_multiplier
 
