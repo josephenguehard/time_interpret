@@ -32,7 +32,6 @@ __all__ = [
     "Occlusion",
     "Retain",
     "SequentialIntegratedGradients",
-    "SmoothGrad",
     "TemporalAugmentedOcclusion",
     "TemporalIntegratedGradients",
     "TemporalOcclusion",
