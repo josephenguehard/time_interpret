@@ -126,7 +126,7 @@ class BayesianLinearRegression:
         T = np.mean(self.weights)
         return 4 * S / (self.coef_.shape[0] * T * cert)
 
-    def get_creds(self, percent=95, n_samples=10_000, get_intercept=True):
+    def get_creds(self, percent=95, n_samples=10_000, get_intercept=False):
         """
         Get the credible intervals.
         Arguments:
@@ -257,12 +257,7 @@ def train_bayes_model(
         model.norm = NormLayer(mean, std)
 
     # Save creds to model if provided
-    if blr.creds is not None:
-        model.creds = (
-            th.Tensor(blr.creds).unsqueeze(0)
-            if model.creds is None
-            else th.cat([model.creds, th.Tensor(blr.creds).unsqueeze(0)])
-        )
+    model.creds = blr.creds
 
     return {"train_time": t2 - t1}
 
@@ -280,6 +275,10 @@ class BLRLinearModel(LinearModel):
         """
         super().__init__(train_fn=train_bayes_model, l2=l2, **kwargs)
         self.creds = None
+
+    def representation(self) -> (th.Tensor, th.Tensor):
+        assert self.linear is not None
+        return self.linear.weight.detach(), self.creds
 
 
 class BLRRegression(BLRLinearModel):
