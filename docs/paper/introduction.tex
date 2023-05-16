@@ -1,4 +1,52 @@
 \section{Introduction}
 \label{sec:introduction}
 
-This is the introduction.
+As neural networks are becoming more relied on for many decision processes, there has been an increasing focus into
+understanding how these algorithms come to a specific prediction.
+Should such models be used to take high-stakes decisions, as it is often the case in finance or in medicine, there is an
+increasing pressure on these tools to provide a justification along with their results, which could be used to discuss
+or oppose a decision.
+The risk is that deep learning models, considered as $``$black boxes$"$, could produce biased and unfair toward certain
+categories of society.
+Such behaviour has already been noticed in opaque algorithms such as COMPAS, used to evaluate the risk of recidivism,
+which was accused of being biased toward people of color.
+
+As a result, many methods aiming to explain a deep learning prediction have been developed, which now constitutes a
+field called Explainable AI (XAI).
+Among these methods, some of the most common are LIME, SHAP, or Integrated Gradients.
+Alongside this research, there has also been a drive to create libraries unifying these different methods, enabling
+their use on popular deep learning libraries, and integrating evaluation tools to compare these XAI methods.
+To this end, several pieces of software have been proposed, including SHAP, InterpretML, OmniXAI or Captum, among many.
+
+However, several researchers have noticed a lack of attention toward a specific type of data: time series.
+Temporal data is nevertheless crucial in many applications: financial and medical data are commonly multivariate time
+series.
+Models which produce predictions based on this type of data need a careful consideration, as these applications often
+carry high-stakes decisions.
+Consequently, several feature attribution methods have been introduced to tackle this specific case.
+Yet, there seems to be a lack of a unified library to regroup and evaluate these specific methods.
+
+As a result, we created \texttt{\detokenize{time_interpret}} (short: \texttt{tint}), a Python library designed as an
+extension of Captum~\citep{kokhlikyan2020captum}.
+Although this library can be used with any PyTorch~\citep{NEURIPS2019_9015} model, it has a specific focus on time series,
+providing several feature attribution methods developed for this specific type of data.
+\texttt{\detokenize{time_interpret}} also provides evaluation tools, whether the true attributions are known or not, as
+well as several time series datasets.
+It also leverages PyTorch Lightning~\citep{Falcon_PyTorch_Lightning_2019} to simplify the use of the original PyTorch
+library.
+As such, it provides several common PyTorch models used to handle temporal data, as well as a specific PyTorch Lightning
+wrapper.
+
+Moreover, despite this focus on time series, several components of \texttt{\detokenize{time_interpret}} have a slightly
+different application.
+It provides for instance several methods aiming to explain language models such a BERT\@.
+Its evaluation tools can also be used with any feature attribution methods, and not just the ones implemented in
+this library.
+
+This paper aim to give a general introduction to \texttt{\detokenize{time_interpret}}.
+Furthermore, several previously unpublished methods have been developed along with this library, which we also present
+here.
+We hope this study will give more clarity to the corresponding codebase, and will prove useful for further research
+in this field.
+We encourage the reader to also refer to the library documentation for more information, especially in case of
+new significant releases.
