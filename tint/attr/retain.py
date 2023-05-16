@@ -122,14 +122,52 @@ class Retain(PerturbationAttribution):
         attribute method.
 
         Args:
-            inputs (tuple, th.Tensor): Input data.
-            target (int, tuple, tensor, list): Output indices. Default to
-                ``None``
+            inputs (tensor or tuple of tensors):  Input for which integrated
+                gradients are computed. If forward_func takes a single
+                tensor as input, a single input tensor should be provided.
+                If forward_func takes multiple tensors as input, a tuple
+                of the input tensors should be provided. It is assumed
+                that for all given input tensors, dimension 0 corresponds
+                to the number of examples, and if multiple input tensors
+                are provided, the examples must be aligned appropriately.
+            target (int, tuple, tensor or list, optional):  Output indices for
+                which gradients are computed (for classification cases,
+                this is usually the target class).
+                If the network returns a scalar value per example,
+                no target index is necessary.
+                For general 2D outputs, targets can be either:
+
+                - a single integer or a tensor containing a single
+                  integer, which is applied to all input examples
+
+                - a list of integers or a 1D tensor, with length matching
+                  the number of examples in inputs (dim 0). Each integer
+                  is applied as the target for the corresponding example.
+
+                For outputs with > 2 dimensions, targets can be either:
+
+                - A single tuple, which contains #output_dims - 1
+                  elements. This target index is applied to all examples.
+
+                - A list of tuples with length equal to the number of
+                  examples in inputs (dim 0), and each tuple containing
+                  #output_dims - 1 elements. Each tuple is applied as the
+                  target for the corresponding example.
+
+                Default: None
             return_temporal_attributions (bool): Whether to return
-                attributions for all times or not. Default to ``False``
+                attributions for all times or not.
+                Default: False
 
         Returns:
-            (th.Tensor, tuple): Attributions.
+            - **attributions** (*tensor* or tuple of *tensors*):
+                The attributions with respect to each input feature.
+                Attributions will always be
+                the same size as the provided inputs, with each value
+                providing the attribution of the corresponding input index.
+                If a single tensor is provided as inputs, a single tensor is
+                returned. If a tuple is provided for inputs, a tuple of
+                corresponding sized tensors is returned.
         """
         # Keeps track whether original input is a tuple or not before
         # converting it into a tuple.

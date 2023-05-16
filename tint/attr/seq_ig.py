@@ -285,10 +285,10 @@ class SequentialIntegratedGradients(GradientAttribution):
             >>> # ImageClassifier takes a single input tensor of images Nx3x32x32,
             >>> # and returns an Nx10 tensor of class probabilities.
             >>> net = ImageClassifier()
-            >>> ig = IntegratedGradients(net)
+            >>> sig = SequentialIntegratedGradients(net)
             >>> input = torch.randn(2, 3, 32, 32, requires_grad=True)
             >>> # Computes integrated gradients for class 3.
-            >>> attribution = ig.attribute(input, target=3)
+            >>> attribution = sig.attribute(input, target=3)
         """
         # Keeps track whether original input is a tuple or not before
         # converting it into a tuple.

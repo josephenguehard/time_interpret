@@ -105,9 +105,9 @@ class TimeForwardTunnel(Attribution):
                 be aligned appropriately.
             task (str): Type of task done by the model. Either ``'binary'``,
                 ``'multilabel'``, ``'multiclass'`` or ``'regression'``.
-                Default to ``'binary'``
+                Default: 'binary'
             threshold (float): Threshold for the multilabel task.
-                Default to 0.5
+                Default: 0.5
             temporal_target (bool, optional): Determine if the targe is
                 temporal and needs to be cut.
                 Default: False

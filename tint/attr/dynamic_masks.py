@@ -73,25 +73,59 @@ class DynaMask(PerturbationAttribution):
         Attribute method.
 
         Args:
-            inputs (tuple, th.Tensor): Input data.
-            additional_forward_args (Any): Any additional argument passed
-                to the model. Default to ``None``
+            inputs (tensor or tuple of tensors):  Input for which integrated
+                gradients are computed. If forward_func takes a single
+                tensor as input, a single input tensor should be provided.
+                If forward_func takes multiple tensors as input, a tuple
+                of the input tensors should be provided. It is assumed
+                that for all given input tensors, dimension 0 corresponds
+                to the number of examples, and if multiple input tensors
+                are provided, the examples must be aligned appropriately.
+            additional_forward_args (any, optional): If the forward function
+                requires additional arguments other than the inputs for
+                which attributions should not be computed, this argument
+                can be provided. It must be either a single additional
+                argument of a Tensor or arbitrary (non-tuple) type or a
+                tuple containing multiple additional arguments including
+                tensors or any arbitrary python types. These arguments
+                are provided to forward_func in order following the
+                arguments in inputs.
+                For a tensor, the first dimension of the tensor must
+                correspond to the number of examples. It will be
+                repeated for each of `n_steps` along the integrated
+                path. For all other types, the given argument is used
+                for all forward evaluations.
+                Note that attributions are not computed with respect
+                to these arguments.
+                Default: None
             trainer (Trainer): Pytorch Lightning trainer. If ``None``, a
-                default trainer will be provided. Default to ``None``
+                default trainer will be provided.
+                Default: None
             mask_net (MaskNet): A Mask model. If ``None``, a default model
-                will be provided. Default to ``None``
-            batch_size (int): Batch size for Mask training. Default to 32
+                will be provided.
+                Default: None
+            batch_size (int): Batch size for Mask training.
+                Default: 32
             temporal_additional_forward_args (tuple): Set each
                 additional forward arg which is temporal.
                 Only used with return_temporal_attributions.
-                Default to ``None``
+                Default: None
             return_temporal_attributions (bool): Whether to return
-                attributions for all times or not. Default to ``False``
+                attributions for all times or not.
+                Default: False
             return_best_ratio (bool): Whether to return the best keep_ratio
-                or not. Default to ``False``
+                or not.
+                Default: False
 
         Returns:
-            (th.Tensor, tuple): Attributions.
+            - **attributions** (*tensor* or tuple of *tensors*):
+                The attributions with respect to each input feature.
+                Attributions will always be
+                the same size as the provided inputs, with each value
+                providing the attribution of the corresponding input index.
+                If a single tensor is provided as inputs, a single tensor is
+                returned. If a tuple is provided for inputs, a tuple of
+                corresponding sized tensors is returned.
         """
         # Keeps track whether original input is a tuple or not before
         # converting it into a tuple.
