@@ -1,15 +1,58 @@
-%! Author = josephenguehard
-%! Date = 16/05/2023
+\section{Presentation of the library}
+\label{sec:presentation}
 
-% Preamble
-\documentclass[11pt]{article}
+We provide in this section an introduction to the \texttt{\detokenize{time_interpret}} library.
+Please also refer to the documentation.
 
-% Packages
-\usepackage{amsmath}
-
-% Document
-\begin{document}
+\texttt{\detokenize{time_interpret}} is primarily composed of 4 different parts: attribution methods, datasets,
+evaluation tools (metrics) and deep learning models.
+We present below an introduction as well as a short description of the components in each of these parts.
 
 
+\paragraph{Attribution methods.}
 
-\end{document}
+Attribution methods constitutes the core of \texttt{\detokenize{time_interpret}}.
+In this part of the library, we regrouped many methods which have been recently published.
+Similarly to Captum~\citep{kokhlikyan2020captum}, each method can be called like this:
+
+\begin{lstlisting}[language=Python, caption=Python example, label={lst:import}]
+from tint.attr import TemporalIntegratedGradients
+
+explainer = TemporalIntegratedGradients(
+    model
+)
+attr = explainer.attribute(inputs)
+\end{lstlisting}
+
+where $``$model$"$ is a PyTorch model, and $``$inputs$"$ is an inputs' tensor.
+
+We provide in this library several methods:
+
+\begin{itemize}
+    \item \textbf{AugmentedOcclusion}.
+        This method improves upon the original Occlusion method from captum~\url{https://captum.ai/api/occlusion.html}
+        by allowing to sample the baseline from a bootstrapped distribution.
+        By selecting a distribution close to the inputs, the resulted occulted data should be close to actual data as a
+        result, limiting the amount of out of distribution samples.
+        This method was originally proposed by~\citep{tonekaboni2020went}, Section 4.
+        Please refer to this paper for more details.
+    \item \textbf{BayesLime, BayesKernelShap}.
+        These two method, originally proposed by~\citep{slack2021reliable}, extend respectively
+        LIME~\citep{ribeiro2016should} and KernelSHAP~\citep{lundberg2017unified}, by replacing the underlying
+        linear regression model with a bayesian linear regression, allowing the method to model uncertainty in
+        explainability, by outputting credible intervals.
+    \item \textbf{DiscretetizedIntegratedGradients (DIG)}.
+        DIG~\citep{sanyal2021discretized} was designed to interpret predictions made by language models.
+        It builds upon the original Integrated Gradients method by generating discretized paths, hopping from one
+        word to another, instead of using straight lines.
+        This way, it aims to create a path which takes into account the discreteness of the embedding space.
+    \item \textbf{DynaMask}.
+
+\end{itemize}
+
+
+\paragraph{Datasets}
+
+\paragraph{Metrics}
+
+\paragraph{Models}
