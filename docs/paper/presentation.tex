@@ -47,6 +47,36 @@ We provide in this library several methods:
         word to another, instead of using straight lines.
         This way, it aims to create a path which takes into account the discreteness of the embedding space.
     \item \textbf{DynaMask}.
+        This method, introduced by~\citep{crabbe2021explaining}, is an adaptation of a perturbation-based method
+        developed in~\citep{fong2017interpretable, fong2019understanding}, to handle time-series data.
+        As such, it consists in perturbing a temporal data by replacing some of it with an average in time.
+        The mask used to choose which data should be preserved and which should be replaced is learnt in order to either
+        preserve the original prediction with a minimum amount of data, or change the original prediction with a small
+        amount of data.
+        Either way, the learnt mask can then be used to discriminate between important features and others.
+    \item \textbf{ExtremalMask}.
+        This method consists in a generalisation of DynaMask, which learns not only the mask, but also the associated
+        perturbation, instead of replacing perturbed data with a predetermined average.
+    \item \textbf{Fit}.
+        Originally proposed by~\citep{tonekaboni2020went}, this method aims to understand which feature is important by
+        quantifying the shift in the predictive distribution over time.
+        An important feature is then one which contributes significantly to the distributional shift.
+    \item \textbf{LofLime, LofKernelShap}.
+        Novel method.
+        Please see Section~\ref{sec:methods} for more details.
+    \item \textbf{NonLinearitiesTunnel}.
+        Novel method.
+        Please see Section~\ref{sec:methods} for more details.
+    \item \textbf{Retain}.
+    \item \textbf{SequentialIntegratedGradients (SIG)}.
+    \item \textbf{TemporalOcclusion}.
+    \item \textbf{TemporalAugmentedOcclusion}.
+    \item \textbf{TemporalIntegratedGradients}.
+        Novel method.
+        Please see Section~\ref{sec:methods} for more details.
+    \item \textbf{TimeForwardTunnel}.
+        Novel method.
+        Please see Section~\ref{sec:methods} for more details.
 
 \end{itemize}
 
