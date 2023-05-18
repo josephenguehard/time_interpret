@@ -617,7 +617,7 @@ class BayesKernelShap(KernelShap, _BayesLime):
 
                 >>> from tint.attr.models import BLRRegression
                 >>> model = BLRRegression(percent=90)
-                >>> explainer = BayesLime(mlp, interpretable_model=model)
+                >>> explainer = BayesKernelShap(mlp, interpretable_model=model)
 
                 Default: 95
 

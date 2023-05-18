@@ -80,7 +80,7 @@ class BayesianLinearRegression:
         self.weights = weights
 
         if compute_creds:
-            self.creds = self.get_creds(percent=self.percent, n_samples=len(X))
+            self.creds = self.get_creds(percent=self.percent, n_samples=N)
         else:
             self.creds = None
 

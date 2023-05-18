@@ -364,8 +364,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
                 Default: False
 
         Returns:
-            **attributions**, tuple with **attributions**,
-            **delta** (optional) or curvature (optional):
+            **attributions** or tuple with **attributions**, **delta** (optional) or /and curvature (optional):
             - **attributions** (*tensor* or tuple of *tensors*):
                 Integrated gradients with respect to each input feature.
                 attributions will always be the same size as the provided
