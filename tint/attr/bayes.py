@@ -34,7 +34,7 @@ class _BayesLime(Lime):
     ) -> None:
         super().__init__(
             forward_func=forward_func,
-            interpretable_model=interpretable_model or BLRRidge(),
+            interpretable_model=interpretable_model,
             similarity_func=similarity_func,
             perturb_func=perturb_func,
         )
@@ -275,6 +275,16 @@ class BayesLime(_BayesLime):
 
                 kwargs includes baselines, feature_mask, num_interp_features
                 (integer, determined from feature mask).
+        percent (int): Percentage for the credible intervals. Must be between
+                0 and 100. Only used when no custom interpretable model is
+                passed. Otherwise, you must specify the percentage for
+                credible interval in the model definition:
+
+                >>> from tint.attr.models import BLRRegression
+                >>> model = BLRRegression(percent=90)
+                >>> explainer = BayesLime(mlp, interpretable_model=model)
+
+                Default: 95
 
     References:
         https://arxiv.org/pdf/2008.05030
@@ -297,10 +307,12 @@ class BayesLime(_BayesLime):
         interpretable_model: Model = None,
         similarity_func: Callable = None,
         perturb_func: Callable = None,
+        percent: int = 95,
     ) -> None:
         super().__init__(
             forward_func=forward_func,
-            interpretable_model=interpretable_model or BLRRidge(),
+            interpretable_model=interpretable_model
+            or BLRRidge(percent=percent),
             similarity_func=similarity_func,
             perturb_func=perturb_func,
         )
@@ -598,6 +610,17 @@ class BayesKernelShap(KernelShap, _BayesLime):
 
                 Default: None
 
+        percent (int): Percentage for the credible intervals. Must be between
+                0 and 100. Only used when no custom interpretable model is
+                passed. Otherwise, you must specify the percentage for
+                credible interval in the model definition:
+
+                >>> from tint.attr.models import BLRRegression
+                >>> model = BLRRegression(percent=90)
+                >>> explainer = BayesLime(mlp, interpretable_model=model)
+
+                Default: 95
+
     References:
         https://arxiv.org/pdf/2008.05030
 
@@ -617,10 +640,13 @@ class BayesKernelShap(KernelShap, _BayesLime):
         self,
         forward_func: Callable,
         interpretable_model: Model = None,
+        percent: int = 95,
     ) -> None:
         super().__init__(forward_func=forward_func)
 
-        self.interpretable_model = interpretable_model or BLRRidge()
+        self.interpretable_model = interpretable_model or BLRRidge(
+            percent=percent
+        )
 
     @log_usage()
     def attribute(  # type: ignore
