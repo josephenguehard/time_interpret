@@ -361,19 +361,19 @@ def parse_args():
         "--lambda-1",
         type=float,
         default=1.0,
-        help="Lambda 1",
+        help="Lambda 1 hyperparameter.",
     )
     parser.add_argument(
         "--lambda-2",
         type=float,
         default=1.0,
-        help="Lambda 2",
+        help="Lambda 2 hyperparameter.",
     )
     parser.add_argument(
         "--output-file",
         type=str,
         default="results.csv",
-        help="Where to save the results",
+        help="Where to save the results.",
     )
     return parser.parse_args()
 
