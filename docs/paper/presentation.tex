@@ -15,7 +15,7 @@ Attribution methods constitute the core of \texttt{\detokenize{time_interpret}}.
 In this part of the library, we regrouped many methods which have been recently published.
 Similarly to Captum~\citep{kokhlikyan2020captum}, each method can be called like this:
 
-\begin{lstlisting}[language=Python, caption=Python example, label={lst:attr}]
+\begin{lstlisting}[language=Python, caption=Attribution loading example, label={lst:attr}]
 from tint.attr import TemporalIntegratedGradients
 
 explainer = TemporalIntegratedGradients(
@@ -98,24 +98,62 @@ We provide in this library several methods:
 
 As part of \texttt{\detokenize{time_interpret}}, we include a set of datasets which can be readily used:
 
-\begin{lstlisting}[language=Python, caption=Python example, label={lst:datasets}]
+\begin{lstlisting}[language=Python, caption=Dataset loading example, label={lst:datasets}]
 from tint.datasets import Arma
 
 arma = Arma()
 arma.download()  # This method generates the dataset
 
-inputs = arma.preprocess()["x"][0]
-true_saliency = arma.true_saliency(dim=1)[0]
+inputs = arma.preprocess()["x"]
+true_saliency = arma.true_saliency(dim=1)
 \end{lstlisting}
 
-All these datasets are implemented using the DataModule from PyTorch-lightning. We provide the following datasets:
+All these datasets are implemented using the DataModule from PyTorch-lightning.
+We provide the following datasets:
 
 \begin{itemize}
     \item \textbf{Arma}.
+        This dataset was introduced by~\citep{crabbe2021explaining}.
+        It relies on an ARMA process to generate time features $x_{ti}$, which are inputs combined by white-box
+        regressor f.
+        This regressor uses only part of the data, so we can know in advance which feature is salient, in order to
+        evaluate a features attributions method.
+        As a result, this dataset can be used to provide an initial comparison of various methods on time-series data.
     \item \textbf{BioBank}.
+        BioBank~\citep{sudlow2015uk} is a large dataset based on the UK population.
+        As such, it can be used to predict a specific condition based on a number of patients' data.
+        In the default setting, this dataset can be used to train a model to predict the risk of developing type-II
+        diabetes, but other conditions could be predicted.
+        We also provide a cutoff before the onset of the condition, only using feature before that time, as well as
+        a script to train FastText~\citep{bojanowski2017enriching} embeddings on the medical codes.
+        The dataset can also be discretized, grouping medical codes into time intervals such as years.
+        To access the data, a formal application must be made, please see
+        https://www.ukbiobank.ac.uk/enable-your-research.
     \item \textbf{Hawkes}.
-    \item \textbf{HMM}.
-    \item \textbf{Mimic3}.
+        Hawkes processes are a specific type of temporal point processes (TPP).
+        The probability of an event of type k happening at time t is conditioned by a specific intensity function:
+        \[ \lambda^*_k(t) = \mu_k + \sum_{n=1}^K \alpha_{kn} \sum_{t_i^n < t} \exp \left[ -\beta_{kn} (t - t_i^n) \right] \]
+        With $\bm{\alpha}$, $\bm{\beta}$ and $\bm{\mu}$ being parameters of the process.
+        As a result, an event has greater chance of happening if an event already happened previously, depending on the
+        values of $\bm{\alpha}$ and $\bm{\beta}$.
+        If no event previously happened, the base probability of an event happening is determined by $\bm{\mu}$.
+        In this case, this intensity can therefore be used as the true saliency of the features.
+        An important consequence for this dataset is that the true saliency is \textbf{dependent in time}.
+        Indeed, an event can be very important for another one close in time, but also irrelevant for other events.
+        As a result, the true saliency has two temporal dimensions: for each time, it gives the importance of each
+        temporal event.
+    \item \textbf{Hidden Markov model (HMM)}.
+        This dataset was introduced by~\citep{crabbe2021explaining}.
+        It consists in a 2-state hidden Markov model, with a features vector of size 3.
+        For each time, only one of the three features conditions the label: either the second or the third, depending
+        on the state.
+        The first feature is always not salient.
+        For this dataset, the true salient features are therefore also known.
+    \item \textbf{Mimic-III}.
+        Mimic-III~\citep{johnson2016mimic} consists of ICU data points.
+        This dataset provides two tasks: predicting in-hospital mortality (static label) and predicting the
+        average blood pressure (temporal label).
+        The processing of this dataset was done following~\citep{tonekaboni2020went, crabbe2021explaining}.
 \end{itemize}
 
 \paragraph{Metrics}
