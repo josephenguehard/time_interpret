@@ -156,6 +156,7 @@ We provide the following datasets:
         The processing of this dataset was done following~\citep{tonekaboni2020went, crabbe2021explaining}.
 \end{itemize}
 
+
 \paragraph{Metrics}
 
 Metrics are an important component of \texttt{\detokenize{time_interpret}}, as they provide elements of comparison
@@ -169,7 +170,7 @@ from tint.metrics import accuracy
 from tint.metrics.white_box import aup
 
 print(f"{aup(attr, true_saliency):.4}")
-print(f"{accuracy(model, inputs, attr):.4}")
+print(f"{accuracy(model, input, attr):.4}")
 \end{lstlisting}
 
 As we can see on~\ref{lst:metrics}, these metrics have a different behavior in each scenario.
@@ -203,20 +204,54 @@ We provide the following metrics:
 
 \begin{itemize}
     \item \textbf{accuracy}.
-
+        This metric measures by how much the accuracy of a model drops when
+        removing or only keeping the topk most important features.
+        Lower is better.
+        A custom threshold can also be passed to discriminate between positive and negative predictions.
     \item \textbf{comprehensiveness}.
+        This measures by how much the predicted class probability changes when removing the topk most important
+        features.
+        Higher is better.
     \item \textbf{cross-entropy}.
+        This metric measures the cross-entropy between the outputs of the model using the original inputs and perturbed
+        inputs by removing or only keeping the topk most important features.
+        Higher is better.
     \item \textbf{Log-odds}.
+        This log-odds measures the average difference of the negative logarithmic probabilities on the predicted class
+        when removing the topk most important features.
+        Lower is better.
     \item \textbf{mae}.
+        This metric measures the mean absolute error between the outputs of the model using the original inputs and
+        perturbed inputs by removing or only keeping the topk most important features.
+        Lower is better.
     \item \textbf{mse}.
+        This metric measures the mean square error between the outputs of the model using the original inputs and
+        perturbed inputs by removing or only keeping the topk most important features.
+        Lower is better.
     \item \textbf{sufficiency}.
+        This sufficiency measures by how much the predicted class probability changes when keeping only the topk most
+        important features.
+        Lower is better.
 \end{itemize}
 
 Finally, we provide an additional metric, lipschitz-max, measuring the stability of a feature attribution method
 on small variations of the input data.
 However, sensitivity-max should be preferred, as a more robust method.
-Please see https://captum.ai/api/metrics.html#sensitivity for more details.
+Please see \url{https://captum.ai/api/metrics.html#sensitivity} for more details.
 We still provide it as it has been used in some research, and could be useful to reproduce experiments.
 
 
 \paragraph{Models}
+
+We provide several PyTorch models for simplicity: MLP, CNN, RNN and TransformerEncoder, as well as some language models
+from HuggingFace: Bert, DistilBert and RoBerta.
+These models can be easily wrapped into a PyTorch-lightning model as such:
+
+\begin{lstlisting}[language=Python, caption=Attribution loading example, label={lst:model}]
+from tint.models import MLP, Net
+
+mlp = MLP(units=[5, 10, 1])
+net = Net(
+    mlp, loss="cross_entropy", optim="adam"
+)
+\end{lstlisting}
