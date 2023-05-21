@@ -158,4 +158,65 @@ We provide the following datasets:
 
 \paragraph{Metrics}
 
+Metrics are an important component of \texttt{\detokenize{time_interpret}}, as they provide elements of comparison
+between features attributions methods in two scenarios: when the true salient features are known, and when they are
+unknown.
+
+Both metrics can be imported this way:
+
+\begin{lstlisting}[language=Python, caption=Attribution loading example, label={lst:metrics}]
+from tint.metrics import accuracy
+from tint.metrics.white_box import aup
+
+print(f"{aup(attr, true_saliency):.4}")
+print(f"{accuracy(model, inputs, attr):.4}")
+\end{lstlisting}
+
+As we can see on~\ref{lst:metrics}, these metrics have a different behavior in each scenario.
+In the case where the true salient features are known, the metrics are straightforward: they directly compare some
+attributions with the truth.
+\texttt{\detokenize{time_interpret}} provides the following metrics: area under precision (AUP), area under recall (AUR),
+area under precision recall curve (AUPRC), Roc-Auc, mean average error (MAE), mean square error (MSE), root mean square
+error (RMSE).
+Following~\citep{crabbe2021explaining}, we also provide the Entropy and Information metrics.
+
+In the case where the true salient features are not known, we draw from the work
+of~\citep{shrikumar2017learning,deyoung2019eraser,crabbe2021explaining} and propose a list of metrics following a
+similar pattern.
+Each metric is computed by masking the top or bottom x\% most important features.
+We then compute predictions by the model to be explained on this masked data.
+The shift in the resulting predictions provides information on how important the masked data actually was.
+
+Moreover, in order to avoid creating out of distribution data by masking some of the features, we allow the user to
+pass a custom baseline to the metric.
+It is also possible to draw baselines from a distribution, to add gaussian noise to the masked inputs, and to compute
+predictions multiple times to produce consistent results.
+In the last case, a batch size can be passed to compute these predictions in parallel, and reduce time complexity.
+
+Furthermore, it is also possible to pass a weight function to the metric: the shift in prediction given some masked
+data influences the metric proportionally to some weight.
+We provide two weights functions: lime-weight weights the results according to a cosine or euclidean distance between
+the masked data and the original one.
+lof-weight weights the results according to a local outlier factor score, to reduce the influence of potential outliers.
+
+We provide the following metrics:
+
+\begin{itemize}
+    \item \textbf{accuracy}.
+
+    \item \textbf{comprehensiveness}.
+    \item \textbf{cross-entropy}.
+    \item \textbf{Log-odds}.
+    \item \textbf{mae}.
+    \item \textbf{mse}.
+    \item \textbf{sufficiency}.
+\end{itemize}
+
+Finally, we provide an additional metric, lipschitz-max, measuring the stability of a feature attribution method
+on small variations of the input data.
+However, sensitivity-max should be preferred, as a more robust method.
+Please see https://captum.ai/api/metrics.html#sensitivity for more details.
+We still provide it as it has been used in some research, and could be useful to reproduce experiments.
+
+
 \paragraph{Models}
