@@ -6,16 +6,16 @@ Please also refer to the documentation.
 
 \texttt{\detokenize{time_interpret}} is primarily composed of 4 different parts: attribution methods, datasets,
 evaluation tools (metrics) and deep learning models.
-We present below an introduction as well as a short description of the components in each of these parts.
+We present below a short description of the components in each of these parts.
 
 
 \paragraph{Attribution methods.}
 
-Attribution methods constitutes the core of \texttt{\detokenize{time_interpret}}.
+Attribution methods constitute the core of \texttt{\detokenize{time_interpret}}.
 In this part of the library, we regrouped many methods which have been recently published.
 Similarly to Captum~\citep{kokhlikyan2020captum}, each method can be called like this:
 
-\begin{lstlisting}[language=Python, caption=Python example, label={lst:import}]
+\begin{lstlisting}[language=Python, caption=Python example, label={lst:attr}]
 from tint.attr import TemporalIntegratedGradients
 
 explainer = TemporalIntegratedGradients(
@@ -35,12 +35,11 @@ We provide in this library several methods:
         By selecting a distribution close to the inputs, the resulted occulted data should be close to actual data as a
         result, limiting the amount of out of distribution samples.
         This method was originally proposed by~\citep{tonekaboni2020went}, Section 4.
-        Please refer to this paper for more details.
     \item \textbf{BayesLime, BayesKernelShap}.
-        These two method, originally proposed by~\citep{slack2021reliable}, extend respectively
+        These two methods, originally proposed by~\citep{slack2021reliable}, extend respectively
         LIME~\citep{ribeiro2016should} and KernelSHAP~\citep{lundberg2017unified}, by replacing the underlying
         linear regression model with a bayesian linear regression, allowing the method to model uncertainty in
-        explainability, by outputting credible intervals.
+        explainability, by outputting credible intervals in addition to the features attributions.
     \item \textbf{DiscretetizedIntegratedGradients (DIG)}.
         DIG~\citep{sanyal2021discretized} was designed to interpret predictions made by language models.
         It builds upon the original Integrated Gradients method by generating discretized paths, hopping from one
@@ -51,12 +50,14 @@ We provide in this library several methods:
         developed in~\citep{fong2017interpretable, fong2019understanding}, to handle time-series data.
         As such, it consists in perturbing a temporal data by replacing some of it with an average in time.
         The mask used to choose which data should be preserved and which should be replaced is learnt in order to either
-        preserve the original prediction with a minimum amount of data, or change the original prediction with a small
-        amount of data.
+        preserve the original prediction with a minimum amount of unmasked data, or change the original prediction with
+        a small amount of masked data.
         Either way, the learnt mask can then be used to discriminate between important features and others.
     \item \textbf{ExtremalMask}.
         This method consists in a generalisation of DynaMask, which learns not only the mask, but also the associated
-        perturbation, instead of replacing perturbed data with a predetermined average.
+        perturbation, instead of replacing perturbed data with a predetermined average in time.
+        Learning perturbations allows this method to take into account eventual long term dependencies, such as
+        temporal regularities.
     \item \textbf{Fit}.
         Originally proposed by~\citep{tonekaboni2020went}, this method aims to understand which feature is important by
         quantifying the shift in the predictive distribution over time.
@@ -68,9 +69,21 @@ We provide in this library several methods:
         Novel method.
         Please see Section~\ref{sec:methods} for more details.
     \item \textbf{Retain}.
+        This method~\citep{choi2016retain} uses two RNNs whose output are then used as keys and queries in a attention
+        mechanism, also using the original embeddings of the input as values.
+        This attention mechanism can then be used to explain which feature was important to make a specific prediction.
     \item \textbf{SequentialIntegratedGradients (SIG)}.
+        SIG is an adaptation of the Integrated Gradients method to sequential data.
+        It modifies the baseline by only masking one element of a sequence at a time, and computing the corresponding
+        feature attribution.
+        By doing so, it allows the baseline to be closer to the original sequence.
     \item \textbf{TemporalOcclusion}.
+        Originally proposed by~\citep{tonekaboni2020went}, this method modifies the Occlusion method from
+        captum~\url{https://captum.ai/api/occlusion.html} by only masking the last input data in time, preserving the
+        previous inputs.
     \item \textbf{TemporalAugmentedOcclusion}.
+        This method combines TemporalOcclusion and AugmentedOcclusion.
+        As such, it only masks the last input in time, replacing it with samples from a bootstrapped distribution.
     \item \textbf{TemporalIntegratedGradients}.
         Novel method.
         Please see Section~\ref{sec:methods} for more details.
@@ -82,6 +95,28 @@ We provide in this library several methods:
 
 
 \paragraph{Datasets}
+
+As part of \texttt{\detokenize{time_interpret}}, we include a set of datasets which can be readily used:
+
+\begin{lstlisting}[language=Python, caption=Python example, label={lst:datasets}]
+from tint.datasets import Arma
+
+arma = Arma()
+arma.download()  # This method generates the dataset
+
+inputs = arma.preprocess()["x"][0]
+true_saliency = arma.true_saliency(dim=1)[0]
+\end{lstlisting}
+
+All these datasets are implemented using the DataModule from PyTorch-lightning. We provide the following datasets:
+
+\begin{itemize}
+    \item \textbf{Arma}.
+    \item \textbf{BioBank}.
+    \item \textbf{Hawkes}.
+    \item \textbf{HMM}.
+    \item \textbf{Mimic3}.
+\end{itemize}
 
 \paragraph{Metrics}
 
