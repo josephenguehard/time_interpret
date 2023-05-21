@@ -33,12 +33,13 @@ class BioBank(DataModule):
     BioBank dataset.
 
     Args:
+        label (str): Condition to be used as label. If ``None``, it is set to
+            type 2 diabetes.
+            Default to ``None``
         discretised (bool): Whether to return a discretised dataset or not.
-            Default to ``True``
-        granularity (str, int): The time granularity.
-            Default to a year: 24*365.25 hours
-        maximum_time (int): Maximum time to record. Default to 1,000,000 hours
-            which is around 114 years
+            Default to ``False``
+        granularity (str, int): The time granularity. Default to a year.
+        maximum_time (int): Maximum time to record. Default to 115 years
         fasttext (Fasttext): A Fasttext model to encode categorical features.
             Default to ``None``
         time_to_task (float): Special arg for diabetes task. Stops the
