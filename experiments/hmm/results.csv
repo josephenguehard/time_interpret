@@ -1,4 +1,4 @@
-Seed,Fold,Explainer,AUP,AUR,Information,Entropy,AUROC,AUPRC
+Seed,Fold,Explainer,Lambda_1,Lambda_2,AUP,AUR,Information,Entropy,AUROC,AUPRC
 42,0,deep_lift,1.0,1.0,0.939,0.473,374.5,146.3,0.9591,0.9408
 42,0,dyna_mask,1.0,1.0,0.7028,0.7293,940.7,46.56,0.8639,0.6881
 42,0,extremal_mask,1.0,1.0,0.8579,0.7795,1.534e+03,37.17,0.907,0.8649
