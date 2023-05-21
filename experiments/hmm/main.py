@@ -179,7 +179,6 @@ def main(
             ),
             lambda_1=lambda_1,
             lambda_2=lambda_2,
-            comp_loss=True,
             optim="adam",
             lr=0.01,
         )

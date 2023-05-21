@@ -102,7 +102,9 @@ class ExtremalMaskNet(Net):
     Args:
         forward_func (callable): The forward function of the model or any
             modification of it.
-        comp_loss (bool): Whether to include comprehensiveness loss.
+        preservation_loss (bool): Whether to include preservation loss.
+            Default to ``True``
+        deletion_loss (bool): Whether to include deletion loss.
             Default to ``False``
         model (nnn.Module): A model used to recreate the original
             predictions, in addition to the mask. Default to ``None``
@@ -137,7 +139,8 @@ class ExtremalMaskNet(Net):
     def __init__(
         self,
         forward_func: Callable,
-        comp_loss: bool = False,
+        preservation_loss: bool = True,
+        deletion_loss: bool = False,
         model: nn.Module = None,
         batch_size: int = 32,
         lambda_1: float = 1.0,
@@ -165,7 +168,8 @@ class ExtremalMaskNet(Net):
             l2=l2,
         )
 
-        self.comp_loss = comp_loss
+        self.preservation_loss = preservation_loss
+        self.deletion_loss = deletion_loss
         self.lambda_1 = lambda_1
         self.lambda_2 = lambda_2
 
@@ -223,16 +227,15 @@ class ExtremalMaskNet(Net):
                 * (batch_idx + 1)
             ]
             mask_ = mask_ + self.lambda_2 * self.net.model(x - baselines).abs()
-        reg_loss = mask_.mean()
+        loss = mask_.mean()
 
-        # Compute and return loss
-        if self.comp_loss:
-            return (
-                self.loss(y_hat1, y_target1)
-                + self.loss(y_hat2, y_target2)
-                + reg_loss
-            )
-        return self.loss(y_hat1, y_target1) + reg_loss
+        # Add preservation and deletion losses if required
+        if self.preservation_loss:
+            loss += self.loss(y_hat1, y_target1)
+        if self.deletion_loss:
+            loss += self.loss(y_hat2, y_target2)
+
+        return loss
 
     def configure_optimizers(self):
         params = [{"params": self.net.mask}]
