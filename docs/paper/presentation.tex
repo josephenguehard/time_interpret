@@ -73,7 +73,7 @@ We provide in this library several methods:
         mechanism, also using the original embeddings of the input as values.
         This attention mechanism can then be used to explain which feature was important to make a specific prediction.
     \item \textbf{SequentialIntegratedGradients (SIG)}.
-        SIG is an adaptation of the Integrated Gradients method to sequential data.
+        SIG~\citep{enguehard2023sequential} is an adaptation of the Integrated Gradients method to sequential data.
         It modifies the baseline by only masking one element of a sequence at a time, and computing the corresponding
         feature attribution.
         By doing so, it allows the baseline to be closer to the original sequence.
