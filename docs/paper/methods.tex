@@ -18,7 +18,7 @@ There are two types of such methods: ones which are specific to temporal data, a
     \textbf{Illustration of the TIG method}.
     Given an input $\textbf{x}$ and a corresponding baseline $\overline{\textbf{x}}$, we compute the attribution as such.
     For each time t, we crop future times: $\textbf{x}[:t]$, and we only compute interpolations on the last data point in
-    time: $\textbf{x}_{\alpha} = (x_{t_1}, x_{t_2}, \dots, \alpha \times \overline{\textbf{x}}[t] + (1 - \alpha) \time \textbf{x}[t])$.
+    time: $\textbf{x}_{\alpha} = (x_1, x_2, \dots, \alpha \times \overline{\textbf{x}}[t] + (1 - \alpha) \times \textbf{x}[t])$.
     Using these interpolated points, we can then compute the integrated gradients.
 }
 \label{fig:tig}
