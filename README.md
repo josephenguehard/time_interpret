@@ -75,7 +75,7 @@ print(f"{aup(attr, true_saliency):.4}")
 - [Non-linearities Tunnel](https://arxiv.org/abs/1906.07983)
 - [Occlusion](https://arxiv.org/abs/1311.2901)
 - [Retain](https://arxiv.org/pdf/1608.05745)
-- [SequentialIntegratedGradients]()
+- [SequentialIntegratedGradients](https://arxiv.org/abs/2305.15853)
 - [TemporalAugmentedOcclusion](https://arxiv.org/abs/2003.02821)
 - [TemporalOcclusion](https://arxiv.org/abs/2003.02821)
 - [TemporalIntegratedGradients]()
@@ -96,8 +96,8 @@ Citation:
 ## Paper: Sequential Integrated Gradients: a simple but effective method for explaining language models
 
 The experiments for the paper: 
-[Sequential Integrated Gradients: a simple but effective method for explaining language models]() can be found on the 
-[NLP](experiments/nlp) section of the experiments.
+[Sequential Integrated Gradients: a simple but effective method for explaining language models](https://arxiv.org/abs/2305.15853) 
+can be found on the [NLP](experiments/nlp) section of the experiments.
 
 Citation:
 
