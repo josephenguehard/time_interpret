@@ -32,14 +32,14 @@ We provide in this library several methods:
     \item \textbf{AugmentedOcclusion}.
         This method improves upon the original Occlusion method from captum~\url{https://captum.ai/api/occlusion.html}
         by allowing to sample the baseline from a bootstrapped distribution.
-        By selecting a distribution close to the inputs, the resulted occulted data should be close to actual data as a
-        result, limiting the amount of out of distribution samples.
+        By selecting a distribution close to the inputs, the resulting occulted data should be close to actual data,
+        limiting the amount of out of distribution samples.
         This method was originally proposed by~\citep{tonekaboni2020went}, Section 4.
     \item \textbf{BayesLime, BayesKernelShap}.
         These two methods, originally proposed by~\citep{slack2021reliable}, extend respectively
         LIME~\citep{ribeiro2016should} and KernelSHAP~\citep{lundberg2017unified}, by replacing the underlying
         linear regression model with a bayesian linear regression, allowing the method to model uncertainty in
-        explainability, by outputting credible intervals in addition to the features attributions.
+        explainability by outputting credible intervals in addition to the feature attributions.
     \item \textbf{DiscretetizedIntegratedGradients (DIG)}.
         DIG~\citep{sanyal2021discretized} was designed to interpret predictions made by language models.
         It builds upon the original Integrated Gradients method by generating discretized paths, hopping from one
@@ -69,7 +69,7 @@ We provide in this library several methods:
         Novel method.
         Please see Section~\ref{sec:methods} for more details.
     \item \textbf{Retain}.
-        This method~\citep{choi2016retain} uses two RNNs whose output are then used as keys and queries in a attention
+        This method~\citep{choi2016retain} uses two RNNs whose output are then used as keys and queries in an attention
         mechanism, also using the original embeddings of the input as values.
         This attention mechanism can then be used to explain which feature was important to make a specific prediction.
     \item \textbf{SequentialIntegratedGradients (SIG)}.
@@ -79,7 +79,7 @@ We provide in this library several methods:
         By doing so, it allows the baseline to be closer to the original sequence.
     \item \textbf{TemporalOcclusion}.
         Originally proposed by~\citep{tonekaboni2020went}, this method modifies the Occlusion method from
-        captum~\url{https://captum.ai/api/occlusion.html} by only masking the last input data in time, preserving the
+        Captum~\url{https://captum.ai/api/occlusion.html} by only masking the last input data in time, preserving the
         previous inputs.
     \item \textbf{TemporalAugmentedOcclusion}.
         This method combines TemporalOcclusion and AugmentedOcclusion.
@@ -128,12 +128,12 @@ We provide the following datasets:
         a script to train FastText~\citep{bojanowski2017enriching} embeddings on the medical codes.
         The dataset can also be discretized, grouping medical codes into time intervals such as years.
         To access the data, a formal application must be made, please see
-        https://www.ukbiobank.ac.uk/enable-your-research.
+        \url{https://www.ukbiobank.ac.uk/enable-your-research}.
     \item \textbf{Hawkes}.
         Hawkes processes are a specific type of temporal point processes (TPP).
         The probability of an event of type k happening at time t is conditioned by a specific intensity function:
         \[ \lambda^*_k(t) = \mu_k + \sum_{n=1}^K \alpha_{kn} \sum_{t_i^n < t} \exp \left[ -\beta_{kn} (t - t_i^n) \right] \]
-        With $\bm{\alpha}$, $\bm{\beta}$ and $\bm{\mu}$ being parameters of the process.
+        with $\bm{\alpha}$, $\bm{\beta}$ and $\bm{\mu}$ being parameters of the process.
         As a result, an event has greater chance of happening if an event already happened previously, depending on the
         values of $\bm{\alpha}$ and $\bm{\beta}$.
         If no event previously happened, the base probability of an event happening is determined by $\bm{\mu}$.
@@ -160,12 +160,12 @@ We provide the following datasets:
 \paragraph{Metrics}
 
 Metrics are an important component of \texttt{\detokenize{time_interpret}}, as they provide elements of comparison
-between features attributions methods in two scenarios: when the true salient features are known, and when they are
+between feature attribution methods in two scenarios: when the true salient features are known, and when they are
 unknown.
 
 Both metrics can be imported this way:
 
-\begin{lstlisting}[language=Python, caption=Attribution loading example, label={lst:metrics}]
+\begin{lstlisting}[language=Python, caption=Attribution evaluation example, label={lst:metrics}]
 from tint.metrics import accuracy
 from tint.metrics.white_box import aup
 
@@ -173,7 +173,7 @@ print(f"{aup(attr, true_saliency):.4}")
 print(f"{accuracy(model, input, attr):.4}")
 \end{lstlisting}
 
-As we can see on~\ref{lst:metrics}, these metrics have a different behavior in each scenario.
+As we can see on Snippet~\ref{lst:metrics}, these metrics have a different behavior in each scenario.
 In the case where the true salient features are known, the metrics are straightforward: they directly compare some
 attributions with the truth.
 \texttt{\detokenize{time_interpret}} provides the following metrics: area under precision (AUP), area under recall (AUR),
@@ -192,13 +192,14 @@ Moreover, in order to avoid creating out of distribution data by masking some of
 pass a custom baseline to the metric.
 It is also possible to draw baselines from a distribution, to add gaussian noise to the masked inputs, and to compute
 predictions multiple times to produce consistent results.
-In the last case, a batch size can be passed to compute these predictions in parallel, and reduce time complexity.
+In the last case, a batch size can be passed to compute these predictions in parallel and reduce time complexity.
 
 Furthermore, it is also possible to pass a weight function to the metric: the shift in prediction given some masked
 data influences the metric proportionally to some weight.
-We provide two weights functions: lime-weight weights the results according to a cosine or euclidean distance between
-the masked data and the original one.
-lof-weight weights the results according to a local outlier factor score, to reduce the influence of potential outliers.
+We provide two weights functions: $``$lime-weight$"$ weights the results according to a cosine or euclidean distance
+between the masked data and the original one.
+$``$lof-weight$"$ weights the results according to a Local Outlier Factor score, to reduce the influence of potential
+outliers.
 
 We provide the following metrics:
 
@@ -234,11 +235,11 @@ We provide the following metrics:
         Lower is better.
 \end{itemize}
 
-Finally, we provide an additional metric, lipschitz-max, measuring the stability of a feature attribution method
+Finally, we provide an additional metric, $``$lipschitz-max$"$, measuring the stability of a feature attribution method
 on small variations of the input data.
 However, sensitivity-max should be preferred, as a more robust method.
 Please see \url{https://captum.ai/api/metrics.html#sensitivity} for more details.
-We still provide it as it has been used in some research, and could be useful to reproduce experiments.
+We still provide it as it has been used in some research and could be useful to reproduce experiments.
 
 
 \paragraph{Models}
@@ -247,7 +248,7 @@ We provide several PyTorch models for simplicity: MLP, CNN, RNN and TransformerE
 from HuggingFace: Bert, DistilBert and RoBerta.
 These models can be easily wrapped into a PyTorch-lightning model as such:
 
-\begin{lstlisting}[language=Python, caption=Attribution loading example, label={lst:model}]
+\begin{lstlisting}[language=Python, caption=Model definition example, label={lst:model}]
 from tint.models import MLP, Net
 
 mlp = MLP(units=[5, 10, 1])

@@ -31,7 +31,7 @@ In this method, instead of directly computing attribution by summing gradients o
 original data $\textbf{x}$ and an uninformative baseline $\overline{\textbf{x}}$, we first crop the temporal sequence up
 to a specific time t.
 Then, we keep all the data points in time fixed, only computing interpolations on the last data point at time t.
-The baseline of the sequence $\textbf{x} \in \mathbb{R}^{Tn}$, where T is the temporal dimension and n the
+The baseline of the sequence $\textbf{x} \in \mathbb{R}^{TN}$, where $T$ is the temporal dimension and $N$ the
 feature dimension, can therefore be defined as:
 
 \[ \overline{\textbf{x}}[:t] = (\textbf{x}_1, \dots, \textbf{x}_{t-1}, \overline{\textbf{x}}_t) \]
@@ -61,7 +61,7 @@ temporal data.
 
 This method extends the one presented in~\citep{tonekaboni2020went}, allowing any Captum method to be used on temporal
 data.
-As such, this tool computes attribution iteratively by cropping the input data $\textbf{x} \in \mathbb{R}^{Tn}$ up to
+As such, this tool computes attribution iteratively by cropping the input data $\textbf{x} \in \mathbb{R}^{TN}$ up to
 a time t, and performing the passed feature attribution method:
 
 \[ \textrm{TimeForwardTunnel(AttrMethod)}(\textbf{x}_t) = \textrm{AttrMethod}(\textbf{x}[:t])_t \]
@@ -71,7 +71,7 @@ As a result, future data is not used when computing the attribution of a tempora
 Moreover, instead of passing a target, Time Forward Tunnel allows to use a model's predictions at time t as the target,
 supporting a range of tasks: binary, multilabel, multiclass and regression ones.
 
-Furthermore, note that TimeForwardTunnel(IntegratedGradients) is different from TIG, as the former method uses
+Furthermore, note that TimeForwardTunnel used with IntegratedGradients is different from TIG, as the former method uses
 $(\overline{\textbf{x}}_1, \dots, \overline{\textbf{x}}_t)$ as a baseline, while TIG uses
 $(\textbf{x}_1, \dots, \textbf{x}_{t-1}, \overline{\textbf{x}}_t)$,
 only computing interpolations on the last temporal data point.
@@ -81,8 +81,8 @@ only computing interpolations on the last temporal data point.
 
 A number of implemented method support $``$temporal attribution$"$, meaning that, in this setting, they will return
 feature attributions at each temporal point.
-Therefore, if the input data is of shape $\textbf{x} \in \mathbb{R}^{Tn}$, the corresponding attribution will be of
-shape $\textrm{Attr} \in \mathbb{R}^{TTn}$, with an extra dimension T representing the temporality of the attributions.
+Therefore, if the input data is of shape $\textbf{x} \in \mathbb{R}^{TN}$, the corresponding attribution will be of
+shape $\textrm{Attr} \in \mathbb{R}^{TTN}$, with an extra dimension $T$ representing the temporality of the attributions.
 For instance, $\textbf{x}_t$ could be important at time $t_1$, $\textrm{Attr}_{t_1}$ having high values, but could also
 be less important at a later time $t_2$, $\textrm{Attr}_{t_2}$ having lower values.
 
@@ -103,12 +103,12 @@ The supported methods currently are:
 
 \paragraph{Local Outlier Factor (LOF) LIME and Kernel SHAP\@.}
 
-LOF LIME and LOF Kernel SHAP are variations of the vanilla methods by using the Local Outlier Factor
+LOF LIME and LOF Kernel SHAP are variations of the vanilla methods LIME and SHAP, using the Local Outlier Factor
 score~\citep{breunig2000lof} as an indication of similarity between the masked data and the original one:
 
 \[ \textrm{SimilarityScore}(\textbf{x}; X) = \frac{1}{\textrm{LOF}(\textbf{x}, X)} \]
 
-where \textbf{x} is a data point to be explained, and X is a set of data points.
+where \textbf{x} is a data point to be explained, and $X$ is a set of data points.
 A low value of LOF indicates an inlier, while a large value an outlier.
 As a result, SimilarityScore is lower when \textbf{x} is an outlier.
 
