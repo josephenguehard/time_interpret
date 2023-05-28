@@ -61,7 +61,7 @@ from tint.metrics.white_box import aup
 print(f"{aup(attr, true_saliency):.4}")
 ```
 
-## Methods (under development)
+## Methods
 
 - [AugmentedOcclusion](https://arxiv.org/abs/2003.02821)
 - [BayesKernelShap](https://arxiv.org/pdf/2008.05030)
