@@ -102,10 +102,9 @@ class ExtremalMaskNet(Net):
     Args:
         forward_func (callable): The forward function of the model or any
             modification of it.
-        preservation_loss (bool): Whether to include preservation loss.
+        preservation_mode (bool): If ``True``, uses the method in
+            preservation mode. Otherwise, uses the deletion mode.
             Default to ``True``
-        deletion_loss (bool): Whether to include deletion loss.
-            Default to ``False``
         model (nnn.Module): A model used to recreate the original
             predictions, in addition to the mask. Default to ``None``
         batch_size (int): Batch size of the model. Default to 32
@@ -139,8 +138,7 @@ class ExtremalMaskNet(Net):
     def __init__(
         self,
         forward_func: Callable,
-        preservation_loss: bool = True,
-        deletion_loss: bool = False,
+        preservation_mode: bool = True,
         model: nn.Module = None,
         batch_size: int = 32,
         lambda_1: float = 1.0,
@@ -168,8 +166,7 @@ class ExtremalMaskNet(Net):
             l2=l2,
         )
 
-        self.preservation_loss = preservation_loss
-        self.deletion_loss = deletion_loss
+        self.preservation_mode = preservation_mode
         self.lambda_1 = lambda_1
         self.lambda_2 = lambda_2
 
@@ -219,20 +216,24 @@ class ExtremalMaskNet(Net):
         )
 
         # Add L1 loss
-        mask_ = self.lambda_1 * self.net.mask.abs()
+        if self.preservation_mode:
+            mask_ = self.lambda_1 * self.net.mask.abs()
+        else:
+            mask_ = self.lambda_1 * (1.0 - self.net.mask).abs()
+
         if self.net.model is not None:
             mask_ = mask_[
                 self.net.batch_size
                 * batch_idx : self.net.batch_size
                 * (batch_idx + 1)
             ]
-            mask_ = mask_ + self.lambda_2 * self.net.model(x - baselines).abs()
+            mask_ += self.lambda_2 * self.net.model(x - baselines).abs()
         loss = mask_.mean()
 
         # Add preservation and deletion losses if required
-        if self.preservation_loss:
+        if self.preservation_mode:
             loss += self.loss(y_hat1, y_target1)
-        if self.deletion_loss:
+        else:
             loss += self.loss(y_hat2, y_target2)
 
         return loss
