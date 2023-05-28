@@ -15,7 +15,7 @@ def Roberta(
     config=None,
     vocab_file=None,
     cache_dir=None,
-    **kwargs
+    **kwargs,
 ):
     r"""
     Get Roberta model for sentence classification, either as a pre-trained
