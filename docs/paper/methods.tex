@@ -1,17 +1,7 @@
 \section{Novel methods}
 \label{sec:methods}
 
-We present in this section several previously unpublished methods, which have been developed
-with \texttt{\detokenize{time_interpret}}.
-There are two types of such methods: ones which are specific to temporal data, and others which are more general.
-
-
-\subsection{Temporal attribution methods}
-\label{subsec:temporal-attribution-methods}
-
-\paragraph{Temporal Integrated Gradients.}
-
-\begin{figure*}[h]
+\begin{figure*}[t]
 \begin{center}
 \centerline{\includegraphics[width=0.6\textwidth]{figures/tig}}
 \caption{
@@ -24,6 +14,16 @@ There are two types of such methods: ones which are specific to temporal data, a
 \label{fig:tig}
 \end{center}
 \end{figure*}
+
+We present in this section several previously unpublished methods, which have been developed
+with \texttt{\detokenize{time_interpret}}.
+There are two types of such methods: ones which are specific to temporal data, and others which are more general.
+
+
+\subsection{Temporal attribution methods}
+\label{subsec:temporal-attribution-methods}
+
+\paragraph{Temporal Integrated Gradients.}
 
 Temporal Integrated Gradients (TIG), illustrated on Figure~\ref{fig:tig}, adapts the original Integrated Gradients
 method~\citep{sundararajan2017axiomatic} to specifically handle time-series data.
@@ -52,12 +52,12 @@ normalising the result:
 
 As a result, in this setting, we keep the baseline as close as possible to the original input data, only modifying the
 last input in time.
-Moreover, we remove future data points, so that they do not influence the attribution of the data point $\textbf{x}_t$.
+Moreover, we remove any future data points, so that they do not influence the attribution of the data point $\textbf{x}_t$.
 This method can also be seen as an adaptation of SIG~\citep{enguehard2023sequential}, applied not on sequences, but on
 temporal data.
 
 
-\paragraph{Time forward tunnel.}
+\paragraph{Time Forward Tunnel.}
 
 This method extends the one presented in~\citep{tonekaboni2020went}, allowing any Captum method to be used on temporal
 data.
@@ -86,6 +86,8 @@ shape $\textrm{Attr} \in \mathbb{R}^{TTN}$, with an extra dimension $T$ represen
 For instance, $\textbf{x}_t$ could be important at time $t_1$, $\textrm{Attr}_{t_1}$ having high values, but could also
 be less important at a later time $t_2$, $\textrm{Attr}_{t_2}$ having lower values.
 
+\newpage
+
 The supported methods currently are:
 
 \begin{itemize}
@@ -106,7 +108,7 @@ The supported methods currently are:
 LOF LIME and LOF Kernel SHAP are variations of the vanilla methods LIME and SHAP, using the Local Outlier Factor
 score~\citep{breunig2000lof} as an indication of similarity between the masked data and the original one:
 
-\[ \textrm{SimilarityScore}(\textbf{x}; X) = \frac{1}{\textrm{LOF}(\textbf{x}, X)} \]
+\[ \textrm{SimilarityScore}(\textbf{x}; X) = \frac{1}{\max(\textbf{1}, \textrm{LOF}(\textbf{x}, X))} \]
 
 where \textbf{x} is a data point to be explained, and $X$ is a set of data points.
 A low value of LOF indicates an inlier, while a large value an outlier.
@@ -116,7 +118,7 @@ This similarity measure is then used as a weight of the interpretable sample for
 Therefore, with these methods, it matters less how different a masked data point is, compared with the original one.
 What matters here is how far the masked data point is from a data distribution.
 These methods should therefore be less sensitive to outliers.
-However, to properly work, they require a number of data points to compute the original data distribution.
+However, to properly work, they require a number of data points to be used as the original data distribution.
 
 
 \paragraph{Non-linearities tunnel.}

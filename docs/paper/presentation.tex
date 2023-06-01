@@ -54,8 +54,9 @@ We provide in this library several methods:
         a small amount of masked data.
         Either way, the learnt mask can then be used to discriminate between important features and others.
     \item \textbf{ExtremalMask}.
-        This method consists in a generalisation of DynaMask, which learns not only the mask, but also the associated
-        perturbation, instead of replacing perturbed data with a predetermined average in time.
+        This method~\citep{enguehard2023learning} consists in a generalisation of DynaMask, which learns not only the
+        mask, but also the associated perturbation, instead of replacing perturbed data with a predetermined average in
+        time.
         Learning perturbations allows this method to take into account eventual long term dependencies, such as
         temporal regularities.
     \item \textbf{Fit}.
@@ -69,7 +70,7 @@ We provide in this library several methods:
         Novel method.
         Please see Section~\ref{sec:methods} for more details.
     \item \textbf{Retain}.
-        This method~\citep{choi2016retain} uses two RNNs whose output are then used as keys and queries in an attention
+        This method~\citep{choi2016retain} uses two RNNs whose outputs are then used as keys and queries in an attention
         mechanism, also using the original embeddings of the input as values.
         This attention mechanism can then be used to explain which feature was important to make a specific prediction.
     \item \textbf{SequentialIntegratedGradients (SIG)}.
@@ -96,7 +97,7 @@ We provide in this library several methods:
 
 \paragraph{Datasets}
 
-As part of \texttt{\detokenize{time_interpret}}, we include a set of datasets which can be readily used:
+As part of \texttt{\detokenize{time_interpret}}, we include a collection of datasets which can be readily used:
 
 \begin{lstlisting}[language=Python, caption=Dataset loading example, label={lst:datasets}]
 from tint.datasets import Arma
@@ -108,7 +109,7 @@ inputs = arma.preprocess()["x"]
 true_saliency = arma.true_saliency(dim=1)
 \end{lstlisting}
 
-All these datasets are implemented using the DataModule from PyTorch-lightning.
+All these datasets are implemented using the DataModule from PyTorch Lightning.
 We provide the following datasets:
 
 \begin{itemize}
@@ -124,7 +125,7 @@ We provide the following datasets:
         As such, it can be used to predict a specific condition based on a number of patients' data.
         In the default setting, this dataset can be used to train a model to predict the risk of developing type-II
         diabetes, but other conditions could be predicted.
-        We also provide a cutoff before the onset of the condition, only using feature before that time, as well as
+        We also provide a cutoff before the onset of the condition, only using features before that time, as well as
         a script to train FastText~\citep{bojanowski2017enriching} embeddings on the medical codes.
         The dataset can also be discretized, grouping medical codes into time intervals such as years.
         To access the data, a formal application must be made, please see
@@ -156,6 +157,7 @@ We provide the following datasets:
         The processing of this dataset was done following~\citep{tonekaboni2020went, crabbe2021explaining}.
 \end{itemize}
 
+\newpage
 
 \paragraph{Metrics}
 
@@ -244,7 +246,7 @@ We still provide it as it has been used in some research and could be useful to 
 
 \paragraph{Models}
 
-We provide several PyTorch models for simplicity: MLP, CNN, RNN and TransformerEncoder, as well as some language models
+We provide several PyTorch models: MLP, CNN, RNN and TransformerEncoder, as well as some language models
 from HuggingFace: Bert, DistilBert and RoBerta.
 These models can be easily wrapped into a PyTorch-lightning model as such:
 

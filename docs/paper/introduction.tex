@@ -6,16 +6,15 @@ understanding how these algorithms come to a specific output.
 Should such models be used to take high-stakes decisions, as it is often the case in finance or in medicine, it is
 indeed crucial for these tools to provide a justification along with their results, which could be used to discuss
 or even oppose a decision.
-The risk is that deep learning models, often considered as $``$black boxes$"$, could produce biased and unfair behaviours
-toward certain categories of society.
+The risk is that deep learning models, often considered as $``$black boxes$"$, could produce biased and unfair behaviour.
 Such behaviour has already been noticed in opaque algorithms such as COMPAS, used to evaluate the risk of recidivism,
 which was accused of being biased toward people of color~\citep{rudin2019stop}.
 
 As a result, many methods aiming to explain a deep learning prediction have been developed, which now constitutes a
 field usually called Explainable AI (XAI).
-Among these methods, some of the most common are LIME~\citep{ribeiro2016should}, SHAP\citep{lundberg2017unified}, 
+Among these methods, some of the most common are LIME~\citep{ribeiro2016should}, SHAP~\citep{lundberg2017unified},
 or Integrated Gradients~\citep{sundararajan2017axiomatic}.\footnote{
-    An insightful presentation of these methods can be found at https://christophm.github.io/interpretable-ml-book.
+    An insightful presentation of these methods can be found at \url{https://christophm.github.io/interpretable-ml-book}.
 }
 Alongside this research, there has also been a drive to create libraries unifying these different methods, enabling
 their use on popular deep learning libraries, as well as integrating evaluation tools to compare these XAI methods.
@@ -47,7 +46,7 @@ wrapper.
 
 Moreover, despite this focus on time series, several components of \texttt{\detokenize{time_interpret}} have a slightly
 different application.
-It provides for instance several methods aiming to explain language models such a BERT\@.
+It provides for instance various methods aiming to explain language models such a BERT\@.
 Its evaluation tools can also be used with any feature attribution methods, and not just the ones implemented in
 this library.
 
