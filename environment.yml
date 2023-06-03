@@ -7,6 +7,7 @@ channels:
   - nvidia
 dependencies:
   - python==3.9.7
+  - cudatoolkit==11.6
   - captum
   - datasets
   - git
