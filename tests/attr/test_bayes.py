@@ -100,7 +100,7 @@ def test_bayes(
             assert credible_int.shape == inputs.shape
         else:
             assert tuple(attr.shape) == (1, 15)
-            assert tuple(credible_int.shape) == (1, 15)
+            assert tuple(credible_int.shape) == (15,)
 
     with pytest.raises(Exception) if fails else nullcontext():
         explainer = BayesKernelShap(forward_func=forward_func, interpretable_model=interpretable_model)
@@ -120,4 +120,4 @@ def test_bayes(
             assert credible_int.shape == inputs.shape
         else:
             assert tuple(attr.shape) == (1, 15)
-            assert tuple(credible_int.shape) == (1, 15)
+            assert tuple(credible_int.shape) == (15,)
