@@ -18,7 +18,7 @@ class JointFeatureGenerator(nn.Module):
         latent_size: Size of the latent distribution. Default to 100
 
     References:
-        https://proceedings.neurips.cc/paper/2015/hash/b618c3210e934362ac261db280128c22-Abstract.html
+        `A Recurrent Latent Variable Model for Sequential Data <https://arxiv.org/abs/1506.02216>`_
     """
 
     def __init__(
@@ -174,7 +174,7 @@ class JointFeatureGeneratorNet(Net):
         l2 (float): L2 regularisation. Default to 0.0
 
     References:
-        https://proceedings.neurips.cc/paper/2015/hash/b618c3210e934362ac261db280128c22-Abstract.html
+        `A Recurrent Latent Variable Model for Sequential Data <https://arxiv.org/abs/1506.02216>`_
 
     Examples:
         >>> from tint.attr.models import JointFeatureGeneratorNet

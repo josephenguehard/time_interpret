@@ -39,7 +39,7 @@ class Retain(PerturbationAttribution):
             ignored. Default to ``None``
 
     References:
-        https://arxiv.org/pdf/1608.05745
+        `RETAIN: An Interpretable Predictive Model for Healthcare using Reverse Time Attention Mechanism <https://arxiv.org/abs/1608.05745>`_
 
     Examples:
         >>> import torch as th

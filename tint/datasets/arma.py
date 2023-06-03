@@ -37,8 +37,8 @@ class Arma(DataModule):
         seed (int): For the random split. Default to 42
 
     References:
-        https://www.statsmodels.org/dev/generated/statsmodels.tsa.arima_process.ArmaProcess.html
-        https://arxiv.org/abs/2106.05303
+        #. `Explaining Time Series Predictions with Dynamic Masks <https://arxiv.org/abs/2106.05303>`_
+        #. https://www.statsmodels.org/dev/generated/statsmodels.tsa.arima_process.ArmaProcess.html
 
     Examples:
         >>> from tint.datasets import Arma

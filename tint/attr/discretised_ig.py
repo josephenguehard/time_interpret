@@ -51,8 +51,8 @@ class DiscretetizedIntegratedGradients(GradientAttribution):
             (inputs - baselines).
 
     References:
-        https://github.com/INK-USC/DIG \n
-        https://arxiv.org/abs/2108.13654
+        #. `Discretized Integrated Gradients for Explaining Language Models <https://arxiv.org/abs/2108.13654>`_
+        #. https://github.com/INK-USC/DIG
 
     Examples:
         >>> import torch as th

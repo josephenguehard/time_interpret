@@ -287,7 +287,7 @@ class BayesLime(_BayesLime):
                 Default: 95
 
     References:
-        https://arxiv.org/pdf/2008.05030
+        `Reliable Post hoc Explanations: Modeling Uncertainty in Explainability <https://arxiv.org/abs/2008.05030>`_
 
     Examples:
         >>> import torch as th
@@ -622,7 +622,7 @@ class BayesKernelShap(KernelShap, _BayesLime):
                 Default: 95
 
     References:
-        https://arxiv.org/pdf/2008.05030
+        `Reliable Post hoc Explanations: Modeling Uncertainty in Explainability <https://arxiv.org/abs/2008.05030>`_
 
     Examples:
         >>> import torch as th

@@ -38,8 +38,8 @@ class DynaMask(PerturbationAttribution):
             modification of it.
 
     References:
-        https://arxiv.org/pdf/2106.05303
-        https://arxiv.org/pdf/1910.08485
+        #. `Explaining Time Series Predictions with Dynamic Masks <https://arxiv.org/abs/2106.05303>`_
+        #. `Understanding Deep Networks via Extremal Perturbations and Smooth Masks <https://arxiv.org/abs/1910.08485>`_
 
     Examples:
         >>> import torch as th

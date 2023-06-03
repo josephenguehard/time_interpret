@@ -87,8 +87,8 @@ class Mimic3(DataModule):
         seed (int): For the random split. Default to 42
 
     References:
-        https://github.com/sanatonek/time_series_explainability/blob/master/data_generator/icu_mortality.py
-        https://physionet.org/content/mimiciii/1.4/
+        #. https://physionet.org/content/mimiciii/1.4/
+        #. https://github.com/sanatonek/time_series_explainability/blob/master/data_generator/icu_mortality.py
 
     Examples:
         >>> from tint.datasets import Mimic3

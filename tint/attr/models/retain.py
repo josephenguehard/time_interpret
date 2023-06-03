@@ -32,7 +32,7 @@ class Retain(nn.Module):
             static labels. Default to ``True``
 
     References:
-        https://arxiv.org/pdf/1608.05745
+        `RETAIN: An Interpretable Predictive Model for Healthcare using Reverse Time Attention Mechanism <https://arxiv.org/abs/1608.05745>`_
     """
 
     def __init__(
@@ -168,7 +168,7 @@ class RetainNet(Net):
         l2 (float): L2 regularisation. Default to 0.0
 
     References:
-        https://arxiv.org/pdf/1608.05745
+        `RETAIN: An Interpretable Predictive Model for Healthcare using Reverse Time Attention Mechanism <https://arxiv.org/abs/1608.05745>`_
 
     Examples:
         >>> from tint.attr.models import RetainNet

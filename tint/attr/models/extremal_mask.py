@@ -18,6 +18,10 @@ class ExtremalMaskNN(nn.Module):
         model (nnn.Module): A model used to recreate the original
             predictions, in addition to the mask. Default to ``None``
         batch_size (int): Batch size of the model. Default to 32
+
+    References
+        #. `Learning Perturbations to Explain Time Series Predictions <https://arxiv.org/abs/2305.18840>`_
+        #. `Understanding Deep Networks via Extremal Perturbations and Smooth Masks <https://arxiv.org/abs/1910.08485>`_
     """
 
     def __init__(

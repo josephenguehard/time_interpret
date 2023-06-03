@@ -38,7 +38,7 @@ class NonLinearitiesTunnel(Attribution):
             Conductance or Saliency.
 
     References:
-        https://arxiv.org/abs/1906.07983
+        `Explanations can be manipulated and geometry is to blame <https://arxiv.org/abs/1906.07983>`_
 
     Examples:
         >>> import torch as th

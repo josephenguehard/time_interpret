@@ -20,6 +20,9 @@ class BayesianLinearRegression:
             Default to 95
         l2 (bool): Whether to use l2 regularisation.
             Default to ``True``
+
+    References:
+        `Reliable Post hoc Explanations: Modeling Uncertainty in Explainability <https://arxiv.org/abs/2008.05030>`_
     """
 
     def __init__(self, percent=95, l2=True):

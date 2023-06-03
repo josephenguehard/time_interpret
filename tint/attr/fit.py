@@ -58,7 +58,7 @@ class Fit(PerturbationAttribution):
         batch_size (int): Batch size for generator training. Default to 32
 
     References:
-        https://arxiv.org/abs/2003.02821
+        `What went wrong and when? Instance-wise Feature Importance for Time-series Models <https://arxiv.org/abs/2003.02821>`_
 
     Examples:
         >>> import torch as th

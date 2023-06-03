@@ -38,7 +38,7 @@ class Mask(nn.Module):
             Default to 0.0
 
     References:
-        https://arxiv.org/pdf/2106.05303
+        `Explaining Time Series Predictions with Dynamic Masks <https://arxiv.org/abs/2106.05303>`_
     """
 
     def __init__(
@@ -276,7 +276,7 @@ class MaskNet(Net):
         l2 (float): L2 regularisation. Default to 0.0
 
     References:
-        https://arxiv.org/pdf/2106.05303
+        `Explaining Time Series Predictions with Dynamic Masks <https://arxiv.org/abs/2106.05303>`_
 
     Examples:
         >>> import numpy as np

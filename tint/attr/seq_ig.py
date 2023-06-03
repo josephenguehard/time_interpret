@@ -66,6 +66,9 @@ class SequentialIntegratedGradients(GradientAttribution):
             is set to True, final sensitivity scores are being multiplied by
             (inputs - baselines).
 
+    References:
+        `Sequential Integrated Gradients: a simple but effective method for explaining language models <https://arxiv.org/abs/2305.15853>`_
+
     Examples:
         >>> import torch as th
         >>> from tint.attr import SequentialIntegratedGradients

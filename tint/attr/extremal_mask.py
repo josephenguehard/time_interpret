@@ -39,8 +39,8 @@ class ExtremalMask(PerturbationAttribution):
             modification of it.
 
     References:
-        https://arxiv.org/pdf/2106.05303
-        https://arxiv.org/pdf/1910.08485
+        #. `Learning Perturbations to Explain Time Series Predictions <https://arxiv.org/abs/2305.18840>`_
+        #. `Understanding Deep Networks via Extremal Perturbations and Smooth Masks <https://arxiv.org/abs/1910.08485>`_
 
     Examples:
         >>> import torch as th
