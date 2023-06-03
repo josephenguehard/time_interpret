@@ -64,17 +64,17 @@ print(f"{aup(attr, true_saliency):.4}")
 ## Methods
 
 - [AugmentedOcclusion](https://arxiv.org/abs/2003.02821)
-- [BayesKernelShap](https://arxiv.org/pdf/2008.05030)
-- [BayesLime](https://arxiv.org/pdf/2008.05030)
+- [BayesKernelShap](https://arxiv.org/abs/2008.05030)
+- [BayesLime](https://arxiv.org/abs/2008.05030)
 - [Discretized Integrated Gradients](https://arxiv.org/abs/2108.13654)
-- [DynaMask](https://arxiv.org/pdf/2106.05303)
+- [DynaMask](https://arxiv.org/abs/2106.05303)
 - [ExtremalMask](https://arxiv.org/abs/2305.18840)
 - [Fit](https://arxiv.org/abs/2003.02821)
 - [LofKernelShap]()
 - [LofLime]()
 - [Non-linearities Tunnel](https://arxiv.org/abs/1906.07983)
 - [Occlusion](https://arxiv.org/abs/1311.2901)
-- [Retain](https://arxiv.org/pdf/1608.05745)
+- [Retain](https://arxiv.org/abs/1608.05745)
 - [SequentialIntegratedGradients](https://arxiv.org/abs/2305.15853)
 - [TemporalAugmentedOcclusion](https://arxiv.org/abs/2003.02821)
 - [TemporalOcclusion](https://arxiv.org/abs/2003.02821)
@@ -86,7 +86,8 @@ This package also provides several datasets, models and metrics. Please refer to
 
 ## Paper: Learning Perturbations to Explain Time Series Predictions
 
-The experiments for the paper: [Learning Perturbations to Explain Time Series Predictions]() can be found on these folders:
+The experiments for the paper: [Learning Perturbations to Explain Time Series Predictions](https://arxiv.org/abs/2305.18840) 
+can be found on these folders:
 - [HMM](experiments/hmm)
 - [Mimic3](experiments/mimic3/mortality)
 
