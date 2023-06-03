@@ -2,7 +2,6 @@ import collections
 import re
 import torch
 
-from torch._six import string_classes
 
 np_str_obj_array_pattern = re.compile(r"[SaUO]")
 
@@ -48,7 +47,7 @@ def default_collate(batch):
             return torch.as_tensor(batch)
     # If elem is a float, int, string or None,
     # the elem is returned without transformation
-    elif isinstance(elem, (float, int, string_classes)):
+    elif isinstance(elem, (float, int, str)):
         return elem
     elif elem is None:
         return None
