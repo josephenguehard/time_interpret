@@ -108,7 +108,7 @@ The supported methods currently are:
 LOF LIME and LOF Kernel SHAP are variations of the vanilla methods LIME and SHAP, using the Local Outlier Factor
 score~\citep{breunig2000lof} as an indication of similarity between the masked data and the original one:
 
-\[ \textrm{SimilarityScore}(\textbf{x}; X) = \frac{1}{\max(\textbf{1}, \textrm{LOF}(\textbf{x}, X))} \]
+\[ \textrm{SimilarityScore}(\textbf{x}; X) = \frac{1}{\max(1, \textrm{LOF}(\textbf{x}, X))} \]
 
 where \textbf{x} is a data point to be explained, and $X$ is a set of data points.
 A low value of LOF indicates an inlier, while a large value an outlier.
