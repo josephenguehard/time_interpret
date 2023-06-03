@@ -105,7 +105,7 @@ def test_bayes(
     with pytest.raises(Exception) if fails else nullcontext():
         explainer = BayesKernelShap(forward_func=forward_func, interpretable_model=interpretable_model)
 
-        attr = explainer.attribute(
+        attr, credible_int = explainer.attribute(
             inputs=inputs,
             baselines=baselines,
             target=target,
