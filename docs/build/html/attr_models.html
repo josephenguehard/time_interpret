@@ -275,6 +275,13 @@ predictions, in addition to the mask. Default to <code class="docutils literal n
 </ul>
 </dd>
 </dl>
+<dl class="simple">
+<dt>References</dt><dd><ol class="arabic simple">
+<li><p><a class="reference external" href="https://arxiv.org/abs/2305.18840">Learning Perturbations to Explain Time Series Predictions</a></p></li>
+<li><p><a class="reference external" href="https://arxiv.org/abs/1910.08485">Understanding Deep Networks via Extremal Perturbations and Smooth Masks</a></p></li>
+</ol>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="tint.attr.models.ExtremalMaskNN.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x:</span> <span class="pre">~torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baselines</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*additional_forward_args)</span> <span class="pre">-&gt;</span> <span class="pre">(&lt;class</span> <span class="pre">'torch.Tensor'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;class</span> <span class="pre">'torch.Tensor'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/models/extremal_mask.html#ExtremalMaskNN.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.ExtremalMaskNN.forward" title="Permalink to this definition">¶</a></dt>
@@ -546,7 +553,7 @@ Default to 10</p></li>
 </dd>
 </dl>
 <p class="rubric">References</p>
-<p><a class="reference external" href="https://proceedings.neurips.cc/paper/2015/hash/b618c3210e934362ac261db280128c22-Abstract.html">https://proceedings.neurips.cc/paper/2015/hash/b618c3210e934362ac261db280128c22-Abstract.html</a></p>
+<p><a class="reference external" href="https://arxiv.org/abs/1506.02216">A Recurrent Latent Variable Model for Sequential Data</a></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="tint.attr.models.JointFeatureGenerator.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">past</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/models/joint_features_generator.html#JointFeatureGenerator.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.JointFeatureGenerator.forward" title="Permalink to this definition">¶</a></dt>
@@ -587,7 +594,7 @@ Default to <code class="docutils literal notranslate"><span class="pre">None</sp
 </dd>
 </dl>
 <p class="rubric">References</p>
-<p><a class="reference external" href="https://proceedings.neurips.cc/paper/2015/hash/b618c3210e934362ac261db280128c22-Abstract.html">https://proceedings.neurips.cc/paper/2015/hash/b618c3210e934362ac261db280128c22-Abstract.html</a></p>
+<p><a class="reference external" href="https://arxiv.org/abs/1506.02216">A Recurrent Latent Variable Model for Sequential Data</a></p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.attr.models</span> <span class="kn">import</span> <span class="n">JointFeatureGeneratorNet</span>
 
@@ -875,7 +882,7 @@ Default to 0.0</p></li>
 </dd>
 </dl>
 <p class="rubric">References</p>
-<p><a class="reference external" href="https://arxiv.org/pdf/2106.05303">https://arxiv.org/pdf/2106.05303</a></p>
+<p><a class="reference external" href="https://arxiv.org/abs/2106.05303">Explaining Time Series Predictions with Dynamic Masks</a></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="tint.attr.models.Mask.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_idx</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">additional_forward_args</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/tint/attr/models/mask.html#Mask.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.Mask.forward" title="Permalink to this definition">¶</a></dt>
@@ -926,7 +933,7 @@ Default to <code class="docutils literal notranslate"><span class="pre">None</sp
 </dd>
 </dl>
 <p class="rubric">References</p>
-<p><a class="reference external" href="https://arxiv.org/pdf/2106.05303">https://arxiv.org/pdf/2106.05303</a></p>
+<p><a class="reference external" href="https://arxiv.org/abs/2106.05303">Explaining Time Series Predictions with Dynamic Masks</a></p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span> <span class="k">as</span> <span class="nn">th</span>
@@ -1213,7 +1220,7 @@ static labels. Default to <code class="docutils literal notranslate"><span class
 </dd>
 </dl>
 <p class="rubric">References</p>
-<p><a class="reference external" href="https://arxiv.org/pdf/1608.05745">https://arxiv.org/pdf/1608.05745</a></p>
+<p><a class="reference external" href="https://arxiv.org/abs/1608.05745">RETAIN: An Interpretable Predictive Model for Healthcare using Reverse Time Attention Mechanism</a></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="tint.attr.models.Retain.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lengths</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/models/retain.html#Retain.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.models.Retain.forward" title="Permalink to this definition">¶</a></dt>
@@ -1259,7 +1266,7 @@ Default to <code class="docutils literal notranslate"><span class="pre">None</sp
 </dd>
 </dl>
 <p class="rubric">References</p>
-<p><a class="reference external" href="https://arxiv.org/pdf/1608.05745">https://arxiv.org/pdf/1608.05745</a></p>
+<p><a class="reference external" href="https://arxiv.org/abs/1608.05745">RETAIN: An Interpretable Predictive Model for Healthcare using Reverse Time Attention Mechanism</a></p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.attr.models</span> <span class="kn">import</span> <span class="n">RetainNet</span>
 
@@ -1304,8 +1311,10 @@ or <code class="docutils literal notranslate"><span class="pre">'maxcount'</span
 </dd>
 </dl>
 <p class="rubric">References</p>
-<p><a class="reference external" href="https://github.com/INK-USC/DIG">https://github.com/INK-USC/DIG</a></p>
-<p><a class="reference external" href="https://arxiv.org/abs/2108.13654">https://arxiv.org/abs/2108.13654</a></p>
+<ol class="arabic simple">
+<li><p><a class="reference external" href="https://arxiv.org/abs/2108.13654">Discretized Integrated Gradients for Explaining Language Models</a></p></li>
+<li><p><a class="reference external" href="https://github.com/INK-USC/DIG">https://github.com/INK-USC/DIG</a></p></li>
+</ol>
 </dd></dl>
 
 </section>
@@ -1325,7 +1334,7 @@ or <code class="docutils literal notranslate"><span class="pre">'maxcount'</span
 
   <div role="contentinfo">
     <p>
-        &#169; Copyright 2022, Joseph Enguehard.
+        &#169; Copyright Joseph Enguehard.
 
     </p>
   </div>
