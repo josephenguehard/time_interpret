@@ -8,7 +8,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Attribution Methods &mdash; Time Interpret 0.2.1 documentation</title>
+  <title>Attribution Methods &mdash; Time Interpret 0.3.0 documentation</title>
   
 
   
@@ -107,8 +107,14 @@
 <li class="toctree-l4"><a class="reference internal" href="#tint.attr.AugmentedOcclusion.attribute"><code class="docutils literal notranslate"><span class="pre">AugmentedOcclusion.attribute()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#tint.attr.BayesKernelShap"><code class="docutils literal notranslate"><span class="pre">BayesKernelShap</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#tint.attr.BayesLime"><code class="docutils literal notranslate"><span class="pre">BayesLime</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tint.attr.BayesKernelShap"><code class="docutils literal notranslate"><span class="pre">BayesKernelShap</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#tint.attr.BayesKernelShap.attribute"><code class="docutils literal notranslate"><span class="pre">BayesKernelShap.attribute()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#tint.attr.BayesLime"><code class="docutils literal notranslate"><span class="pre">BayesLime</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#tint.attr.BayesLime.attribute"><code class="docutils literal notranslate"><span class="pre">BayesLime.attribute()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#tint.attr.DiscretetizedIntegratedGradients"><code class="docutils literal notranslate"><span class="pre">DiscretetizedIntegratedGradients</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#tint.attr.DiscretetizedIntegratedGradients.attribute"><code class="docutils literal notranslate"><span class="pre">DiscretetizedIntegratedGradients.attribute()</span></code></a></li>
 </ul>
@@ -492,7 +498,7 @@ corresponding sized tensors is returned.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="tint.attr.BayesKernelShap">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tint.attr.</span></span><span class="sig-name descname"><span class="pre">BayesKernelShap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forward_func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpretable_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Model</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/bayes.html#BayesKernelShap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.BayesKernelShap" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tint.attr.</span></span><span class="sig-name descname"><span class="pre">BayesKernelShap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forward_func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpretable_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Model</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">percent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">95</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/bayes.html#BayesKernelShap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.BayesKernelShap" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bayesian version of KernelShap.</p>
 <p>This method replace the linear regression of the original KernelShap with
 a bayesian linear regression, allowing to model uncertainty in
@@ -525,6 +531,17 @@ interpretable model, each attribution call reuses
 the same given interpretable model object.</p>
 <p>Default: None</p>
 </p></li>
+<li><p><span class="target" id="tint.attr.BayesKernelShap.params.percent"></span><strong>percent</strong><a class="paramlink headerlink reference internal" href="#tint.attr.BayesKernelShap.params.percent">¶</a> (<em>int</em>) – <p>Percentage for the credible intervals. Must be between
+0 and 100. Only used when no custom interpretable model is
+passed. Otherwise, you must specify the percentage for
+credible interval in the model definition:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.attr.models</span> <span class="kn">import</span> <span class="n">BLRRegression</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">BLRRegression</span><span class="p">(</span><span class="n">percent</span><span class="o">=</span><span class="mi">90</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">explainer</span> <span class="o">=</span> <span class="n">BayesKernelShap</span><span class="p">(</span><span class="n">mlp</span><span class="p">,</span> <span class="n">interpretable_model</span><span class="o">=</span><span class="n">model</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Default: 95</p>
+</p></li>
 </ul>
 </dd>
 </dl>
@@ -542,11 +559,255 @@ the same given interpretable model object.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">attr</span> <span class="o">=</span> <span class="n">explainer</span><span class="o">.</span><span class="n">attribute</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
 </pre></div>
 </div>
+<dl class="py method">
+<dt class="sig sig-object py" id="tint.attr.BayesKernelShap.attribute">
+<span class="sig-name descname"><span class="pre">attribute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TensorOrTupleOfTensorsGeneric</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baselines</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">additional_forward_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perturbations_per_eval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_input_shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">TensorOrTupleOfTensorsGeneric</span></span></span><a class="reference internal" href="_modules/tint/attr/bayes.html#BayesKernelShap.attribute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.BayesKernelShap.attribute" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method attributes the output of the model with given target index
+(in case it is provided, otherwise it assumes that output is a
+scalar) to the inputs of the model using the approach described above,
+training an interpretable model based on KernelSHAP and returning a
+representation of the interpretable model.</p>
+<p>It is recommended to only provide a single example as input (tensors
+with first dimension or batch size = 1). This is because LIME / KernelShap
+is generally used for sample-based interpretability, training a separate
+interpretable model to explain a model’s prediction on each individual example.</p>
+<p>A batch of inputs can also be provided as inputs, similar to
+other perturbation-based attribution methods. In this case, if forward_fn
+returns a scalar per example, attributions will be computed for each
+example independently, with a separate interpretable model trained for each
+example. Note that provided similarity and perturbation functions will be
+provided each example separately (first dimension = 1) in this case.
+If forward_fn returns a scalar per batch (e.g. loss), attributions will
+still be computed using a single interpretable model for the full batch.
+In this case, similarity and perturbation functions will be provided the
+same original input containing the full batch.</p>
+<p>The number of interpretable features is determined from the provided
+feature mask, or if none is provided, from the default feature mask,
+which considers each scalar input as a separate feature. It is
+generally recommended to provide a feature mask which groups features
+into a small number of interpretable features / components (e.g.
+superpixels in images).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.attr.BayesKernelShap.attribute.params.inputs"></span><strong>inputs</strong><a class="paramlink headerlink reference internal" href="#tint.attr.BayesKernelShap.attribute.params.inputs">¶</a> (<em>Tensor</em><em> or </em><em>tuple</em><em>[</em><em>Tensor</em><em>, </em><em>...</em><em>]</em>) – Input for which KernelShap
+is computed. If forward_func takes a single
+tensor as input, a single input tensor should be provided.
+If forward_func takes multiple tensors as input, a tuple
+of the input tensors should be provided. It is assumed
+that for all given input tensors, dimension 0 corresponds
+to the number of examples, and if multiple input tensors
+are provided, the examples must be aligned appropriately.</p></li>
+<li><p><span class="target" id="tint.attr.BayesKernelShap.attribute.params.baselines"></span><strong>baselines</strong><a class="paramlink headerlink reference internal" href="#tint.attr.BayesKernelShap.attribute.params.baselines">¶</a> (<em>scalar</em><em>, </em><em>Tensor</em><em>, </em><em>tuple</em><em> of </em><em>scalar</em><em>, or </em><em>Tensor</em><em>, </em><em>optional</em>) – <p>Baselines define the reference value which replaces each
+feature when the corresponding interpretable feature
+is set to 0.
+Baselines can be provided as:</p>
+<ul>
+<li><p>a single tensor, if inputs is a single tensor, with
+exactly the same dimensions as inputs or the first
+dimension is one and the remaining dimensions match
+with inputs.</p></li>
+<li><p>a single scalar, if inputs is a single tensor, which will
+be broadcasted for each input value in input tensor.</p></li>
+<li><p>a tuple of tensors or scalars, the baseline corresponding
+to each tensor in the inputs’ tuple can be:</p>
+<ul>
+<li><p>either a tensor with matching dimensions to
+corresponding tensor in the inputs’ tuple
+or the first dimension is one and the remaining
+dimensions match with the corresponding
+input tensor.</p></li>
+<li><p>or a scalar, corresponding to a tensor in the
+inputs’ tuple. This scalar value is broadcasted
+for corresponding input tensor.</p></li>
+</ul>
+</li>
+</ul>
+<p>In the cases when <cite>baselines</cite> is not provided, we internally
+use zero scalar corresponding to each input tensor.
+Default: None</p>
+</p></li>
+<li><p><span class="target" id="tint.attr.BayesKernelShap.attribute.params.target"></span><strong>target</strong><a class="paramlink headerlink reference internal" href="#tint.attr.BayesKernelShap.attribute.params.target">¶</a> (<em>int</em><em>, </em><em>tuple</em><em>, </em><em>Tensor</em><em>, or </em><em>list</em><em>, </em><em>optional</em>) – <p>Output indices for
+which surrogate model is trained
+(for classification cases,
+this is usually the target class).
+If the network returns a scalar value per example,
+no target index is necessary.
+For general 2D outputs, targets can be either:</p>
+<ul>
+<li><p>a single integer or a tensor containing a single
+integer, which is applied to all input examples</p></li>
+<li><p>a list of integers or a 1D tensor, with length matching
+the number of examples in inputs (dim 0). Each integer
+is applied as the target for the corresponding example.</p></li>
+</ul>
+<p>For outputs with &gt; 2 dimensions, targets can be either:</p>
+<ul>
+<li><p>A single tuple, which contains #output_dims - 1
+elements. This target index is applied to all examples.</p></li>
+<li><p>A list of tuples with length equal to the number of
+examples in inputs (dim 0), and each tuple containing
+#output_dims - 1 elements. Each tuple is applied as the
+target for the corresponding example.</p></li>
+</ul>
+<p>Default: None</p>
+</p></li>
+<li><p><span class="target" id="tint.attr.BayesKernelShap.attribute.params.additional_forward_args"></span><strong>additional_forward_args</strong><a class="paramlink headerlink reference internal" href="#tint.attr.BayesKernelShap.attribute.params.additional_forward_args">¶</a> (<em>Any</em><em>, </em><em>optional</em>) – If the forward function
+requires additional arguments other than the inputs for
+which attributions should not be computed, this argument
+can be provided. It must be either a single additional
+argument of a Tensor or arbitrary (non-tuple) type or a
+tuple containing multiple additional arguments including
+tensors or any arbitrary python types. These arguments
+are provided to forward_func in order following the
+arguments in inputs.
+For a tensor, the first dimension of the tensor must
+correspond to the number of examples. It will be
+repeated for each of <cite>n_steps</cite> along the integrated
+path. For all other types, the given argument is used
+for all forward evaluations.
+Note that attributions are not computed with respect
+to these arguments.
+Default: None</p></li>
+<li><p><span class="target" id="tint.attr.BayesKernelShap.attribute.params.feature_mask"></span><strong>feature_mask</strong><a class="paramlink headerlink reference internal" href="#tint.attr.BayesKernelShap.attribute.params.feature_mask">¶</a> (<em>Tensor</em><em> or </em><em>tuple</em><em>[</em><em>Tensor</em><em>, </em><em>...</em><em>]</em><em>, </em><em>optional</em>) – feature_mask defines a mask for the input, grouping
+features which correspond to the same
+interpretable feature. feature_mask
+should contain the same number of tensors as inputs.
+Each tensor should
+be the same size as the corresponding input or
+broadcastable to match the input tensor. Values across
+all tensors should be integers in the range 0 to
+num_interp_features - 1, and indices corresponding to the
+same feature should have the same value.
+Note that features are grouped across tensors
+(unlike feature ablation and occlusion), so
+if the same index is used in different tensors, those
+features are still grouped and added simultaneously.
+If None, then a feature mask is constructed which assigns
+each scalar within a tensor as a separate feature.
+Default: None</p></li>
+<li><p><span class="target" id="tint.attr.BayesKernelShap.attribute.params.n_samples"></span><strong>n_samples</strong><a class="paramlink headerlink reference internal" href="#tint.attr.BayesKernelShap.attribute.params.n_samples">¶</a> (<em>int</em><em>, </em><em>optional</em>) – The number of samples of the original
+model used to train the surrogate interpretable model.
+Default: <cite>50</cite> if <cite>n_samples</cite> is not provided.</p></li>
+<li><p><span class="target" id="tint.attr.BayesKernelShap.attribute.params.perturbations_per_eval"></span><strong>perturbations_per_eval</strong><a class="paramlink headerlink reference internal" href="#tint.attr.BayesKernelShap.attribute.params.perturbations_per_eval">¶</a> (<em>int</em><em>, </em><em>optional</em>) – Allows multiple samples
+to be processed simultaneously in one call to forward_fn.
+Each forward pass will contain a maximum of
+perturbations_per_eval * #examples samples.
+For DataParallel models, each batch is split among the
+available devices, so evaluations on each available
+device contain at most
+(perturbations_per_eval * #examples) / num_devices
+samples.
+If the forward function returns a single scalar per batch,
+perturbations_per_eval must be set to 1.
+Default: 1</p></li>
+<li><p><span class="target" id="tint.attr.BayesKernelShap.attribute.params.return_input_shape"></span><strong>return_input_shape</strong><a class="paramlink headerlink reference internal" href="#tint.attr.BayesKernelShap.attribute.params.return_input_shape">¶</a> (<em>bool</em><em>, </em><em>optional</em>) – Determines whether the returned
+tensor(s) only contain the coefficients for each interp-
+retable feature from the trained surrogate model, or
+whether the returned attributions match the input shape.
+When return_input_shape is True, the return type of attribute
+matches the input shape, with each element containing the
+coefficient of the corresponding interpretable feature.
+All elements with the same value in the feature mask
+will contain the same coefficient in the returned
+attributions. If return_input_shape is False, a 1D
+tensor is returned, containing only the coefficients
+of the trained interpretable model, with length
+num_interp_features.</p></li>
+<li><p><span class="target" id="tint.attr.BayesKernelShap.attribute.params.show_progress"></span><strong>show_progress</strong><a class="paramlink headerlink reference internal" href="#tint.attr.BayesKernelShap.attribute.params.show_progress">¶</a> (<em>bool</em><em>, </em><em>optional</em>) – Displays the progress of computation.
+It will try to use tqdm if available for advanced features
+(e.g. time estimation). Otherwise, it will fallback to
+a simple output of progress.
+Default: False</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><dl class="simple">
+<dt><strong>attributions</strong> (<em>tensor</em> or tuple of <em>tensors</em>):</dt><dd><p>The attributions with respect to each input feature.
+If return_input_shape = True, attributions will be
+the same size as the provided inputs, with each value
+providing the coefficient of the corresponding
+interpretale feature.
+If return_input_shape is False, a 1D
+tensor is returned, containing only the coefficients
+of the trained interpreatable models, with length
+num_interp_features.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>credible_intervals</strong> (<em>tensor</em> or tuple of <em>tensors</em>):</dt><dd><p>The credible intervals associated with each attribution.
+If return_input_shape = True, credible intervals will be
+the same size as the provided inputs, with each value
+providing the coefficient of the corresponding
+interpretale feature.
+If return_input_shape is False, a 1D
+tensor is returned, containing only the credible intervals
+of the trained interpreatable models, with length
+num_interp_features.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>2-element tuple of <strong>attributions</strong>, <strong>credible_intervals</strong></p>
+</dd>
+</dl>
+<dl>
+<dt>Examples::</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># SimpleClassifier takes a single input tensor of size Nx4x4,</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># and returns an Nx3 tensor of class probabilities.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">net</span> <span class="o">=</span> <span class="n">SimpleClassifier</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Generating random input with size 1 x 4 x 4</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Defining KernelShap interpreter</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ks</span> <span class="o">=</span> <span class="n">KernelShap</span><span class="p">(</span><span class="n">net</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Computes attribution, with each of the 4 x 4 = 16</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># features as a separate interpretable feature</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">attr</span> <span class="o">=</span> <span class="n">ks</span><span class="o">.</span><span class="n">attribute</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_samples</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Alternatively, we can group each 2x2 square of the inputs</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># as one &#39;interpretable&#39; feature and perturb them together.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># This can be done by creating a feature mask as follows, which</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># defines the feature groups, e.g.:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># +---+---+---+---+</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># | 0 | 0 | 1 | 1 |</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># +---+---+---+---+</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># | 0 | 0 | 1 | 1 |</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># +---+---+---+---+</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># | 2 | 2 | 3 | 3 |</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># +---+---+---+---+</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># | 2 | 2 | 3 | 3 |</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># +---+---+---+---+</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># With this mask, all inputs with the same value are set to their</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># baseline value, when the corresponding binary interpretable</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># feature is set to 0.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># The attributions can be calculated as follows:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># feature mask has dimensions 1 x 4 x 4</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">feature_mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span>
+<span class="gp">&gt;&gt;&gt; </span>                            <span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">],[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">]]])</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Computes KernelSHAP attributions with feature mask.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">attr</span> <span class="o">=</span> <span class="n">ks</span><span class="o">.</span><span class="n">attribute</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">feature_mask</span><span class="o">=</span><span class="n">feature_mask</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="tint.attr.BayesLime">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tint.attr.</span></span><span class="sig-name descname"><span class="pre">BayesLime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forward_func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpretable_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Model</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/bayes.html#BayesLime"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.BayesLime" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tint.attr.</span></span><span class="sig-name descname"><span class="pre">BayesLime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">forward_func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpretable_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Model</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">similarity_func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perturb_func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">percent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">95</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tint/attr/bayes.html#BayesLime"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.BayesLime" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bayesian version of Lime.</p>
 <p>This method replace the linear regression of the original Lime with a
 bayesian linear regression, allowing to model uncertainty in
@@ -579,6 +840,66 @@ interpretable model, each attribution call reuses
 the same given interpretable model object.</p>
 <p>Default: None</p>
 </p></li>
+<li><p><span class="target" id="tint.attr.BayesLime.params.similarity_func"></span><strong>similarity_func</strong><a class="paramlink headerlink reference internal" href="#tint.attr.BayesLime.params.similarity_func">¶</a> (<em>Callable</em><em>, </em><em>optional</em>) – <p>Function which takes a single sample
+along with its corresponding interpretable representation
+and returns the weight of the interpretable sample for
+training the interpretable model.
+This is often referred to as a similarity kernel.</p>
+<p>This argument is optional and defaults to a function which
+applies an exponential kernel to the cosine distance between
+the original input and perturbed input, with a kernel width
+of 1.0.</p>
+<p>A similarity function applying an exponential
+kernel to cosine / euclidean distances can be constructed
+using the provided get_exp_kernel_similarity_function in
+captum.attr._core.lime.</p>
+<p>Alternately, a custom callable can also be provided.
+The expected signature of this callable is:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">similarity_func</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">original_input</span><span class="p">:</span> <span class="n">Tensor</span> <span class="ow">or</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">perturbed_input</span><span class="p">:</span> <span class="n">Tensor</span> <span class="ow">or</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">perturbed_interpretable_input</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>       <span class="n">Tensor</span> <span class="p">[</span><span class="mi">2</span><span class="n">D</span> <span class="mi">1</span> <span class="n">x</span> <span class="n">num_interp_features</span><span class="p">],</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="ow">or</span> <span class="n">Tensor</span> <span class="n">containing</span> <span class="nb">float</span> <span class="n">scalar</span>
+</pre></div>
+</div>
+<p>perturbed_input and original_input will be the same type and
+contain tensors of the same shape, with original_input
+being the same as the input provided when calling attribute.</p>
+<p>kwargs includes baselines, feature_mask, num_interp_features
+(integer, determined from feature mask).</p>
+</p></li>
+<li><p><span class="target" id="tint.attr.BayesLime.params.perturb_func"></span><strong>perturb_func</strong><a class="paramlink headerlink reference internal" href="#tint.attr.BayesLime.params.perturb_func">¶</a> (<em>Callable</em><em>, </em><em>optional</em>) – <p>Function which returns a single
+sampled input, which is a binary vector of length
+num_interp_features, or a generator of such tensors.</p>
+<p>This function is optional, the default function returns
+a binary vector where each element is selected
+independently and uniformly at random. Custom
+logic for selecting sampled binary vectors can
+be implemented by providing a function with the
+following expected signature:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">perturb_func</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="n">original_input</span><span class="p">:</span> <span class="n">Tensor</span> <span class="ow">or</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+<span class="gp">&gt;&gt;&gt; </span>   <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span> <span class="p">[</span><span class="n">Binary</span> <span class="mi">2</span><span class="n">D</span> <span class="n">Tensor</span> <span class="mi">1</span> <span class="n">x</span> <span class="n">num_interp_features</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span> <span class="ow">or</span> <span class="n">generator</span> <span class="n">yielding</span> <span class="n">such</span> <span class="n">tensors</span>
+</pre></div>
+</div>
+<p>kwargs includes baselines, feature_mask, num_interp_features
+(integer, determined from feature mask).</p>
+</p></li>
+<li><p><span class="target" id="tint.attr.BayesLime.params.percent"></span><strong>percent</strong><a class="paramlink headerlink reference internal" href="#tint.attr.BayesLime.params.percent">¶</a> (<em>int</em>) – <p>Percentage for the credible intervals. Must be between
+0 and 100. Only used when no custom interpretable model is
+passed. Otherwise, you must specify the percentage for
+credible interval in the model definition:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.attr.models</span> <span class="kn">import</span> <span class="n">BLRRegression</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">BLRRegression</span><span class="p">(</span><span class="n">percent</span><span class="o">=</span><span class="mi">90</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">explainer</span> <span class="o">=</span> <span class="n">BayesLime</span><span class="p">(</span><span class="n">mlp</span><span class="p">,</span> <span class="n">interpretable_model</span><span class="o">=</span><span class="n">model</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Default: 95</p>
+</p></li>
 </ul>
 </dd>
 </dl>
@@ -596,6 +917,245 @@ the same given interpretable model object.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">attr</span> <span class="o">=</span> <span class="n">explainer</span><span class="o">.</span><span class="n">attribute</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
 </pre></div>
 </div>
+<dl class="py method">
+<dt class="sig sig-object py" id="tint.attr.BayesLime.attribute">
+<span class="sig-name descname"><span class="pre">attribute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TensorOrTupleOfTensorsGeneric</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baselines</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">additional_forward_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perturbations_per_eval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_input_shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">TensorOrTupleOfTensorsGeneric</span></span></span><a class="reference internal" href="_modules/tint/attr/bayes.html#BayesLime.attribute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tint.attr.BayesLime.attribute" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method attributes the output of the model with given target index
+(in case it is provided, otherwise it assumes that output is a
+scalar) to the inputs of the model using the approach described above,
+training an interpretable model and returning a representation of the
+interpretable model.</p>
+<p>It is recommended to only provide a single example as input (tensors
+with first dimension or batch size = 1). This is because LIME is generally
+used for sample-based interpretability, training a separate interpretable
+model to explain a model’s prediction on each individual example.</p>
+<p>A batch of inputs can also be provided as inputs, similar to
+other perturbation-based attribution methods. In this case, if forward_fn
+returns a scalar per example, attributions will be computed for each
+example independently, with a separate interpretable model trained for each
+example. Note that provided similarity and perturbation functions will be
+provided each example separately (first dimension = 1) in this case.
+If forward_fn returns a scalar per batch (e.g. loss), attributions will
+still be computed using a single interpretable model for the full batch.
+In this case, similarity and perturbation functions will be provided the
+same original input containing the full batch.</p>
+<p>The number of interpretable features is determined from the provided
+feature mask, or if none is provided, from the default feature mask,
+which considers each scalar input as a separate feature. It is
+generally recommended to provide a feature mask which groups features
+into a small number of interpretable features / components (e.g.
+superpixels in images).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.attr.BayesLime.attribute.params.inputs"></span><strong>inputs</strong><a class="paramlink headerlink reference internal" href="#tint.attr.BayesLime.attribute.params.inputs">¶</a> (<em>Tensor</em><em> or </em><em>tuple</em><em>[</em><em>Tensor</em><em>, </em><em>...</em><em>]</em>) – Input for which LIME
+is computed. If forward_func takes a single
+tensor as input, a single input tensor should be provided.
+If forward_func takes multiple tensors as input, a tuple
+of the input tensors should be provided. It is assumed
+that for all given input tensors, dimension 0 corresponds
+to the number of examples, and if multiple input tensors
+are provided, the examples must be aligned appropriately.</p></li>
+<li><p><span class="target" id="tint.attr.BayesLime.attribute.params.baselines"></span><strong>baselines</strong><a class="paramlink headerlink reference internal" href="#tint.attr.BayesLime.attribute.params.baselines">¶</a> (<em>scalar</em><em>, </em><em>Tensor</em><em>, </em><em>tuple</em><em> of </em><em>scalar</em><em>, or </em><em>Tensor</em><em>, </em><em>optional</em>) – <p>Baselines define reference value which replaces each
+feature when the corresponding interpretable feature
+is set to 0.
+Baselines can be provided as:</p>
+<ul>
+<li><p>a single tensor, if inputs is a single tensor, with
+exactly the same dimensions as inputs or the first
+dimension is one and the remaining dimensions match
+with inputs.</p></li>
+<li><p>a single scalar, if inputs is a single tensor, which will
+be broadcasted for each input value in input tensor.</p></li>
+<li><p>a tuple of tensors or scalars, the baseline corresponding
+to each tensor in the inputs’ tuple can be:</p>
+<ul>
+<li><p>either a tensor with matching dimensions to
+corresponding tensor in the inputs’ tuple
+or the first dimension is one and the remaining
+dimensions match with the corresponding
+input tensor.</p></li>
+<li><p>or a scalar, corresponding to a tensor in the
+inputs’ tuple. This scalar value is broadcasted
+for corresponding input tensor.</p></li>
+</ul>
+</li>
+</ul>
+<p>In the cases when <cite>baselines</cite> is not provided, we internally
+use zero scalar corresponding to each input tensor.
+Default: None</p>
+</p></li>
+<li><p><span class="target" id="tint.attr.BayesLime.attribute.params.target"></span><strong>target</strong><a class="paramlink headerlink reference internal" href="#tint.attr.BayesLime.attribute.params.target">¶</a> (<em>int</em><em>, </em><em>tuple</em><em>, </em><em>Tensor</em><em>, or </em><em>list</em><em>, </em><em>optional</em>) – <p>Output indices for
+which surrogate model is trained
+(for classification cases,
+this is usually the target class).
+If the network returns a scalar value per example,
+no target index is necessary.
+For general 2D outputs, targets can be either:</p>
+<ul>
+<li><p>a single integer or a tensor containing a single
+integer, which is applied to all input examples</p></li>
+<li><p>a list of integers or a 1D tensor, with length matching
+the number of examples in inputs (dim 0). Each integer
+is applied as the target for the corresponding example.</p></li>
+</ul>
+<p>For outputs with &gt; 2 dimensions, targets can be either:</p>
+<ul>
+<li><p>A single tuple, which contains #output_dims - 1
+elements. This target index is applied to all examples.</p></li>
+<li><p>A list of tuples with length equal to the number of
+examples in inputs (dim 0), and each tuple containing
+#output_dims - 1 elements. Each tuple is applied as the
+target for the corresponding example.</p></li>
+</ul>
+<p>Default: None</p>
+</p></li>
+<li><p><span class="target" id="tint.attr.BayesLime.attribute.params.additional_forward_args"></span><strong>additional_forward_args</strong><a class="paramlink headerlink reference internal" href="#tint.attr.BayesLime.attribute.params.additional_forward_args">¶</a> (<em>Any</em><em>, </em><em>optional</em>) – If the forward function
+requires additional arguments other than the inputs for
+which attributions should not be computed, this argument
+can be provided. It must be either a single additional
+argument of a Tensor or arbitrary (non-tuple) type or a
+tuple containing multiple additional arguments including
+tensors or any arbitrary python types. These arguments
+are provided to forward_func in order following the
+arguments in inputs.
+For a tensor, the first dimension of the tensor must
+correspond to the number of examples. It will be
+repeated for each of <cite>n_steps</cite> along the integrated
+path. For all other types, the given argument is used
+for all forward evaluations.
+Note that attributions are not computed with respect
+to these arguments.
+Default: None</p></li>
+<li><p><span class="target" id="tint.attr.BayesLime.attribute.params.feature_mask"></span><strong>feature_mask</strong><a class="paramlink headerlink reference internal" href="#tint.attr.BayesLime.attribute.params.feature_mask">¶</a> (<em>Tensor</em><em> or </em><em>tuple</em><em>[</em><em>Tensor</em><em>, </em><em>...</em><em>]</em><em>, </em><em>optional</em>) – feature_mask defines a mask for the input, grouping
+features which correspond to the same
+interpretable feature. feature_mask
+should contain the same number of tensors as inputs.
+Each tensor should
+be the same size as the corresponding input or
+broadcastable to match the input tensor. Values across
+all tensors should be integers in the range 0 to
+num_interp_features - 1, and indices corresponding to the
+same feature should have the same value.
+Note that features are grouped across tensors
+(unlike feature ablation and occlusion), so
+if the same index is used in different tensors, those
+features are still grouped and added simultaneously.
+If None, then a feature mask is constructed which assigns
+each scalar within a tensor as a separate feature.
+Default: None</p></li>
+<li><p><span class="target" id="tint.attr.BayesLime.attribute.params.n_samples"></span><strong>n_samples</strong><a class="paramlink headerlink reference internal" href="#tint.attr.BayesLime.attribute.params.n_samples">¶</a> (<em>int</em><em>, </em><em>optional</em>) – The number of samples of the original
+model used to train the surrogate interpretable model.
+Default: <cite>50</cite> if <cite>n_samples</cite> is not provided.</p></li>
+<li><p><span class="target" id="tint.attr.BayesLime.attribute.params.perturbations_per_eval"></span><strong>perturbations_per_eval</strong><a class="paramlink headerlink reference internal" href="#tint.attr.BayesLime.attribute.params.perturbations_per_eval">¶</a> (<em>int</em><em>, </em><em>optional</em>) – Allows multiple samples
+to be processed simultaneously in one call to forward_fn.
+Each forward pass will contain a maximum of
+perturbations_per_eval * #examples samples.
+For DataParallel models, each batch is split among the
+available devices, so evaluations on each available
+device contain at most
+(perturbations_per_eval * #examples) / num_devices
+samples.
+If the forward function returns a single scalar per batch,
+perturbations_per_eval must be set to 1.
+Default: 1</p></li>
+<li><p><span class="target" id="tint.attr.BayesLime.attribute.params.return_input_shape"></span><strong>return_input_shape</strong><a class="paramlink headerlink reference internal" href="#tint.attr.BayesLime.attribute.params.return_input_shape">¶</a> (<em>bool</em><em>, </em><em>optional</em>) – Determines whether the returned
+tensor(s) only contain the coefficients for each interp-
+retable feature from the trained surrogate model, or
+whether the returned attributions match the input shape.
+When return_input_shape is True, the return type of attribute
+matches the input shape, with each element containing the
+coefficient of the corresponding interpretale feature.
+All elements with the same value in the feature mask
+will contain the same coefficient in the returned
+attributions. If return_input_shape is False, a 1D
+tensor is returned, containing only the coefficients
+of the trained interpreatable models, with length
+num_interp_features.</p></li>
+<li><p><span class="target" id="tint.attr.BayesLime.attribute.params.show_progress"></span><strong>show_progress</strong><a class="paramlink headerlink reference internal" href="#tint.attr.BayesLime.attribute.params.show_progress">¶</a> (<em>bool</em><em>, </em><em>optional</em>) – Displays the progress of computation.
+It will try to use tqdm if available for advanced features
+(e.g. time estimation). Otherwise, it will fallback to
+a simple output of progress.
+Default: False</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><dl class="simple">
+<dt><strong>attributions</strong> (<em>tensor</em> or tuple of <em>tensors</em>):</dt><dd><p>The attributions with respect to each input feature.
+If return_input_shape = True, attributions will be
+the same size as the provided inputs, with each value
+providing the coefficient of the corresponding
+interpretale feature.
+If return_input_shape is False, a 1D
+tensor is returned, containing only the coefficients
+of the trained interpreatable models, with length
+num_interp_features.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>credible_intervals</strong> (<em>tensor</em> or tuple of <em>tensors</em>):</dt><dd><p>The credible intervals associated with each attribution.
+If return_input_shape = True, credible intervals will be
+the same size as the provided inputs, with each value
+providing the coefficient of the corresponding
+interpretale feature.
+If return_input_shape is False, a 1D
+tensor is returned, containing only the credible intervals
+of the trained interpreatable models, with length
+num_interp_features.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>2-element tuple of <strong>attributions</strong>, <strong>credible_intervals</strong></p>
+</dd>
+</dl>
+<p>Examples:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># SimpleClassifier takes a single input tensor of size Nx4x4,</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># and returns an Nx3 tensor of class probabilities.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">net</span> <span class="o">=</span> <span class="n">SimpleClassifier</span><span class="p">()</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Generating random input with size 1 x 4 x 4</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Defining Lime interpreter</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lime</span> <span class="o">=</span> <span class="n">Lime</span><span class="p">(</span><span class="n">net</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Computes attribution, with each of the 4 x 4 = 16</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># features as a separate interpretable feature</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">attr</span> <span class="o">=</span> <span class="n">lime</span><span class="o">.</span><span class="n">attribute</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_samples</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Alternatively, we can group each 2x2 square of the inputs</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># as one &#39;interpretable&#39; feature and perturb them together.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># This can be done by creating a feature mask as follows, which</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># defines the feature groups, e.g.:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># +---+---+---+---+</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># | 0 | 0 | 1 | 1 |</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># +---+---+---+---+</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># | 0 | 0 | 1 | 1 |</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># +---+---+---+---+</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># | 2 | 2 | 3 | 3 |</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># +---+---+---+---+</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># | 2 | 2 | 3 | 3 |</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># +---+---+---+---+</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># With this mask, all inputs with the same value are set to their</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># baseline value, when the corresponding binary interpretable</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># feature is set to 0.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># The attributions can be calculated as follows:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># feature mask has dimensions 1 x 4 x 4</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">feature_mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span>
+<span class="gp">&gt;&gt;&gt; </span>                            <span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">],[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">]]])</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Computes interpretable model and returning attributions</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># matching input shape.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">attr</span> <span class="o">=</span> <span class="n">lime</span><span class="o">.</span><span class="n">attribute</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">feature_mask</span><span class="o">=</span><span class="n">feature_mask</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -784,29 +1344,65 @@ modification of it.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><span class="target" id="tint.attr.DynaMask.attribute.params.inputs"></span><strong>inputs</strong><a class="paramlink headerlink reference internal" href="#tint.attr.DynaMask.attribute.params.inputs">¶</a> (<em>tuple</em><em>, </em><em>th.Tensor</em>) – Input data.</p></li>
-<li><p><span class="target" id="tint.attr.DynaMask.attribute.params.additional_forward_args"></span><strong>additional_forward_args</strong><a class="paramlink headerlink reference internal" href="#tint.attr.DynaMask.attribute.params.additional_forward_args">¶</a> (<em>Any</em>) – Any additional argument passed
-to the model. Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.attr.DynaMask.attribute.params.inputs"></span><strong>inputs</strong><a class="paramlink headerlink reference internal" href="#tint.attr.DynaMask.attribute.params.inputs">¶</a> (<em>tensor</em><em> or </em><em>tuple</em><em> of </em><em>tensors</em>) – Input for which integrated
+gradients are computed. If forward_func takes a single
+tensor as input, a single input tensor should be provided.
+If forward_func takes multiple tensors as input, a tuple
+of the input tensors should be provided. It is assumed
+that for all given input tensors, dimension 0 corresponds
+to the number of examples, and if multiple input tensors
+are provided, the examples must be aligned appropriately.</p></li>
+<li><p><span class="target" id="tint.attr.DynaMask.attribute.params.additional_forward_args"></span><strong>additional_forward_args</strong><a class="paramlink headerlink reference internal" href="#tint.attr.DynaMask.attribute.params.additional_forward_args">¶</a> (<em>any</em><em>, </em><em>optional</em>) – If the forward function
+requires additional arguments other than the inputs for
+which attributions should not be computed, this argument
+can be provided. It must be either a single additional
+argument of a Tensor or arbitrary (non-tuple) type or a
+tuple containing multiple additional arguments including
+tensors or any arbitrary python types. These arguments
+are provided to forward_func in order following the
+arguments in inputs.
+For a tensor, the first dimension of the tensor must
+correspond to the number of examples. It will be
+repeated for each of <cite>n_steps</cite> along the integrated
+path. For all other types, the given argument is used
+for all forward evaluations.
+Note that attributions are not computed with respect
+to these arguments.
+Default: None</p></li>
 <li><p><span class="target" id="tint.attr.DynaMask.attribute.params.trainer"></span><strong>trainer</strong><a class="paramlink headerlink reference internal" href="#tint.attr.DynaMask.attribute.params.trainer">¶</a> (<em>Trainer</em>) – Pytorch Lightning trainer. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, a
-default trainer will be provided. Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+default trainer will be provided.
+Default: None</p></li>
 <li><p><span class="target" id="tint.attr.DynaMask.attribute.params.mask_net"></span><strong>mask_net</strong><a class="paramlink headerlink reference internal" href="#tint.attr.DynaMask.attribute.params.mask_net">¶</a> (<a class="reference internal" href="attr_models.html#tint.attr.models.MaskNet" title="tint.attr.models.MaskNet"><em>MaskNet</em></a>) – A Mask model. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, a default model
-will be provided. Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
-<li><p><span class="target" id="tint.attr.DynaMask.attribute.params.batch_size"></span><strong>batch_size</strong><a class="paramlink headerlink reference internal" href="#tint.attr.DynaMask.attribute.params.batch_size">¶</a> (<em>int</em>) – Batch size for Mask training. Default to 32</p></li>
+will be provided.
+Default: None</p></li>
+<li><p><span class="target" id="tint.attr.DynaMask.attribute.params.batch_size"></span><strong>batch_size</strong><a class="paramlink headerlink reference internal" href="#tint.attr.DynaMask.attribute.params.batch_size">¶</a> (<em>int</em>) – Batch size for Mask training.
+Default: 32</p></li>
 <li><p><span class="target" id="tint.attr.DynaMask.attribute.params.temporal_additional_forward_args"></span><strong>temporal_additional_forward_args</strong><a class="paramlink headerlink reference internal" href="#tint.attr.DynaMask.attribute.params.temporal_additional_forward_args">¶</a> (<em>tuple</em>) – Set each
 additional forward arg which is temporal.
 Only used with return_temporal_attributions.
-Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+Default: None</p></li>
 <li><p><span class="target" id="tint.attr.DynaMask.attribute.params.return_temporal_attributions"></span><strong>return_temporal_attributions</strong><a class="paramlink headerlink reference internal" href="#tint.attr.DynaMask.attribute.params.return_temporal_attributions">¶</a> (<em>bool</em>) – Whether to return
-attributions for all times or not. Default to <code class="docutils literal notranslate"><span class="pre">False</span></code></p></li>
+attributions for all times or not.
+Default: False</p></li>
 <li><p><span class="target" id="tint.attr.DynaMask.attribute.params.return_best_ratio"></span><strong>return_best_ratio</strong><a class="paramlink headerlink reference internal" href="#tint.attr.DynaMask.attribute.params.return_best_ratio">¶</a> (<em>bool</em>) – Whether to return the best keep_ratio
-or not. Default to <code class="docutils literal notranslate"><span class="pre">False</span></code></p></li>
+or not.
+Default: False</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Attributions.</p>
+<dd class="field-even"><p>The attributions with respect to each input feature.
+Attributions will always be
+the same size as the provided inputs, with each value
+providing the attribution of the corresponding input index.
+If a single tensor is provided as inputs, a single tensor is
+returned. If a tuple is provided for inputs, a tuple of
+corresponding sized tensors is returned.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>(th.Tensor, tuple)</p>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>attributions</strong> (<em>tensor</em> or tuple of <em>tensors</em>)</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1226,30 +1822,65 @@ If not provided, a default trainer is created. Default to <code class="docutils 
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><span class="target" id="tint.attr.Fit.attribute.params.inputs"></span><strong>inputs</strong><a class="paramlink headerlink reference internal" href="#tint.attr.Fit.attribute.params.inputs">¶</a> (<em>tuple</em><em>, </em><em>th.Tensor</em>) – Input data.</p></li>
+<li><p><span class="target" id="tint.attr.Fit.attribute.params.inputs"></span><strong>inputs</strong><a class="paramlink headerlink reference internal" href="#tint.attr.Fit.attribute.params.inputs">¶</a> (<em>tensor</em><em> or </em><em>tuple</em><em> of </em><em>tensors</em>) – Input for which integrated
+gradients are computed. If forward_func takes a single
+tensor as input, a single input tensor should be provided.
+If forward_func takes multiple tensors as input, a tuple
+of the input tensors should be provided. It is assumed
+that for all given input tensors, dimension 0 corresponds
+to the number of examples, and if multiple input tensors
+are provided, the examples must be aligned appropriately.</p></li>
 <li><p><span class="target" id="tint.attr.Fit.attribute.params.additional_forward_args"></span><strong>additional_forward_args</strong><a class="paramlink headerlink reference internal" href="#tint.attr.Fit.attribute.params.additional_forward_args">¶</a> (<em>any</em><em>, </em><em>optional</em>) – If the forward function
 requires additional arguments other than the inputs for
 which attributions should not be computed, this argument
-can be provided. Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
-<li><p><span class="target" id="tint.attr.Fit.attribute.params.n_samples"></span><strong>n_samples</strong><a class="paramlink headerlink reference internal" href="#tint.attr.Fit.attribute.params.n_samples">¶</a> (<em>int</em>) – Number of Monte-Carlo samples. Default to 10</p></li>
-<li><p><span class="target" id="tint.attr.Fit.attribute.params.distance_metric"></span><strong>distance_metric</strong><a class="paramlink headerlink reference internal" href="#tint.attr.Fit.attribute.params.distance_metric">¶</a> (<em>str</em>) – Distance metric. Default to <code class="docutils literal notranslate"><span class="pre">'kl'</span></code></p></li>
+can be provided. It must be either a single additional
+argument of a Tensor or arbitrary (non-tuple) type or a
+tuple containing multiple additional arguments including
+tensors or any arbitrary python types. These arguments
+are provided to forward_func in order following the
+arguments in inputs.
+For a tensor, the first dimension of the tensor must
+correspond to the number of examples. It will be
+repeated for each of <cite>n_steps</cite> along the integrated
+path. For all other types, the given argument is used
+for all forward evaluations.
+Note that attributions are not computed with respect
+to these arguments.
+Default: None</p></li>
+<li><p><span class="target" id="tint.attr.Fit.attribute.params.n_samples"></span><strong>n_samples</strong><a class="paramlink headerlink reference internal" href="#tint.attr.Fit.attribute.params.n_samples">¶</a> (<em>int</em>) – Number of Monte-Carlo samples.
+Default: 10</p></li>
+<li><p><span class="target" id="tint.attr.Fit.attribute.params.distance_metric"></span><strong>distance_metric</strong><a class="paramlink headerlink reference internal" href="#tint.attr.Fit.attribute.params.distance_metric">¶</a> (<em>str</em>) – Distance metric.
+Default to ‘kl’</p></li>
 <li><p><span class="target" id="tint.attr.Fit.attribute.params.multilabel"></span><strong>multilabel</strong><a class="paramlink headerlink reference internal" href="#tint.attr.Fit.attribute.params.multilabel">¶</a> (<em>bool</em>) – Whether the task is single or multi-labeled.
-Default to <code class="docutils literal notranslate"><span class="pre">False</span></code></p></li>
+Default: False</p></li>
 <li><p><span class="target" id="tint.attr.Fit.attribute.params.temporal_additional_forward_args"></span><strong>temporal_additional_forward_args</strong><a class="paramlink headerlink reference internal" href="#tint.attr.Fit.attribute.params.temporal_additional_forward_args">¶</a> (<em>tuple</em>) – Set each
 additional forward arg which is temporal.
 Only used with return_temporal_attributions.
-Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+Default: None</p></li>
 <li><p><span class="target" id="tint.attr.Fit.attribute.params.return_temporal_attributions"></span><strong>return_temporal_attributions</strong><a class="paramlink headerlink reference internal" href="#tint.attr.Fit.attribute.params.return_temporal_attributions">¶</a> (<em>bool</em>) – Whether to return
-attributions for all times or not. Default to <code class="docutils literal notranslate"><span class="pre">False</span></code></p></li>
-<li><p><span class="target" id="tint.attr.Fit.attribute.params.show_progress"></span><strong>show_progress</strong><a class="paramlink headerlink reference internal" href="#tint.attr.Fit.attribute.params.show_progress">¶</a> (<em>bool</em>) – Displays the progress of computation.
-Default to False</p></li>
+attributions for all times or not.
+Default: False</p></li>
+<li><p><span class="target" id="tint.attr.Fit.attribute.params.show_progress"></span><strong>show_progress</strong><a class="paramlink headerlink reference internal" href="#tint.attr.Fit.attribute.params.show_progress">¶</a> (<em>bool</em><em>, </em><em>optional</em>) – Displays the progress of computation.
+It will try to use tqdm if available for advanced features
+(e.g. time estimation). Otherwise, it will fallback to
+a simple output of progress.
+Default: False</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Attributions.</p>
+<dd class="field-even"><p>The attributions with respect to each input feature.
+Attributions will always be
+the same size as the provided inputs, with each value
+providing the attribution of the corresponding input index.
+If a single tensor is provided as inputs, a single tensor is
+returned. If a tuple is provided for inputs, a tuple of
+corresponding sized tensors is returned.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>(th.Tensor, tuple)</p>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>attributions</strong> (<em>tensor</em> or tuple of <em>tensors</em>)</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1540,7 +2171,7 @@ an indication of the true curvature of the input space.</p>
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>attributions</strong> or 2-element tuple of <strong>attributions</strong>, <strong>delta</strong></p>
+<dd class="field-odd"><p><strong>attributions</strong> or tuple with <strong>attributions</strong>, <strong>delta</strong> (optional) or /and curvature (optional)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2098,18 +2729,57 @@ ignored. Default to <code class="docutils literal notranslate"><span class="pre"
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><span class="target" id="tint.attr.Retain.attribute.params.inputs"></span><strong>inputs</strong><a class="paramlink headerlink reference internal" href="#tint.attr.Retain.attribute.params.inputs">¶</a> (<em>tuple</em><em>, </em><em>th.Tensor</em>) – Input data.</p></li>
-<li><p><span class="target" id="tint.attr.Retain.attribute.params.target"></span><strong>target</strong><a class="paramlink headerlink reference internal" href="#tint.attr.Retain.attribute.params.target">¶</a> (<em>int</em><em>, </em><em>tuple</em><em>, </em><em>tensor</em><em>, </em><em>list</em>) – Output indices. Default to
-<code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><span class="target" id="tint.attr.Retain.attribute.params.inputs"></span><strong>inputs</strong><a class="paramlink headerlink reference internal" href="#tint.attr.Retain.attribute.params.inputs">¶</a> (<em>tensor</em><em> or </em><em>tuple</em><em> of </em><em>tensors</em>) – Input for which integrated
+gradients are computed. If forward_func takes a single
+tensor as input, a single input tensor should be provided.
+If forward_func takes multiple tensors as input, a tuple
+of the input tensors should be provided. It is assumed
+that for all given input tensors, dimension 0 corresponds
+to the number of examples, and if multiple input tensors
+are provided, the examples must be aligned appropriately.</p></li>
+<li><p><span class="target" id="tint.attr.Retain.attribute.params.target"></span><strong>target</strong><a class="paramlink headerlink reference internal" href="#tint.attr.Retain.attribute.params.target">¶</a> (<em>int</em><em>, </em><em>tuple</em><em>, </em><em>tensor</em><em> or </em><em>list</em><em>, </em><em>optional</em>) – <p>Output indices for
+which gradients are computed (for classification cases,
+this is usually the target class).
+If the network returns a scalar value per example,
+no target index is necessary.
+For general 2D outputs, targets can be either:</p>
+<ul>
+<li><p>a single integer or a tensor containing a single
+integer, which is applied to all input examples</p></li>
+<li><p>a list of integers or a 1D tensor, with length matching
+the number of examples in inputs (dim 0). Each integer
+is applied as the target for the corresponding example.</p></li>
+</ul>
+<p>For outputs with &gt; 2 dimensions, targets can be either:</p>
+<ul>
+<li><p>A single tuple, which contains #output_dims - 1
+elements. This target index is applied to all examples.</p></li>
+<li><p>A list of tuples with length equal to the number of
+examples in inputs (dim 0), and each tuple containing
+#output_dims - 1 elements. Each tuple is applied as the
+target for the corresponding example.</p></li>
+</ul>
+<p>Default: None</p>
+</p></li>
 <li><p><span class="target" id="tint.attr.Retain.attribute.params.return_temporal_attributions"></span><strong>return_temporal_attributions</strong><a class="paramlink headerlink reference internal" href="#tint.attr.Retain.attribute.params.return_temporal_attributions">¶</a> (<em>bool</em>) – Whether to return
-attributions for all times or not. Default to <code class="docutils literal notranslate"><span class="pre">False</span></code></p></li>
+attributions for all times or not.
+Default: False</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Attributions.</p>
+<dd class="field-even"><p>The attributions with respect to each input feature.
+Attributions will always be
+the same size as the provided inputs, with each value
+providing the attribution of the corresponding input index.
+If a single tensor is provided as inputs, a single tensor is
+returned. If a tuple is provided for inputs, a tuple of
+corresponding sized tensors is returned.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>(th.Tensor, tuple)</p>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>attributions</strong> (<em>tensor</em> or tuple of <em>tensors</em>)</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2339,10 +3009,10 @@ of examples in inputs.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># ImageClassifier takes a single input tensor of images Nx3x32x32,</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># and returns an Nx10 tensor of class probabilities.</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">net</span> <span class="o">=</span> <span class="n">ImageClassifier</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ig</span> <span class="o">=</span> <span class="n">IntegratedGradients</span><span class="p">(</span><span class="n">net</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sig</span> <span class="o">=</span> <span class="n">SequentialIntegratedGradients</span><span class="p">(</span><span class="n">net</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Computes integrated gradients for class 3.</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">attribution</span> <span class="o">=</span> <span class="n">ig</span><span class="o">.</span><span class="n">attribute</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">attribution</span> <span class="o">=</span> <span class="n">sig</span><span class="o">.</span><span class="n">attribute</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -2755,6 +3425,8 @@ time, leaving the previous times unchanged. It can be used together with
 any modification of it.</p>
 </dd>
 </dl>
+<p class="rubric">References</p>
+<p><a class="reference external" href="https://arxiv.org/abs/2003.02821">https://arxiv.org/abs/2003.02821</a></p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span> <span class="k">as</span> <span class="nn">th</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tint.attr</span> <span class="kn">import</span> <span class="n">TemporalOcclusion</span>
@@ -2973,9 +3645,9 @@ multiple input tensors are provided, the examples must
 be aligned appropriately.</p></li>
 <li><p><span class="target" id="tint.attr.TimeForwardTunnel.attribute.params.task"></span><strong>task</strong><a class="paramlink headerlink reference internal" href="#tint.attr.TimeForwardTunnel.attribute.params.task">¶</a> (<em>str</em>) – Type of task done by the model. Either <code class="docutils literal notranslate"><span class="pre">'binary'</span></code>,
 <code class="docutils literal notranslate"><span class="pre">'multilabel'</span></code>, <code class="docutils literal notranslate"><span class="pre">'multiclass'</span></code> or <code class="docutils literal notranslate"><span class="pre">'regression'</span></code>.
-Default to <code class="docutils literal notranslate"><span class="pre">'binary'</span></code></p></li>
+Default: ‘binary’</p></li>
 <li><p><span class="target" id="tint.attr.TimeForwardTunnel.attribute.params.threshold"></span><strong>threshold</strong><a class="paramlink headerlink reference internal" href="#tint.attr.TimeForwardTunnel.attribute.params.threshold">¶</a> (<em>float</em>) – Threshold for the multilabel task.
-Default to 0.5</p></li>
+Default: 0.5</p></li>
 <li><p><span class="target" id="tint.attr.TimeForwardTunnel.attribute.params.temporal_target"></span><strong>temporal_target</strong><a class="paramlink headerlink reference internal" href="#tint.attr.TimeForwardTunnel.attribute.params.temporal_target">¶</a> (<em>bool</em><em>, </em><em>optional</em>) – Determine if the targe is
 temporal and needs to be cut.
 Default: False</p></li>

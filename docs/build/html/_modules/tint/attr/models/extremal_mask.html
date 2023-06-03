@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>tint.attr.models.extremal_mask &mdash; Time Interpret 0.2.1 documentation</title>
+  <title>tint.attr.models.extremal_mask &mdash; Time Interpret 0.3.0 documentation</title>
   
 
   
@@ -273,11 +273,14 @@
 <span class="sd">    Args:</span>
 <span class="sd">        forward_func (callable): The forward function of the model or any</span>
 <span class="sd">            modification of it.</span>
-<span class="sd">        comp_loss (bool): Whether to include comprehensiveness loss.</span>
-<span class="sd">            Default to ``False``</span>
+<span class="sd">        preservation_mode (bool): If ``True``, uses the method in</span>
+<span class="sd">            preservation mode. Otherwise, uses the deletion mode.</span>
+<span class="sd">            Default to ``True``</span>
 <span class="sd">        model (nnn.Module): A model used to recreate the original</span>
 <span class="sd">            predictions, in addition to the mask. Default to ``None``</span>
 <span class="sd">        batch_size (int): Batch size of the model. Default to 32</span>
+<span class="sd">        lambda_1 (float): Weighting for the mask loss. Default to 1.</span>
+<span class="sd">        lambda_2 (float): Weighting for the model output loss. Default to 1.</span>
 <span class="sd">        loss (str, callable): Which loss to use. Default to ``&#39;mse&#39;``</span>
 <span class="sd">        optim (str): Which optimizer to use. Default to ``&#39;adam&#39;``</span>
 <span class="sd">        lr (float): Learning rate. Default to 1e-3</span>
@@ -306,9 +309,11 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">forward_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
-        <span class="n">comp_loss</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">preservation_mode</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">model</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
+        <span class="n">lambda_1</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">lambda_2</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
         <span class="n">loss</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;mse&quot;</span><span class="p">,</span>
         <span class="n">optim</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;adam&quot;</span><span class="p">,</span>
         <span class="n">lr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.001</span><span class="p">,</span>
@@ -332,7 +337,9 @@
             <span class="n">l2</span><span class="o">=</span><span class="n">l2</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">comp_loss</span> <span class="o">=</span> <span class="n">comp_loss</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">preservation_mode</span> <span class="o">=</span> <span class="n">preservation_mode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lambda_1</span> <span class="o">=</span> <span class="n">lambda_1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lambda_2</span> <span class="o">=</span> <span class="n">lambda_2</span>
 
 <div class="viewcode-block" id="ExtremalMaskNet.forward"><a class="viewcode-back" href="../../../../attr_models.html#tint.attr.models.ExtremalMaskNet.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">th</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
@@ -380,24 +387,27 @@
         <span class="p">)</span>
 
         <span class="c1"># Add L1 loss</span>
-        <span class="n">mask_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">mask</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">preservation_mode</span><span class="p">:</span>
+            <span class="n">mask_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambda_1</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">mask</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mask_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambda_1</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">mask_</span> <span class="o">=</span> <span class="n">mask_</span><span class="p">[</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">batch_size</span>
                 <span class="o">*</span> <span class="n">batch_idx</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">batch_size</span>
                 <span class="o">*</span> <span class="p">(</span><span class="n">batch_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
             <span class="p">]</span>
-            <span class="n">mask_</span> <span class="o">=</span> <span class="n">mask_</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">baselines</span><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span>
-        <span class="n">reg_loss</span> <span class="o">=</span> <span class="n">mask_</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+            <span class="n">mask_</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambda_2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">baselines</span><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">mask_</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
 
-        <span class="c1"># Compute and return loss</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">comp_loss</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">(</span><span class="n">y_hat1</span><span class="p">,</span> <span class="n">y_target1</span><span class="p">)</span>
-                <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">(</span><span class="n">y_hat2</span><span class="p">,</span> <span class="n">y_target2</span><span class="p">)</span>
-                <span class="o">+</span> <span class="n">reg_loss</span>
-            <span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">(</span><span class="n">y_hat1</span><span class="p">,</span> <span class="n">y_target1</span><span class="p">)</span> <span class="o">+</span> <span class="n">reg_loss</span>
+        <span class="c1"># Add preservation and deletion losses if required</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">preservation_mode</span><span class="p">:</span>
+            <span class="n">loss</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">(</span><span class="n">y_hat1</span><span class="p">,</span> <span class="n">y_target1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">loss</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">(</span><span class="n">y_hat2</span><span class="p">,</span> <span class="n">y_target2</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">loss</span>
 
 <div class="viewcode-block" id="ExtremalMaskNet.configure_optimizers"><a class="viewcode-back" href="../../../../attr_models.html#tint.attr.models.ExtremalMaskNet.configure_optimizers">[docs]</a>    <span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">params</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">mask</span><span class="p">}]</span>

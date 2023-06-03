@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>tint.attr.models.bayes_linear &mdash; Time Interpret 0.2.1 documentation</title>
+  <title>tint.attr.models.bayes_linear &mdash; Time Interpret 0.3.0 documentation</title>
   
 
   
@@ -251,9 +251,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="n">weights</span>
 
         <span class="k">if</span> <span class="n">compute_creds</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">creds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_creds</span><span class="p">(</span><span class="n">percent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">percent</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">creds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_creds</span><span class="p">(</span><span class="n">percent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">percent</span><span class="p">,</span> <span class="n">n_samples</span><span class="o">=</span><span class="n">N</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">creds</span> <span class="o">=</span> <span class="s2">&quot;NA&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">creds</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">crit_params</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;s_2&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">s_2</span><span class="p">,</span>
@@ -427,6 +427,9 @@
     <span class="k">if</span> <span class="n">norm_input</span><span class="p">:</span>
         <span class="n">model</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="n">NormLayer</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="p">)</span>
 
+    <span class="c1"># Save creds to model if provided</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">creds</span> <span class="o">=</span> <span class="n">blr</span><span class="o">.</span><span class="n">creds</span>
+
     <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;train_time&quot;</span><span class="p">:</span> <span class="n">t2</span> <span class="o">-</span> <span class="n">t1</span><span class="p">}</span>
 
 
@@ -442,6 +445,11 @@
 <span class="sd">                The kwargs to pass to the construction of the sklearn model</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">train_fn</span><span class="o">=</span><span class="n">train_bayes_model</span><span class="p">,</span> <span class="n">l2</span><span class="o">=</span><span class="n">l2</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">creds</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">representation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">th</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">th</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">detach</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">creds</span>
 
 
 <div class="viewcode-block" id="BLRRegression"><a class="viewcode-back" href="../../../../attr_models.html#tint.attr.models.BLRRegression">[docs]</a><span class="k">class</span> <span class="nc">BLRRegression</span><span class="p">(</span><span class="n">BLRLinearModel</span><span class="p">):</span>

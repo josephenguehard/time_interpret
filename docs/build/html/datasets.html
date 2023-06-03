@@ -8,7 +8,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Datasets &mdash; Time Interpret 0.2.1 documentation</title>
+  <title>Datasets &mdash; Time Interpret 0.3.0 documentation</title>
   
 
   
@@ -296,12 +296,13 @@ Ignored if n_folds is None. Default to <code class="docutils literal notranslate
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><span class="target" id="tint.datasets.BioBank.params.label"></span><strong>label</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.BioBank.params.label">¶</a> (<em>str</em>) – Condition to be used as label. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, it is set to
+type 2 diabetes.
+Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
 <li><p><span class="target" id="tint.datasets.BioBank.params.discretised"></span><strong>discretised</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.BioBank.params.discretised">¶</a> (<em>bool</em>) – Whether to return a discretised dataset or not.
-Default to <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
-<li><p><span class="target" id="tint.datasets.BioBank.params.granularity"></span><strong>granularity</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.BioBank.params.granularity">¶</a> (<em>str</em><em>, </em><em>int</em>) – The time granularity.
-Default to a year: 24*365.25 hours</p></li>
-<li><p><span class="target" id="tint.datasets.BioBank.params.maximum_time"></span><strong>maximum_time</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.BioBank.params.maximum_time">¶</a> (<em>int</em>) – Maximum time to record. Default to 1,000,000 hours
-which is around 114 years</p></li>
+Default to <code class="docutils literal notranslate"><span class="pre">False</span></code></p></li>
+<li><p><span class="target" id="tint.datasets.BioBank.params.granularity"></span><strong>granularity</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.BioBank.params.granularity">¶</a> (<em>str</em><em>, </em><em>int</em>) – The time granularity. Default to a year.</p></li>
+<li><p><span class="target" id="tint.datasets.BioBank.params.maximum_time"></span><strong>maximum_time</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.BioBank.params.maximum_time">¶</a> (<em>int</em>) – Maximum time to record. Default to 115 years</p></li>
 <li><p><span class="target" id="tint.datasets.BioBank.params.fasttext"></span><strong>fasttext</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.BioBank.params.fasttext">¶</a> (<em>Fasttext</em>) – A Fasttext model to encode categorical features.
 Default to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
 <li><p><span class="target" id="tint.datasets.BioBank.params.time_to_task"></span><strong>time_to_task</strong><a class="paramlink headerlink reference internal" href="#tint.datasets.BioBank.params.time_to_task">¶</a> (<em>float</em>) – Special arg for diabetes task. Stops the

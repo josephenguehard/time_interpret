@@ -34,6 +34,8 @@ Pip
 .. code-block:: console
 
     git clone git@github.com:babylonhealth/time_interpret.git
+    python -m venv <myvenv>
+    source <myvenv>/bin/activate
     cd time_interpret
     pip install .
 
