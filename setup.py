@@ -16,8 +16,8 @@ setup(
     description="Time interpret package.",
     long_description=readme,
     author="Joseph Enguehard",
-    author_email="joseph.enguehard@babylonhealth.com",
-    url="https://github.com/babylonhealth/time_interpret",
+    author_email="joseph@skippr.com",
+    url="https://github.com/josephenguehard/time_interpret",
     python_requires=">=3.7",
     install_requires=[
         "captum",
