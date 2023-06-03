@@ -8,7 +8,7 @@ version="0.3.0"
 authors=[
     {name="Joseph Enguehard", email="joseph@skippr.com"},
 ]
-description="Time interpret library for PyTorch."
+description="Model interpretability library for PyTorch with a focus on time series."
 readme="README.md"
 requires-python=">=3.7"
 keywords=[
@@ -92,10 +92,15 @@ full = [
 
 [project.urls]
 homepage="https://github.com/josephenguehard/time_interpret"
-documentation=""
+documentation="https://josephenguehard.github.io/time_interpret"
 
 [tool.flit.module]
 name="tint"
+
+[tool.flit.sdist]
+exclude = [
+    "tint/data/*"
+]
 
 [tool.flake8]
 ignore = ["F811", "W503", "W504"]
