@@ -469,7 +469,7 @@
 <span class="sd">        &gt;&gt;&gt; mlp = MLP([5, 3, 1])</span>
 <span class="sd">        &lt;BLANKLINE&gt;</span>
 <span class="sd">        &gt;&gt;&gt; explainer = BayesLime(mlp)</span>
-<span class="sd">        &gt;&gt;&gt; attr = explainer.attribute(inputs)</span>
+<span class="sd">        &gt;&gt;&gt; attr, credible_int = explainer.attribute(inputs)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -804,7 +804,7 @@
 <span class="sd">        &gt;&gt;&gt; mlp = MLP([5, 3, 1])</span>
 <span class="sd">        &lt;BLANKLINE&gt;</span>
 <span class="sd">        &gt;&gt;&gt; explainer = BayesKernelShap(mlp)</span>
-<span class="sd">        &gt;&gt;&gt; attr = explainer.attribute(inputs)</span>
+<span class="sd">        &gt;&gt;&gt; attr, credible_int = explainer.attribute(inputs)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
