@@ -298,7 +298,7 @@ class BayesLime(_BayesLime):
         >>> mlp = MLP([5, 3, 1])
         <BLANKLINE>
         >>> explainer = BayesLime(mlp)
-        >>> attr = explainer.attribute(inputs)
+        >>> attr, credible_int = explainer.attribute(inputs)
     """
 
     def __init__(
@@ -633,7 +633,7 @@ class BayesKernelShap(KernelShap, _BayesLime):
         >>> mlp = MLP([5, 3, 1])
         <BLANKLINE>
         >>> explainer = BayesKernelShap(mlp)
-        >>> attr = explainer.attribute(inputs)
+        >>> attr, credible_int = explainer.attribute(inputs)
     """
 
     def __init__(

@@ -85,7 +85,7 @@ def test_bayes(
     with pytest.raises(Exception) if fails else nullcontext():
         explainer = BayesLime(forward_func=forward_func, interpretable_model=interpretable_model)
 
-        attr = explainer.attribute(
+        attr, credible_int = explainer.attribute(
             inputs=inputs,
             baselines=baselines,
             target=target,
@@ -97,8 +97,10 @@ def test_bayes(
         )
         if return_input_shape:
             assert attr.shape == inputs.shape
+            assert credible_int.shape == inputs.shape
         else:
             assert tuple(attr.shape) == (1, 15)
+            assert tuple(credible_int.shape) == (1, 15)
 
     with pytest.raises(Exception) if fails else nullcontext():
         explainer = BayesKernelShap(forward_func=forward_func, interpretable_model=interpretable_model)
@@ -115,5 +117,7 @@ def test_bayes(
         )
         if return_input_shape:
             assert attr.shape == inputs.shape
+            assert credible_int.shape == inputs.shape
         else:
             assert tuple(attr.shape) == (1, 15)
+            assert tuple(credible_int.shape) == (1, 15)
