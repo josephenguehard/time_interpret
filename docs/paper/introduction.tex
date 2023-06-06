@@ -31,7 +31,12 @@ applications often carry high-stakes decisions.
 Consequently, several feature attribution methods have recently been introduced to tackle this specific
 case~\citep{choi2016retain, tonekaboni2020went, crabbe2021explaining}.
 Yet, to the best of our knowledge, there seems to be a lack of a unified library to regroup and evaluate these specific
-methods.
+methods.\footnote{
+    With the exception of TSInterpret~\citep{hollig2022tsinterpret}, another library which has this specific focus.
+    We concurrently developed \texttt{\detokenize{time_interpret}} unaware of this work, which contains several methods
+    not covered by our library.
+    Therefore, we also recommend this library to the reader.
+}
 
 As a result, we created \texttt{\detokenize{time_interpret}} (short: \texttt{tint}), a Python library designed as an
 extension of Captum~\citep{kokhlikyan2020captum}.
