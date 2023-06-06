@@ -33,7 +33,8 @@ class TimeForwardTunnel(Attribution):
                     Conductance or Saliency.
 
     References:
-        `What went wrong and when? Instance-wise Feature Importance for Time-series Models <https://arxiv.org/abs/2003.02821>`_
+        #. `What went wrong and when? Instance-wise Feature Importance for Time-series Models <https://arxiv.org/abs/2003.02821>`_
+        #. `Time Interpret: a Unified Model Interpretability Library for Time Series <https://arxiv.org/abs/2306.02968>`_
 
     Examples:
         >>> import torch as th

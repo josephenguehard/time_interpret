@@ -58,6 +58,9 @@ class TemporalIntegratedGradients(IntegratedGradients):
             is set to True, final sensitivity scores are being multiplied by
             (inputs - baselines).
 
+    References:
+        `Time Interpret: a Unified Model Interpretability Library for Time Series <https://arxiv.org/abs/2306.02968>`_
+
     Examples:
         >>> import torch as th
         >>> from tint.attr import TemporalIntegratedGradients
