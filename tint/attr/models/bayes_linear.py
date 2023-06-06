@@ -20,6 +20,9 @@ class BayesianLinearRegression:
             Default to 95
         l2 (bool): Whether to use l2 regularisation.
             Default to ``True``
+
+    References:
+        `Reliable Post hoc Explanations: Modeling Uncertainty in Explainability <https://arxiv.org/abs/2008.05030>`_
     """
 
     def __init__(self, percent=95, l2=True):
@@ -80,9 +83,9 @@ class BayesianLinearRegression:
         self.weights = weights
 
         if compute_creds:
-            self.creds = self.get_creds(percent=self.percent)
+            self.creds = self.get_creds(percent=self.percent, n_samples=N)
         else:
-            self.creds = "NA"
+            self.creds = None
 
         self.crit_params = {
             "s_2": self.s_2,
@@ -256,6 +259,9 @@ def train_bayes_model(
     if norm_input:
         model.norm = NormLayer(mean, std)
 
+    # Save creds to model if provided
+    model.creds = blr.creds
+
     return {"train_time": t2 - t1}
 
 
@@ -271,6 +277,11 @@ class BLRLinearModel(LinearModel):
                 The kwargs to pass to the construction of the sklearn model
         """
         super().__init__(train_fn=train_bayes_model, l2=l2, **kwargs)
+        self.creds = None
+
+    def representation(self) -> (th.Tensor, th.Tensor):
+        assert self.linear is not None
+        return self.linear.weight.detach(), self.creds
 
 
 class BLRRegression(BLRLinearModel):

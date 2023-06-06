@@ -58,7 +58,7 @@ class Fit(PerturbationAttribution):
         batch_size (int): Batch size for generator training. Default to 32
 
     References:
-        https://arxiv.org/abs/2003.02821
+        `What went wrong and when? Instance-wise Feature Importance for Time-series Models <https://arxiv.org/abs/2003.02821>`_
 
     Examples:
         >>> import torch as th
@@ -142,26 +142,59 @@ class Fit(PerturbationAttribution):
         attribute method.
 
         Args:
-            inputs (tuple, th.Tensor): Input data.
+            inputs (tensor or tuple of tensors):  Input for which integrated
+                gradients are computed. If forward_func takes a single
+                tensor as input, a single input tensor should be provided.
+                If forward_func takes multiple tensors as input, a tuple
+                of the input tensors should be provided. It is assumed
+                that for all given input tensors, dimension 0 corresponds
+                to the number of examples, and if multiple input tensors
+                are provided, the examples must be aligned appropriately.
             additional_forward_args (any, optional): If the forward function
-                        requires additional arguments other than the inputs for
-                        which attributions should not be computed, this argument
-                        can be provided. Default to ``None``
-            n_samples (int): Number of Monte-Carlo samples. Default to 10
-            distance_metric (str): Distance metric. Default to ``'kl'``
+                requires additional arguments other than the inputs for
+                which attributions should not be computed, this argument
+                can be provided. It must be either a single additional
+                argument of a Tensor or arbitrary (non-tuple) type or a
+                tuple containing multiple additional arguments including
+                tensors or any arbitrary python types. These arguments
+                are provided to forward_func in order following the
+                arguments in inputs.
+                For a tensor, the first dimension of the tensor must
+                correspond to the number of examples. It will be
+                repeated for each of `n_steps` along the integrated
+                path. For all other types, the given argument is used
+                for all forward evaluations.
+                Note that attributions are not computed with respect
+                to these arguments.
+                Default: None
+            n_samples (int): Number of Monte-Carlo samples.
+                Default: 10
+            distance_metric (str): Distance metric.
+                Default to 'kl'
             multilabel (bool): Whether the task is single or multi-labeled.
-                Default to ``False``
+                Default: False
             temporal_additional_forward_args (tuple): Set each
                 additional forward arg which is temporal.
                 Only used with return_temporal_attributions.
-                Default to ``None``
+                Default: None
             return_temporal_attributions (bool): Whether to return
-                attributions for all times or not. Default to ``False``
-            show_progress (bool): Displays the progress of computation.
-                Default to False
+                attributions for all times or not.
+                Default: False
+            show_progress (bool, optional): Displays the progress of computation.
+                It will try to use tqdm if available for advanced features
+                (e.g. time estimation). Otherwise, it will fallback to
+                a simple output of progress.
+                Default: False
 
         Returns:
-            (th.Tensor, tuple): Attributions.
+            - **attributions** (*tensor* or tuple of *tensors*):
+                The attributions with respect to each input feature.
+                Attributions will always be
+                the same size as the provided inputs, with each value
+                providing the attribution of the corresponding input index.
+                If a single tensor is provided as inputs, a single tensor is
+                returned. If a tuple is provided for inputs, a tuple of
+                corresponding sized tensors is returned.
         """
         # Keeps track whether original input is a tuple or not before
         # converting it into a tuple.

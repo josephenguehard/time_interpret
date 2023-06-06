@@ -25,12 +25,24 @@ for fold in $(seq 0 4)
 do
   python main.py --device "$device" --fold "$fold" --seed "$seed" &
 
-  # allow to execute up to $processes jobs in parallel
-  if [[ $(jobs -r -p | wc -l) -ge $processes ]]
+  # Support lower versions
+  if ((BASH_VERSINFO[0] >= 4)) && ((BASH_VERSINFO[1] >= 3))
   then
-    # now there are $processes jobs already running, so wait here for any job
-    # to be finished so there is a place to start next one.
-    wait -n
+    # allow to execute up to $processes jobs in parallel
+    if [[ $(jobs -r -p | wc -l) -ge $processes ]]
+    then
+      # now there are $processes jobs already running, so wait here for any job
+      # to be finished so there is a place to start next one.
+      wait -n
+    fi
+  else
+    # allow to execute up to $processes jobs in parallel
+    while [[ $(jobs -r -p | wc -l) -ge $processes ]]
+    do
+      # now there are $processes jobs already running, so wait here for any job
+      # to be finished so there is a place to start next one.
+      sleep 1
+    done
   fi
 
 done

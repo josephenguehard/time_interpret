@@ -347,7 +347,7 @@ def main(
         )
         mask = ExtremalMaskNet(
             forward_func=classifier,
-            comp_loss=True,
+            deletion_loss=True,
             model=CNN([1, 1], kernel_size=3, padding=1, flatten=False),
             optim="adam",
             lr=0.01,

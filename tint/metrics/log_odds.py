@@ -171,7 +171,7 @@ def log_odds(
         (float): The log-odds metric.
 
     References:
-        https://arxiv.org/abs/1704.02685
+        `Learning Important Features Through Propagating Activation Differences <https://arxiv.org/abs/1704.02685>`_
 
     Examples:
         >>> import torch as th

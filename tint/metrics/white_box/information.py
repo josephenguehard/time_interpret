@@ -53,7 +53,7 @@ def information(
         (float or tuple or floats): The aur metric.
 
     References:
-        https://arxiv.org/pdf/2106.05303
+        `Explaining Time Series Predictions with Dynamic Masks <https://arxiv.org/abs/2106.05303>`_
 
     Examples:
         >>> import torch as th

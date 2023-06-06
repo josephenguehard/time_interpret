@@ -43,7 +43,7 @@ class HMM(DataModule):
         seed (int): For the random split. Default to 42
 
     References:
-        https://arxiv.org/pdf/2106.05303
+        `Explaining Time Series Predictions with Dynamic Masks <https://arxiv.org/abs/2106.05303>`_
 
     Examples:
         >>> from tint.datasets import HMM

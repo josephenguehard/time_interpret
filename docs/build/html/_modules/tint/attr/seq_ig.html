@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>tint.attr.seq_ig &mdash; Time Interpret 0.2.1 documentation</title>
+  <title>tint.attr.seq_ig &mdash; Time Interpret 0.3.0 documentation</title>
   
 
   
@@ -237,6 +237,9 @@
 <span class="sd">            is set to True, final sensitivity scores are being multiplied by</span>
 <span class="sd">            (inputs - baselines).</span>
 
+<span class="sd">    References:</span>
+<span class="sd">        `Sequential Integrated Gradients: a simple but effective method for explaining language models &lt;https://arxiv.org/abs/2305.15853&gt;`_</span>
+
 <span class="sd">    Examples:</span>
 <span class="sd">        &gt;&gt;&gt; import torch as th</span>
 <span class="sd">        &gt;&gt;&gt; from tint.attr import SequentialIntegratedGradients</span>
@@ -456,10 +459,10 @@
 <span class="sd">            &gt;&gt;&gt; # ImageClassifier takes a single input tensor of images Nx3x32x32,</span>
 <span class="sd">            &gt;&gt;&gt; # and returns an Nx10 tensor of class probabilities.</span>
 <span class="sd">            &gt;&gt;&gt; net = ImageClassifier()</span>
-<span class="sd">            &gt;&gt;&gt; ig = IntegratedGradients(net)</span>
+<span class="sd">            &gt;&gt;&gt; sig = SequentialIntegratedGradients(net)</span>
 <span class="sd">            &gt;&gt;&gt; input = torch.randn(2, 3, 32, 32, requires_grad=True)</span>
 <span class="sd">            &gt;&gt;&gt; # Computes integrated gradients for class 3.</span>
-<span class="sd">            &gt;&gt;&gt; attribution = ig.attribute(input, target=3)</span>
+<span class="sd">            &gt;&gt;&gt; attribution = sig.attribute(input, target=3)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Keeps track whether original input is a tuple or not before</span>
         <span class="c1"># converting it into a tuple.</span>
@@ -661,7 +664,7 @@
 
   <div role="contentinfo">
     <p>
-        &#169; Copyright 2022, Joseph Enguehard.
+        &#169; Copyright Joseph Enguehard.
 
     </p>
   </div>

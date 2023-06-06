@@ -1,0 +1,262 @@
+\section{Presentation of the library}
+\label{sec:presentation}
+
+We provide in this section an introduction to the \texttt{\detokenize{time_interpret}} library.
+Please also refer to the documentation.
+
+\texttt{\detokenize{time_interpret}} is primarily composed of 4 different parts: attribution methods, datasets,
+evaluation tools (metrics) and deep learning models.
+We present below a short description of the components in each of these parts.
+
+
+\paragraph{Attribution methods.}
+
+Attribution methods constitute the core of \texttt{\detokenize{time_interpret}}.
+In this part of the library, we regrouped many methods which have been recently published.
+Similarly to Captum~\citep{kokhlikyan2020captum}, each method can be called like this:
+
+\begin{lstlisting}[language=Python, caption=Attribution loading example, label={lst:attr}]
+from tint.attr import TemporalIntegratedGradients
+
+explainer = TemporalIntegratedGradients(
+    model
+)
+attr = explainer.attribute(inputs)
+\end{lstlisting}
+
+where $``$model$"$ is a PyTorch model, and $``$inputs$"$ is an inputs' tensor.
+
+We provide in this library several methods:
+
+\begin{itemize}
+    \item \textbf{AugmentedOcclusion}.
+        This method improves upon the original Occlusion method from captum~\url{https://captum.ai/api/occlusion.html}
+        by allowing to sample the baseline from a bootstrapped distribution.
+        By selecting a distribution close to the inputs, the resulting occulted data should be close to actual data,
+        limiting the amount of out of distribution samples.
+        This method was originally proposed by~\citep{tonekaboni2020went}, Section 4.
+    \item \textbf{BayesLime, BayesKernelShap}.
+        These two methods, originally proposed by~\citep{slack2021reliable}, extend respectively
+        LIME~\citep{ribeiro2016should} and KernelSHAP~\citep{lundberg2017unified}, by replacing the underlying
+        linear regression model with a bayesian linear regression, allowing the method to model uncertainty in
+        explainability by outputting credible intervals in addition to the feature attributions.
+    \item \textbf{DiscretetizedIntegratedGradients (DIG)}.
+        DIG~\citep{sanyal2021discretized} was designed to interpret predictions made by language models.
+        It builds upon the original Integrated Gradients method by generating discretized paths, hopping from one
+        word to another, instead of using straight lines.
+        This way, it aims to create a path which takes into account the discreteness of the embedding space.
+    \item \textbf{DynaMask}.
+        This method, introduced by~\citep{crabbe2021explaining}, is an adaptation of a perturbation-based method
+        developed in~\citep{fong2017interpretable, fong2019understanding}, to handle time-series data.
+        As such, it consists in perturbing a temporal data by replacing some of it with an average in time.
+        The mask used to choose which data should be preserved and which should be replaced is learnt in order to either
+        preserve the original prediction with a minimum amount of unmasked data, or change the original prediction with
+        a small amount of masked data.
+        Either way, the learnt mask can then be used to discriminate between important features and others.
+    \item \textbf{ExtremalMask}.
+        This method~\citep{enguehard2023learning} consists in a generalisation of DynaMask, which learns not only the
+        mask, but also the associated perturbation, instead of replacing perturbed data with a predetermined average in
+        time.
+        Learning perturbations allows this method to take into account eventual long term dependencies, such as
+        temporal regularities.
+    \item \textbf{Fit}.
+        Originally proposed by~\citep{tonekaboni2020went}, this method aims to understand which feature is important by
+        quantifying the shift in the predictive distribution over time.
+        An important feature is then one which contributes significantly to the distributional shift.
+    \item \textbf{LofLime, LofKernelShap}.
+        Novel method.
+        Please see Section~\ref{sec:methods} for more details.
+    \item \textbf{NonLinearitiesTunnel}.
+        Novel method.
+        Please see Section~\ref{sec:methods} for more details.
+    \item \textbf{Retain}.
+        This method~\citep{choi2016retain} uses two RNNs whose outputs are then used as keys and queries in an attention
+        mechanism, also using the original embeddings of the input as values.
+        This attention mechanism can then be used to explain which feature was important to make a specific prediction.
+    \item \textbf{SequentialIntegratedGradients (SIG)}.
+        SIG~\citep{enguehard2023sequential} is an adaptation of the Integrated Gradients method to sequential data.
+        It modifies the baseline by only masking one element of a sequence at a time, and computing the corresponding
+        feature attribution.
+        By doing so, it allows the baseline to be closer to the original sequence.
+    \item \textbf{TemporalOcclusion}.
+        Originally proposed by~\citep{tonekaboni2020went}, this method modifies the Occlusion method from
+        Captum~\url{https://captum.ai/api/occlusion.html} by only masking the last input data in time, preserving the
+        previous inputs.
+    \item \textbf{TemporalAugmentedOcclusion}.
+        This method combines TemporalOcclusion and AugmentedOcclusion.
+        As such, it only masks the last input in time, replacing it with samples from a bootstrapped distribution.
+    \item \textbf{TemporalIntegratedGradients}.
+        Novel method.
+        Please see Section~\ref{sec:methods} for more details.
+    \item \textbf{TimeForwardTunnel}.
+        Novel method.
+        Please see Section~\ref{sec:methods} for more details.
+
+\end{itemize}
+
+
+\paragraph{Datasets}
+
+As part of \texttt{\detokenize{time_interpret}}, we include a collection of datasets which can be readily used:
+
+\begin{lstlisting}[language=Python, caption=Dataset loading example, label={lst:datasets}]
+from tint.datasets import Arma
+
+arma = Arma()
+arma.download()  # This method generates the dataset
+
+inputs = arma.preprocess()["x"]
+true_saliency = arma.true_saliency(dim=1)
+\end{lstlisting}
+
+All these datasets are implemented using the DataModule from PyTorch Lightning.
+We provide the following datasets:
+
+\begin{itemize}
+    \item \textbf{Arma}.
+        This dataset was introduced by~\citep{crabbe2021explaining}.
+        It relies on an ARMA process to generate time features $x_{ti}$, which are inputs combined by white-box
+        regressor f.
+        This regressor uses only part of the data, so we can know in advance which feature is salient, in order to
+        evaluate a features attributions method.
+        As a result, this dataset can be used to provide an initial comparison of various methods on time-series data.
+    \item \textbf{BioBank}.
+        BioBank~\citep{sudlow2015uk} is a large dataset based on the UK population.
+        As such, it can be used to predict a specific condition based on a number of patients' data.
+        In the default setting, this dataset can be used to train a model to predict the risk of developing type-II
+        diabetes, but other conditions could be predicted.
+        We also provide a cutoff before the onset of the condition, only using features before that time, as well as
+        a script to train FastText~\citep{bojanowski2017enriching} embeddings on the medical codes.
+        The dataset can also be discretized, grouping medical codes into time intervals such as years.
+        To access the data, a formal application must be made, please see
+        \url{https://www.ukbiobank.ac.uk/enable-your-research}.
+    \item \textbf{Hawkes}.
+        Hawkes processes are a specific type of temporal point processes (TPP).
+        The probability of an event of type k happening at time t is conditioned by a specific intensity function:
+        \[ \lambda^*_k(t) = \mu_k + \sum_{n=1}^K \alpha_{kn} \sum_{t_i^n < t} \exp \left[ -\beta_{kn} (t - t_i^n) \right] \]
+        with $\bm{\alpha}$, $\bm{\beta}$ and $\bm{\mu}$ being parameters of the process.
+        As a result, an event has greater chance of happening if an event already happened previously, depending on the
+        values of $\bm{\alpha}$ and $\bm{\beta}$.
+        If no event previously happened, the base probability of an event happening is determined by $\bm{\mu}$.
+        In this case, this intensity can therefore be used as the true saliency of the features.
+        An important consequence for this dataset is that the true saliency is \textbf{dependent in time}.
+        Indeed, an event can be very important for another one close in time, but also irrelevant for other events.
+        As a result, the true saliency has two temporal dimensions: for each time, it gives the importance of each
+        temporal event.
+    \item \textbf{Hidden Markov model (HMM)}.
+        This dataset was introduced by~\citep{crabbe2021explaining}.
+        It consists in a 2-state hidden Markov model, with a features vector of size 3.
+        For each time, only one of the three features conditions the label: either the second or the third, depending
+        on the state.
+        The first feature is always not salient.
+        For this dataset, the true salient features are therefore also known.
+    \item \textbf{Mimic-III}.
+        Mimic-III~\citep{johnson2016mimic} consists of ICU data points.
+        This dataset provides two tasks: predicting in-hospital mortality (static label) and predicting the
+        average blood pressure (temporal label).
+        The processing of this dataset was done following~\citep{tonekaboni2020went, crabbe2021explaining}.
+\end{itemize}
+
+\newpage
+
+\paragraph{Metrics}
+
+Metrics are an important component of \texttt{\detokenize{time_interpret}}, as they provide elements of comparison
+between feature attribution methods in two scenarios: when the true salient features are known, and when they are
+unknown.
+
+Both metrics can be imported this way:
+
+\begin{lstlisting}[language=Python, caption=Attribution evaluation example, label={lst:metrics}]
+from tint.metrics import accuracy
+from tint.metrics.white_box import aup
+
+print(f"{aup(attr, true_saliency):.4}")
+print(f"{accuracy(model, input, attr):.4}")
+\end{lstlisting}
+
+As we can see on Snippet~\ref{lst:metrics}, these metrics have a different behavior in each scenario.
+In the case where the true salient features are known, the metrics are straightforward: they directly compare some
+attributions with the truth.
+\texttt{\detokenize{time_interpret}} provides the following metrics: area under precision (AUP), area under recall (AUR),
+area under precision recall curve (AUPRC), Roc-Auc, mean average error (MAE), mean square error (MSE), root mean square
+error (RMSE).
+Following~\citep{crabbe2021explaining}, we also provide the Entropy and Information metrics.
+
+In the case where the true salient features are not known, we draw from the work
+of~\citep{shrikumar2017learning,deyoung2019eraser,crabbe2021explaining} and propose a list of metrics following a
+similar pattern.
+Each metric is computed by masking the top or bottom x\% most important features.
+We then compute predictions by the model to be explained on this masked data.
+The shift in the resulting predictions provides information on how important the masked data actually was.
+
+Moreover, in order to avoid creating out of distribution data by masking some of the features, we allow the user to
+pass a custom baseline to the metric.
+It is also possible to draw baselines from a distribution, to add gaussian noise to the masked inputs, and to compute
+predictions multiple times to produce consistent results.
+In the last case, a batch size can be passed to compute these predictions in parallel and reduce time complexity.
+
+Furthermore, it is also possible to pass a weight function to the metric: the shift in prediction given some masked
+data influences the metric proportionally to some weight.
+We provide two weights functions: $``$lime-weight$"$ weights the results according to a cosine or euclidean distance
+between the masked data and the original one.
+$``$lof-weight$"$ weights the results according to a Local Outlier Factor score, to reduce the influence of potential
+outliers.
+
+\newpage
+
+We provide the following metrics:
+
+\begin{itemize}
+    \item \textbf{accuracy}.
+        This metric measures by how much the accuracy of a model drops when
+        removing or only keeping the topk most important features.
+        Lower is better.
+        A custom threshold can also be passed to discriminate between positive and negative predictions.
+    \item \textbf{comprehensiveness}.
+        This measures by how much the predicted class probability changes when removing the topk most important
+        features.
+        Higher is better.
+    \item \textbf{cross-entropy}.
+        This metric measures the cross-entropy between the outputs of the model using the original inputs and perturbed
+        inputs by removing or only keeping the topk most important features.
+        Higher is better.
+    \item \textbf{Log-odds}.
+        This log-odds measures the average difference of the negative logarithmic probabilities on the predicted class
+        when removing the topk most important features.
+        Lower is better.
+    \item \textbf{mae}.
+        This metric measures the mean absolute error between the outputs of the model using the original inputs and
+        perturbed inputs by removing or only keeping the topk most important features.
+        Lower is better.
+    \item \textbf{mse}.
+        This metric measures the mean square error between the outputs of the model using the original inputs and
+        perturbed inputs by removing or only keeping the topk most important features.
+        Lower is better.
+    \item \textbf{sufficiency}.
+        This sufficiency measures by how much the predicted class probability changes when keeping only the topk most
+        important features.
+        Lower is better.
+\end{itemize}
+
+Finally, we provide an additional metric, $``$lipschitz-max$"$, measuring the stability of a feature attribution method
+on small variations of the input data.
+However, sensitivity-max should be preferred, as a more robust method.
+Please see \url{https://captum.ai/api/metrics.html#sensitivity} for more details.
+We still provide it as it has been used in some research and could be useful to reproduce experiments.
+
+
+\paragraph{Models}
+
+We provide several PyTorch models: MLP, CNN, RNN and TransformerEncoder, as well as some language models
+from HuggingFace: Bert, DistilBert and RoBerta.
+These models can be easily wrapped into a PyTorch-lightning model as such:
+
+\begin{lstlisting}[language=Python, caption=Model definition example, label={lst:model}]
+from tint.models import MLP, Net
+
+mlp = MLP(units=[5, 10, 1])
+net = Net(
+    mlp, loss="cross_entropy", optim="adam"
+)
+\end{lstlisting}

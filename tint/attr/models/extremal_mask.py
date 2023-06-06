@@ -18,6 +18,10 @@ class ExtremalMaskNN(nn.Module):
         model (nnn.Module): A model used to recreate the original
             predictions, in addition to the mask. Default to ``None``
         batch_size (int): Batch size of the model. Default to 32
+
+    References
+        #. `Learning Perturbations to Explain Time Series Predictions <https://arxiv.org/abs/2305.18840>`_
+        #. `Understanding Deep Networks via Extremal Perturbations and Smooth Masks <https://arxiv.org/abs/1910.08485>`_
     """
 
     def __init__(
@@ -102,8 +106,9 @@ class ExtremalMaskNet(Net):
     Args:
         forward_func (callable): The forward function of the model or any
             modification of it.
-        comp_loss (bool): Whether to include comprehensiveness loss.
-            Default to ``False``
+        preservation_mode (bool): If ``True``, uses the method in
+            preservation mode. Otherwise, uses the deletion mode.
+            Default to ``True``
         model (nnn.Module): A model used to recreate the original
             predictions, in addition to the mask. Default to ``None``
         batch_size (int): Batch size of the model. Default to 32
@@ -137,7 +142,7 @@ class ExtremalMaskNet(Net):
     def __init__(
         self,
         forward_func: Callable,
-        comp_loss: bool = False,
+        preservation_mode: bool = True,
         model: nn.Module = None,
         batch_size: int = 32,
         lambda_1: float = 1.0,
@@ -165,7 +170,7 @@ class ExtremalMaskNet(Net):
             l2=l2,
         )
 
-        self.comp_loss = comp_loss
+        self.preservation_mode = preservation_mode
         self.lambda_1 = lambda_1
         self.lambda_2 = lambda_2
 
@@ -215,24 +220,27 @@ class ExtremalMaskNet(Net):
         )
 
         # Add L1 loss
-        mask_ = self.lambda_1 * self.net.mask.abs()
+        if self.preservation_mode:
+            mask_ = self.lambda_1 * self.net.mask.abs()
+        else:
+            mask_ = self.lambda_1 * (1.0 - self.net.mask).abs()
+
         if self.net.model is not None:
             mask_ = mask_[
                 self.net.batch_size
                 * batch_idx : self.net.batch_size
                 * (batch_idx + 1)
             ]
-            mask_ = mask_ + self.lambda_2 * self.net.model(x - baselines).abs()
-        reg_loss = mask_.mean()
+            mask_ += self.lambda_2 * self.net.model(x - baselines).abs()
+        loss = mask_.mean()
 
-        # Compute and return loss
-        if self.comp_loss:
-            return (
-                self.loss(y_hat1, y_target1)
-                + self.loss(y_hat2, y_target2)
-                + reg_loss
-            )
-        return self.loss(y_hat1, y_target1) + reg_loss
+        # Add preservation and deletion losses if required
+        if self.preservation_mode:
+            loss += self.loss(y_hat1, y_target1)
+        else:
+            loss += self.loss(y_hat2, y_target2)
+
+        return loss
 
     def configure_optimizers(self):
         params = [{"params": self.net.mask}]

@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>tint.datasets.biobank &mdash; Time Interpret 0.2.1 documentation</title>
+  <title>tint.datasets.biobank &mdash; Time Interpret 0.3.0 documentation</title>
   
 
   
@@ -204,12 +204,13 @@
 <span class="sd">    BioBank dataset.</span>
 
 <span class="sd">    Args:</span>
+<span class="sd">        label (str): Condition to be used as label. If ``None``, it is set to</span>
+<span class="sd">            type 2 diabetes.</span>
+<span class="sd">            Default to ``None``</span>
 <span class="sd">        discretised (bool): Whether to return a discretised dataset or not.</span>
-<span class="sd">            Default to ``True``</span>
-<span class="sd">        granularity (str, int): The time granularity.</span>
-<span class="sd">            Default to a year: 24*365.25 hours</span>
-<span class="sd">        maximum_time (int): Maximum time to record. Default to 1,000,000 hours</span>
-<span class="sd">            which is around 114 years</span>
+<span class="sd">            Default to ``False``</span>
+<span class="sd">        granularity (str, int): The time granularity. Default to a year.</span>
+<span class="sd">        maximum_time (int): Maximum time to record. Default to 115 years</span>
 <span class="sd">        fasttext (Fasttext): A Fasttext model to encode categorical features.</span>
 <span class="sd">            Default to ``None``</span>
 <span class="sd">        time_to_task (float): Special arg for diabetes task. Stops the</span>
@@ -711,7 +712,7 @@
 
   <div role="contentinfo">
     <p>
-        &#169; Copyright 2022, Joseph Enguehard.
+        &#169; Copyright Joseph Enguehard.
 
     </p>
   </div>

@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.abspath("."))
 # -- Project information -----------------------------------------------------
 
 project = "Time Interpret"
-copyright = "2022, Joseph Enguehard"
+copyright = "Joseph Enguehard"
 author = "Joseph Enguehard"
 
 # The full version, including alpha/beta/rc tags

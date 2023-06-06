@@ -1,0 +1,12 @@
+Seed,Preservation,Deletion,Fold,Explainer,Lambda_1,Lambda_2,AUP,AUR,Information,Entropy,AUROC,AUPRC
+42,True,False,4,extremal_mask,1.0,1.0,0.8782,0.7254,1.324e+03,42.05,0.8884,0.8681
+42,True,False,1,extremal_mask,1.0,1.0,0.8822,0.7429,1.386e+03,41.86,0.894,0.8815
+42,True,False,0,extremal_mask,1.0,1.0,0.8888,0.7344,1.437e+03,33.73,0.8927,0.8829
+42,True,False,3,extremal_mask,1.0,1.0,0.9028,0.7375,1.393e+03,38.64,0.8866,0.8826
+42,True,False,2,extremal_mask,1.0,1.0,0.9235,0.7506,1.495e+03,35.03,0.9034,0.8967
+
+42,False,True,4,extremal_mask,1.0,1.0,0.3432,0.8549,1.061e+03,67.97,0.5049,0.3273
+42,False,True,3,extremal_mask,1.0,1.0,0.3496,0.8641,1.045e+03,72.68,0.5239,0.3415
+42,False,True,1,extremal_mask,1.0,1.0,0.3441,0.8498,1.051e+03,71.95,0.5218,0.3411
+42,False,True,0,extremal_mask,1.0,1.0,0.342,0.8646,1.091e+03,67.32,0.5183,0.3455
+42,False,True,2,extremal_mask,1.0,1.0,0.3488,0.8819,1.146e+03,59.94,0.5415,0.3541

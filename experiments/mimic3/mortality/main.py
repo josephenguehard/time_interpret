@@ -45,6 +45,9 @@ def main(
     fold: int = 0,
     seed: int = 42,
     deterministic: bool = False,
+    lambda_1: float = 1.0,
+    lambda_2: float = 1.0,
+    output_file: str = "results.csv",
 ):
     # If deterministic, seed everything
     if deterministic:
@@ -172,6 +175,8 @@ def main(
                 ),
                 MLP([2 * x_test.shape[-1], x_test.shape[-1]]),
             ),
+            lambda_1=lambda_1,
+            lambda_2=lambda_2,
             loss="cross_entropy",
             optim="adam",
             lr=0.01,
@@ -300,7 +305,7 @@ def main(
     # Dict for baselines
     baselines_dict = {0: "Average", 1: "Zeros"}
 
-    with open("results.csv", "a") as fp, lock:
+    with open(output_file, "a") as fp, lock:
         for i, baselines in enumerate([x_avg, 0.0]):
             for topk in areas:
                 for k, v in attr.items():
@@ -345,6 +350,8 @@ def main(
                     fp.write(baselines_dict[i] + ",")
                     fp.write(str(topk) + ",")
                     fp.write(k + ",")
+                    fp.write(str(lambda_1) + ",")
+                    fp.write(str(lambda_2) + ",")
                     fp.write(f"{acc:.4},")
                     fp.write(f"{comp:.4},")
                     fp.write(f"{ce:.4},")
@@ -412,6 +419,24 @@ def parse_args():
         action="store_true",
         help="Whether to make training deterministic or not.",
     )
+    parser.add_argument(
+        "--lambda-1",
+        type=float,
+        default=1.0,
+        help="Lambda 1 hyperparameter.",
+    )
+    parser.add_argument(
+        "--lambda-2",
+        type=float,
+        default=1.0,
+        help="Lambda 2 hyperparameter.",
+    )
+    parser.add_argument(
+        "--output-file",
+        type=str,
+        default="results.csv",
+        help="Where to save the results.",
+    )
     return parser.parse_args()
 
 
@@ -424,4 +449,7 @@ if __name__ == "__main__":
         fold=args.fold,
         seed=args.seed,
         deterministic=args.deterministic,
+        lambda_1=args.lambda_1,
+        lambda_2=args.lambda_2,
+        output_file=args.output_file,
     )

@@ -33,6 +33,13 @@ python extremal_mask_params.py -p
 ```
 
 
+Finally, an ablation study on the lambda parameters can be run using this script:
+
+```shell script
+bash ./lambda_study.sh --processes 5
+```
+
+
 ## Usage
 
 ```
@@ -45,10 +52,22 @@ optional arguments:
   --fold                Fold of the cross-validation. Default to 0
   --seed                Which seed to use to generate the data. Default to 42
   --deterministic       Whether to make training deterministic or not. Default to False
+  --lambda-1            Lambda 1 hyperparameter. Default to 1.0
+  --lambda-2            Lambda 2 hyperparameter. Default to 1.0
+  --output-file         Where to save the results. Default to "results.csv"
 ```
 
 ```
 usage : experiemnts/hmm/main.sh [--processes] [--device] [--seed]
+
+optional arguments:
+  --processes           Number of runners in parallel. Default to 5
+  --device              Which device to use. Default to 'cpu'
+  --seed                Which seed to use to generate the data. Default to 42
+```
+
+```
+usage : experiemnts/hmm/lambda_study.sh [--processes] [--device] [--seed]
 
 optional arguments:
   --processes           Number of runners in parallel. Default to 5
@@ -75,5 +94,5 @@ usage: experiments/hmm/reset.py [-h] [-e]
 
 optional arguments:
   -h, --help            Show this help message and exit.
-  -e, --experiment      Name of the experiment. Either 'main' or 'extremal_mask_params'.
+  -e, --experiment      Name of the experiment. Either 'main', 'lambda_study' or 'extremal_mask_params'.
 ```

@@ -169,7 +169,7 @@ def sufficiency(
         (float): The sufficiency metric.
 
     References:
-        https://arxiv.org/abs/1911.03429
+        `ERASER: A Benchmark to Evaluate Rationalized NLP Models <https://arxiv.org/abs/1911.03429>`_
 
     Examples:
         >>> import torch as th

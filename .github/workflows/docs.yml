@@ -4,10 +4,11 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - docs/**
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -23,6 +24,7 @@ jobs:
           pip install .
           # Install docs packages
           pip install -r docs/requirements.txt
+
       - name: Test documentation
         run: |
           # Perform the tests

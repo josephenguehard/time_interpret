@@ -1,6 +1,5 @@
 lightning_logs
 .ipynb_checkpoints
-Test.ipynb
-Test2.ipynb
+Test*.ipynb
 MNIST
 *.pdf

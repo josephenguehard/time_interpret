@@ -62,7 +62,7 @@ Finally, we evaluate our method using the true saliency and a white box metric:
 
     from tint.metrics.white_box import aup
 
-    print(f"{aup(attr, true_saliency):.4})
+    print(f"{aup(attr, true_saliency):.4}")
 
 
 API

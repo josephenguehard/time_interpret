@@ -245,8 +245,8 @@ def scale_inputs(
         torch.Tensor: The monotonic path.
 
     References:
-        https://github.com/INK-USC/DIG \n
-        https://arxiv.org/abs/2108.13654
+        #. `Discretized Integrated Gradients for Explaining Language Models <https://arxiv.org/abs/2108.13654>`_
+        #. https://github.com/INK-USC/DIG
     """
     # generates the paths required by DIG
     word_idx_map, word_features, adj = auxiliary_data

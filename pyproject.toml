@@ -1,0 +1,106 @@
+[build-system]
+requires=["flit_core >=3.2,<4"]
+build-backend="flit_core.buildapi"
+
+[project]
+name="time_interpret"
+version="0.3.0"
+authors=[
+    {name="Joseph Enguehard", email="joseph@skippr.com"},
+]
+description="Model interpretability library for PyTorch with a focus on time series."
+readme="README.md"
+requires-python=">=3.7"
+keywords=[
+    "deep-learning",
+    "pytorch",
+    "captum",
+    "explainable-ai",
+    "time-series",
+]
+classifiers=[
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3 :: Only",
+]
+dependencies=[
+    "captum",
+    "numpy",
+    "pandas",
+    "pytorch-lightning",
+    "scikit-learn",
+    "scipy",
+    "torch",
+]
+
+[project.optional-dependencies]
+graphgym=[
+    "fasttext",
+    "google",
+    "jupyter",
+    "optuna",
+    "pandarallel",
+    "psycopg2",
+    "scikit-image",
+    "statsmodels",
+    "tick",
+    "torchmetrics",
+    "torchvision",
+    "tqdm",
+    "transformers",
+]
+modelhub=[
+    "huggingface_hub"
+]
+test=[
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+]
+full = [
+    "captum",
+    "numpy",
+    "pandas",
+    "pytorch-lightning",
+    "scikit-learn",
+    "scipy",
+    "torch",
+    "fasttext",
+    "google",
+    "jupyter",
+    "optuna",
+    "pandarallel",
+    "psycopg2",
+    "scikit-image",
+    "statsmodels",
+    "tick",
+    "torchmetrics",
+    "torchvision",
+    "tqdm",
+    "transformers",
+    "huggingface_hub",
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+]
+
+[project.urls]
+homepage="https://github.com/josephenguehard/time_interpret"
+documentation="https://josephenguehard.github.io/time_interpret"
+
+[tool.flit.module]
+name="tint"
+
+[tool.flit.sdist]
+exclude = [
+    "tint/data/*"
+]
+
+[tool.flake8]
+ignore = ["F811", "W503", "W504"]

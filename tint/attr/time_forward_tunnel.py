@@ -33,7 +33,7 @@ class TimeForwardTunnel(Attribution):
                     Conductance or Saliency.
 
     References:
-        https://arxiv.org/abs/2003.02821
+        `What went wrong and when? Instance-wise Feature Importance for Time-series Models <https://arxiv.org/abs/2003.02821>`_
 
     Examples:
         >>> import torch as th
@@ -105,9 +105,9 @@ class TimeForwardTunnel(Attribution):
                 be aligned appropriately.
             task (str): Type of task done by the model. Either ``'binary'``,
                 ``'multilabel'``, ``'multiclass'`` or ``'regression'``.
-                Default to ``'binary'``
+                Default: 'binary'
             threshold (float): Threshold for the multilabel task.
-                Default to 0.5
+                Default: 0.5
             temporal_target (bool, optional): Determine if the targe is
                 temporal and needs to be cut.
                 Default: False

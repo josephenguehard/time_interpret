@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>tint.attr.models.mask &mdash; Time Interpret 0.2.1 documentation</title>
+  <title>tint.attr.models.mask &mdash; Time Interpret 0.3.0 documentation</title>
   
 
   
@@ -209,7 +209,7 @@
 <span class="sd">            Default to 0.0</span>
 
 <span class="sd">    References:</span>
-<span class="sd">        https://arxiv.org/pdf/2106.05303</span>
+<span class="sd">        `Explaining Time Series Predictions with Dynamic Masks &lt;https://arxiv.org/abs/2106.05303&gt;`_</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -447,7 +447,7 @@
 <span class="sd">        l2 (float): L2 regularisation. Default to 0.0</span>
 
 <span class="sd">    References:</span>
-<span class="sd">        https://arxiv.org/pdf/2106.05303</span>
+<span class="sd">        `Explaining Time Series Predictions with Dynamic Masks &lt;https://arxiv.org/abs/2106.05303&gt;`_</span>
 
 <span class="sd">    Examples:</span>
 <span class="sd">        &gt;&gt;&gt; import numpy as np</span>
@@ -587,7 +587,7 @@
 
         <span class="k">return</span> <span class="n">step_output</span>
 
-<div class="viewcode-block" id="MaskNet.training_epoch_end"><a class="viewcode-back" href="../../../../attr_models.html#tint.attr.models.MaskNet.training_epoch_end">[docs]</a>    <span class="k">def</span> <span class="nf">training_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outputs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="MaskNet.on_train_epoch_end"><a class="viewcode-back" href="../../../../attr_models.html#tint.attr.models.MaskNet.on_train_epoch_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_train_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># Increase the regulator coefficient</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">size_reg_factor</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">reg_multiplier</span></div>
 
@@ -633,7 +633,7 @@
 
   <div role="contentinfo">
     <p>
-        &#169; Copyright 2022, Joseph Enguehard.
+        &#169; Copyright Joseph Enguehard.
 
     </p>
   </div>

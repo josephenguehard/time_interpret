@@ -26,6 +26,9 @@ class TemporalOcclusion(Occlusion):
         forward_func (callable): The forward function of the model or
             any modification of it.
 
+    References:
+        `What went wrong and when? Instance-wise Feature Importance for Time-series Models <https://arxiv.org/abs/2003.02821>`_
+
     Examples:
         >>> import torch as th
         >>> from tint.attr import TemporalOcclusion

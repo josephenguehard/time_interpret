@@ -1,7 +1,8 @@
 # Time Interpret (tint)
 
-This package expands the [captum library](https://captum.ai) with a specific 
-focus on time series. Please see the documentation and examples for more details.
+This library expands the [captum library](https://captum.ai) with a specific 
+focus on time series. For more details, please see the documentation and our [paper](https://arxiv.org/abs/2306.02968).
+
 
 ## Install
 
@@ -11,25 +12,7 @@ Time Interpret can be installed with pip:
 pip install time_interpret
 ```
 
-or from source:
-
-with pip:
-
-```shell script
-git clone git@github.com:babylonhealth/time_interpret.git
-cd time_interpret
-pip install -e .
-```
-
-or conda:
-
-```shell script
-git clone git@github.com:babylonhealth/time_interpret.git
-cd time_interpret
-conda env create
-source activate tint
-pip install --no-deps -e .
-```
+Please see the documentation for alternative installation modes.
 
 
 ## Quick-start
@@ -72,24 +55,57 @@ Finally, we evaluate our method using the true saliency and a white box metric:
 ```python
 from tint.metrics.white_box import aup
 
-print(f"{aup(attr, true_saliency):.4})
+print(f"{aup(attr, true_saliency):.4}")
 ```
 
-## Methods (under development)
+## Methods
 
 - [AugmentedOcclusion](https://arxiv.org/abs/2003.02821)
-- [BayesLime](https://arxiv.org/pdf/2008.05030)
-- [BayesShap](https://arxiv.org/pdf/2008.05030)
-- [DynaMask](https://arxiv.org/pdf/2106.05303)
-- [Discretised Integrated Gradients](https://arxiv.org/abs/2108.13654)
+- [BayesKernelShap](https://arxiv.org/abs/2008.05030)
+- [BayesLime](https://arxiv.org/abs/2008.05030)
+- [Discretized Integrated Gradients](https://arxiv.org/abs/2108.13654)
+- [DynaMask](https://arxiv.org/abs/2106.05303)
+- [ExtremalMask](https://arxiv.org/abs/2305.18840)
 - [Fit](https://arxiv.org/abs/2003.02821)
+- [LofKernelShap](https://arxiv.org/abs/2306.02968)
+- [LofLime](https://arxiv.org/abs/2306.02968)
 - [Non-linearities Tunnel](https://arxiv.org/abs/1906.07983)
 - [Occlusion](https://arxiv.org/abs/1311.2901)
-- [Retain](https://arxiv.org/pdf/1608.05745)
+- [Retain](https://arxiv.org/abs/1608.05745)
+- [SequentialIntegratedGradients](https://arxiv.org/abs/2305.15853)
+- [TemporalAugmentedOcclusion](https://arxiv.org/abs/2003.02821)
+- [TemporalOcclusion](https://arxiv.org/abs/2003.02821)
+- [TemporalIntegratedGradients](https://arxiv.org/abs/2306.02968)
+- [TimeForwardTunnel](https://arxiv.org/abs/2306.02968)
+
+This package also provides several datasets, models and metrics. Please refer to the documentation for more details.
+
+
+## Paper: Learning Perturbations to Explain Time Series Predictions
+
+The experiments for the paper: [Learning Perturbations to Explain Time Series Predictions](https://arxiv.org/abs/2305.18840) 
+can be found on these folders:
+- [HMM](experiments/hmm)
+- [Mimic3](experiments/mimic3/mortality)
+
+
+## Paper: Sequential Integrated Gradients: a simple but effective method for explaining language models
+
+The experiments for the paper: 
+[Sequential Integrated Gradients: a simple but effective method for explaining language models](https://arxiv.org/abs/2305.15853) 
+can be found on the [NLP](experiments/nlp) section of the experiments.
+
+
+## TSInterpret
+
+More methods to interpret predictions of time series classifiers have been grouped 
+into [TSInterpret](https://github.com/fzi-forschungszentrum-informatik/TSInterpret), another library with a specific 
+focus on time series.
+We developed Time Interpret concurrently, not being aware of this library at the time.
 
 
 ## Acknowledgment
 - [Jonathan Crabbe](https://github.com/JonathanCrabbe/Dynamask) for the DynaMask implementation.
 - [Sana Tonekaboni](https://github.com/sanatonek/time_series_explainability/tree/master/TSX) for the fit implementation.
-- [INK Lab](https://github.com/INK-USC/DIG) for the discretized integrated gradients implementation.
+- [INK Lab](https://github.com/INK-USC/DIG) for the discretized integrated gradients' implementation.
 - [Dylan Slack](https://github.com/dylan-slack/Modeling-Uncertainty-Local-Explainability) for the BayesLime and BayesShap implementations.

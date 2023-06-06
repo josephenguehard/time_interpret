@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>tint.attr.augmented_occlusion &mdash; Time Interpret 0.2.1 documentation</title>
+  <title>tint.attr.augmented_occlusion &mdash; Time Interpret 0.3.0 documentation</title>
   
 
   
@@ -210,7 +210,7 @@
 <span class="sd">            Default: False</span>
 
 <span class="sd">    References:</span>
-<span class="sd">        https://arxiv.org/abs/2003.02821</span>
+<span class="sd">        `What went wrong and when? Instance-wise Feature Importance for Time-series Models &lt;https://arxiv.org/abs/2003.02821&gt;`_</span>
 
 <span class="sd">    Examples:</span>
 <span class="sd">        &gt;&gt;&gt; import torch as th</span>
@@ -323,7 +323,6 @@
 <span class="sd">                      target for the corresponding example.</span>
 
 <span class="sd">                    Default: None</span>
-
 <span class="sd">            additional_forward_args (any, optional): If the forward function</span>
 <span class="sd">                    requires additional arguments other than the inputs for</span>
 <span class="sd">                    which attributions should not be computed, this argument</span>
@@ -352,8 +351,8 @@
 <span class="sd">                    samples.</span>
 <span class="sd">                    Default: 1</span>
 <span class="sd">            attributions_fn (Callable, optional): Applies a function to the</span>
-<span class="sd">                        attributions before performing the weighted sum.</span>
-<span class="sd">                        Default: None</span>
+<span class="sd">                    attributions before performing the weighted sum.</span>
+<span class="sd">                    Default: None</span>
 <span class="sd">            show_progress (bool, optional): Displays the progress of</span>
 <span class="sd">                    computation. It will try to use tqdm if available for</span>
 <span class="sd">                    advanced features (e.g. time estimation). Otherwise, it</span>
@@ -483,7 +482,7 @@
 
   <div role="contentinfo">
     <p>
-        &#169; Copyright 2022, Joseph Enguehard.
+        &#169; Copyright Joseph Enguehard.
 
     </p>
   </div>

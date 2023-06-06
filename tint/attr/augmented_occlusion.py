@@ -39,7 +39,7 @@ class AugmentedOcclusion(Occlusion):
             Default: False
 
     References:
-        https://arxiv.org/abs/2003.02821
+        `What went wrong and when? Instance-wise Feature Importance for Time-series Models <https://arxiv.org/abs/2003.02821>`_
 
     Examples:
         >>> import torch as th
@@ -152,7 +152,6 @@ class AugmentedOcclusion(Occlusion):
                       target for the corresponding example.
 
                     Default: None
-
             additional_forward_args (any, optional): If the forward function
                     requires additional arguments other than the inputs for
                     which attributions should not be computed, this argument
@@ -181,8 +180,8 @@ class AugmentedOcclusion(Occlusion):
                     samples.
                     Default: 1
             attributions_fn (Callable, optional): Applies a function to the
-                        attributions before performing the weighted sum.
-                        Default: None
+                    attributions before performing the weighted sum.
+                    Default: None
             show_progress (bool, optional): Displays the progress of
                     computation. It will try to use tqdm if available for
                     advanced features (e.g. time estimation). Otherwise, it
