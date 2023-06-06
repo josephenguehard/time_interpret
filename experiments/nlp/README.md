@@ -1,8 +1,7 @@
 # NLP Experiments
 
 This is the NLP experiments section. You can use this
-section to reproduce the results from the 
-[DIG paper](https://arxiv.org/abs/2108.13654).
+section to reproduce the results from the [SIG paper](https://arxiv.org/abs/2305.15853).
 
 To get the experiments results, run:
 
