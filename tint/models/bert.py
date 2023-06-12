@@ -44,7 +44,7 @@ def Bert(
     Examples:
         >>> from tint.models import Bert
          <BLANKLINE>
-         >>> tokenizer, model = Bert("bert-base-uncased")
+        >>> tokenizer, model = Bert("bert-base-uncased")
     """
     assert BertConfig is not None, "transformers is not installed."
 
