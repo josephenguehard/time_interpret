@@ -15,6 +15,7 @@ from .temporal_augmented_occlusion import TemporalAugmentedOcclusion
 from .temporal_ig import TemporalIntegratedGradients
 from .temporal_occlusion import TemporalOcclusion
 from .time_forward_tunnel import TimeForwardTunnel
+from .tsr_tunnel import TSRTunnel
 
 __all__ = [
     "AugmentedOcclusion",
@@ -36,4 +37,5 @@ __all__ = [
     "TemporalIntegratedGradients",
     "TemporalOcclusion",
     "TimeForwardTunnel",
+    "TSRTunnel",
 ]

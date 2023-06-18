@@ -78,6 +78,7 @@ class FeatureAblation(PerturbationAttribution):
         perturbations_per_eval: int = 1,
         attributions_fn: Callable = None,
         show_progress: bool = False,
+        kwargs_run_forward: Any = None,
         **kwargs: Any,
     ) -> TensorOrTupleOfTensorsGeneric:
         r"""
@@ -205,6 +206,9 @@ class FeatureAblation(PerturbationAttribution):
                         (e.g. time estimation). Otherwise, it will fallback to
                         a simple output of progress.
                         Default: False
+            kwargs_run_forward (Any, optional): Any additional arguments to pass
+                        to the _run_forward method.
+                        Default: None
             **kwargs (Any, optional): Any additional arguments used by child
                         classes of FeatureAblation (such as Occlusion) to construct
                         ablations. These arguments are ignored when using
@@ -279,6 +283,8 @@ class FeatureAblation(PerturbationAttribution):
             isinstance(perturbations_per_eval, int)
             and perturbations_per_eval >= 1
         ), "Perturbations per evaluation must be an integer and at least 1."
+        if kwargs_run_forward is None:
+            kwargs_run_forward = dict()
         with torch.no_grad():
             if show_progress:
                 feature_counts = self._get_feature_counts(
@@ -298,8 +304,12 @@ class FeatureAblation(PerturbationAttribution):
 
             # Computes initial evaluation with all features, which is compared
             # to each ablated result.
-            initial_eval = self._strict_run_forward(
-                self.forward_func, inputs, target, additional_forward_args
+            initial_eval = self._run_forward(
+                self.forward_func,
+                inputs,
+                target,
+                additional_forward_args,
+                **kwargs_run_forward,
             )
 
             if show_progress:
@@ -362,11 +372,12 @@ class FeatureAblation(PerturbationAttribution):
                     #   agg mode: (*initial_eval.shape)
                     #   non-agg mode:
                     #     (feature_perturbed * batch_size, *initial_eval.shape[1:])
-                    modified_eval = self._strict_run_forward(
+                    modified_eval = self._run_forward(
                         self.forward_func,
                         current_inputs,
                         current_target,
                         current_add_args,
+                        **kwargs_run_forward,
                     )
 
                     if show_progress:
@@ -628,11 +639,9 @@ class FeatureAblation(PerturbationAttribution):
         )
 
     @staticmethod
-    def _strict_run_forward(*args, **kwargs) -> Tensor:
+    def _run_forward(*args, **kwargs) -> Tensor:
         """
-        A temp wrapper for global _run_forward util to force forward output
-        type assertion & conversion.
-        Remove after the strict logic is supported by all attr classes
+        A wrapper for _run_forward.
         """
         forward_output = _run_forward(*args, **kwargs)
         if isinstance(forward_output, Tensor):

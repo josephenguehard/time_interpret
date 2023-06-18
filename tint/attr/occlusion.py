@@ -81,6 +81,7 @@ class Occlusion(FeatureAblation):
         perturbations_per_eval: int = 1,
         attributions_fn: Callable = None,
         show_progress: bool = False,
+        kwargs_run_forward: Any = None,
     ) -> TensorOrTupleOfTensorsGeneric:
         r"""
         Attribute method.
@@ -212,6 +213,9 @@ class Occlusion(FeatureAblation):
                 (e.g. time estimation). Otherwise, it will fallback to
                 a simple output of progress.
                 Default: False
+            kwargs_run_forward (Any, optional): Any additional arguments to pass
+                to the _run_forward method.
+                Default: None
 
         Returns:
             *tensor* or tuple of *tensors* of **attributions**:
@@ -300,6 +304,7 @@ class Occlusion(FeatureAblation):
             strides=strides,
             attributions_fn=attributions_fn,
             show_progress=show_progress,
+            kwargs_run_forward=kwargs_run_forward,
         )
 
     def _construct_ablated_input(
