@@ -20,6 +20,7 @@ Summary
     tint.attr.FeatureAblation
     tint.attr.Fit
     tint.attr.GeodesicIntegratedGradients
+    tint.attr.GuidedIntegratedGradients
     tint.attr.LofKernelShap
     tint.attr.LofLime
     tint.attr.NonLinearitiesTunnel
@@ -30,6 +31,7 @@ Summary
     tint.attr.TemporalIntegratedGradients
     tint.attr.TemporalOcclusion
     tint.attr.TimeForwardTunnel
+    tint.attr.TSRTunnel
 
 
 Detailed classes and methods
