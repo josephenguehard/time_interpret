@@ -4,7 +4,7 @@ build-backend="flit_core.buildapi"
 
 [project]
 name="time_interpret"
-version="0.3.0"
+version="0.3.1"
 authors=[
     {name="Joseph Enguehard", email="joseph@skippr.com"},
 ]
