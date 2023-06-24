@@ -6,6 +6,7 @@ from .extremal_mask import ExtremalMask
 from .feature_ablation import FeatureAblation
 from .fit import Fit
 from .geodesic_ig import GeodesicIntegratedGradients
+from .guided_ig import GuidedIntegratedGradients
 from .lof import LofKernelShap, LofLime
 from .non_linearities_tunnel import NonLinearitiesTunnel
 from .occlusion import Occlusion
@@ -27,6 +28,7 @@ __all__ = [
     "FeatureAblation",
     "Fit",
     "GeodesicIntegratedGradients",
+    "GuidedIntegratedGradients",
     "LofKernelShap",
     "LofLime",
     "NonLinearitiesTunnel",
