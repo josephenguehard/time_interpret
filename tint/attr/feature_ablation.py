@@ -304,46 +304,46 @@ class FeatureAblation(PerturbationAttribution):
 
             # Computes initial evaluation with all features, which is compared
             # to each ablated result.
-            initial_eval = self._run_forward(
+            initial_eval, output_shapes = self._run_forward(
                 self.forward_func,
                 inputs,
-                target,
-                additional_forward_args,
+                target=target,
+                additional_forward_args=additional_forward_args,
                 **kwargs_run_forward,
             )
 
             if show_progress:
                 attr_progress.update()
 
-            # number of elements in the output of forward_func
-            n_outputs = (
-                initial_eval.numel() if isinstance(initial_eval, Tensor) else 1
-            )
-
             # flatten eval outputs into 1D (n_outputs)
             # add the leading dim for n_feature_perturbed
-            flattened_initial_eval = initial_eval.reshape(1, -1)
+            flattened_initial_eval = tuple(
+                init_eval.reshape(1, -1) for init_eval in initial_eval
+            )
 
             # Initialize attribution totals and counts
-            attrib_type = cast(dtype, flattened_initial_eval.dtype)
+            attrib_type = tuple(
+                cast(dtype, flattened_init_eval.dtype)
+                for flattened_init_eval in flattened_initial_eval
+            )
 
             total_attrib = [
                 # attribute w.r.t each output element
                 torch.zeros(
-                    (n_outputs,) + input.shape[1:],
-                    dtype=attrib_type,
+                    output_shape,
+                    dtype=a_dtype,
                     device=input.device,
                 )
-                for input in inputs
+                for input, output_shape, a_dtype in zip(
+                    inputs, output_shapes, attrib_type
+                )
             ]
 
             # Weights are used in cases where ablations may be overlapping.
             if self.use_weights:
                 weights = [
-                    torch.zeros(
-                        (n_outputs,) + input.shape[1:], device=input.device
-                    ).float()
-                    for input in inputs
+                    torch.zeros(output_shape, device=input.device).float()
+                    for input, output_shape in zip(inputs, output_shapes)
                 ]
 
             # Iterate through each feature tensor for ablation
@@ -372,13 +372,14 @@ class FeatureAblation(PerturbationAttribution):
                     #   agg mode: (*initial_eval.shape)
                     #   non-agg mode:
                     #     (feature_perturbed * batch_size, *initial_eval.shape[1:])
-                    modified_eval = self._run_forward(
+                    modified_eval, _ = self._run_forward(
                         self.forward_func,
                         current_inputs,
-                        current_target,
-                        current_add_args,
+                        target=current_target,
+                        additional_forward_args=current_add_args,
                         **kwargs_run_forward,
                     )
+                    modified_eval = modified_eval[i]  # Get ith output
 
                     if show_progress:
                         attr_progress.update()
@@ -398,7 +399,7 @@ class FeatureAblation(PerturbationAttribution):
                         current_output_shape = modified_eval.shape
 
                         # use initial_eval as the forward of perturbations_per_eval = 1
-                        initial_output_shape = initial_eval.shape
+                        initial_output_shape = initial_eval[i].shape
 
                         assert (
                             # check if the output is not a scalar
@@ -420,14 +421,16 @@ class FeatureAblation(PerturbationAttribution):
 
                     # reshape the leading dim for n_feature_perturbed
                     # flatten each feature's eval outputs into 1D of (n_outputs)
+                    n_outputs = flattened_initial_eval[i].shape[1]
                     modified_eval = modified_eval.reshape(-1, n_outputs)
                     # eval_diff in shape (n_feature_perturbed, n_outputs)
-                    eval_diff = flattened_initial_eval - modified_eval
+                    eval_diff = flattened_initial_eval[i] - modified_eval
 
                     # append the shape of one input example
                     # to make it broadcastable to mask
-                    eval_diff = eval_diff.reshape(
-                        eval_diff.shape + (inputs[i].dim() - 1) * (1,)
+                    eval_diff = self._reshape_eval_diff(
+                        eval_diff=eval_diff,
+                        shapes=output_shapes[i],
                     )
                     eval_diff = eval_diff.to(total_attrib[i].device)
 
@@ -436,7 +439,7 @@ class FeatureAblation(PerturbationAttribution):
                     if attributions_fn is not None:
                         eval_diff = attributions_fn(eval_diff)
                     total_attrib[i] += (
-                        eval_diff * current_mask.to(attrib_type)
+                        eval_diff * current_mask.to(attrib_type[i])
                     ).sum(dim=0)
 
             if show_progress:
@@ -639,21 +642,42 @@ class FeatureAblation(PerturbationAttribution):
         )
 
     @staticmethod
-    def _run_forward(*args, **kwargs) -> Tensor:
+    def _run_forward(
+        forward_func: Callable, inputs: Any, **kwargs
+    ) -> (Tuple[Tensor, ...], Tuple[Tuple[int]]):
         """
         A wrapper for _run_forward.
         """
-        forward_output = _run_forward(*args, **kwargs)
-        if isinstance(forward_output, Tensor):
-            return forward_output
+        forward_output = _run_forward(
+            forward_func,
+            inputs,
+            **kwargs,
+        )
+        if not isinstance(forward_output, Tensor):
+            output_type = type(forward_output)
+            assert output_type is int or output_type is float, (
+                "the return of forward_func must be a tensor, int, or float,"
+                f" received: {forward_output}"
+            )
 
-        output_type = type(forward_output)
-        assert output_type is int or output_type is float, (
-            "the return of forward_func must be a tensor, int, or float,"
-            f" received: {forward_output}"
+            # using python built-in type as torch dtype
+            # int -> torch.int64, float -> torch.float64
+            # ref: https://github.com/pytorch/pytorch/pull/21215
+            forward_output = torch.tensor(forward_output, dtype=output_type)
+
+        # number of elements in the output of forward_func
+        n_outputs = (
+            forward_output.numel() if isinstance(forward_output, Tensor) else 1
+        )
+        output_shapes = tuple(
+            (n_outputs,) + input.shape[1:] for input in inputs
         )
 
-        # using python built-in type as torch dtype
-        # int -> torch.int64, float -> torch.float64
-        # ref: https://github.com/pytorch/pytorch/pull/21215
-        return torch.tensor(forward_output, dtype=output_type)
+        # Copy output len(inputs) times
+        forward_output = tuple(forward_output for _ in inputs)
+
+        return forward_output, output_shapes
+
+    @staticmethod
+    def _reshape_eval_diff(eval_diff: Tensor, shapes: tuple) -> Tensor:
+        return eval_diff.reshape(eval_diff.shape + (len(shapes) - 1) * (1,))

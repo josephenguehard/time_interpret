@@ -16,7 +16,7 @@ from captum._utils.typing import (
 )
 
 from torch import Tensor
-from typing import Any, Tuple, Union
+from typing import Any, Callable, Tuple, Union
 
 from .occlusion import FeatureAblation, Occlusion
 
@@ -26,6 +26,7 @@ class TSRTunnel(Occlusion):
     Two-step temporal saliency rescaling Tunnel.
 
     Performs a two-step interpretation method:
+
     - Mask all features at each time and compute the difference in the
       resulting attribution.
     - Mask each feature at each time and compute the difference in the
@@ -37,16 +38,43 @@ class TSRTunnel(Occlusion):
 
     Using the arguments ``sliding_window_shapes`` and ``strides``, different
     alternatives of TSR can be used:
-    - If sliding_window_shapes = (1, 1, ...) and strides = 1, the
-      Feature-Relevance Score is computed by masking each feature individually
-      providing the Time-Relevance Score is above the threshold. This
-      corresponds to the Temporal Saliency Rescaling method (Algorithm 1).
-    - If sliding_window_shapes = (G, G, ...) and strides = G, the
-      Feature-Relevance Score is computed by masking each feature as a group
-      of G features. This corresponds to the Temporal Saliency Rescaling (TSR)
-      With Feature Grouping method (Algorithm 2).
-    - If sliding_window_shapes = inputs.shape[2:] and strides = 1, the
-      Feature-Relevance Score is computed
+
+    - If:
+
+      - :attr:`sliding_window_shapes` = `(1, 1, ...)`
+      - :attr:`strides` = `1`
+      - :attr:`threshold` = :math:`\alpha`
+
+      the Feature-Relevance Score is computed by masking each feature
+      individually providing the Time-Relevance Score is above the threshold.
+      This corresponds to the **Temporal Saliency Rescaling** (TSR) method
+      (Algorithm 1).
+    - If:
+
+      - :attr:`sliding_window_shapes` = `(1, G, G, ...)`
+      - :attr:`strides` = `(1, G, G, ...)`
+      - :attr:`threshold` = :math:`\alpha`
+
+      the Feature-Relevance Score is computed by masking each feature as a
+      group of G features. This corresponds to the **Temporal Saliency
+      Rescaling With Feature Grouping** method (Algorithm 2).
+    - If:
+
+      - :attr:`sliding_window_shapes` = `(inputs.shape[1], 1, 1, ...)`
+      - :attr:`strides` = `1`
+      - :attr:`threshold` = `0.0`
+
+      the Feature-Relevance Score is computed by first masking each features
+      individually at every time steps. This corresponds to the **Temporal
+      Feature Saliency Rescaling** (TFSR) method (Algorithm 3).
+
+    .. hint::
+        The convergence delta is ignored by this method, even if explicitely
+        required by the attribution method.
+
+    .. warning::
+        The attribution method used must output a tensor or tuple of tensor
+        of the same size as the inputs.
 
     Args:
         attribution_method (Attribution): An instance of any attribution algorithm
@@ -74,9 +102,7 @@ class TSRTunnel(Occlusion):
         attribution_method: Attribution,
     ) -> None:
         self.attribution_method = attribution_method
-        self.is_delta_supported = (
-            self.attribution_method.has_convergence_delta()
-        )
+        self.is_delta_supported = False
         self._multiply_by_inputs = self.attribution_method.multiplies_by_inputs
         self.is_gradient_method = isinstance(
             self.attribution_method, GradientAttribution
@@ -89,7 +115,7 @@ class TSRTunnel(Occlusion):
         return self._multiply_by_inputs
 
     def has_convergence_delta(self) -> bool:
-        return self.is_delta_supported
+        return False
 
     @log_usage()
     def attribute(
@@ -104,7 +130,8 @@ class TSRTunnel(Occlusion):
         baselines: BaselineType = None,
         target: TargetType = None,
         additional_forward_args: Any = None,
-        threshold: float = 0.5,
+        threshold: float = 0.0,
+        normalize: bool = True,
         perturbations_per_eval: int = 1,
         show_progress: bool = False,
         **kwargs: Any,
@@ -223,7 +250,10 @@ class TSRTunnel(Occlusion):
                 to these arguments.
                 Default: None
             threshold (float): Threshold for the second step computation.
-                Default: 0.5
+                Default: 0.0
+            normalize (float): Whether to normalize the temporal attribution
+                before applying the threshold.
+                Default: True
             perturbations_per_eval (int, optional): Allows multiple occlusions
                 to be included in one batch (one call to forward_fn).
                 By default, perturbations_per_eval is 1, so each occlusion
@@ -292,24 +322,19 @@ class TSRTunnel(Occlusion):
 
         # Reshape the Time-Relevance Score and sum along the diagonal
         assert all(
-            len(tsr) == input.numel()
+            tsr.shape == input.shape
             for input, tsr in zip(inputs, time_relevance_score)
         ), "The attribution method must return a tensor of the same shape as the inputs"
         time_relevance_score = tuple(
-            tsr.reshape(input.shape + input.shape[1:])
-            for input, tsr in zip(inputs, time_relevance_score)
+            tsr.sum((tuple(i for i in range(2, len(tsr.shape)))))
+            for tsr in time_relevance_score
         )
-        dim_to_sum = tuple(
-            tuple(range(2, len(input.shape)))
-            + tuple(range(len(input.shape) + 1, 2 * len(input.shape) - 1))
-            for input in inputs
-        )
-        time_relevance_score = tuple(
-            tsr.sum(dim) for tsr, dim in zip(time_relevance_score, dim_to_sum)
-        )
-        time_relevance_score = tuple(
-            torch.diagonal(tsr, dim1=1, dim2=2) for tsr in time_relevance_score
-        )
+
+        # Normalize if required
+        if normalize:
+            time_relevance_score = tuple(
+                tsr / tsr.sum() for tsr in time_relevance_score
+            )
 
         # Get indexes where the Time-Relevance Score is
         # higher than the threshold
@@ -318,13 +343,11 @@ class TSRTunnel(Occlusion):
         )
 
         # Formatting strides
-        # Set temporal dim to 1
         strides = _format_and_verify_strides(strides, inputs)
-        strides = tuple((1,) + strides[1:])
 
         # Formatting sliding window shapes
         sliding_window_shapes = _format_and_verify_sliding_window_shapes(
-            (1,) + sliding_window_shapes, inputs
+            sliding_window_shapes, inputs
         )
 
         # Construct tensors from sliding window shapes
@@ -339,6 +362,18 @@ class TSRTunnel(Occlusion):
             current_shape = np.subtract(
                 inp.shape[2:], sliding_window_shapes[i][1:]
             )
+
+            non_zero_count = torch.unique(
+                is_above_threshold[i].nonzero()[:, 0], return_counts=True
+            )[1]
+            if non_zero_count.sum() == 0:
+                shift_count_time_dim = np.array([0])
+            else:
+                shift_count_time_dim = np.subtract(
+                    non_zero_count.max().item(), sliding_window_shapes[i][0]
+                )
+            current_shape = np.insert(current_shape, 0, shift_count_time_dim)
+
             shift_counts.append(
                 tuple(
                     np.add(
@@ -367,32 +402,10 @@ class TSRTunnel(Occlusion):
             kwargs_run_forward=kwargs,
         )
 
-        # Reshape the Feature-Relevance Score and sum along the diagonal
-        features_relevance_score = tuple(
-            fsr.reshape(input.shape + input.shape[1:])
-            for input, fsr in zip(inputs, features_relevance_score)
-        )
-        dim_to_sum = tuple((1,) + (len(input.shape),) for input in inputs)
-        features_relevance_score = tuple(
-            fsr.sum(dim)
-            for fsr, dim in zip(features_relevance_score, dim_to_sum)
-        )
-        diag_elts = list()
-        for i, inp in enumerate(inputs):
-            score = features_relevance_score[i]
-            for j in range(len(inp.shape[2:]) + 1, 1, -1):
-                score = torch.diagonal(score, dim1=1, dim2=j)
-                diag_elts.append(score)
-        features_relevance_score = tuple(diag_elts)
-
         # Reshape attributions before merge
         time_relevance_score = tuple(
             tsr.reshape(input.shape[:2] + (1,) * len(input.shape[2:]))
             for input, tsr in zip(inputs, time_relevance_score)
-        )
-        features_relevance_score = tuple(
-            fsr.reshape((input.shape[0], 1) + input.shape[2:])
-            for input, fsr in zip(inputs, features_relevance_score)
         )
         is_above_threshold = tuple(
             is_above.reshape(input.shape[:2] + (1,) * len(input.shape[2:]))
@@ -461,11 +474,7 @@ class TSRTunnel(Occlusion):
             ).to(expanded_input.dtype)
         ) + (baseline * input_mask.to(expanded_input.dtype))
 
-        if kwargs.get("is_above_threshold", None) is None:
-            return ablated_tensor, input_mask
-        return ablated_tensor, input_mask.reshape(
-            (1, -1) + (1,) * len(expanded_input.shape[2:])
-        )
+        return ablated_tensor, input_mask
 
     def _occlusion_mask(
         self,
@@ -510,87 +519,35 @@ class TSRTunnel(Occlusion):
                 shift_counts=shift_counts,
             )
 
+        padded_tensor = super()._occlusion_mask(
+            expanded_input=expanded_input[:, :, 0],
+            ablated_feature_num=ablated_feature_num,
+            sliding_window_tsr=torch.ones(sliding_window_tsr.shape[1:]),
+            strides=strides[1:] if isinstance(strides, tuple) else strides,
+            shift_counts=shift_counts[1:],
+        )
+
         bsz = expanded_input.shape[1]
-        is_above_idx = is_above_threshold.nonzero()
-        shift_count_t = (
-            torch.unique(is_above_idx[:, 0], return_counts=True)[1]
-            .max()
-            .item()
-        )
+        shift_count = shift_counts[0]
+        stride = strides[0] if isinstance(strides, tuple) else strides
+        current_index = (ablated_feature_num % shift_count) * stride
 
-        padded_tensor = torch.zeros(expanded_input.shape[1:])
+        is_above = is_above_threshold.clone()
         for batch_idx in range(bsz):
-            remaining_total = ablated_feature_num
-            if (
-                len(is_above_idx[is_above_idx[:, 0] == batch_idx])
-                > remaining_total % shift_count_t
-            ):
-                current_index = [
-                    is_above_idx[is_above_idx[:, 0] == batch_idx][
-                        remaining_total % shift_count_t
-                    ][1].item(),
-                ]
-                remaining_total = remaining_total // shift_count_t
-                for i, shift_count in enumerate(shift_counts):
-                    stride = (
-                        strides[i] if isinstance(strides, tuple) else strides
-                    )
-                    current_index.append(
-                        (remaining_total % shift_count) * stride
-                    )
-                    remaining_total = remaining_total // shift_count
+            x = is_above_threshold[batch_idx].nonzero()[:, 0]
+            for i, y in enumerate(x):
+                if i < current_index:
+                    is_above[batch_idx, y] = 0
+                if i > current_index + sliding_window_tsr.shape[0]:
+                    is_above[batch_idx, y] = 0
 
-                remaining_padding = np.subtract(
-                    expanded_input.shape[2:],
-                    np.add(current_index, sliding_window_tsr.shape),
-                )
-                pad_values = [
-                    val
-                    for pair in zip(remaining_padding, current_index)
-                    for val in pair
-                ]
-                pad_values.reverse()
-                padded_tensor[batch_idx] = torch.nn.functional.pad(
-                    sliding_window_tsr.unsqueeze(0), tuple(pad_values)  # type: ignore
-                )
+        return is_above.unsqueeze(-1) * padded_tensor.unsqueeze(0)
 
-        return padded_tensor
-
-    def _get_feature_range_and_mask(
-        self, input: Tensor, input_mask: Tensor, **kwargs: Any
-    ) -> Tuple[int, int, None]:
-        feature_max = np.prod(kwargs["shift_counts"])
-        if "is_above_threshold" in kwargs:
-            feature_max *= (
-                torch.unique(
-                    kwargs["is_above_threshold"].nonzero()[:, 0],
-                    return_counts=True,
-                )[1]
-                .max()
-                .item()
-            )
-        return 0, feature_max, None
-
-    def _get_feature_counts(self, inputs, feature_mask, **kwargs):
-        """return the numbers of possible input features"""
-        feature_counts = tuple(
-            np.prod(counts).astype(int) for counts in kwargs["shift_counts"]
-        )
-        if "is_above_threshold" in kwargs:
-            feature_counts = tuple(
-                counts
-                * torch.unique(is_above.nonzero()[:, 0], return_counts=True)[1]
-                .max()
-                .item()
-                for input, counts, is_above in zip(
-                    inputs, feature_counts, kwargs["is_above_threshold"]
-                )
-            )
-        return feature_counts
-
-    def _run_forward(self, *args, **kwargs) -> Tensor:
+    def _run_forward(
+        self, forward_func: Callable, inputs: Any, **kwargs
+    ) -> (Tuple[Tensor, ...], Tuple[Tuple[int]]):
         attributions = self.attribution_method.attribute.__wrapped__(
-            self.attribution_method, *args[1:], **kwargs
+            self.attribution_method, inputs, **kwargs
         )
 
         # Check if it needs to return convergence delta
@@ -603,8 +560,11 @@ class TSRTunnel(Occlusion):
         if self.is_delta_supported and return_convergence_delta:
             attributions, _ = attributions
 
-        # If tuple returned, take the first element
-        if isinstance(attributions, tuple):
-            attributions = attributions[0]
+        # Get attr shapes
+        attributions_shape = tuple(tuple(attr.shape) for attr in attributions)
 
-        return attributions
+        return attributions, attributions_shape
+
+    @staticmethod
+    def _reshape_eval_diff(eval_diff: Tensor, shapes: tuple) -> Tensor:
+        return eval_diff.reshape((len(eval_diff),) + shapes)
