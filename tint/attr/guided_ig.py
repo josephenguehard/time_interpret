@@ -484,9 +484,9 @@ class GuidedIntegratedGradients(IntegratedGradients):
             if gamma > 1.0:
                 scaled_features[s] = input[s]
             else:
-                scaled_features[s] = (1 - gamma) * scaled_features[
-                    s
-                ] + gamma * input[s]
+                scaled_features[s] = (
+                    scaled_features[s] * (1 - gamma) + input[s] * gamma
+                )
             grad_in[grad_in == torch.inf] = 0
             grad_out[s] += grad_in[s]
         return grad_out, scaled_features

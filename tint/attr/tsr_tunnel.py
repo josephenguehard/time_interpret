@@ -363,6 +363,8 @@ class TSRTunnel(Occlusion):
                 inp.shape[2:], sliding_window_shapes[i][1:]
             )
 
+            # On the temporal dim, the count shift is the maximum number
+            # of element above the threshold
             non_zero_count = torch.unique(
                 is_above_threshold[i].nonzero()[:, 0], return_counts=True
             )[1]
@@ -519,6 +521,7 @@ class TSRTunnel(Occlusion):
                 shift_counts=shift_counts,
             )
 
+        # We first compute the hyper-rectangle on the non-temporal dims
         padded_tensor = super()._occlusion_mask(
             expanded_input=expanded_input[:, :, 0],
             ablated_feature_num=ablated_feature_num,
@@ -527,19 +530,23 @@ class TSRTunnel(Occlusion):
             shift_counts=shift_counts[1:],
         )
 
+        # We get the current index and batch size
         bsz = expanded_input.shape[1]
         shift_count = shift_counts[0]
         stride = strides[0] if isinstance(strides, tuple) else strides
         current_index = (ablated_feature_num % shift_count) * stride
 
+        # On the temporal dim, the hyper-rectangle is only applied on
+        # non-zeros elements
         is_above = is_above_threshold.clone()
         for batch_idx in range(bsz):
-            x = is_above_threshold[batch_idx].nonzero()[:, 0]
-            for i, y in enumerate(x):
-                if i < current_index:
-                    is_above[batch_idx, y] = 0
-                if i > current_index + sliding_window_tsr.shape[0]:
-                    is_above[batch_idx, y] = 0
+            nonzero = is_above_threshold[batch_idx].nonzero()[:, 0]
+            is_above[
+                batch_idx,
+                nonzero[
+                    current_index : current_index + sliding_window_tsr.shape[0]
+                ],
+            ] = 0
 
         return is_above.unsqueeze(-1) * padded_tensor.unsqueeze(0)
 
@@ -567,4 +574,5 @@ class TSRTunnel(Occlusion):
 
     @staticmethod
     def _reshape_eval_diff(eval_diff: Tensor, shapes: tuple) -> Tensor:
+        # For this method, we need to reshape eval_diff to the output shapes
         return eval_diff.reshape((len(eval_diff),) + shapes)
