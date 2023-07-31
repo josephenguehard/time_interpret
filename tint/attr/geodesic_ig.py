@@ -714,7 +714,9 @@ class GeodesicIntegratedGradients(GradientAttribution):
         # calling contiguous to avoid `memory whole` problems
         scaled_grads = [
             grad.contiguous().view(n_steps, -1)
-            * torch.tensor(step_sizes).view(n_steps, 1).to(grad.device)
+            * torch.tensor(step_sizes, dtype=torch.float32)
+            .view(n_steps, 1)
+            .to(grad.device)
             for grad in grads
         ]
 
