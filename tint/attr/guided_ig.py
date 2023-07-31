@@ -92,7 +92,7 @@ class GuidedIntegratedGradients(IntegratedGradients):
         baselines: BaselineType = None,
         target: TargetType = None,
         additional_forward_args: Any = None,
-        n_anchors: int = 2,
+        n_anchors: int = 0,
         n_guided_steps: int = 50,
         fraction: float = 0.1,
         internal_batch_size: Union[None, int] = None,
@@ -107,7 +107,7 @@ class GuidedIntegratedGradients(IntegratedGradients):
         baselines: BaselineType = None,
         target: TargetType = None,
         additional_forward_args: Any = None,
-        n_anchors: int = 2,
+        n_anchors: int = 0,
         n_guided_steps: int = 50,
         fraction: float = 0.1,
         internal_batch_size: Union[None, int] = None,
@@ -123,7 +123,7 @@ class GuidedIntegratedGradients(IntegratedGradients):
         baselines: BaselineType = None,
         target: TargetType = None,
         additional_forward_args: Any = None,
-        n_anchors: int = 2,
+        n_anchors: int = 0,
         n_guided_steps: int = 50,
         fraction: float = 0.1,
         internal_batch_size: Union[None, int] = None,
@@ -222,7 +222,7 @@ class GuidedIntegratedGradients(IntegratedGradients):
                 to these arguments.
                 Default: None
             n_anchors (int, optional): The number of anchor points used by the
-                method. Default: 2
+                method. Default: 0
             n_guided_steps (int, optional): The number of steps to compute the path
                 between two anchor points. Default: 50
             fraction (float, optional): Fraction of features (we use 10%) with the
@@ -272,6 +272,7 @@ class GuidedIntegratedGradients(IntegratedGradients):
         inputs, baselines = _format_input_baseline(inputs, baselines)
 
         method = "riemann_trapezoid"
+        n_anchors += 2  # Add inputs and baselines points as anchors
         _validate_input(inputs, baselines, n_anchors, method)
 
         if internal_batch_size is not None:
@@ -327,10 +328,10 @@ class GuidedIntegratedGradients(IntegratedGradients):
         baselines: Tuple[Union[Tensor, int, float], ...],
         target: TargetType = None,
         additional_forward_args: Any = None,
-        n_steps: int = 0,
+        n_steps: int = 2,
         n_guided_steps: int = 50,
         fraction: float = 0.1,
-        method: str = "gausslegendre",
+        method: str = "riemann_trapezoid",
         step_sizes_and_alphas: Union[
             None, Tuple[List[float], List[float]]
         ] = None,
@@ -385,16 +386,18 @@ class GuidedIntegratedGradients(IntegratedGradients):
         expanded_target = _expand_target(target, n_steps - 1)
 
         # grads: dim -> (bsz * (#steps - 1) x inputs[0].shape[1:], ...)
+        # For each guided step, we update the baseline and compute
+        # the corresponding gradients
         l1_total = self.l1(inputs, baselines)
         grads = tuple(torch.zeros_like(input) for input in inputs)
         for step in range(n_guided_steps):
-            grads = self.gradient_func(
+            new_grads = self.gradient_func(
                 forward_fn=self.forward_func,
                 inputs=scaled_baselines_tpl,
                 target_ind=expanded_target,
                 additional_forward_args=input_additional_args,
             )
-            grads, scaled_baselines_tpl = tuple(
+            new_grads, scaled_baselines_tpl = tuple(
                 zip(
                     *(
                         self.accumulate_grads(
@@ -409,11 +412,14 @@ class GuidedIntegratedGradients(IntegratedGradients):
                         for input, baseline, grad, l1 in zip(
                             scaled_features_tpl,
                             scaled_baselines_tpl,
-                            grads,
+                            new_grads,
                             l1_total,
                         )
                     )
                 )
+            )
+            grads = tuple(
+                grad + new_grad for grad, new_grad in zip(grads, new_grads)
             )
 
         # flattening grads so that we can multiply it with step-size
@@ -464,31 +470,57 @@ class GuidedIntegratedGradients(IntegratedGradients):
         gamma = torch.inf
         scaled_features = baseline.clone()
         grad_out = torch.zeros_like(grad_in)
+
+        # The L1 target is the one we should have reached at the end
+        # of this step
+        l1_target = l1_total * (1 - (step + 1) / n_guided_steps)
+
+        # We iterate until L1 target is reached
         while gamma > 1.0:
+            # We ignore features which are already on the target
             grad_in[scaled_features == input] = torch.inf
-            l1_target = l1_total * (1 - (step + 1) / n_guided_steps)
+
+            # Current L1, to be compared with the target
             l1_current = self.l1(scaled_features, input)
+
+            # If the current L1 is close enough, break
             if math.isclose(
                 l1_target, l1_current, rel_tol=EPSILON, abs_tol=EPSILON
             ):
+                grad_out += (scaled_features - baseline) * grad_in
                 break
+
+            # We select which features have the lowest grads
             threshold = torch.quantile(
                 grad_in.abs(), fraction, interpolation="lower"
             )
-            s = grad_in.abs() <= threshold
+            s = torch.logical_and(
+                grad_in.abs() <= threshold, grad_in != torch.inf
+            )
+
+            # We check how much the L1 can be reduced by updating
+            # the selected features
             l1_s = ((scaled_features - input).abs() * s).sum()
             if l1_s > 0:
                 gamma = (l1_current - l1_target) / l1_s
             else:
                 gamma = torch.inf
+
+            # If L1 target is reached, we update the features to correspond
+            # to this target. Otherwise, we update all the selected features
+            # and iterated until convergence
             if gamma > 1.0:
                 scaled_features[s] = input[s]
             else:
-                scaled_features[s] = (
-                    scaled_features[s] * (1 - gamma) + input[s] * gamma
-                )
+                scaled_features[s] += gamma * (input[s] - scaled_features[s])
+
+            # We remove introduced Inf
             grad_in[grad_in == torch.inf] = 0
+
+            # We only accumulate gradients here, multiplying by the inputs
+            # is done at the end of the `attribute` method
             grad_out[s] += grad_in[s]
+
         return grad_out, scaled_features
 
     @staticmethod
@@ -500,10 +532,3 @@ class GuidedIntegratedGradients(IntegratedGradients):
                 (x - y).abs().sum().item() for x, y in zip(x1, x2)
             )
         return (x1 - x2).abs().sum().item()
-
-    def has_convergence_delta(self) -> bool:
-        return True
-
-    @property
-    def multiplies_by_inputs(self):
-        return self._multiply_by_inputs
