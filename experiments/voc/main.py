@@ -1,5 +1,7 @@
 import multiprocessing as mp
 import os
+
+import torch
 import torch as th
 import torchvision.transforms as T
 import warnings
@@ -24,6 +26,7 @@ from tint.attr import (
     DynaMask,
     ExtremalMask,
     GeodesicIntegratedGradients,
+    GuidedIntegratedGradients,
     Occlusion,
 )
 from tint.attr.models import ExtremalMaskNet, MaskNet
@@ -35,10 +38,10 @@ from tint.metrics.white_box import (
     information,
     entropy,
 )
-from tint.models import CNN, Net
+from tint.models import CNN
 from tint.utils import get_progress_bars
 
-from experiments.voc.classifier import VocClassifier
+from experiments.voc.classifier import VocClassifierNet
 
 
 file_dir = os.path.dirname(__file__)
@@ -47,6 +50,7 @@ warnings.filterwarnings("ignore")
 
 def main(
     explainers: List[str],
+    model_name: str,
     n_images: int,
     device: str = "cpu",
     seed: int = 42,
@@ -113,7 +117,7 @@ def main(
     voc_val_loader = DataLoader(voc_val, batch_size=32, shuffle=False)
 
     # Load model
-    resnet = Net(VocClassifier(), loss="cross_entropy")
+    model = VocClassifierNet(model=model_name)
 
     # Train classifier
     trainer = Trainer(
@@ -123,20 +127,20 @@ def main(
         deterministic=deterministic,
     )
     trainer.fit(
-        resnet,
+        model,
         train_dataloaders=voc_train_loader,
         val_dataloaders=voc_val_loader,
     )
 
     # Extract net from classifier
     # Otherwise it fails when using deepcopy
-    resnet = resnet.net
+    model = model.net
 
     # Switch to eval
-    resnet.eval()
+    model.eval()
 
     # Set model to device
-    resnet.to(device)
+    model.to(device)
 
     # Disable cudnn if using cuda accelerator.
     # Please see https://captum.ai/docs/faq#how-can-i-resolve-cudnn-rnn-backward-error-for-rnn-or-lstm-network
@@ -166,18 +170,24 @@ def main(
 
         # Get prediction from the model
         # We remove images which are not correctly predicted
-        pred = resnet(data).argmax(-1).item()
-        if pred != label:
+        pred = model(data.to(device)).argmax(-1).cpu().item()
+        if pred != label - 1:
             continue
 
         x_test.append(data)
-        y_test.append(label)
+        y_test.append(label - 1)
         seg_test.append(seg)
         i += 1
 
     x_test = th.cat(x_test).to(device)
     y_test = th.Tensor(y_test).long().to(device)
     seg_test = th.cat(seg_test).to(device)
+
+    # Baseline is a normalised black image
+    normalizer = T.Normalize(
+        mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+    )
+    baselines = normalizer(th.zeros_like(x_test))
 
     # Create dict of attributions
     attr = dict()
@@ -195,14 +205,14 @@ def main(
             deterministic=deterministic,
         )
         mask = MaskNet(
-            forward_func=resnet,
+            forward_func=model,
             perturbation="fade_moving_average",
             keep_ratio=[0.01, 0.02, 0.05, 0.1, 0.2, 0.5],
             size_reg_factor_init=0.1,
             size_reg_factor_dilation=10000,
             time_reg_factor=0.0,
         )
-        explainer = DynaMask(resnet)
+        explainer = DynaMask(model)
         _attr = explainer.attribute(
             x_test,
             trainer=trainer,
@@ -221,14 +231,15 @@ def main(
             deterministic=deterministic,
         )
         mask = ExtremalMaskNet(
-            forward_func=resnet,
+            forward_func=model,
             model=CNN([3, 3], kernel_size=3, padding=1, flatten=False),
             optim="adam",
             lr=0.01,
         )
-        explainer = ExtremalMask(resnet)
+        explainer = ExtremalMask(model)
         _attr = explainer.attribute(
             x_test,
+            baselines=baselines,
             target=y_test,
             trainer=trainer,
             mask_net=mask,
@@ -238,20 +249,21 @@ def main(
 
     if "geodesic_integrated_gradients" in explainers:
         _attr = list()
-        for i, (x, y) in get_progress_bars()(
-            enumerate(zip(x_test, y_test)),
+        for i, (x, y, b) in get_progress_bars()(
+            enumerate(zip(x_test, y_test, baselines)),
             total=len(x_test),
             desc=f"{GeodesicIntegratedGradients.get_name()} attribution",
         ):
             rand = th.rand((50,) + x.shape).sort(dim=0).values.to(device)
             x_aug = x.unsqueeze(0) * rand
             explainer = GeodesicIntegratedGradients(
-                resnet, data=x_aug, n_neighbors=5
+                model, data=x_aug, n_neighbors=5
             )
 
             _attr.append(
                 explainer.attribute(
                     x.unsqueeze(0),
+                    baselines=b.unsqueeze(0),
                     target=y.item(),
                     internal_batch_size=10,
                 )
@@ -261,20 +273,21 @@ def main(
 
     if "enhanced_integrated_gradients" in explainers:
         _attr = list()
-        for i, (x, y) in get_progress_bars()(
-            enumerate(zip(x_test, y_test)),
+        for i, (x, y, b) in get_progress_bars()(
+            enumerate(zip(x_test, y_test, baselines)),
             total=len(x_test),
             desc=f"{GeodesicIntegratedGradients.get_name()} attribution",
         ):
             rand = th.rand((50,) + x.shape).sort(dim=0).values.to(device)
             x_aug = x.unsqueeze(0) * rand
             explainer = GeodesicIntegratedGradients(
-                resnet, data=x_aug, n_neighbors=5
+                model, data=x_aug, n_neighbors=5
             )
 
             _attr.append(
                 explainer.attribute(
                     x.unsqueeze(0),
+                    baselines=b.unsqueeze(0),
                     target=y.item(),
                     internal_batch_size=10,
                     distance="euclidean",
@@ -283,8 +296,27 @@ def main(
 
         attr["enhanced_integrated_gradients"] = th.cat(_attr)
 
+    if "guided_integrated_gradients" in explainers:
+        _attr = list()
+        explainer = GuidedIntegratedGradients(model)
+        for i, (x, y, b) in get_progress_bars()(
+            enumerate(zip(x_test, y_test, baselines)),
+            total=len(x_test),
+            desc=f"{GuidedIntegratedGradients.get_name()} attribution",
+        ):
+            _attr.append(
+                explainer.attribute(
+                    x.unsqueeze(0),
+                    baselines=b.unsqueeze(0),
+                    target=y.item(),
+                    internal_batch_size=10,
+                )
+            )
+
+        attr["guided_integrated_gradients"] = th.cat(_attr)
+
     if "gradient_shap" in explainers:
-        explainer = GradientShap(resnet)
+        explainer = GradientShap(model)
         _attr = list()
         for i, (x, y) in get_progress_bars()(
             enumerate(zip(x_test, y_test)),
@@ -303,7 +335,7 @@ def main(
         attr["gradient_shap"] = th.cat(_attr)
 
     if "noisy_gradient_shap" in explainers:
-        explainer = GradientShap(resnet)
+        explainer = GradientShap(model)
         _attr = list()
         for i, (x, y) in get_progress_bars()(
             enumerate(zip(x_test, y_test)),
@@ -313,7 +345,7 @@ def main(
             _attr.append(
                 explainer.attribute(
                     x.unsqueeze(0),
-                    th.stack([x, x * 0.0]),
+                    normalizer(th.stack([x, x * 0.0])),
                     target=y.item(),
                     n_samples=50,
                     stdevs=1.0,
@@ -323,62 +355,66 @@ def main(
         attr["noisy_gradient_shap"] = th.cat(_attr)
 
     if "input_x_gradient" in explainers:
-        explainer = InputXGradient(resnet)
+        explainer = InputXGradient(model)
         _attr = explainer.attribute(x_test, target=y_test)
         attr["input_x_gradient"] = _attr
 
     if "integrated_gradients" in explainers:
-        explainer = IntegratedGradients(resnet)
+        explainer = IntegratedGradients(model)
         _attr = explainer.attribute(
             x_test,
+            baselines=baselines,
             target=y_test,
             internal_batch_size=200,
         )
         attr["integrated_gradients"] = _attr
 
     if "lime" in explainers:
-        explainer = Lime(resnet)
+        explainer = Lime(model)
         _attr = list()
-        for x, y in get_progress_bars()(
-            zip(x_test, y_test),
+        for x, y, b in get_progress_bars()(
+            zip(x_test, y_test, baselines),
             total=len(x_test),
             desc=f"{explainer.get_name()} attribution",
         ):
             _attr.append(
                 explainer.attribute(
                     x.unsqueeze(0),
+                    baselines=b.unsqueeze(0),
                     target=y.unsqueeze(0),
                 )
             )
-        attr["lime"] = th.stack(_attr)
+        attr["lime"] = th.cat(_attr)
 
     if "kernel_shap" in explainers:
-        explainer = KernelShap(resnet)
+        explainer = KernelShap(model)
         _attr = list()
-        for x, y in get_progress_bars()(
-            zip(x_test, y_test),
+        for x, y, b in get_progress_bars()(
+            zip(x_test, y_test, baselines),
             total=len(x_test),
             desc=f"{explainer.get_name()} attribution",
         ):
             _attr.append(
                 explainer.attribute(
                     x.unsqueeze(0),
+                    baselines=b.unsqueeze(0),
                     target=y.unsqueeze(0),
                 )
             )
-        attr["kernel_shap"] = th.stack(_attr)
+        attr["kernel_shap"] = th.cat(_attr)
 
-    if "noise_tunnel" in explainers:
-        explainer = NoiseTunnel(IntegratedGradients(resnet))
+    if "smooth_grad" in explainers:
+        explainer = NoiseTunnel(IntegratedGradients(model))
         _attr = list()
-        for i, (x, y) in get_progress_bars()(
-            enumerate(zip(x_test, y_test)),
+        for i, (x, y, b) in get_progress_bars()(
+            enumerate(zip(x_test, y_test, baselines)),
             total=len(x_test),
             desc=f"{NoiseTunnel.get_name()} attribution",
         ):
             _attr.append(
                 explainer.attribute(
                     x.unsqueeze(0),
+                    baselines=b.unsqueeze(0),
                     target=y.item(),
                     internal_batch_size=200,
                     nt_samples=10,
@@ -387,10 +423,10 @@ def main(
                 )
             )
 
-        attr["noise_tunnel"] = th.cat(_attr)
+        attr["smooth_grad"] = th.cat(_attr)
 
     if "augmented_occlusion" in explainers:
-        explainer = AugmentedOcclusion(resnet, data=x_test)
+        explainer = AugmentedOcclusion(model, data=x_test)
         attr["augmented_occlusion"] = explainer.attribute(
             x_test,
             sliding_window_shapes=(3, 15, 15),
@@ -401,11 +437,12 @@ def main(
         )
 
     if "occlusion" in explainers:
-        explainer = Occlusion(resnet)
+        explainer = Occlusion(model)
         attr["occlusion"] = explainer.attribute(
             x_test,
             sliding_window_shapes=(3, 15, 15),
             strides=(3, 8, 8),
+            baselines=baselines,
             target=y_test,
             attributions_fn=abs,
             show_progress=True,
@@ -415,22 +452,24 @@ def main(
         for k, v in get_progress_bars()(
             attr.items(), desc="Compute metrics", leave=False
         ):
-            v = v.abs()
-            _aup = aup(attributions=v, true_attributions=seg_test)
-            _aur = aur(attributions=v, true_attributions=seg_test)
-            _roc_auc = roc_auc(attributions=v, true_attributions=seg_test)
-            _auprc = auprc(attributions=v, true_attributions=seg_test)
-            _info = information(attributions=v, true_attributions=seg_test)
-            _entropy = entropy(attributions=v, true_attributions=seg_test)
-
             fp.write(str(seed) + ",")
+            fp.write(model_name + ",")
             fp.write(k + ",")
-            fp.write(f"{_aup:.4},")
-            fp.write(f"{_aur:.4},")
-            fp.write(f"{_roc_auc:.4},")
-            fp.write(f"{_auprc:.4},")
-            fp.write(f"{_info:.4},")
-            fp.write(f"{_entropy:.4}")
+
+            v = v.abs()
+            for metric in [aup, aur, roc_auc, auprc, information, entropy]:
+                result = list()
+
+                for v_i, seg_i in zip(v, seg_test):
+                    result.append(
+                        metric(attributions=v_i, true_attributions=seg_i)
+                    )
+
+                result = th.Tensor(result).mean()
+                fp.write(f"{result:.4}") if metric == entropy else fp.write(
+                    f"{result:.4},"
+                )
+
             fp.write("\n")
 
 
@@ -445,19 +484,27 @@ def parse_args():
             "extremal_mask",
             "geodesic_integrated_gradients",
             "enhanced_integrated_gradients",
+            "guided_integrated_gradients",
             "gradient_shap",
             "noisy_gradient_shap",
             "input_x_gradient",
             "integrated_gradients",
             "lime",
             "kernel_shap",
-            "noise_tunnel",
             "augmented_occlusion",
             "occlusion",
+            "smooth_grad",
         ],
         nargs="+",
         metavar="N",
         help="List of explainer to use.",
+    )
+    parser.add_argument(
+        "--model-name",
+        type=str,
+        default="resnet",
+        choices=["resnet", "inception"],
+        help="Model to explain.",
     )
     parser.add_argument(
         "--n-images",
@@ -489,6 +536,7 @@ if __name__ == "__main__":
     args = parse_args()
     main(
         explainers=args.explainers,
+        model_name=args.model_name,
         n_images=args.n_images,
         device=args.device,
         seed=args.seed,
