@@ -389,7 +389,9 @@ class GuidedIntegratedGradients(IntegratedGradients):
         # For each guided step, we update the baseline and compute
         # the corresponding gradients
         l1_total = self.l1(inputs, baselines)
-        grads = tuple(torch.zeros_like(input) for input in inputs)
+        grads = tuple(
+            torch.zeros_like(feature) for feature in scaled_features_tpl
+        )
         for step in range(n_guided_steps):
             new_grads = self.gradient_func(
                 forward_fn=self.forward_func,
