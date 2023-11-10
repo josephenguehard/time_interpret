@@ -159,6 +159,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
         baselines: BaselineType = None,
         target: TargetType = None,
         additional_forward_args: Any = None,
+        feature_ids: List[int] = None,
         n_neighbors: Union[int, Tuple[int]] = None,
         n_steps: int = 5,
         n_steiner: int = None,
@@ -179,6 +180,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
         baselines: BaselineType = None,
         target: TargetType = None,
         additional_forward_args: Any = None,
+        feature_ids: List[int] = None,
         n_neighbors: Union[int, Tuple[int]] = None,
         n_steps: int = 5,
         n_steiner: int = None,
@@ -200,6 +202,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
         baselines: BaselineType = None,
         target: TargetType = None,
         additional_forward_args: Any = None,
+        feature_ids: List[int] = None,
         n_neighbors: Union[int, Tuple[int]] = None,
         n_steps: int = 5,
         n_steiner: int = None,
@@ -310,6 +313,10 @@ class GeodesicIntegratedGradients(GradientAttribution):
                 for all forward evaluations.
                 Note that attributions are not computed with respect
                 to these arguments.
+                Default: None
+            feature_ids (list, optional): Pass a list of feature ids on which
+                the gradients norms are computed. If None, all the features
+                will be used.
                 Default: None
             n_neighbors (int, optional): Number of neighbors to use by default.
                 Must be provided if it has not been set in the init.
@@ -512,6 +519,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
                 show_progress=show_progress,
                 target=target,
                 additional_forward_args=additional_forward_args,
+                feature_ids=feature_ids,
                 n_steps=n_steps,
                 method=method,
             )
@@ -521,19 +529,17 @@ class GeodesicIntegratedGradients(GradientAttribution):
                 baselines=tuple(x[id] for x, id in zip(data, idx)),
                 target=target,
                 additional_forward_args=additional_forward_args,
+                feature_ids=feature_ids,
                 n_steps=n_steps,
                 method=method,
             )
 
         # Get ||xi - xj|| for all data if euclidean
         if distance == "euclidean":
-            grads_norm = tuple(
-                torch.linalg.norm(
-                    (x[knn] - x[id]).reshape(len(x[knn]), -1),
-                    dim=1,
-                )
-                for x, knn, id in zip(data, knns, idx)
+            diff = tuple(
+                (x[knn] - x[id]) for x, knn, id in zip(data, knns, idx)
             )
+            grads_norm = self.l2_norm(diff, feature_ids)
 
         # Create undirected graph for the A* algorithm
         graphs = tuple(dict() for _ in data)
@@ -663,6 +669,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
         baselines: Tuple[Union[Tensor, int, float], ...],
         target: TargetType = None,
         additional_forward_args: Any = None,
+        feature_ids: List[int] = None,
         n_steps: int = 50,
         method: str = "gausslegendre",
         step_sizes_and_alphas: Union[
@@ -729,23 +736,15 @@ class GeodesicIntegratedGradients(GradientAttribution):
         )
 
         # Compute norm of grads
-        grads_norm = tuple(
-            torch.linalg.norm(
-                grad.reshape(grad.shape[:2] + (-1,)),
-                dim=2,
-            ).sum(0)
-            for grad in scaled_grads
-        )
+        grads_norm = self.l2_norm(scaled_grads, feature_ids, sum_first_dim=True)
 
         # Multiply by inputs - baselines
+        diff = tuple(
+            (input - baseline) for input, baseline in zip(inputs, baselines)
+        )
+        diff_norm = self.l2_norm(diff, feature_ids)
         grads_norm = tuple(
-            grad_norm
-            * torch.linalg.norm(
-                (input - baseline).reshape(len(input), -1), dim=1
-            )
-            for grad_norm, input, baseline in zip(
-                grads_norm, inputs, baselines
-            )
+            grad_norm * d for grad_norm, d in zip(grads_norm, diff_norm)
         )
 
         # aggregates across all steps for each tensor in the input tuple
@@ -921,6 +920,38 @@ class GeodesicIntegratedGradients(GradientAttribution):
         )
 
         return curvature
+
+    @staticmethod
+    def l2_norm(
+        features: Tuple[Tensor, ...],
+        feature_ids: List[int],
+        sum_first_dim: bool = False,
+    ) -> Tuple[Tensor, ...]:
+        """
+        Compute the L2 norm of a Tuple of Tensors, only summing on part of it,
+        determined by `feature_ids`.
+        Use `sum_first_dim` to also sum over the first dimension of each
+        Tensor.
+        """
+        if sum_first_dim:
+            features = tuple(
+                feature.reshape(feature.shape[:2] + (-1,)).pow(2).sum(0)
+                for feature in features
+            )
+        else:
+            features = tuple(
+                feature.reshape(len(feature), -1).pow(2)
+                for feature in features
+            )
+
+        if feature_ids is not None:
+            features = tuple(
+                feature[:, feature_ids].sum(1).sqrt() for feature in features
+            )
+        else:
+            features = tuple(feature.sum(1).sqrt() for feature in features)
+
+        return features
 
     def has_convergence_delta(self) -> bool:
         return True

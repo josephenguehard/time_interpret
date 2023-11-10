@@ -176,6 +176,7 @@ def main(
                         target=target,
                         n_neighbors=n,
                         internal_batch_size=200,
+                        feature_ids=[target],
                     ).float()
 
                 attr[f"geodesic_integrated_gradients_{str(n)}"] = _attr
@@ -192,6 +193,7 @@ def main(
                         target=target,
                         n_neighbors=n,
                         internal_batch_size=200,
+                        feature_ids=[target],
                         distance="euclidean",
                     ).float()
 
