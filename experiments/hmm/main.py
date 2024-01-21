@@ -222,7 +222,7 @@ def main(
             stdevs=0.0001,
             task="binary",
             show_progress=True,
-        ).abs()
+        ).abs().to(device)
         classifier.to(device)
 
     if "integrated_gradients" in explainers:
