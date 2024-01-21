@@ -45,7 +45,7 @@ def Roberta(
     Examples:
         >>> from tint.models import Roberta
          <BLANKLINE>
-         >>> tokenizer, model = Roberta("roberta-base")
+        >>> tokenizer, model = Roberta("roberta-base")
     """
     assert RobertaConfig is not None, "transformers is not installed."
 

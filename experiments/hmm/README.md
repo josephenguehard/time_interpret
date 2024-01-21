@@ -1,8 +1,8 @@
 # HMM Experiments
 
 This is the HMM experiments section. You can use this
-section to reproduce the results from the 
-[DynaMask paper](https://arxiv.org/pdf/2106.05303.pdf).
+section to reproduce the results 
+from [Learning Perturbations to Explain Time Series Predictions](https://arxiv.org/abs/2305.18840).
 
 To run the whole script with 5 folds, run:
 

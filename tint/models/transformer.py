@@ -97,7 +97,7 @@ class TransformerEncoder(nn.Module):
         # Apply self attention
         out = self.transformer_encoder(
             src=x,
-            mask=self.src_mask,
+            mask=self.src_mask.to(x.device),
         )
 
         # Normalize outputs

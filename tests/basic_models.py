@@ -39,3 +39,13 @@ class BasicLinearModel5_MultiArgs(nn.Module):
 
     def forward(self, input1, input2):
         return self.linear(th.cat((input1, input2), dim=-1)).sum(1)
+
+
+class BasicRnnModel(nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.rnn = nn.RNN(5, 3, batch_first=True)
+        self.linear = nn.Linear(3, 1)
+
+    def forward(self, x):
+        return self.linear(self.rnn(x)[1][0])

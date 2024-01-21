@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>tint.attr.tsr_tunnel &mdash; Time Interpret 0.3.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/sphinx_paramlinks.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script src="../../../_static/toggleprompt.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Time Interpret
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../attr.html">Attribution Methods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../attr_models.html">Attribution Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../datasets.html">Datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../metrics.html">Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../metrics_weights.html">Metrics Weights</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../white_box_metrics.html">White Box Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../models.html">Models</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Time Interpret</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">tint.attr.tsr_tunnel</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for tint.attr.tsr_tunnel</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="kn">from</span> <span class="nn">captum.attr._utils.attribution</span> <span class="kn">import</span> <span class="n">Attribution</span><span class="p">,</span> <span class="n">GradientAttribution</span>
+<span class="kn">from</span> <span class="nn">captum.attr._utils.common</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_format_input_baseline</span><span class="p">,</span>
+    <span class="n">_format_and_verify_sliding_window_shapes</span><span class="p">,</span>
+    <span class="n">_format_and_verify_strides</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">captum.log</span> <span class="kn">import</span> <span class="n">log_usage</span>
+<span class="kn">from</span> <span class="nn">captum._utils.common</span> <span class="kn">import</span> <span class="n">_format_output</span>
+<span class="kn">from</span> <span class="nn">captum._utils.typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BaselineType</span><span class="p">,</span>
+    <span class="n">TargetType</span><span class="p">,</span>
+    <span class="n">TensorOrTupleOfTensorsGeneric</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">.occlusion</span> <span class="kn">import</span> <span class="n">FeatureAblation</span><span class="p">,</span> <span class="n">Occlusion</span>
+
+
+<div class="viewcode-block" id="TSRTunnel"><a class="viewcode-back" href="../../../attr.html#tint.attr.TSRTunnel">[docs]</a><span class="k">class</span> <span class="nc">TSRTunnel</span><span class="p">(</span><span class="n">Occlusion</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Two-step temporal saliency rescaling Tunnel.</span>
+
+<span class="sd">    Performs a two-step interpretation method:</span>
+
+<span class="sd">    - Mask all features at each time and compute the difference in the</span>
+<span class="sd">      resulting attribution.</span>
+<span class="sd">    - Mask each feature at each time and compute the difference in the</span>
+<span class="sd">      resulting attribution, if the result of the first step is higher</span>
+<span class="sd">      than a threshold.</span>
+
+<span class="sd">    By default, the masked features are replaced with zeros. However, a</span>
+<span class="sd">    custom baseline can also be passed.</span>
+
+<span class="sd">    Using the arguments ``sliding_window_shapes`` and ``strides``, different</span>
+<span class="sd">    alternatives of TSR can be used:</span>
+
+<span class="sd">    - If:</span>
+
+<span class="sd">      - :attr:`sliding_window_shapes` = `(1, 1, ...)`</span>
+<span class="sd">      - :attr:`strides` = `1`</span>
+<span class="sd">      - :attr:`threshold` = :math:`\alpha`</span>
+
+<span class="sd">      the Feature-Relevance Score is computed by masking each feature</span>
+<span class="sd">      individually providing the Time-Relevance Score is above the threshold.</span>
+<span class="sd">      This corresponds to the **Temporal Saliency Rescaling** (TSR) method</span>
+<span class="sd">      (Algorithm 1).</span>
+<span class="sd">    - If:</span>
+
+<span class="sd">      - :attr:`sliding_window_shapes` = `(1, G, G, ...)`</span>
+<span class="sd">      - :attr:`strides` = `(1, G, G, ...)`</span>
+<span class="sd">      - :attr:`threshold` = :math:`\alpha`</span>
+
+<span class="sd">      the Feature-Relevance Score is computed by masking each feature as a</span>
+<span class="sd">      group of G features. This corresponds to the **Temporal Saliency</span>
+<span class="sd">      Rescaling With Feature Grouping** method (Algorithm 2).</span>
+<span class="sd">    - If:</span>
+
+<span class="sd">      - :attr:`sliding_window_shapes` = `(inputs.shape[1], 1, 1, ...)`</span>
+<span class="sd">      - :attr:`strides` = `1`</span>
+<span class="sd">      - :attr:`threshold` = `0.0`</span>
+
+<span class="sd">      the Feature-Relevance Score is computed by first masking each features</span>
+<span class="sd">      individually at every time steps. This corresponds to the **Temporal</span>
+<span class="sd">      Feature Saliency Rescaling** (TFSR) method (Algorithm 3).</span>
+
+<span class="sd">    .. hint::</span>
+<span class="sd">        The convergence delta is ignored by this method, even if explicitely</span>
+<span class="sd">        required by the attribution method.</span>
+
+<span class="sd">    .. warning::</span>
+<span class="sd">        The attribution method used must output a tensor or tuple of tensor</span>
+<span class="sd">        of the same size as the inputs.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        attribution_method (Attribution): An instance of any attribution algorithm</span>
+<span class="sd">                    of type `Attribution`. E.g. Integrated Gradients,</span>
+<span class="sd">                    Conductance or Saliency.</span>
+
+<span class="sd">    References:</span>
+<span class="sd">        `Benchmarking Deep Learning Interpretability in Time Series Predictions &lt;https://arxiv.org/abs/2010.13924&gt;`_</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import torch as th</span>
+<span class="sd">        &gt;&gt;&gt; from captum.attr import Saliency</span>
+<span class="sd">        &gt;&gt;&gt; from tint.attr import TSRTunnel</span>
+<span class="sd">        &gt;&gt;&gt; from tint.models import MLP</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+<span class="sd">        &gt;&gt;&gt; inputs = th.rand(8, 7, 5)</span>
+<span class="sd">        &gt;&gt;&gt; mlp = MLP([5, 3, 1])</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+<span class="sd">        &gt;&gt;&gt; explainer = TSRTunnel(Saliency(mlp))</span>
+<span class="sd">        &gt;&gt;&gt; attr = explainer.attribute(inputs, target=0)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">attribution_method</span><span class="p">:</span> <span class="n">Attribution</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attribution_method</span> <span class="o">=</span> <span class="n">attribution_method</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_delta_supported</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_multiply_by_inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attribution_method</span><span class="o">.</span><span class="n">multiplies_by_inputs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_gradient_method</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">attribution_method</span><span class="p">,</span> <span class="n">GradientAttribution</span>
+        <span class="p">)</span>
+        <span class="n">Occlusion</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">attribution_method</span><span class="o">.</span><span class="n">forward_func</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_weights</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># We do not use weights for this method</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">multiplies_by_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_multiply_by_inputs</span>
+
+<div class="viewcode-block" id="TSRTunnel.has_convergence_delta"><a class="viewcode-back" href="../../../attr.html#tint.attr.TSRTunnel.has_convergence_delta">[docs]</a>    <span class="k">def</span> <span class="nf">has_convergence_delta</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="TSRTunnel.attribute"><a class="viewcode-back" href="../../../attr.html#tint.attr.TSRTunnel.attribute">[docs]</a>    <span class="nd">@log_usage</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">attribute</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">TensorOrTupleOfTensorsGeneric</span><span class="p">,</span>
+        <span class="n">sliding_window_shapes</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span>
+            <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span>
+        <span class="p">],</span>
+        <span class="n">strides</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span>
+            <span class="kc">None</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]],</span> <span class="o">...</span><span class="p">]</span>
+        <span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">baselines</span><span class="p">:</span> <span class="n">BaselineType</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">target</span><span class="p">:</span> <span class="n">TargetType</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">additional_forward_args</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">normalize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">perturbations_per_eval</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TensorOrTupleOfTensorsGeneric</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inputs (tensor or tuple of tensors):  Input for which integrated</span>
+<span class="sd">                gradients are computed. If forward_func takes a single</span>
+<span class="sd">                tensor as input, a single input tensor should be provided.</span>
+<span class="sd">                If forward_func takes multiple tensors as input, a tuple</span>
+<span class="sd">                of the input tensors should be provided. It is assumed</span>
+<span class="sd">                that for all given input tensors, dimension 0 corresponds</span>
+<span class="sd">                to the number of examples, and if multiple input tensors</span>
+<span class="sd">                are provided, the examples must be aligned appropriately.</span>
+<span class="sd">                It is also assumed that for all given input tensors,</span>
+<span class="sd">                dimension 1 corresponds to the time dimension, and if</span>
+<span class="sd">                multiple input tensors are provided, the examples must</span>
+<span class="sd">                be aligned appropriately.</span>
+<span class="sd">            sliding_window_shapes (tuple or tuple of tuples): Shape of patch</span>
+<span class="sd">                (hyperrectangle) to occlude each input. For a single</span>
+<span class="sd">                input tensor, this must be a tuple of length equal to the</span>
+<span class="sd">                number of dimensions of the input tensor - 1, defining</span>
+<span class="sd">                the dimensions of the patch. If the input tensor is 1-d,</span>
+<span class="sd">                this should be an empty tuple. For multiple input tensors,</span>
+<span class="sd">                this must be a tuple containing one tuple for each input</span>
+<span class="sd">                tensor defining the dimensions of the patch for that</span>
+<span class="sd">                input tensor, as described for the single tensor case.</span>
+<span class="sd">            strides (int or tuple or tuple of ints or tuple of tuples, optional):</span>
+<span class="sd">                This defines the step by which the occlusion hyperrectangle</span>
+<span class="sd">                should be shifted by in each direction for each iteration.</span>
+<span class="sd">                For a single tensor input, this can be either a single</span>
+<span class="sd">                integer, which is used as the step size in each direction,</span>
+<span class="sd">                or a tuple of integers matching the number of dimensions</span>
+<span class="sd">                in the occlusion shape, defining the step size in the</span>
+<span class="sd">                corresponding dimension. For multiple tensor inputs, this</span>
+<span class="sd">                can be either a tuple of integers, one for each input</span>
+<span class="sd">                tensor (used for all dimensions of the corresponding</span>
+<span class="sd">                tensor), or a tuple of tuples, providing the stride per</span>
+<span class="sd">                dimension for each tensor.</span>
+<span class="sd">                To ensure that all inputs are covered by at least one</span>
+<span class="sd">                sliding window, the stride for any dimension must be</span>
+<span class="sd">                &lt;= the corresponding sliding window dimension if the</span>
+<span class="sd">                sliding window dimension is less than the input</span>
+<span class="sd">                dimension.</span>
+<span class="sd">                If None is provided, a stride of 1 is used for each</span>
+<span class="sd">                dimension of each input tensor.</span>
+<span class="sd">                Default: None</span>
+<span class="sd">            baselines (scalar, tensor, tuple of scalars or tensors, optional):</span>
+<span class="sd">                Baselines define the starting point from which integral</span>
+<span class="sd">                is computed and can be provided as:</span>
+
+<span class="sd">                - a single tensor, if inputs is a single tensor, with</span>
+<span class="sd">                  exactly the same dimensions as inputs or the first</span>
+<span class="sd">                  dimension is one and the remaining dimensions match</span>
+<span class="sd">                  with inputs.</span>
+
+<span class="sd">                - a single scalar, if inputs is a single tensor, which will</span>
+<span class="sd">                  be broadcasted for each input value in input tensor.</span>
+
+<span class="sd">                - a tuple of tensors or scalars, the baseline corresponding</span>
+<span class="sd">                  to each tensor in the inputs&#39; tuple can be:</span>
+
+<span class="sd">                  - either a tensor with matching dimensions to</span>
+<span class="sd">                    corresponding tensor in the inputs&#39; tuple</span>
+<span class="sd">                    or the first dimension is one and the remaining</span>
+<span class="sd">                    dimensions match with the corresponding</span>
+<span class="sd">                    input tensor.</span>
+
+<span class="sd">                  - or a scalar, corresponding to a tensor in the</span>
+<span class="sd">                    inputs&#39; tuple. This scalar value is broadcasted</span>
+<span class="sd">                    for corresponding input tensor.</span>
+
+<span class="sd">                In the cases when `baselines` is not provided, we internally</span>
+<span class="sd">                use zero scalar corresponding to each input tensor.</span>
+
+<span class="sd">                Default: None</span>
+<span class="sd">            target (int, tuple, Tensor, or list, optional): Output indices for</span>
+<span class="sd">                which difference is computed (for classification cases,</span>
+<span class="sd">                this is usually the target class).</span>
+<span class="sd">                If the network returns a scalar value per example,</span>
+<span class="sd">                no target index is necessary.</span>
+<span class="sd">                For general 2D outputs, targets can be either:</span>
+
+<span class="sd">                - a single integer or a tensor containing a single</span>
+<span class="sd">                  integer, which is applied to all input examples</span>
+
+<span class="sd">                - a list of integers or a 1D tensor, with length matching</span>
+<span class="sd">                  the number of examples in inputs (dim 0). Each integer</span>
+<span class="sd">                  is applied as the target for the corresponding example.</span>
+
+<span class="sd">                For outputs with &gt; 2 dimensions, targets can be either:</span>
+
+<span class="sd">                - A single tuple, which contains #output_dims - 1</span>
+<span class="sd">                  elements. This target index is applied to all examples.</span>
+
+<span class="sd">                - A list of tuples with length equal to the number of</span>
+<span class="sd">                  examples in inputs (dim 0), and each tuple containing</span>
+<span class="sd">                  #output_dims - 1 elements. Each tuple is applied as the</span>
+<span class="sd">                  target for the corresponding example.</span>
+
+<span class="sd">                Default: None</span>
+<span class="sd">            additional_forward_args (any, optional): If the forward function</span>
+<span class="sd">                requires additional arguments other than the inputs for</span>
+<span class="sd">                which attributions should not be computed, this argument</span>
+<span class="sd">                can be provided. It must be either a single additional</span>
+<span class="sd">                argument of a Tensor or arbitrary (non-tuple) type or a</span>
+<span class="sd">                tuple containing multiple additional arguments including</span>
+<span class="sd">                tensors or any arbitrary python types. These arguments</span>
+<span class="sd">                are provided to forward_func in order following the</span>
+<span class="sd">                arguments in inputs.</span>
+<span class="sd">                For a tensor, the first dimension of the tensor must</span>
+<span class="sd">                correspond to the number of examples. For all other types,</span>
+<span class="sd">                the given argument is used for all forward evaluations.</span>
+<span class="sd">                Note that attributions are not computed with respect</span>
+<span class="sd">                to these arguments.</span>
+<span class="sd">                Default: None</span>
+<span class="sd">            threshold (float): Threshold for the second step computation.</span>
+<span class="sd">                Default: 0.0</span>
+<span class="sd">            normalize (float): Whether to normalize the temporal attribution</span>
+<span class="sd">                before applying the threshold.</span>
+<span class="sd">                Default: True</span>
+<span class="sd">            perturbations_per_eval (int, optional): Allows multiple occlusions</span>
+<span class="sd">                to be included in one batch (one call to forward_fn).</span>
+<span class="sd">                By default, perturbations_per_eval is 1, so each occlusion</span>
+<span class="sd">                is processed individually.</span>
+<span class="sd">                Each forward pass will contain a maximum of</span>
+<span class="sd">                perturbations_per_eval * #examples samples.</span>
+<span class="sd">                For DataParallel models, each batch is split among the</span>
+<span class="sd">                available devices, so evaluations on each available</span>
+<span class="sd">                device contain at most</span>
+<span class="sd">                (perturbations_per_eval * #examples) / num_devices</span>
+<span class="sd">                samples.</span>
+<span class="sd">                Default: 1</span>
+<span class="sd">            show_progress (bool, optional): Displays the progress of computation.</span>
+<span class="sd">                It will try to use tqdm if available for advanced features</span>
+<span class="sd">                (e.g. time estimation). Otherwise, it will fallback to</span>
+<span class="sd">                a simple output of progress.</span>
+<span class="sd">                Default: False</span>
+<span class="sd">            **kwargs: (Any, optional): Contains a list of arguments that are</span>
+<span class="sd">                passed  to `attribution_method` attribution algorithm.</span>
+<span class="sd">                Any additional arguments that should be used for the</span>
+<span class="sd">                chosen attribution method should be included here.</span>
+<span class="sd">                For instance, such arguments include</span>
+<span class="sd">                `additional_forward_args` and `baselines`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            *tensor* or tuple of *tensors* of **attributions**:</span>
+<span class="sd">            - **attributions** (*tensor* or tuple of *tensors*):</span>
+<span class="sd">                The attributions with respect to each input feature.</span>
+<span class="sd">                Attributions will always be</span>
+<span class="sd">                the same size as the provided inputs, with each value</span>
+<span class="sd">                providing the attribution of the corresponding input index.</span>
+<span class="sd">                If a single tensor is provided as inputs, a single tensor is</span>
+<span class="sd">                returned. If a tuple is provided for inputs, a tuple of</span>
+<span class="sd">                corresponding sized tensors is returned.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Keeps track whether original input is a tuple or not before</span>
+        <span class="c1"># converting it into a tuple.</span>
+        <span class="n">is_inputs_tuple</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span>
+
+        <span class="n">inputs</span><span class="p">,</span> <span class="n">baselines</span> <span class="o">=</span> <span class="n">_format_input_baseline</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">baselines</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span>
+            <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">inputs</span>
+        <span class="p">),</span> <span class="s2">&quot;All inputs must have the same time dimension. (dimension 1)&quot;</span>
+
+        <span class="c1"># Compute sliding window for the Time-Relevance Score</span>
+        <span class="c1"># Only the time dimension (dim 1) has a sliding window of 1</span>
+        <span class="n">tsr_sliding_window_shapes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="p">(</span><span class="mi">1</span><span class="p">,)</span> <span class="o">+</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span> <span class="k">for</span> <span class="nb">input</span> <span class="ow">in</span> <span class="n">inputs</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Compute the Time-Relevance Score (step 1)</span>
+        <span class="n">time_relevance_score</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">attribute</span><span class="o">.</span><span class="n">__wrapped__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span>
+            <span class="n">sliding_window_shapes</span><span class="o">=</span><span class="n">tsr_sliding_window_shapes</span><span class="p">,</span>
+            <span class="n">strides</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">baselines</span><span class="o">=</span><span class="n">baselines</span><span class="p">,</span>
+            <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
+            <span class="n">additional_forward_args</span><span class="o">=</span><span class="n">additional_forward_args</span><span class="p">,</span>
+            <span class="n">perturbations_per_eval</span><span class="o">=</span><span class="n">perturbations_per_eval</span><span class="p">,</span>
+            <span class="n">attributions_fn</span><span class="o">=</span><span class="nb">abs</span><span class="p">,</span>
+            <span class="n">show_progress</span><span class="o">=</span><span class="n">show_progress</span><span class="p">,</span>
+            <span class="n">kwargs_run_forward</span><span class="o">=</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Reshape the Time-Relevance Score and sum along the diagonal</span>
+        <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span>
+            <span class="n">tsr</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span>
+            <span class="k">for</span> <span class="nb">input</span><span class="p">,</span> <span class="n">tsr</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">time_relevance_score</span><span class="p">)</span>
+        <span class="p">),</span> <span class="s2">&quot;The attribution method must return a tensor of the same shape as the inputs&quot;</span>
+        <span class="n">time_relevance_score</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">tsr</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="nb">tuple</span><span class="p">(</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">tsr</span><span class="o">.</span><span class="n">shape</span><span class="p">)))))</span>
+            <span class="k">for</span> <span class="n">tsr</span> <span class="ow">in</span> <span class="n">time_relevance_score</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Normalize if required</span>
+        <span class="k">if</span> <span class="n">normalize</span><span class="p">:</span>
+            <span class="n">time_relevance_score</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+                <span class="n">tsr</span> <span class="o">/</span> <span class="n">tsr</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="k">for</span> <span class="n">tsr</span> <span class="ow">in</span> <span class="n">time_relevance_score</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Get indexes where the Time-Relevance Score is</span>
+        <span class="c1"># higher than the threshold</span>
+        <span class="n">is_above_threshold</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">score</span> <span class="o">&gt;</span> <span class="n">threshold</span> <span class="k">for</span> <span class="n">score</span> <span class="ow">in</span> <span class="n">time_relevance_score</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Formatting strides</span>
+        <span class="n">strides</span> <span class="o">=</span> <span class="n">_format_and_verify_strides</span><span class="p">(</span><span class="n">strides</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>
+
+        <span class="c1"># Formatting sliding window shapes</span>
+        <span class="n">sliding_window_shapes</span> <span class="o">=</span> <span class="n">_format_and_verify_sliding_window_shapes</span><span class="p">(</span>
+            <span class="n">sliding_window_shapes</span><span class="p">,</span> <span class="n">inputs</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Construct tensors from sliding window shapes</span>
+        <span class="n">sliding_window_tensors</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">window_shape</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">inputs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">window_shape</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sliding_window_shapes</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Construct number of steps taking the threshold into account</span>
+        <span class="n">shift_counts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">inp</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">inputs</span><span class="p">):</span>
+            <span class="n">current_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span>
+                <span class="n">inp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:],</span> <span class="n">sliding_window_shapes</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span>
+            <span class="p">)</span>
+
+            <span class="n">non_zero_count</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span>
+                <span class="n">is_above_threshold</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">nonzero</span><span class="p">()[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">return_counts</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">non_zero_count</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">shift_count_time_dim</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">shift_count_time_dim</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span>
+                    <span class="n">non_zero_count</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="n">sliding_window_shapes</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                <span class="p">)</span>
+            <span class="n">current_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">current_shape</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">shift_count_time_dim</span><span class="p">)</span>
+
+            <span class="n">shift_counts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="nb">tuple</span><span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+                        <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">current_shape</span><span class="p">,</span> <span class="n">strides</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span>
+                            <span class="nb">int</span>
+                        <span class="p">),</span>
+                        <span class="mi">1</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Compute Feature-Relevance Score (step 2)</span>
+        <span class="n">features_relevance_score</span> <span class="o">=</span> <span class="n">FeatureAblation</span><span class="o">.</span><span class="n">attribute</span><span class="o">.</span><span class="n">__wrapped__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">inputs</span><span class="p">,</span>
+            <span class="n">baselines</span><span class="o">=</span><span class="n">baselines</span><span class="p">,</span>
+            <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
+            <span class="n">additional_forward_args</span><span class="o">=</span><span class="n">additional_forward_args</span><span class="p">,</span>
+            <span class="n">perturbations_per_eval</span><span class="o">=</span><span class="n">perturbations_per_eval</span><span class="p">,</span>
+            <span class="n">sliding_window_tensors</span><span class="o">=</span><span class="n">sliding_window_tensors</span><span class="p">,</span>
+            <span class="n">shift_counts</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">shift_counts</span><span class="p">),</span>
+            <span class="n">is_above_threshold</span><span class="o">=</span><span class="n">is_above_threshold</span><span class="p">,</span>
+            <span class="n">strides</span><span class="o">=</span><span class="n">strides</span><span class="p">,</span>
+            <span class="n">attributions_fn</span><span class="o">=</span><span class="nb">abs</span><span class="p">,</span>
+            <span class="n">show_progress</span><span class="o">=</span><span class="n">show_progress</span><span class="p">,</span>
+            <span class="n">kwargs_run_forward</span><span class="o">=</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Reshape attributions before merge</span>
+        <span class="n">time_relevance_score</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">tsr</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:]))</span>
+            <span class="k">for</span> <span class="nb">input</span><span class="p">,</span> <span class="n">tsr</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">time_relevance_score</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">is_above_threshold</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">is_above</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:]))</span>
+            <span class="k">for</span> <span class="nb">input</span><span class="p">,</span> <span class="n">is_above</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">is_above_threshold</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Merge attributions:</span>
+        <span class="c1"># Time-Relevance Score x Feature-Relevance Score x is above threshold</span>
+        <span class="n">attributions</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="n">tsr</span> <span class="o">*</span> <span class="n">frs</span> <span class="o">*</span> <span class="n">is_above</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">tsr</span><span class="p">,</span> <span class="n">frs</span><span class="p">,</span> <span class="n">is_above</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+                <span class="n">time_relevance_score</span><span class="p">,</span>
+                <span class="n">features_relevance_score</span><span class="p">,</span>
+                <span class="n">is_above_threshold</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">_format_output</span><span class="p">(</span><span class="n">is_inputs_tuple</span><span class="p">,</span> <span class="n">attributions</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_construct_ablated_input</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">expanded_input</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">input_mask</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">],</span>
+        <span class="n">baseline</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+        <span class="n">start_feature</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">end_feature</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Ablates given expanded_input tensor with given feature mask, feature range,</span>
+<span class="sd">        and baselines, and any additional arguments.</span>
+<span class="sd">        expanded_input shape is (num_features, num_examples, ...)</span>
+<span class="sd">        with remaining dimensions corresponding to remaining original tensor</span>
+<span class="sd">        dimensions and num_features = end_feature - start_feature.</span>
+
+<span class="sd">        input_mask is None for occlusion, and the mask is constructed</span>
+<span class="sd">        using sliding_window_tensors, strides, and shift counts, which are provided in</span>
+<span class="sd">        kwargs. baseline is expected to</span>
+<span class="sd">        be broadcastable to match expanded_input.</span>
+
+<span class="sd">        This method returns the ablated input tensor, which has the same</span>
+<span class="sd">        dimensionality as expanded_input as well as the corresponding mask with</span>
+<span class="sd">        either the same dimensionality as expanded_input or second dimension</span>
+<span class="sd">        being 1. This mask contains 1s in locations which have been ablated (and</span>
+<span class="sd">        thus counted towards ablations for that feature) and 0s otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">input_mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_occlusion_mask</span><span class="p">(</span>
+                    <span class="n">expanded_input</span><span class="p">,</span>
+                    <span class="n">j</span><span class="p">,</span>
+                    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;sliding_window_tensors&quot;</span><span class="p">],</span>
+                    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;strides&quot;</span><span class="p">],</span>
+                    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;shift_counts&quot;</span><span class="p">],</span>
+                    <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;is_above_threshold&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">start_feature</span><span class="p">,</span> <span class="n">end_feature</span><span class="p">)</span>
+            <span class="p">],</span>
+            <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">long</span><span class="p">()</span>
+        <span class="n">ablated_tensor</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">expanded_input</span>
+            <span class="o">*</span> <span class="p">(</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">expanded_input</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+                <span class="o">-</span> <span class="n">input_mask</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">expanded_input</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">baseline</span> <span class="o">*</span> <span class="n">input_mask</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">expanded_input</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">ablated_tensor</span><span class="p">,</span> <span class="n">input_mask</span>
+
+    <span class="k">def</span> <span class="nf">_occlusion_mask</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">expanded_input</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">ablated_feature_num</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">sliding_window_tsr</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">strides</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]],</span>
+        <span class="n">shift_counts</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+        <span class="n">is_above_threshold</span><span class="p">:</span> <span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This constructs the current occlusion mask, which is the appropriate</span>
+<span class="sd">        shift of the sliding window tensor based on the ablated feature number.</span>
+<span class="sd">        The feature number ranges between 0 and the product of the shift counts</span>
+<span class="sd">        (# of times the sliding window should be shifted in each dimension).</span>
+
+<span class="sd">        First, the ablated feature number is converted to the number of steps in</span>
+<span class="sd">        each dimension from the origin, based on shift counts. This procedure</span>
+<span class="sd">        is similar to a base conversion, with the position values equal to shift</span>
+<span class="sd">        counts. The feature number is first taken modulo shift_counts[0] to</span>
+<span class="sd">        get the number of shifts in the first dimension (each shift</span>
+<span class="sd">        by shift_count[0]), and then divided by shift_count[0].</span>
+<span class="sd">        The procedure is then continued for each element of shift_count. This</span>
+<span class="sd">        computes the total shift in each direction for the sliding window.</span>
+
+<span class="sd">        We then need to compute the padding required after the window in each</span>
+<span class="sd">        dimension, which is equal to the total input dimension minus the sliding</span>
+<span class="sd">        window dimension minus the (left) shift amount. We construct the</span>
+<span class="sd">        array pad_values which contains the left and right pad values for each</span>
+<span class="sd">        dimension, in reverse order of dimensions, starting from the last one.</span>
+
+<span class="sd">        Once these padding values are computed, we pad the sliding window tensor</span>
+<span class="sd">        of 1s with 0s appropriately, which is the corresponding mask,</span>
+<span class="sd">        and the result will match the input shape.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">is_above_threshold</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_occlusion_mask</span><span class="p">(</span>
+                <span class="n">expanded_input</span><span class="o">=</span><span class="n">expanded_input</span><span class="p">,</span>
+                <span class="n">ablated_feature_num</span><span class="o">=</span><span class="n">ablated_feature_num</span><span class="p">,</span>
+                <span class="n">sliding_window_tsr</span><span class="o">=</span><span class="n">sliding_window_tsr</span><span class="p">,</span>
+                <span class="n">strides</span><span class="o">=</span><span class="n">strides</span><span class="p">,</span>
+                <span class="n">shift_counts</span><span class="o">=</span><span class="n">shift_counts</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="n">padded_tensor</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_occlusion_mask</span><span class="p">(</span>
+            <span class="n">expanded_input</span><span class="o">=</span><span class="n">expanded_input</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">],</span>
+            <span class="n">ablated_feature_num</span><span class="o">=</span><span class="n">ablated_feature_num</span><span class="p">,</span>
+            <span class="n">sliding_window_tsr</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">sliding_window_tsr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]),</span>
+            <span class="n">strides</span><span class="o">=</span><span class="n">strides</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">strides</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="k">else</span> <span class="n">strides</span><span class="p">,</span>
+            <span class="n">shift_counts</span><span class="o">=</span><span class="n">shift_counts</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
+        <span class="p">)</span>
+
+        <span class="n">bsz</span> <span class="o">=</span> <span class="n">expanded_input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">shift_count</span> <span class="o">=</span> <span class="n">shift_counts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">stride</span> <span class="o">=</span> <span class="n">strides</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">strides</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="k">else</span> <span class="n">strides</span>
+        <span class="n">current_index</span> <span class="o">=</span> <span class="p">(</span><span class="n">ablated_feature_num</span> <span class="o">%</span> <span class="n">shift_count</span><span class="p">)</span> <span class="o">*</span> <span class="n">stride</span>
+
+        <span class="n">is_above</span> <span class="o">=</span> <span class="n">is_above_threshold</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">batch_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">bsz</span><span class="p">):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">is_above_threshold</span><span class="p">[</span><span class="n">batch_idx</span><span class="p">]</span><span class="o">.</span><span class="n">nonzero</span><span class="p">()[:,</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">current_index</span><span class="p">:</span>
+                    <span class="n">is_above</span><span class="p">[</span><span class="n">batch_idx</span><span class="p">,</span> <span class="n">y</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="n">current_index</span> <span class="o">+</span> <span class="n">sliding_window_tsr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                    <span class="n">is_above</span><span class="p">[</span><span class="n">batch_idx</span><span class="p">,</span> <span class="n">y</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">return</span> <span class="n">is_above</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">padded_tensor</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_run_forward</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">forward_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]]):</span>
+        <span class="n">attributions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attribution_method</span><span class="o">.</span><span class="n">attribute</span><span class="o">.</span><span class="n">__wrapped__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">attribution_method</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Check if it needs to return convergence delta</span>
+        <span class="n">return_convergence_delta</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;return_convergence_delta&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span>
+            <span class="ow">and</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;return_convergence_delta&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="c1"># If the method returns delta, we ignore it</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_delta_supported</span> <span class="ow">and</span> <span class="n">return_convergence_delta</span><span class="p">:</span>
+            <span class="n">attributions</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">attributions</span>
+
+        <span class="c1"># Get attr shapes</span>
+        <span class="n">attributions_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">attr</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">attributions</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">attributions</span><span class="p">,</span> <span class="n">attributions_shape</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_reshape_eval_diff</span><span class="p">(</span><span class="n">eval_diff</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">shapes</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">eval_diff</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">eval_diff</span><span class="p">),)</span> <span class="o">+</span> <span class="n">shapes</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Joseph Enguehard.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

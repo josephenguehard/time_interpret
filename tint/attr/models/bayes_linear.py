@@ -13,7 +13,7 @@ from typing import Any, Dict
 
 class BayesianLinearRegression:
     """
-    Bayesian Linear Regression model.
+    Bayesian Linear Regression (BLR) model.
 
     Args:
         percent (int): Percentage for the credible intervals.
@@ -266,16 +266,17 @@ def train_bayes_model(
 
 
 class BLRLinearModel(LinearModel):
-    def __init__(self, l2: bool, **kwargs) -> None:
-        r"""
-        Factory class to construct a `LinearModel` with BLR training method.
+    r"""
+    Factory class to construct a `LinearModel` with BLR training method.
 
-        Args:
-            l2
-                L2 regularisation
-            kwargs
-                The kwargs to pass to the construction of the sklearn model
-        """
+    Args:
+        l2
+            L2 regularisation
+        kwargs
+            The kwargs to pass to the construction of the sklearn model
+    """
+
+    def __init__(self, l2: bool, **kwargs) -> None:
         super().__init__(train_fn=train_bayes_model, l2=l2, **kwargs)
         self.creds = None
 
@@ -285,16 +286,18 @@ class BLRLinearModel(LinearModel):
 
 
 class BLRRegression(BLRLinearModel):
+    r"""
+    Factory class. Trains a model with BayesianLinearRegression(l2=False).
+    """
+
     def __init__(self, **kwargs) -> None:
-        r"""
-        Factory class. Trains a model with BayesianLinearRegression(l2=False).
-        """
         super().__init__(l2=False, **kwargs)
 
 
 class BLRRidge(BLRLinearModel):
+    r"""
+    Factory class. Trains a model with BayesianLinearRegression(l2=True).
+    """
+
     def __init__(self, **kwargs) -> None:
-        r"""
-        Factory class. Trains a model with BayesianLinearRegression(l2=False).
-        """
         super().__init__(l2=True, **kwargs)

@@ -2,7 +2,7 @@
 
 This is the Arma process experiments section. You can use this
 section to reproduce the results from the 
-[DynaMask paper](https://arxiv.org/pdf/2106.05303.pdf).
+[DynaMask paper](https://arxiv.org/abs/2106.05303).
 
 To run the whole script with 5 folds, run:
 

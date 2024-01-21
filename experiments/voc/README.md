@@ -21,8 +21,8 @@ usage: experiments/voc/main.py [-h] [--explainers] [--areas] [--device] [--seed]
 
 optional arguments:
   -h, --help            Show this help message and exit.
-  --explainers          List of the explainers to use. Default to ["deep_lift", "geodesic_integrated_gradients", "enhanced_integrated_gradients", "gradient_shap", "noisy_gradient_shap", "input_x_gradient", "integrated_gradients", "lime", "kernel_shap", "noise_tunnel", "augmented_occlusion", "occlusion"]
-  --areas               List of areas to use. Default to [0.01, 0.02, 0.05, 0.1, 0.2, 0.5]
+  --explainers          List of the explainers to use. Default to ["deep_lift", "geodesic_integrated_gradients", "enhanced_integrated_gradients", "guided_integrated_gradients", "gradient_shap", "noisy_gradient_shap", "input_x_gradient", "integrated_gradients", "lime", "kernel_shap", "noise_tunnel", "augmented_occlusion", "occlusion"]
+  --n-images            Number of images to use. Default to 100
   --device              Which device to use. Default to 'cpu'
   --seed                Which seed to use to generate the data. Default to 42
   --deterministic       Whether to make training deterministic or not. Default to False

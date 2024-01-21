@@ -6,6 +6,7 @@ from .extremal_mask import ExtremalMask
 from .feature_ablation import FeatureAblation
 from .fit import Fit
 from .geodesic_ig import GeodesicIntegratedGradients
+from .guided_ig import GuidedIntegratedGradients
 from .lof import LofKernelShap, LofLime
 from .non_linearities_tunnel import NonLinearitiesTunnel
 from .occlusion import Occlusion
@@ -15,6 +16,7 @@ from .temporal_augmented_occlusion import TemporalAugmentedOcclusion
 from .temporal_ig import TemporalIntegratedGradients
 from .temporal_occlusion import TemporalOcclusion
 from .time_forward_tunnel import TimeForwardTunnel
+from .tsr_tunnel import TSRTunnel
 
 __all__ = [
     "AugmentedOcclusion",
@@ -26,6 +28,7 @@ __all__ = [
     "FeatureAblation",
     "Fit",
     "GeodesicIntegratedGradients",
+    "GuidedIntegratedGradients",
     "LofKernelShap",
     "LofLime",
     "NonLinearitiesTunnel",
@@ -36,4 +39,5 @@ __all__ = [
     "TemporalIntegratedGradients",
     "TemporalOcclusion",
     "TimeForwardTunnel",
+    "TSRTunnel",
 ]

@@ -71,7 +71,7 @@ class LofLime(Lime, LOF):
     function:
 
     .. math::
-        new_weight(x) = similarity(x) * \frac{-1}{lof_score(x)}
+        \textrm{new_weight}(x) = \textrm{similarity}(x) * \frac{-1}{\textrm{lof_score}(x)}
 
     If the perturbed data is considered more out of sample, the weight of
     this data will be reduced.
@@ -215,7 +215,7 @@ class LofKernelShap(KernelShap, LOF):
     function:
 
     .. math::
-        new_weight(x) = similarity(x) * \frac{-1}{lof_score(x)}
+        \textrm{new_weight}(x) = \textrm{similarity}(x) * \frac{-1}{\textrm{lof_score}(x)}
 
     If the perturbed data is considered more out of sample, the weight of
     this data will be reduced.
