@@ -206,6 +206,15 @@ def main(
                 n_samples=50,
             )
 
+        if "guided_ig" in explainers:
+            explainer = GuidedIntegratedGradients(net)
+            attr["guided_ig"] = explainer.attribute(
+                x_test,
+                baselines=baselines,
+                target=y_test,
+                internal_batch_size=200,
+            )
+
         if "integrated_gradients" in explainers:
             explainer = IntegratedGradients(net)
             attr["integrated_gradients"] = explainer.attribute(
@@ -226,17 +235,32 @@ def main(
                 stdevs=0.1,
             )
 
+        if "difference" in explainers:
+            attr["difference"] = (net(x_test) - net(baselines)).gather(
+                1, y_test.view(-1, 1)
+            )
+
         # Eval
         with lock:
             for k, v in attr.items():
-                scatter = plt.scatter(
+                scatter_0 = plt.scatter(
                     x_test[:, 0].cpu(),
                     x_test[:, 1].cpu(),
-                    c=v.abs().sum(-1).detach().cpu(),
+                    c=v[:, 0].detach().cpu(),
                 )
-                cbar = plt.colorbar(scatter)
+                cbar = plt.colorbar(scatter_0)
                 cbar.ax.tick_params(labelsize=20)
-                plt.savefig(f"{path}/{k}_{str(noise)}.pdf")
+                plt.savefig(f"{path}/{k}_{str(noise)}_0.pdf")
+                plt.close()
+
+                scatter_1 = plt.scatter(
+                    x_test[:, 0].cpu(),
+                    x_test[:, 1].cpu(),
+                    c=v[:, 1].detach().cpu(),
+                )
+                cbar = plt.colorbar(scatter_1)
+                cbar.ax.tick_params(labelsize=20)
+                plt.savefig(f"{path}/{k}_{str(noise)}_1.pdf")
                 plt.close()
 
         with open("results.csv", "a") as fp, lock:
@@ -251,8 +275,8 @@ def main(
             # Write purity
             for k, v in attr.items():
                 topk_idx = th.topk(
-                    v.abs().sum(-1),
-                    int(len(v.abs().sum(-1)) * 0.5),
+                    v.sum(-1),
+                    int(len(v.sum(-1)) * 0.5),
                     sorted=False,
                     largest=False,
                 ).indices
@@ -264,8 +288,8 @@ def main(
                 fp.write(
                     f"{th.cat(pred).argmax(-1)[topk_idx].float().mean():.4},"
                 )
-                fp.write(f"{v.abs().sum(-1)[y_test == 0].std():.4},")
-                fp.write(f"{v.abs().sum(-1)[y_test == 1].std():.4}")
+                fp.write(f"{v.sum(-1)[y_test == 0].std():.4},")
+                fp.write(f"{v.sum(-1)[y_test == 1].std():.4}")
                 fp.write("\n")
 
 
@@ -278,8 +302,10 @@ def parse_args():
             "geodesic_integrated_gradients",
             "enhanced_integrated_gradients",
             "gradient_shap",
+            "guided_ig",
             "integrated_gradients",
             "smooth_grad",
+            "difference",
         ],
         nargs="+",
         metavar="N",

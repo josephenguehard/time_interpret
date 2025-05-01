@@ -1,11 +1,10 @@
-name: Publish wheel to Artifactory
+name: Publish wheel to PyPI
 
 on:
   release:
     types: [published]
 
 jobs:
-  # NOTE: Build and publish can be separated into two separate steps, perhaps?
   publish-wheel:
     runs-on: ubuntu-latest
 

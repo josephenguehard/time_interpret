@@ -1,5 +1,14 @@
 # Time Interpret (tint)
 
+[![PyPI version](https://img.shields.io/pypi/v/time_interpret.svg?logo=pypi&logoColor=FFE873)](https://pypi.org/project/time_interpret)
+[![Supported Python versions](https://img.shields.io/pypi/pyversions/time_interpret.svg?logo=python&logoColor=FFE873)](https://pypi.org/project/time_interpret)
+[![PyPI downloads](https://img.shields.io/pypi/dm/time_interpret.svg)](https://pypi.org/project/time_interpret)
+[![GitHub Actions status](https://github.com/josephenguehard/time_interpret/workflows/Tests/badge.svg)](https://github.com/josephenguehard/time_interpret/actions)
+[![GitHub Actions status](https://github.com/josephenguehard/time_interpret/workflows/Documentation/badge.svg)](https://github.com/josephenguehard/time_interpret/actions)
+[![Licence](https://img.shields.io/github/license/josephenguehard/time_interpret.svg)](LICENSE)
+[![DOI](https://zenodo.org/badge/doi/10.48550/arXiv.2306.02968.svg)](https://arxiv.org/abs/2306.02968)
+[![Code style: Black](https://img.shields.io/badge/code%20style-Black-000000.svg)](https://github.com/psf/black)
+
 This library expands the [captum library](https://captum.ai) with a specific 
 focus on time series. For more details, please see the documentation and our [paper](https://arxiv.org/abs/2306.02968).
 
