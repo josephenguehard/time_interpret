@@ -136,9 +136,13 @@ def _base_metric(
             )
         else:
             _baselines = tuple(
-                baseline
-                if isinstance(baseline, (int, float))
-                else baseline.reshape(len(baseline), -1).gather(-1, topk_idx)
+                (
+                    baseline
+                    if isinstance(baseline, (int, float))
+                    else baseline.reshape(len(baseline), -1).gather(
+                        -1, topk_idx
+                    )
+                )
                 for baseline, topk_idx in zip(_baselines, topk_indices)
             )
             inputs_pert = tuple(

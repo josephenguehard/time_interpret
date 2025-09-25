@@ -364,9 +364,11 @@ class MaskNet(Net):
         y_target = _run_forward(
             forward_func=self.net.forward_func,
             inputs=y,
-            additional_forward_args=tuple(additional_forward_args)
-            if additional_forward_args is not None
-            else None,
+            additional_forward_args=(
+                tuple(additional_forward_args)
+                if additional_forward_args is not None
+                else None
+            ),
         )
         y_target = th.cat([y_target] * len(self.net.keep_ratio), dim=0)
 
@@ -395,9 +397,11 @@ class MaskNet(Net):
         y_target = _run_forward(
             forward_func=self.net.forward_func,
             inputs=y,
-            additional_forward_args=tuple(additional_forward_args)
-            if additional_forward_args is not None
-            else None,
+            additional_forward_args=(
+                tuple(additional_forward_args)
+                if additional_forward_args is not None
+                else None
+            ),
         )
         y_target = th.cat([y_target] * len(self.net.keep_ratio), dim=0)
 

@@ -110,8 +110,7 @@ class SequentialIntegratedGradients(GradientAttribution):
         internal_batch_size: Union[None, int] = None,
         return_convergence_delta: Literal[False] = False,
         show_progress: bool = False,
-    ) -> TensorOrTupleOfTensorsGeneric:
-        ...
+    ) -> TensorOrTupleOfTensorsGeneric: ...
 
     @typing.overload
     def attribute(
@@ -126,8 +125,7 @@ class SequentialIntegratedGradients(GradientAttribution):
         *,
         return_convergence_delta: Literal[True],
         show_progress: bool = False,
-    ) -> Tuple[TensorOrTupleOfTensorsGeneric, Tensor]:
-        ...
+    ) -> Tuple[TensorOrTupleOfTensorsGeneric, Tensor]: ...
 
     @log_usage()
     def attribute(  # type: ignore

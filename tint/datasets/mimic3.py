@@ -590,9 +590,9 @@ class Mimic3(DataModule):
                     x[i, vital_IDs.index(vital), :] = np.array(
                         quantized_signal
                     )
-                    nan_map[
-                        i, len(lab_IDs) + vital_IDs.index(vital)
-                    ] = nan_count
+                    nan_map[i, len(lab_IDs) + vital_IDs.index(vital)] = (
+                        nan_count
+                    )
                     if nan_count == 48:
                         n_missing_vitals = +1
                         missing_map[i, vital_IDs.index(vital)] = 1

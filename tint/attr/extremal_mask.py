@@ -219,9 +219,11 @@ class ExtremalMask(PerturbationAttribution):
         # Prepare data
         dataloader = DataLoader(
             TensorDataset(
-                *(data, data, baseline, target, *additional_forward_args)
-                if additional_forward_args is not None
-                else (data, data, baseline, target, None)
+                *(
+                    (data, data, baseline, target, *additional_forward_args)
+                    if additional_forward_args is not None
+                    else (data, data, baseline, target, None)
+                )
             ),
             batch_size=batch_size,
             collate_fn=default_collate,

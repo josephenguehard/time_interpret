@@ -169,9 +169,11 @@ class DynaMask(PerturbationAttribution):
         # Prepare data
         dataloader = DataLoader(
             TensorDataset(
-                *(data, data, *additional_forward_args)
-                if additional_forward_args is not None
-                else (data, data, None)
+                *(
+                    (data, data, *additional_forward_args)
+                    if additional_forward_args is not None
+                    else (data, data, None)
+                )
             ),
             batch_size=batch_size,
             collate_fn=default_collate,

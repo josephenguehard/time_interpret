@@ -104,8 +104,7 @@ class TemporalIntegratedGradients(IntegratedGradients):
         temporal_additional_forward_args: Tuple[bool] = None,
         return_temporal_attributions: bool = False,
         show_progress: bool = False,
-    ) -> TensorOrTupleOfTensorsGeneric:
-        ...
+    ) -> TensorOrTupleOfTensorsGeneric: ...
 
     @typing.overload
     def attribute(
@@ -125,8 +124,7 @@ class TemporalIntegratedGradients(IntegratedGradients):
         temporal_additional_forward_args: Tuple[bool] = None,
         return_temporal_attributions: bool = False,
         show_progress: bool = False,
-    ) -> Tuple[TensorOrTupleOfTensorsGeneric, Tensor]:
-        ...
+    ) -> Tuple[TensorOrTupleOfTensorsGeneric, Tensor]: ...
 
     @log_usage()
     def attribute(  # type: ignore

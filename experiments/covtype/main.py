@@ -289,18 +289,22 @@ def main(
                                 accuracy(
                                     classifier,
                                     x_test,
-                                    attributions=v.cpu().abs()
-                                    if mode == "abs"
-                                    else v.cpu(),
+                                    attributions=(
+                                        v.cpu().abs()
+                                        if mode == "abs"
+                                        else v.cpu()
+                                    ),
                                     baselines=baselines,
                                     target=target,
-                                    n_samples=1
-                                    if isinstance(baselines, int)
-                                    else 50,
+                                    n_samples=(
+                                        1 if isinstance(baselines, int) else 50
+                                    ),
                                     stdevs=stdevs,
-                                    draw_baseline_from_distrib=False
-                                    if isinstance(baselines, int)
-                                    else True,
+                                    draw_baseline_from_distrib=(
+                                        False
+                                        if isinstance(baselines, int)
+                                        else True
+                                    ),
                                     topk=topk,
                                     mask_largest=True,
                                 )
@@ -309,18 +313,22 @@ def main(
                                 accuracy(
                                     classifier,
                                     x_test,
-                                    attributions=v.cpu().abs()
-                                    if mode == "abs"
-                                    else v.cpu(),
+                                    attributions=(
+                                        v.cpu().abs()
+                                        if mode == "abs"
+                                        else v.cpu()
+                                    ),
                                     baselines=baselines,
                                     target=target,
-                                    n_samples=1
-                                    if isinstance(baselines, int)
-                                    else 50,
+                                    n_samples=(
+                                        1 if isinstance(baselines, int) else 50
+                                    ),
                                     stdevs=stdevs,
-                                    draw_baseline_from_distrib=False
-                                    if isinstance(baselines, int)
-                                    else True,
+                                    draw_baseline_from_distrib=(
+                                        False
+                                        if isinstance(baselines, int)
+                                        else True
+                                    ),
                                     topk=topk,
                                     mask_largest=False,
                                 )
@@ -329,18 +337,22 @@ def main(
                                 comprehensiveness(
                                     classifier,
                                     x_test,
-                                    attributions=v.cpu().abs()
-                                    if mode == "abs"
-                                    else v.cpu(),
+                                    attributions=(
+                                        v.cpu().abs()
+                                        if mode == "abs"
+                                        else v.cpu()
+                                    ),
                                     baselines=baselines,
                                     target=target,
-                                    n_samples=1
-                                    if isinstance(baselines, int)
-                                    else 50,
+                                    n_samples=(
+                                        1 if isinstance(baselines, int) else 50
+                                    ),
                                     stdevs=stdevs,
-                                    draw_baseline_from_distrib=False
-                                    if isinstance(baselines, int)
-                                    else True,
+                                    draw_baseline_from_distrib=(
+                                        False
+                                        if isinstance(baselines, int)
+                                        else True
+                                    ),
                                     topk=topk,
                                 )
                             )
@@ -348,18 +360,22 @@ def main(
                                 sufficiency(
                                     classifier,
                                     x_test,
-                                    attributions=v.cpu().abs()
-                                    if mode == "abs"
-                                    else v.cpu(),
+                                    attributions=(
+                                        v.cpu().abs()
+                                        if mode == "abs"
+                                        else v.cpu()
+                                    ),
                                     baselines=baselines,
                                     target=target,
-                                    n_samples=1
-                                    if isinstance(baselines, int)
-                                    else 50,
+                                    n_samples=(
+                                        1 if isinstance(baselines, int) else 50
+                                    ),
                                     stdevs=stdevs,
-                                    draw_baseline_from_distrib=False
-                                    if isinstance(baselines, int)
-                                    else True,
+                                    draw_baseline_from_distrib=(
+                                        False
+                                        if isinstance(baselines, int)
+                                        else True
+                                    ),
                                     topk=topk,
                                 )
                             )

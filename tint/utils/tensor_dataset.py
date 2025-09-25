@@ -14,6 +14,7 @@ class TensorDataset(Dataset[Tuple[Tensor, ...]]):
         *inputs (Any): Any kind of input. Each tensor must have the
             same first dimension.
     """
+
     tensors: Tuple[Tensor, ...]
 
     def __init__(self, *inputs) -> None:
