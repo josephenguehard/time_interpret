@@ -160,9 +160,11 @@ class BioBank(DataModule):
         columns = list(set(columns) - {"_34_0_0"})
         for column in columns:
             metadata[column] = metadata[[column, "_34_0_0"]].parallel_apply(
-                lambda x: np.nan
-                if pd.isna(x[0]) or pd.isna(x[1])
-                else 1970 + x[0].timestamp() / 3600 / 24 / 365.25 - x[1],
+                lambda x: (
+                    np.nan
+                    if pd.isna(x[0]) or pd.isna(x[1])
+                    else 1970 + x[0].timestamp() / 3600 / 24 / 365.25 - x[1]
+                ),
                 axis=1,
             )
 
@@ -214,9 +216,11 @@ class BioBank(DataModule):
         # Add year of birth to df and subtract it, remove negative values
         df = pd.merge(df, metadata[["eid", "_34_0_0"]], how="inner", on="eid")
         df["event_dt"] = df[["event_dt", "_34_0_0"]].parallel_apply(
-            lambda x: np.nan
-            if pd.isna(x[0]) or pd.isna(x[1])
-            else 1970 + x[0] - x[1],
+            lambda x: (
+                np.nan
+                if pd.isna(x[0]) or pd.isna(x[1])
+                else 1970 + x[0] - x[1]
+            ),
             axis=1,
         )
         df = df[df["event_dt"] >= 0]

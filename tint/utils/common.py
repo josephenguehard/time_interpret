@@ -193,18 +193,22 @@ def _expand_baselines(
     if draw_baseline_from_distrib:
         bsz = inputs[0].shape[0]
         baselines = tuple(
-            baseline[get_random_baseline_indices(bsz, baseline)]
-            if isinstance(baseline, torch.Tensor)
-            else baseline
+            (
+                baseline[get_random_baseline_indices(bsz, baseline)]
+                if isinstance(baseline, torch.Tensor)
+                else baseline
+            )
             for baseline in baselines
         )
     else:
         baselines = tuple(
-            baseline.repeat_interleave(n_samples, dim=0)
-            if isinstance(baseline, torch.Tensor)
-            and baseline.shape[0] == input.shape[0]
-            and baseline.shape[0] > 1
-            else baseline
+            (
+                baseline.repeat_interleave(n_samples, dim=0)
+                if isinstance(baseline, torch.Tensor)
+                and baseline.shape[0] == input.shape[0]
+                and baseline.shape[0] > 1
+                else baseline
+            )
             for input, baseline in zip(inputs, baselines)
         )
 

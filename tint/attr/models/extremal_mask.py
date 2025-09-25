@@ -206,17 +206,21 @@ class ExtremalMaskNet(Net):
             forward_func=self.net.forward_func,
             inputs=y,
             target=target,
-            additional_forward_args=tuple(additional_forward_args)
-            if additional_forward_args is not None
-            else None,
+            additional_forward_args=(
+                tuple(additional_forward_args)
+                if additional_forward_args is not None
+                else None
+            ),
         )
         y_target2 = _run_forward(
             forward_func=self.net.forward_func,
             inputs=th.zeros_like(y) + baselines,
             target=target,
-            additional_forward_args=tuple(additional_forward_args)
-            if additional_forward_args is not None
-            else None,
+            additional_forward_args=(
+                tuple(additional_forward_args)
+                if additional_forward_args is not None
+                else None
+            ),
         )
 
         # Add L1 loss

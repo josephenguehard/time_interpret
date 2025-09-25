@@ -755,9 +755,9 @@ def main(
                         baselines=x_train if mode == "aug" else baselines,
                         n_samples=10 if mode == "aug" else 1,
                         stdevs=0.1 if mode == "aug" else 0.0,
-                        draw_baseline_from_distrib=True
-                        if mode == "aug"
-                        else False,
+                        draw_baseline_from_distrib=(
+                            True if mode == "aug" else False
+                        ),
                         topk=topk,
                         mask_largest=True,
                     )
@@ -768,9 +768,9 @@ def main(
                         baselines=x_train if mode == "aug" else baselines,
                         n_samples=10 if mode == "aug" else 1,
                         stdevs=0.1 if mode == "aug" else 0.0,
-                        draw_baseline_from_distrib=True
-                        if mode == "aug"
-                        else False,
+                        draw_baseline_from_distrib=(
+                            True if mode == "aug" else False
+                        ),
                         topk=topk,
                         mask_largest=False,
                     )
@@ -781,9 +781,9 @@ def main(
                         baselines=x_train if mode == "aug" else baselines,
                         n_samples=10 if mode == "aug" else 1,
                         stdevs=0.1 if mode == "aug" else 0.0,
-                        draw_baseline_from_distrib=True
-                        if mode == "aug"
-                        else False,
+                        draw_baseline_from_distrib=(
+                            True if mode == "aug" else False
+                        ),
                         topk=topk,
                     )
                     ce_comp = cross_entropy(
@@ -793,9 +793,9 @@ def main(
                         baselines=x_train if mode == "aug" else baselines,
                         n_samples=10 if mode == "aug" else 1,
                         stdevs=0.1 if mode == "aug" else 0.0,
-                        draw_baseline_from_distrib=True
-                        if mode == "aug"
-                        else False,
+                        draw_baseline_from_distrib=(
+                            True if mode == "aug" else False
+                        ),
                         topk=topk,
                         mask_largest=True,
                     )
@@ -806,9 +806,9 @@ def main(
                         baselines=x_train if mode == "aug" else baselines,
                         n_samples=10 if mode == "aug" else 1,
                         stdevs=0.1 if mode == "aug" else 0.0,
-                        draw_baseline_from_distrib=True
-                        if mode == "aug"
-                        else False,
+                        draw_baseline_from_distrib=(
+                            True if mode == "aug" else False
+                        ),
                         topk=topk,
                         mask_largest=False,
                     )
@@ -819,9 +819,9 @@ def main(
                         baselines=x_train if mode == "aug" else baselines,
                         n_samples=10 if mode == "aug" else 1,
                         stdevs=0.1 if mode == "aug" else 0.0,
-                        draw_baseline_from_distrib=True
-                        if mode == "aug"
-                        else False,
+                        draw_baseline_from_distrib=(
+                            True if mode == "aug" else False
+                        ),
                         topk=topk,
                     )
                     suff = sufficiency(
@@ -831,9 +831,9 @@ def main(
                         baselines=x_train if mode == "aug" else baselines,
                         n_samples=10 if mode == "aug" else 1,
                         stdevs=0.1 if mode == "aug" else 0.0,
-                        draw_baseline_from_distrib=True
-                        if mode == "aug"
-                        else False,
+                        draw_baseline_from_distrib=(
+                            True if mode == "aug" else False
+                        ),
                         topk=topk,
                     )
 

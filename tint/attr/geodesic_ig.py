@@ -169,8 +169,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
         distance: str = "geodesic",
         show_progress: bool = False,
         **kwargs,
-    ) -> TensorOrTupleOfTensorsGeneric:
-        ...
+    ) -> TensorOrTupleOfTensorsGeneric: ...
 
     @typing.overload
     def attribute(
@@ -190,8 +189,7 @@ class GeodesicIntegratedGradients(GradientAttribution):
         distance: str = "geodesic",
         show_progress: bool = False,
         **kwargs,
-    ) -> Tuple[TensorOrTupleOfTensorsGeneric, Tensor]:
-        ...
+    ) -> Tuple[TensorOrTupleOfTensorsGeneric, Tensor]: ...
 
     @log_usage()
     def attribute(  # type: ignore
@@ -404,9 +402,11 @@ class GeodesicIntegratedGradients(GradientAttribution):
 
         # If baseline is float or int, create a tensor
         baselines = tuple(
-            torch.ones_like(input) * baseline
-            if isinstance(baseline, (int, float))
-            else baseline
+            (
+                torch.ones_like(input) * baseline
+                if isinstance(baseline, (int, float))
+                else baseline
+            )
             for input, baseline in zip(inputs, baselines)
         )
 
