@@ -3,7 +3,7 @@ import numpy as np
 from captum.log import log_usage
 from captum._utils.typing import TensorOrTupleOfTensorsGeneric
 
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import root_mean_squared_error
 from typing import Tuple
 
 from .base import _base_white_box_metric
@@ -15,7 +15,7 @@ def _rmse(
     attributions_subset: Tuple[np.ndarray],
 ) -> Tuple[float]:
     rmse_tpl = tuple(
-        mean_squared_error(true_attr, attr, squared=False)
+        root_mean_squared_error(true_attr, attr)
         for true_attr, attr in zip(true_attributions, attributions)
     )
     return tuple(float(x) for x in rmse_tpl)
