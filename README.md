@@ -103,6 +103,12 @@ into [TSInterpret](https://github.com/fzi-forschungszentrum-informatik/TSInterpr
 focus on time series.
 We developed Time Interpret concurrently, not being aware of this library at the time.
 
+## tslens
+
+[tslens](https://github.com/khairulislam/tslens) extends time_interpret and Captum with a
+unified PyTorch API plus native temporal-attribution methods, tested against many
+state-of-the-art time-series architectures and foundation models.
+
 
 ## Acknowledgment
 - [Jonathan Crabbe](https://github.com/JonathanCrabbe/Dynamask) for the DynaMask implementation.
